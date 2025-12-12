@@ -19,8 +19,33 @@ dependencies = [
     "uvicorn>=0.32.0",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+]
+
+[project.scripts]
+agent-k = "agent_k.__main__:main"
+
 [tool.hatch.build.targets.wheel]
 packages = ["agent_k"]
+
+# =============================================================================
+# uv Configuration
+# =============================================================================
+[tool.uv]
+dev-dependencies = [
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+]
+
+[tool.uv.sources]
+# Add any git/local sources here if needed
 
 [tool.ruff]
 line-length = 120

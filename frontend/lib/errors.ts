@@ -16,7 +16,11 @@ export type Surface =
   | "vote"
   | "document"
   | "suggestions"
-  | "activate_gateway";
+  | "activate_gateway"
+  | "burst"
+  | "tokens"
+  | "concurrent"
+  | "input_size";
 
 export type ErrorCode = `${ErrorType}:${Surface}`;
 
@@ -33,6 +37,10 @@ export const visibilityBySurface: Record<Surface, ErrorVisibility> = {
   document: "response",
   suggestions: "response",
   activate_gateway: "response",
+  burst: "response",
+  tokens: "response",
+  concurrent: "response",
+  input_size: "response",
 };
 
 export class ChatSDKError extends Error {
@@ -94,6 +102,16 @@ export function getMessageByErrorCode(errorCode: ErrorCode): string {
 
     case "rate_limit:chat":
       return "You have exceeded your maximum number of messages for the day. Please try again later.";
+
+    case "rate_limit:burst":
+      return "You're sending messages too quickly. Please slow down and try again in a moment.";
+    case "rate_limit:tokens":
+      return "You have exceeded your token usage limit. Please try again later or upgrade your account.";
+    case "rate_limit:concurrent":
+      return "You have too many active requests. Please wait for your current request to complete.";
+
+    case "bad_request:input_size":
+      return "Your message is too long. Please shorten it and try again.";
     case "not_found:chat":
       return "The requested chat was not found. Please check the chat ID and try again.";
     case "forbidden:chat":

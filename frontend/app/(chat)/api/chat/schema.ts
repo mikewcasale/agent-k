@@ -1,18 +1,30 @@
 import { z } from "zod";
 
+/**
+ * Maximum allowed characters per text part.
+ * This is a hard limit enforced at schema level.
+ * User-type-specific limits are enforced separately in validation.ts
+ */
+const MAX_TEXT_CHARS_HARD_LIMIT = 100_000;
+
+/**
+ * Maximum parts per message (hard limit).
+ */
+const MAX_PARTS_HARD_LIMIT = 20;
+
 const textPartSchema = z
   .object({
     type: z.enum(["text"]),
-    text: z.string().max(2000),
+    text: z.string().max(MAX_TEXT_CHARS_HARD_LIMIT),
   })
   .passthrough();
 
 const filePartSchema = z
   .object({
     type: z.enum(["file"]),
-    mediaType: z.enum(["image/jpeg", "image/png"]),
-    name: z.string().min(1).max(100),
-    url: z.string().url(),
+    mediaType: z.enum(["image/jpeg", "image/png", "image/gif", "image/webp"]),
+    name: z.string().min(1).max(255),
+    url: z.string().url().max(10_000_000), // 10MB base64 URL limit
   })
   .passthrough();
 
@@ -24,7 +36,7 @@ export const postRequestBodySchema = z.object({
     .object({
       id: z.string().uuid(),
       role: z.enum(["user"]),
-      parts: z.array(partSchema),
+      parts: z.array(partSchema).max(MAX_PARTS_HARD_LIMIT),
     })
     .passthrough(),
   selectedChatModel: z.enum(["chat-model", "chat-model-reasoning", "agent-k"]),

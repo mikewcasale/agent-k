@@ -26,6 +26,10 @@ import { createDocument } from "@/lib/ai/tools/create-document";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { updateDocument } from "@/lib/ai/tools/update-document";
+import {
+  acquireRequestSlot,
+  checkConcurrentLimit,
+} from "@/lib/concurrent-limit";
 import { isProductionEnvironment, PYTHON_BACKEND_URL } from "@/lib/constants";
 import {
   createStreamId,
@@ -38,10 +42,13 @@ import {
   updateChatLastContextById,
 } from "@/lib/db/queries";
 import type { DBMessage } from "@/lib/db/schema";
+import { checkTokenBudget, incrementTokenUsage } from "@/lib/db/token-usage";
 import { ChatSDKError } from "@/lib/errors";
+import { checkRateLimit, recordRequest } from "@/lib/rate-limit";
 import type { ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
+import { validateMessage } from "@/lib/validation";
 import { generateTitleFromUserMessage } from "../../actions";
 import { type PostRequestBody, postRequestBodySchema } from "./schema";
 
@@ -317,9 +324,30 @@ export async function POST(request: Request) {
     }
 
     const userType: UserType = session.user.type;
+    const userId = session.user.id;
+    const requestId = generateUUID();
 
+    // =========================================================================
+    // Defense Layer 1: Input Validation
+    // =========================================================================
+    const validationResult = validateMessage(message, userType);
+    if (!validationResult.valid) {
+      return new ChatSDKError("bad_request:input_size").toResponse();
+    }
+
+    // =========================================================================
+    // Defense Layer 2: Rate Limiting (Burst Protection)
+    // =========================================================================
+    const rateLimitResult = await checkRateLimit(userId, userType);
+    if (!rateLimitResult.allowed) {
+      return new ChatSDKError("rate_limit:burst").toResponse();
+    }
+
+    // =========================================================================
+    // Defense Layer 3: Daily Message Limit
+    // =========================================================================
     const messageCount = await getMessageCountByUserId({
-      id: session.user.id,
+      id: userId,
       differenceInHours: 24,
     });
 
@@ -327,9 +355,35 @@ export async function POST(request: Request) {
       return new ChatSDKError("rate_limit:chat").toResponse();
     }
 
+    // =========================================================================
+    // Defense Layer 4: Token Budget Check
+    // =========================================================================
+    const tokenBudgetStatus = await checkTokenBudget(userId, userType);
+    if (!tokenBudgetStatus.withinBudget) {
+      return new ChatSDKError("rate_limit:tokens").toResponse();
+    }
+
+    // =========================================================================
+    // Defense Layer 5: Concurrent Request Limit
+    // =========================================================================
+    const concurrentResult = await checkConcurrentLimit(userId, userType);
+    if (!concurrentResult.allowed) {
+      return new ChatSDKError("rate_limit:concurrent").toResponse();
+    }
+
+    // Acquire request slot and get release function
+    const releaseSlot = await acquireRequestSlot(userId, requestId);
+
+    // Record this request for rate limiting
+    await recordRequest(userId);
+
     // Route to Python backend for Agent K model
     if (selectedChatModel === "agent-k") {
-      return handleAgentKRequest({ id, message, selectedVisibilityType, session });
+      try {
+        return await handleAgentKRequest({ id, message, selectedVisibilityType, session });
+      } finally {
+        await releaseSlot();
+      }
     }
 
     const chat = await getChatById({ id });
@@ -416,6 +470,15 @@ export async function POST(request: Request) {
           },
           onFinish: async ({ usage }) => {
             try {
+              // Track token usage for budget enforcement
+              if (usage.inputTokens || usage.outputTokens) {
+                await incrementTokenUsage(
+                  userId,
+                  usage.inputTokens ?? 0,
+                  usage.outputTokens ?? 0
+                );
+              }
+
               const providers = await getTokenlensCatalog();
               const modelId =
                 myProvider.languageModel(selectedChatModel).modelId;
@@ -458,6 +521,9 @@ export async function POST(request: Request) {
       },
       generateId: generateUUID,
       onFinish: async ({ messages }) => {
+        // Release the concurrent request slot
+        await releaseSlot();
+
         await saveMessages({
           messages: messages.map((currentMessage) => ({
             id: currentMessage.id,
@@ -481,6 +547,8 @@ export async function POST(request: Request) {
         }
       },
       onError: () => {
+        // Release slot on error too
+        releaseSlot().catch(() => {});
         return "Oops, an error occurred!";
       },
     });

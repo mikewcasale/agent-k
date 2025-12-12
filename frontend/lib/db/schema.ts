@@ -1,13 +1,16 @@
 import type { InferSelectModel } from "drizzle-orm";
 import {
   boolean,
+  date,
   foreignKey,
+  integer,
   json,
   jsonb,
   pgTable,
   primaryKey,
   text,
   timestamp,
+  unique,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -171,3 +174,29 @@ export const stream = pgTable(
 );
 
 export type Stream = InferSelectModel<typeof stream>;
+
+// =============================================================================
+// Token Usage Tracking (API Abuse Prevention)
+// =============================================================================
+
+export const userTokenUsage = pgTable(
+  "UserTokenUsage",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    userId: uuid("userId")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    date: date("date").notNull(),
+    inputTokens: integer("inputTokens").notNull().default(0),
+    outputTokens: integer("outputTokens").notNull().default(0),
+    estimatedCostCents: integer("estimatedCostCents").notNull().default(0),
+    requestCount: integer("requestCount").notNull().default(0),
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+    updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  },
+  (table) => ({
+    userDateUnique: unique().on(table.userId, table.date),
+  })
+);
+
+export type UserTokenUsage = InferSelectModel<typeof userTokenUsage>;

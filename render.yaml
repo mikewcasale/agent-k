@@ -27,6 +27,7 @@ services:
     runtime: node
     plan: starter
     buildCommand: cd frontend && npm install --legacy-peer-deps && npm run build
+    preDeployCommand: cd frontend && npm run db:migrate
     startCommand: cd frontend && npm start
     envVars:
       - key: NODE_VERSION

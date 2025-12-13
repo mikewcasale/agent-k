@@ -6,29 +6,44 @@ databases:
     plan: basic_256mb
     databaseName: agent_k_db
     user: agent_k
+    region: oregon
 
 services:
   # FastAPI Backend
   - type: web
     name: agent-k-api
-    runtime: python
+    branch: main
     plan: starter
-    buildCommand: cd backend && pip install -e .
-    startCommand: cd backend && uvicorn cli:app --host 0.0.0.0 --port $PORT
+    region: oregon
+    runtime: python
+    buildCommand: |
+      cd backend &&
+      pip install --upgrade pip &&
+      pip install -e .
+    startCommand: |
+      cd backend &&
+      uvicorn agent_k.ui.ag_ui.app:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
-        value: "3.13.4"
+        value: "3.12"
       - fromGroup: agent-k-secrets
 
   # Next.js Frontend
   - type: web
     name: agent-k-frontend
-    runtime: node
+    branch: main
     plan: starter
-    buildCommand: cd frontend && npm install --legacy-peer-deps && npm run build
+    region: oregon
+    runtime: node
+    buildCommand: |
+      cd frontend &&
+      npm ci --legacy-peer-deps &&
+      npm run build
     preDeployCommand: cd frontend && npm run db:migrate
-    startCommand: cd frontend && npm start
+    startCommand: |
+      cd frontend &&
+      npm start
     envVars:
       - key: NODE_VERSION
         value: "20"
@@ -37,4 +52,7 @@ services:
           name: agent-k-postgres
           property: connectionString
       - key: NEXT_PUBLIC_API_URL
-        sync: false  # Set manually per environment
+        fromService:
+          type: web
+          name: agent-k-api
+          property: url

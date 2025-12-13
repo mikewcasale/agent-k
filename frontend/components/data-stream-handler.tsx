@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { initialArtifactData, useArtifact } from "@/hooks/use-artifact";
 import { useAgentKState } from "@/hooks/use-agent-k-state";
 import type { AgentKEvent, AgentKEventType } from "@/lib/types/events";
+import type { MissionState } from "@/lib/types/agent-k";
 import { artifactDefinitions } from "./artifact";
 import { useDataStream } from "./data-stream-provider";
 
@@ -56,8 +57,9 @@ export function DataStreamHandler() {
     setDataStream([]);
 
     for (const delta of newDeltas) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (isAgentKEvent(delta as any)) {
-        handleEvent(delta as AgentKEvent);
+        handleEvent(delta as unknown as AgentKEvent);
         continue;
       }
 
@@ -134,7 +136,7 @@ export function DataStreamHandler() {
     const timestamp = (event as any).timestamp ?? new Date().toISOString();
     switch (event.type) {
       case "state-snapshot":
-        dispatch({ type: "SET_STATE", payload: event.data });
+        dispatch({ type: "SET_STATE", payload: event.data as MissionState });
         break;
 
       case "state-delta":
@@ -147,35 +149,36 @@ export function DataStreamHandler() {
         break;
 
       case "phase-start":
-        dispatch({ type: "PHASE_START", payload: { ...event.data, timestamp } });
+        dispatch({ type: "PHASE_START", payload: { ...(event.data as any), timestamp } });
         break;
 
       case "phase-complete":
-        dispatch({ type: "PHASE_COMPLETE", payload: { ...event.data, timestamp } });
+        dispatch({ type: "PHASE_COMPLETE", payload: { ...(event.data as any), timestamp } });
         break;
 
       case "task-start":
-        dispatch({ type: "TASK_START", payload: { ...event.data, timestamp } });
+        dispatch({ type: "TASK_START", payload: { ...(event.data as any), timestamp } });
         break;
 
       case "task-progress":
-        dispatch({ type: "TASK_PROGRESS", payload: event.data });
+        dispatch({ type: "TASK_PROGRESS", payload: event.data as any });
         break;
 
       case "task-complete":
-        dispatch({ type: "TASK_COMPLETE", payload: { ...event.data, timestamp } });
+        dispatch({ type: "TASK_COMPLETE", payload: { ...(event.data as any), timestamp } });
         break;
 
       case "tool-start": {
+        const data = event.data as any;
         dispatch({
           type: "TOOL_START",
           payload: {
-            taskId: event.data.taskId,
+            taskId: data.taskId,
             toolCall: {
-              id: event.data.toolCallId,
-              type: event.data.toolType,
-              operation: event.data.operation,
-              params: (event.data as any).params,
+              id: data.toolCallId,
+              type: data.toolType,
+              operation: data.operation,
+              params: data.params,
               startedAt: timestamp,
               thinking: "",
             },
@@ -185,64 +188,67 @@ export function DataStreamHandler() {
       }
 
       case "tool-thinking": {
-        const { taskId, toolCallId, chunk } = event.data;
+        const data = event.data as any;
+        const { taskId, toolCallId, chunk } = data;
         const key = `${taskId}:${toolCallId}`;
         const current = thinkingBuffer.current.get(key) || "";
         thinkingBuffer.current.set(key, current + chunk);
-        appendToolThinking(taskId, toolCallId, thinkingBuffer.current.get(key)!);
+        appendToolThinking(taskId, toolCallId, thinkingBuffer.current.get(key) ?? "");
         break;
       }
 
       case "tool-result": {
-        const resultKey = `${event.data.taskId}:${event.data.toolCallId}`;
+        const data = event.data as any;
+        const resultKey = `${data.taskId}:${data.toolCallId}`;
         thinkingBuffer.current.delete(resultKey);
         dispatch({
           type: "TOOL_RESULT",
-          payload: { ...event.data, timestamp },
+          payload: { ...data, timestamp },
         });
         break;
       }
 
       case "tool-error": {
-        const resultKey = `${event.data.taskId}:${event.data.toolCallId}`;
-        thinkingBuffer.current.delete(resultKey);
+        const data = event.data as any;
+        const errorKey = `${data.taskId}:${data.toolCallId}`;
+        thinkingBuffer.current.delete(errorKey);
         dispatch({
           type: "TOOL_ERROR",
-          payload: { ...event.data, timestamp },
+          payload: { ...data, timestamp },
         });
         break;
       }
 
       case "generation-complete":
-        dispatch({ type: "GENERATION_COMPLETE", payload: event.data });
+        dispatch({ type: "GENERATION_COMPLETE", payload: event.data as any });
         break;
 
       case "submission-result":
-        dispatch({ type: "SUBMISSION_RESULT", payload: event.data });
+        dispatch({ type: "SUBMISSION_RESULT", payload: event.data as any });
         break;
 
       case "convergence-detected":
-        dispatch({ type: "CONVERGENCE_DETECTED", payload: event.data });
+        dispatch({ type: "CONVERGENCE_DETECTED", payload: event.data as any });
         break;
 
       case "memory-store":
       case "memory-retrieve":
         dispatch({
           type: "MEMORY_OPERATION",
-          payload: { ...event.data, operation: event.type },
+          payload: { ...(event.data as any), operation: event.type },
         });
         break;
 
       case "checkpoint-created":
-        dispatch({ type: "CHECKPOINT_CREATED", payload: { ...event.data, timestamp } });
+        dispatch({ type: "CHECKPOINT_CREATED", payload: { ...(event.data as any), timestamp } });
         break;
 
       case "error-occurred":
-        dispatch({ type: "ERROR_OCCURRED", payload: event.data });
+        dispatch({ type: "ERROR_OCCURRED", payload: event.data as any });
         break;
 
       case "recovery-complete":
-        dispatch({ type: "RECOVERY_COMPLETE", payload: event.data });
+        dispatch({ type: "RECOVERY_COMPLETE", payload: event.data as any });
         break;
 
       default:

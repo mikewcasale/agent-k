@@ -2,17 +2,31 @@
 
 import { useMemo } from "react";
 import {
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
+  CartesianGrid as RCartesianGrid,
+  Legend as RLegend,
+  Line as RLine,
+  LineChart as RLineChart,
+  ReferenceLine as RReferenceLine,
+  ResponsiveContainer as RResponsiveContainer,
+  Tooltip as RTooltip,
+  XAxis as RXAxis,
+  YAxis as RYAxis,
 } from "recharts";
 import { useAgentKState } from "@/hooks/use-agent-k-state";
+
+// Workaround for React 19 type compatibility with recharts
+// See: https://github.com/recharts/recharts/issues/3615
+/* eslint-disable @typescript-eslint/no-explicit-any */
+const CartesianGrid = RCartesianGrid as any;
+const Legend = RLegend as any;
+const Line = RLine as any;
+const LineChart = RLineChart as any;
+const ReferenceLine = RReferenceLine as any;
+const ResponsiveContainer = RResponsiveContainer as any;
+const Tooltip = RTooltip as any;
+const XAxis = RXAxis as any;
+const YAxis = RYAxis as any;
+/* eslint-enable @typescript-eslint/no-explicit-any */
 
 export function FitnessChart() {
   const { state } = useAgentKState();
@@ -56,7 +70,7 @@ export function FitnessChart() {
             domain={[minValue - padding, maxValue + padding]}
             tick={{ fontSize: 12 }}
             className="text-zinc-500"
-            tickFormatter={(value) => value.toFixed(3)}
+            tickFormatter={(value: number) => value.toFixed(3)}
           />
 
           <Tooltip

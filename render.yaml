@@ -38,12 +38,13 @@ services:
     runtime: node
     buildCommand: |
       cd frontend &&
-      npm ci --legacy-peer-deps &&
-      npm run build
-    preDeployCommand: cd frontend && npm run db:migrate
+      npm install -g pnpm &&
+      pnpm install --frozen-lockfile &&
+      pnpm run build
+    preDeployCommand: cd frontend && pnpm run db:migrate
     startCommand: |
       cd frontend &&
-      npm start
+      pnpm start
     envVars:
       - key: NODE_VERSION
         value: "20"

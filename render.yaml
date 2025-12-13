@@ -3,7 +3,7 @@
 
 databases:
   - name: agent-k-postgres
-    plan: basic_256mb
+    plan: basic-256mb
     databaseName: agent_k_db
     user: agent_k
     region: oregon

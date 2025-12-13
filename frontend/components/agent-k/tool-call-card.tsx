@@ -173,7 +173,7 @@ export function ToolCallCard({ toolCall, taskId }: ToolCallCardProps) {
                 </div>
               )}
 
-              {toolCall.result && (
+              {toolCall.result != null ? (
                 <div className="space-y-1">
                   <p className="text-[11px] uppercase tracking-wide text-zinc-500">Result</p>
                   <div className="max-h-48 overflow-auto rounded-md bg-zinc-100 p-2 font-mono text-[11px] text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
@@ -182,7 +182,7 @@ export function ToolCallCard({ toolCall, taskId }: ToolCallCardProps) {
                       : JSON.stringify(toolCall.result, null, 2)}
                   </div>
                 </div>
-              )}
+              ) : null}
 
               {toolCall.error && (
                 <div className="rounded-md bg-red-100 px-2 py-1 text-red-700 dark:bg-red-900/30 dark:text-red-200">

@@ -56,3 +56,10 @@ services:
           type: web
           name: agent-k-api
           property: url
+      # === AUTH.JS REQUIRED VARIABLES ===
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: AUTH_TRUST_HOST
+        value: "true"
+      - key: AUTH_URL
+        value: "https://agent-k-frontend.onrender.com"

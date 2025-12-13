@@ -146,3 +146,5 @@ refs/
 .cursorignore
 .cursorindexingignore
 .gitattributes
+*.pyc
+pydantic-ai-docs.txt

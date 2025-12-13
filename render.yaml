@@ -52,10 +52,7 @@ services:
           name: agent-k-postgres
           property: connectionString
       - key: NEXT_PUBLIC_API_URL
-        fromService:
-          type: web
-          name: agent-k-api
-          property: url
+        value: "https://agent-k-api.onrender.com"
       # === AUTH.JS REQUIRED VARIABLES ===
       - key: AUTH_SECRET
         generateValue: true

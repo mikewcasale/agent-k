@@ -58,7 +58,7 @@ function PureChatHeader({
           variant="outline"
         >
           <Link
-            href="https://github.com/casalexyz/agent-k#readme"
+            href="https://docs.agents-k.com"
             rel="noreferrer"
             target="_blank"
           >

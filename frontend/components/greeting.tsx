@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Sparkles, Target, Beaker, Dna, Send } from "lucide-react";
+import Link from "next/link";
 
 export const Greeting = () => {
   return (
@@ -26,7 +27,16 @@ export const Greeting = () => {
         initial={{ opacity: 0, y: 10 }}
         transition={{ delay: 0.5 }}
       >
-        Autonomous Multi-Agent Kaggle Competition System
+        Autonomous Multi-Agent{" "}
+        <Link
+          href="https://www.kaggle.com"
+          target="_blank"
+          rel="noreferrer"
+          className="text-zinc-300 underline decoration-zinc-500 underline-offset-2 transition-colors hover:text-white hover:decoration-zinc-300"
+        >
+          Kaggle
+        </Link>{" "}
+        Competition System
       </motion.div>
       <motion.p
         animate={{ opacity: 1, y: 0 }}
@@ -35,7 +45,16 @@ export const Greeting = () => {
         initial={{ opacity: 0, y: 10 }}
         transition={{ delay: 0.6 }}
       >
-        Discover, research, prototype, evolve, and submit winning solutions to Kaggle competitions.
+        Discover, research, prototype, evolve, and submit winning solutions to{" "}
+        <Link
+          href="https://www.kaggle.com/competitions"
+          target="_blank"
+          rel="noreferrer"
+          className="text-zinc-300 underline decoration-zinc-500 underline-offset-2 transition-colors hover:text-white hover:decoration-zinc-300"
+        >
+          Kaggle competitions
+        </Link>
+        .
       </motion.p>
       
       {/* Phase indicators */}

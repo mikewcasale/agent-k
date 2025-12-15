@@ -154,7 +154,7 @@ plugins:
             signature_crossrefs: true
             group_by_category: false
             heading_level: 3
-          import:
-            - url: https://docs.python.org/3/objects.inv
-            - url: https://docs.pydantic.dev/latest/objects.inv
-            - url: https://ai.pydantic.dev/objects.inv
+            inventories:
+              - https://docs.python.org/3/objects.inv
+              - https://docs.pydantic.dev/latest/objects.inv
+              - https://ai.pydantic.dev/objects.inv

@@ -71,7 +71,7 @@ function PureChatHeader({
           className="h-fit bg-zinc-900 px-2 text-zinc-50 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
         >
           <Link
-            href="https://github.com/casalexyz/agent-k"
+            href="https://github.com/mikewcasale/agent-k"
             rel="noreferrer"
             target="_blank"
           >

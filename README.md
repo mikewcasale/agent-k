@@ -9,7 +9,7 @@
 
 <div align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.11+-blue.svg" alt="Python 3.11+"></a>
-  <a href="https://github.com/casalexyz/agent-k/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="MIT License"></a>
+  <a href="https://github.com/mikewcasale/agent-k/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="MIT License"></a>
   <a href="https://ai.pydantic.dev/"><img src="https://img.shields.io/badge/built%20with-Pydantic--AI-orange.svg" alt="Built with Pydantic-AI"></a>
   <a href="https://pydantic.dev/logfire"><img src="https://img.shields.io/badge/observability-Logfire-purple.svg" alt="Observability with Logfire"></a>
 </div>

@@ -19,9 +19,24 @@ export const chatModels: ChatModel[] = [
       "Uses extended thinking for complex reasoning tasks",
   },
   {
+    id: "anthropic-haiku",
+    name: "Claude Haiku",
+    description: "Fast and efficient for quick interactions",
+  },
+  {
     id: "agent-k",
     name: "Agent K (Pydantic AI)",
     description:
       "Python-powered AI agent using Pydantic AI with Claude Sonnet",
+  },
+  {
+    id: "devstral-local",
+    name: "Devstral (Local)",
+    description: "Mistral's Devstral coding model running locally via LM Studio",
+  },
+  {
+    id: "openrouter-devstral",
+    name: "Devstral (OpenRouter)",
+    description: "Mistral's Devstral via OpenRouter - tool-capable coding model",
   },
 ];

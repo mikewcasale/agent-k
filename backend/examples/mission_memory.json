@@ -1,0 +1,64 @@
+{
+  "version": "1.0",
+  "saved_at": "2025-12-15T07:26:13.782101+00:00",
+  "entries": [
+    {
+      "key": "target_competition",
+      "value": {
+        "id": "google-tunix-hackathon",
+        "title": "Google Tunix Hack - Train a model to show its work",
+        "description": "Teach a LLM to reason using Tunix, Google's new JAX-native library for LLM post-training.",
+        "type": "featured",
+        "metric": "accuracy",
+        "days_remaining": 28,
+        "deadline": "2026-01-12T23:59:00+00:00",
+        "prize_pool": 100000,
+        "tags": [
+          "reinforcement learning",
+          "ml ethics",
+          "text generation",
+          "tpu",
+          "coding"
+        ],
+        "recommendation": "Best for demonstrating cutting-edge ML skills with LLMs and reinforcement learning using Google's new Tunix library."
+      },
+      "created_at": "2025-12-15T07:12:59.040156+00:00",
+      "updated_at": "2025-12-15T07:25:58.006765+00:00",
+      "tags": [
+        "machine learning",
+        "competition"
+      ],
+      "access_count": 3
+    },
+    {
+      "key": "research_findings",
+      "value": {
+        "competition_name": "Google Tunix Hackathon",
+        "leaderboard_analysis": "Unable to retrieve leaderboard data due to API errors",
+        "research_findings": "No specific academic papers found through API, but general strategies developed based on competition requirements",
+        "recommended_approaches": [
+          "Focus on understanding and using Google's Tunix library",
+          "Implement transformer-based architectures for LLMs",
+          "Use reinforcement learning techniques for reasoning",
+          "Address ML ethics in text generation",
+          "Develop robust evaluation and debugging tools"
+        ],
+        "next_steps": [
+          "Set up development environment with JAX and Tunix",
+          "Create baseline model with pre-trained LLM",
+          "Implement RL techniques",
+          "Develop evaluation metrics",
+          "Iterate based on feedback"
+        ]
+      },
+      "created_at": "2025-12-15T07:14:26.153883+00:00",
+      "updated_at": "2025-12-15T07:26:13.782091+00:00",
+      "tags": [
+        "machine learning",
+        "competition",
+        "research"
+      ],
+      "access_count": 1
+    }
+  ]
+}

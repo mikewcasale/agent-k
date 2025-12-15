@@ -18,7 +18,7 @@ services:
     buildCommand: |
       cd backend &&
       pip install --upgrade pip &&
-      pip install mkdocs mkdocs-material "mkdocstrings[python]" &&
+      pip install mkdocs mkdocs-material "mkdocstrings[python]>=1.0,<2.0" &&
       mkdocs build
     staticPublishPath: backend/site
     headers:

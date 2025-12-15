@@ -147,14 +147,9 @@ plugins:
         python:
           paths: [.]
           options:
-            relative_crossrefs: true
             members_order: source
             separate_signature: true
             show_signature_annotations: true
             signature_crossrefs: true
             group_by_category: false
             heading_level: 3
-            inventories:
-              - https://docs.python.org/3/objects.inv
-              - https://docs.pydantic.dev/latest/objects.inv
-              - https://ai.pydantic.dev/objects.inv

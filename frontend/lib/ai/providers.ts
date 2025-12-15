@@ -1,4 +1,4 @@
-import { gateway } from "@ai-sdk/gateway";
+import { anthropic } from "@ai-sdk/anthropic";
 import {
   customProvider,
   extractReasoningMiddleware,
@@ -25,12 +25,12 @@ export const myProvider = isTestEnvironment
     })()
   : customProvider({
       languageModels: {
-        "chat-model": gateway.languageModel("xai/grok-2-vision-1212"),
+        "chat-model": anthropic("claude-sonnet-4-20250514"),
         "chat-model-reasoning": wrapLanguageModel({
-          model: gateway.languageModel("xai/grok-3-mini"),
-          middleware: extractReasoningMiddleware({ tagName: "think" }),
+          model: anthropic("claude-sonnet-4-20250514"),
+          middleware: extractReasoningMiddleware({ tagName: "thinking" }),
         }),
-        "title-model": gateway.languageModel("xai/grok-2-1212"),
-        "artifact-model": gateway.languageModel("xai/grok-2-1212"),
+        "title-model": anthropic("claude-sonnet-4-20250514"),
+        "artifact-model": anthropic("claude-sonnet-4-20250514"),
       },
     });

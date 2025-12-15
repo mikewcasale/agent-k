@@ -61,3 +61,5 @@ services:
         value: "true"
       - key: AUTH_URL
         value: "https://agent-k-frontend.onrender.com"
+      # === AI PROVIDER API KEY ===
+      - fromGroup: agent-k-secrets

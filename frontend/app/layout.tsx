@@ -7,9 +7,49 @@ import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://chat.vercel.ai"),
-  title: "Next.js Chatbot Template",
-  description: "Next.js chatbot template using the AI SDK.",
+  metadataBase: new URL("https://agents-k.com"),
+  title: "AGENT-K | Autonomous Multi-Agent Kaggle Competition System",
+  description:
+    "Discover, research, prototype, evolve, and submit winning solutions to Kaggle competitions using AI-powered multi-agent orchestration built with Pydantic-AI.",
+  keywords: [
+    "Kaggle",
+    "AI agents",
+    "machine learning",
+    "data science",
+    "competitions",
+    "Pydantic-AI",
+    "multi-agent",
+    "automation",
+  ],
+  authors: [{ name: "Mike Casale", url: "https://github.com/mikewcasale" }],
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://agents-k.com",
+    siteName: "AGENT-K",
+    title: "AGENT-K | Autonomous Multi-Agent Kaggle Competition System",
+    description:
+      "Discover, research, prototype, evolve, and submit winning solutions to Kaggle competitions using AI-powered multi-agent orchestration.",
+    images: [
+      {
+        url: "/images/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "AGENT-K - Autonomous Multi-Agent Kaggle Competition System",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AGENT-K | Autonomous Multi-Agent Kaggle Competition System",
+    description:
+      "AI-powered multi-agent system for winning Kaggle competitions.",
+    images: ["/images/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export const viewport = {

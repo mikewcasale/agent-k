@@ -25,6 +25,15 @@ dev = [
     "mypy>=1.13.0",
     "pytest>=8.3.0",
     "pytest-asyncio>=0.24.0",
+    "dirty-equals>=0.7.0",
+    "inline-snapshot>=0.8.0",
+    "pytest-httpx>=0.30.0",
+    "pytest-mock>=3.14.0",
+]
+docs = [
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.26.0",
 ]
 
 [project.scripts]
@@ -42,6 +51,10 @@ dev-dependencies = [
     "mypy>=1.13.0",
     "pytest>=8.3.0",
     "pytest-asyncio>=0.24.0",
+    "dirty-equals>=0.7.0",
+    "inline-snapshot>=0.8.0",
+    "pytest-httpx>=0.30.0",
+    "pytest-mock>=3.14.0",
 ]
 
 [tool.uv.sources]

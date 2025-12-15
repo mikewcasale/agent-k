@@ -48,6 +48,11 @@ def create_app() -> FastAPI:
     # Store active missions
     missions: dict[str, dict[str, Any]] = {}
     
+    @app.get('/health')
+    async def health_check() -> dict[str, str]:
+        """Health check endpoint for Render."""
+        return {'status': 'healthy'}
+    
     @app.post('/api/mission/start')
     async def start_mission(request: MissionRequest) -> dict[str, str]:
         """Start a new mission and return mission ID."""

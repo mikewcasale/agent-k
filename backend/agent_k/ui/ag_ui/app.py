@@ -162,23 +162,22 @@ def create_app() -> FastAPI:
                 # Create event emitter for this mission
                 emitter = EventEmitter()
 
-                # Create orchestrator
-                orchestrator = LycurgusOrchestrator()
-
                 # Create async task to run mission
                 async def run_mission():
                     try:
                         with logfire.span('mission_execution', chat_id=chat_id):
-                            result = await orchestrator.execute_mission(
-                                competition_id=None,  # Let LOBBYIST discover
-                                criteria=mission_criteria,
-                            )
-                            # Emit completion event
-                            await emitter.emit('mission-complete', {
-                                'success': result.success,
-                                'final_rank': result.final_rank,
-                                'final_score': result.final_score,
-                            })
+                            # Use orchestrator as context manager for proper initialization/cleanup
+                            async with LycurgusOrchestrator() as orchestrator:
+                                result = await orchestrator.execute_mission(
+                                    competition_id=None,  # Let LOBBYIST discover
+                                    criteria=mission_criteria,
+                                )
+                                # Emit completion event
+                                await emitter.emit('mission-complete', {
+                                    'success': result.success,
+                                    'final_rank': result.final_rank,
+                                    'final_score': result.final_score,
+                                })
                     except Exception as e:
                         logfire.error('mission_execution_failed', error=str(e), chat_id=chat_id)
                         await emitter.emit('error-occurred', {

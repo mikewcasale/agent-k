@@ -24,12 +24,6 @@ export const chatModels: ChatModel[] = [
     description: "Fast and efficient for quick interactions",
   },
   {
-    id: "agent-k",
-    name: "Agent K (Pydantic AI)",
-    description:
-      "Python-powered AI agent using Pydantic AI with Claude Sonnet",
-  },
-  {
     id: "devstral-local",
     name: "Devstral (Local)",
     description: "Mistral's Devstral coding model running locally via LM Studio",

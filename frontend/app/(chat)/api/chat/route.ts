@@ -409,7 +409,15 @@ export async function POST(request: Request) {
       // New chat - no need to fetch messages, it's empty
     }
 
-    const uiMessages = [...convertToUIMessages(messagesFromDb), message];
+    // Filter out empty text parts to prevent Anthropic API errors
+    const sanitizedMessage = {
+      ...message,
+      parts: message.parts.filter(
+        (part) => part.type !== "text" || (part.type === "text" && part.text.trim().length > 0)
+      ),
+    };
+
+    const uiMessages = [...convertToUIMessages(messagesFromDb), sanitizedMessage];
 
     const { longitude, latitude, city, country } = geolocation(request);
 

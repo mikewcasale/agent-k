@@ -14,6 +14,12 @@
   <a href="https://pydantic.dev/logfire"><img src="https://img.shields.io/badge/observability-Logfire-purple.svg" alt="Observability with Logfire"></a>
 </div>
 
+<div align="center">
+  <br>
+  <a href="https://agents-k.com"><img src="https://img.shields.io/badge/🚀_Live_Demo-agents--k.com-ff6b6b?style=for-the-badge&labelColor=1a1a2e" alt="Live Demo"></a>
+  <br><br>
+</div>
+
 ---
 
 ## Overview

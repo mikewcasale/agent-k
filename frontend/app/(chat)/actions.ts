@@ -22,10 +22,17 @@ export async function generateTitleFromUserMessage({
 }: {
   message: UIMessage;
 }) {
+  const messageText = getTextFromMessage(message);
+  
+  // If there's no text content, return a default title
+  if (!messageText || messageText.trim().length === 0) {
+    return "New Chat";
+  }
+
   const { text: title } = await generateText({
     model: myProvider.languageModel("title-model"),
     system: titlePrompt,
-    prompt: getTextFromMessage(message),
+    prompt: messageText,
   });
 
   return title;

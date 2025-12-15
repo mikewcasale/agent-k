@@ -22,7 +22,7 @@ services:
       pip install -e .
     startCommand: |
       cd backend &&
-      uvicorn agent_k.ui.ag_ui.app:app --host 0.0.0.0 --port $PORT
+      uvicorn agent_k.ui.ag_ui.app:create_app --factory --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION

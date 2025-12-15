@@ -69,6 +69,9 @@ services:
     plan: starter
     region: oregon
     runtime: node
+    customDomains:
+      - name: agents-k.com
+      - name: www.agents-k.com
     buildCommand: |
       cd frontend &&
       npm install -g pnpm &&
@@ -93,6 +96,6 @@ services:
       - key: AUTH_TRUST_HOST
         value: "true"
       - key: AUTH_URL
-        value: "https://agent-k-frontend.onrender.com"
+        value: "https://agents-k.com"
       # === AI PROVIDER API KEY ===
       - fromGroup: agent-k-secrets

@@ -19,7 +19,7 @@ const SUSPICIOUS_USER_AGENTS = [
   /httpie/i,
   /postman/i,
 ];
-const ALLOWED_BOTS = [/googlebot/i, /bingbot/i, /slackbot/i, /discordbot/i];
+const ALLOWED_BOTS = [/googlebot/i, /bingbot/i, /slackbot/i, /discordbot/i, /linkedinbot/i];
 
 const ipRequestCounts = new Map<
   string,
@@ -112,6 +112,13 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Allow social media crawlers to see the page without auth (for link previews)
+  const userAgent = request.headers.get("user-agent") ?? "";
+  const isSocialCrawler = ALLOWED_BOTS.some((p) => p.test(userAgent));
+  if (isSocialCrawler && pathname === "/") {
+    return NextResponse.next();
+  }
+
   const token = await getToken({
     req: request,
     secret: process.env.AUTH_SECRET,
@@ -119,7 +126,12 @@ export async function proxy(request: NextRequest) {
   });
 
   if (!token) {
-    const redirectUrl = encodeURIComponent(request.url);
+    // Use forwarded host for proper URL construction behind reverse proxies (Render, etc.)
+    const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? new URL(request.url).host;
+    const protocol = request.headers.get("x-forwarded-proto") ?? "https";
+    const pathname = new URL(request.url).pathname;
+    const publicUrl = `${protocol}://${host}${pathname}`;
+    const redirectUrl = encodeURIComponent(publicUrl);
 
     return NextResponse.redirect(
       new URL(`/api/auth/guest?redirectUrl=${redirectUrl}`, request.url)

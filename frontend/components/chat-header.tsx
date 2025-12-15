@@ -6,8 +6,9 @@ import { memo } from "react";
 import { useWindowSize } from "usehooks-ts";
 import { SidebarToggle } from "@/components/sidebar-toggle";
 import { Button } from "@/components/ui/button";
-import { PlusIcon, VercelIcon } from "./icons";
+import { PlusIcon } from "./icons";
 import { useSidebar } from "./ui/sidebar";
+import { BookOpen, Github } from "lucide-react";
 import { VisibilitySelector, type VisibilityType } from "./visibility-selector";
 
 function PureChatHeader({
@@ -50,19 +51,35 @@ function PureChatHeader({
         />
       )}
 
-      <Button
-        asChild
-        className="order-3 hidden bg-zinc-900 px-2 text-zinc-50 hover:bg-zinc-800 md:ml-auto md:flex md:h-fit dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
-      >
-        <Link
-          href={"https://vercel.com/templates/next.js/nextjs-ai-chatbot"}
-          rel="noreferrer"
-          target="_noblank"
+      <div className="order-3 hidden gap-2 md:ml-auto md:flex">
+        <Button
+          asChild
+          className="h-fit px-2"
+          variant="outline"
         >
-          <VercelIcon size={16} />
-          Deploy with Vercel
-        </Link>
-      </Button>
+          <Link
+            href="https://github.com/casalexyz/agent-k#readme"
+            rel="noreferrer"
+            target="_blank"
+          >
+            <BookOpen className="size-4" />
+            Docs
+          </Link>
+        </Button>
+        <Button
+          asChild
+          className="h-fit bg-zinc-900 px-2 text-zinc-50 hover:bg-zinc-800 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-200"
+        >
+          <Link
+            href="https://github.com/casalexyz/agent-k"
+            rel="noreferrer"
+            target="_blank"
+          >
+            <Github className="size-4" />
+            GitHub
+          </Link>
+        </Button>
+      </div>
     </header>
   );
 }

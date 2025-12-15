@@ -18,7 +18,7 @@
     "test": "export PLAYWRIGHT=True && pnpm exec playwright test"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^1.2.12",
+    "@ai-sdk/anthropic": "^2.0.56",
     "@ai-sdk/gateway": "^2.0.18",
     "@ai-sdk/provider": "2.0.0",
     "@ai-sdk/react": "2.0.109",
@@ -74,9 +74,9 @@
     "react": "19.0.1",
     "react-data-grid": "7.0.0-beta.47",
     "react-dom": "19.0.1",
-    "recharts": "^2.12.7",
     "react-resizable-panels": "^2.1.7",
     "react-syntax-highlighter": "^15.6.6",
+    "recharts": "^2.12.7",
     "redis": "^5.0.0",
     "resumable-stream": "^2.0.0",
     "server-only": "^0.0.1",

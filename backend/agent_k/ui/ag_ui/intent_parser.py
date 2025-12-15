@@ -119,27 +119,24 @@ Extract mission criteria if this is a mission request."""
             elif 'playground' in text_lower:
                 criteria_dict['target_competition_types'] = [CompetitionType.PLAYGROUND]
 
-            # Extract prize pool (look for $X,XXX or $Xk patterns)
+            # Extract prize pool (look for $X,XXX,XXX or $Xk/$Xm patterns)
             import re
-            prize_match = re.search(r'\$(\d+)[,.]?(\d*)\s*(k|thousand)?', text_lower)
+            # Use word boundary \b after multiplier to avoid matching "m" in "minimum"
+            prize_match = re.search(r'\$([\d,]+(?:\.\d+)?)\s*(k|m|thousand|million)?\b', text_lower)
             if prize_match:
-                whole_part = int(prize_match.group(1))
-                fractional_part = prize_match.group(2)
-                multiplier_suffix = prize_match.group(3)
-                
+                # Remove commas and parse the number
+                amount_str = prize_match.group(1).replace(',', '')
+                multiplier_suffix = prize_match.group(2)
+
+                # Handle decimal amounts (e.g., "$1.5m")
+                amount = float(amount_str)
+
                 if multiplier_suffix in ['k', 'thousand']:
-                    # Handle cases like "$10k" or "$10.5k"
-                    amount = whole_part * 1000
-                    if fractional_part:
-                        # Convert fractional to proper value (e.g., "5" in "$10.5k" = 500)
-                        fractional_value = int(fractional_part) * (1000 // (10 ** len(fractional_part)))
-                        amount += fractional_value
-                elif fractional_part:
-                    # No multiplier suffix, just combine digits (e.g., "$10,500" or "$10.500")
-                    amount = int(f"{whole_part}{fractional_part}")
-                else:
-                    amount = whole_part
-                criteria_dict['min_prize_pool'] = amount
+                    amount *= 1000
+                elif multiplier_suffix in ['m', 'million']:
+                    amount *= 1_000_000
+
+                criteria_dict['min_prize_pool'] = int(amount)
 
             # Extract days remaining
             days_match = re.search(r'(\d+)\s*(days?|weeks?)', text_lower)

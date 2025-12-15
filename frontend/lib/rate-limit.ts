@@ -50,16 +50,19 @@ const WINDOW_MS: Record<RateLimitWindow, number> = {
  * Rate limits by user type.
  * These are checked in order: minute -> hour -> day
  */
+// Hardcode development mode for local testing
+const isDevelopment = true; // process.env.NODE_ENV === "development";
+
 export const rateLimitsByUserType: Record<UserType, UserRateLimits> = {
   guest: {
-    perMinute: 5,
-    perHour: 15,
-    perDay: 20,
+    perMinute: isDevelopment ? 1000 : 5,
+    perHour: isDevelopment ? 10000 : 15,
+    perDay: isDevelopment ? 100000 : 20,
   },
   regular: {
-    perMinute: 10,
-    perHour: 50,
-    perDay: 100,
+    perMinute: isDevelopment ? 1000 : 10,
+    perHour: isDevelopment ? 10000 : 50,
+    perDay: isDevelopment ? 100000 : 100,
   },
 };
 
@@ -287,6 +290,16 @@ export async function checkRateLimit(
   userId: string,
   userType: UserType
 ): Promise<RateLimitResult> {
+  // Skip rate limiting in development
+  if (isDevelopment) {
+    return {
+      allowed: true,
+      remaining: 999,
+      resetAt: new Date(Date.now() + WINDOW_MS.day),
+      window: "day",
+    };
+  }
+
   const limits = rateLimitsByUserType[userType];
 
   // Check windows in order of shortest to longest
@@ -343,8 +356,8 @@ export async function getRateLimitStatus(
 // =============================================================================
 
 const IP_RATE_LIMITS = {
-  perMinute: 20,
-  perHour: 100,
+  perMinute: isDevelopment ? 1000 : 20,
+  perHour: isDevelopment ? 10000 : 100,
 };
 
 /**
@@ -352,6 +365,16 @@ const IP_RATE_LIMITS = {
  * Used for unauthenticated or anonymous requests.
  */
 export async function checkIpRateLimit(ip: string): Promise<RateLimitResult> {
+  // Skip rate limiting in development
+  if (isDevelopment) {
+    return {
+      allowed: true,
+      remaining: 999,
+      resetAt: new Date(Date.now() + WINDOW_MS.day),
+      window: "day",
+    };
+  }
+
   const checks: Array<{ window: RateLimitWindow; limit: number }> = [
     { window: "minute", limit: IP_RATE_LIMITS.perMinute },
     { window: "hour", limit: IP_RATE_LIMITS.perHour },

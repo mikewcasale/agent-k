@@ -39,7 +39,7 @@ export const postRequestBodySchema = z.object({
       parts: z.array(partSchema).max(MAX_PARTS_HARD_LIMIT),
     })
     .passthrough(),
-  selectedChatModel: z.enum(["chat-model", "chat-model-reasoning", "agent-k"]),
+  selectedChatModel: z.enum(["chat-model", "chat-model-reasoning", "agent-k", "devstral-local"]),
   selectedVisibilityType: z.enum(["public", "private"]),
 });
 

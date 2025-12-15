@@ -22,7 +22,13 @@ __all__ = ['LycurgusOrchestrator', 'OrchestratorConfig', 'MissionStatus']
 
 @dataclass
 class OrchestratorConfig:
-    """Configuration for LYCURGUS orchestrator."""
+    """Configuration for LYCURGUS orchestrator.
+    
+    The default_model supports multiple formats:
+        - Standard pydantic-ai strings: 'anthropic:claude-sonnet-4-5'
+        - Devstral local: 'devstral:local'
+        - Devstral with custom URL: 'devstral:http://localhost:1234/v1'
+    """
     
     default_model: str = 'anthropic:claude-sonnet-4-5'
     max_evolution_rounds: int = 100
@@ -35,6 +41,23 @@ class OrchestratorConfig:
             default_model=data.get('default_model', cls.default_model),
             max_evolution_rounds=data.get('max_evolution_rounds', cls.max_evolution_rounds),
         )
+    
+    @classmethod
+    def with_devstral(cls, base_url: str | None = None) -> OrchestratorConfig:
+        """Create orchestrator config using Devstral model.
+        
+        Args:
+            base_url: Optional custom base URL for LM Studio server.
+                     If None, uses default: http://192.168.105.1:1234/v1
+        
+        Returns:
+            OrchestratorConfig configured for Devstral.
+        """
+        if base_url:
+            model = f'devstral:{base_url}'
+        else:
+            model = 'devstral:local'
+        return cls(default_model=model)
 
 
 @dataclass
@@ -94,8 +117,8 @@ class LycurgusOrchestrator:
             model: Override default model for all agents.
         """
         self._config = config or OrchestratorConfig()
-        self._logger = logfire.with_settings(service_name='lycurgus')
-        
+        self._logger = logfire  # Use logfire directly, service name can be set in spans
+
         model = model or self._default_model
         self._agents = self._initialize_agents(model)
         self._graph = self._build_orchestration_graph()

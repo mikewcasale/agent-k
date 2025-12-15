@@ -9,6 +9,26 @@ databases:
     region: oregon
 
 services:
+  # MkDocs Documentation Site (Static)
+  - type: web
+    name: agent-k-docs
+    branch: main
+    plan: static
+    region: oregon
+    buildCommand: |
+      cd backend &&
+      pip install --upgrade pip &&
+      pip install mkdocs mkdocs-material "mkdocstrings[python]" &&
+      mkdocs build
+    staticPublishPath: backend/site
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=3600
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.0"
+
   # FastAPI Backend
   - type: web
     name: agent-k-api

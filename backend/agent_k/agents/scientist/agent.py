@@ -14,8 +14,10 @@ from pydantic import BaseModel, Field
 from pydantic_ai import Agent, RunContext
 from pydantic_ai.builtin_tools import WebSearchTool
 
+from ...core.constants import DEFAULT_MODEL
 from ...core.models import Competition, LeaderboardEntry
 from ...core.protocols import PlatformAdapter
+from ...infra.models import get_model
 
 __all__ = [
     'ScientistDeps',
@@ -97,7 +99,7 @@ class ResearchReport(BaseModel):
 # =============================================================================
 # Agent Definition
 # =============================================================================
-def create_scientist_agent(model: str = 'anthropic:claude-sonnet-4-5') -> Agent[ScientistDeps, ResearchReport]:
+def create_scientist_agent(model: str = DEFAULT_MODEL) -> Agent[ScientistDeps, ResearchReport]:
     """Create and configure the Scientist agent.
     
     The Scientist agent performs comprehensive research including:
@@ -107,13 +109,19 @@ def create_scientist_agent(model: str = 'anthropic:claude-sonnet-4-5') -> Agent[
     - Solution approach recommendations
     
     Args:
-        model: LLM model identifier.
+        model: Model specification string. Supports:
+            - Standard pydantic-ai strings: 'anthropic:claude-sonnet-4-5'
+            - Devstral local: 'devstral:local'
+            - Devstral with custom URL: 'devstral:http://localhost:1234/v1'
     
     Returns:
         Configured Scientist agent.
     """
+    # Resolve model specification to Model instance or string
+    resolved_model = get_model(model)
+    
     agent = Agent(
-        model,
+        resolved_model,
         deps_type=ScientistDeps,
         output_type=ResearchReport,
         instructions=_get_scientist_instructions(),
@@ -360,7 +368,7 @@ class ScientistAgent:
         ...     )
     """
     
-    def __init__(self, model: str = 'anthropic:claude-sonnet-4-5') -> None:
+    def __init__(self, model: str = DEFAULT_MODEL) -> None:
         self._agent = create_scientist_agent(model)
     
     async def research(

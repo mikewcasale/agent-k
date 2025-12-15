@@ -125,7 +125,7 @@ class Competition(BaseModel):
         ...,
         min_length=1,
         max_length=100,
-        pattern=r'^[a-z0-9-]+$',
+        pattern=r'^[a-zA-Z0-9-]+$',
         description='Unique competition identifier (slug)',
     )
     title: str = Field(

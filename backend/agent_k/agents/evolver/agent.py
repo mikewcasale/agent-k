@@ -24,6 +24,7 @@ from ...core.constants import (
     MAX_EVOLUTION_GENERATIONS,
 )
 from ...core.models import Competition, EvolutionState, GenerationMetrics
+from ...infra.models import get_model
 from ...ui.ag_ui.event_stream import EventEmitter
 
 __all__ = ['EvolverAgent', 'EvolverDeps', 'EvolutionResult']
@@ -78,12 +79,17 @@ def create_evolver_agent(
     integrating multiple builtin tools in a production agent.
     
     Args:
-        model: LLM model identifier.
+        model: Model specification string. Supports:
+            - Standard pydantic-ai strings: 'anthropic:claude-sonnet-4-5'
+            - Devstral local: 'devstral:local'
+            - Devstral with custom URL: 'devstral:http://localhost:1234/v1'
         kaggle_mcp_url: URL for Kaggle MCP server.
     
     Returns:
         Configured Evolver agent with all builtin tools.
     """
+    # Resolve model specification to Model instance or string
+    resolved_model = get_model(model)
     
     # =========================================================================
     # Configure Builtin Tools (Per Spec Section 7.3)
@@ -112,7 +118,7 @@ def create_evolver_agent(
     # Create Agent with Builtin Tools
     # =========================================================================
     agent = Agent(
-        model,
+        resolved_model,
         deps_type=EvolverDeps,
         output_type=EvolutionResult,
         instructions=_get_evolver_instructions(),

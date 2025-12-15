@@ -116,7 +116,16 @@ class KaggleAdapter:
                     break
                 
                 for item in data:
-                    competition = self._parse_competition(item)
+                    # Skip if item is not a dict (malformed data)
+                    if not isinstance(item, dict):
+                        logfire.warning('skipping_malformed_competition', item=str(item)[:100])
+                        continue
+                    
+                    try:
+                        competition = self._parse_competition(item)
+                    except Exception as e:
+                        logfire.warning('failed_to_parse_competition', error=str(e))
+                        continue
                     
                     # Apply filters
                     if active_only and not competition.is_active:
@@ -320,8 +329,43 @@ class KaggleAdapter:
             'mae': EvaluationMetric.MAE,
         }
         
+        # Parse tags - they may be strings or dicts with 'name' key
+        raw_tags = data.get('tags', [])
+        if raw_tags and isinstance(raw_tags[0], dict):
+            tags = frozenset(t.get('name', str(t)) for t in raw_tags if t)
+        else:
+            tags = frozenset(str(t) for t in raw_tags if t)
+        
+        # Parse competition ID - extract slug from ref or URL
+        # ref is typically a full URL like https://www.kaggle.com/competitions/slug
+        comp_id_raw = data.get('ref', '') or data.get('url', '') or str(data.get('id', ''))
+        if 'competitions/' in comp_id_raw:
+            # Extract slug from URL
+            comp_id = comp_id_raw.split('competitions/')[-1].rstrip('/').split('/')[0]
+        elif '/' in comp_id_raw:
+            # Extract slug from path
+            comp_id = comp_id_raw.rstrip('/').split('/')[-1]
+        else:
+            comp_id = comp_id_raw
+        
+        # Parse prize pool - may be integer, string number, or text like "Swag"
+        prize_raw = data.get('reward')
+        prize_pool = None
+        if prize_raw is not None:
+            if isinstance(prize_raw, int):
+                prize_pool = prize_raw
+            elif isinstance(prize_raw, str):
+                # Try to extract numeric value
+                import re
+                match = re.search(r'[\d,]+', prize_raw.replace(',', ''))
+                if match:
+                    try:
+                        prize_pool = int(match.group().replace(',', ''))
+                    except ValueError:
+                        prize_pool = None
+        
         return Competition(
-            id=data.get('ref', data.get('id', '')),
+            id=comp_id,
             title=data.get('title', ''),
             description=data.get('description'),
             competition_type=category_map.get(
@@ -335,9 +379,9 @@ class KaggleAdapter:
             deadline=datetime.fromisoformat(
                 data.get('deadline', '2099-12-31T23:59:59+00:00').replace('Z', '+00:00')
             ),
-            prize_pool=data.get('reward'),
+            prize_pool=prize_pool,
             max_team_size=data.get('maxTeamSize', 1),
             max_daily_submissions=data.get('maxDailySubmissions', 5),
-            tags=frozenset(data.get('tags', [])),
+            tags=tags,
             url=data.get('url'),
         )

@@ -53,7 +53,7 @@ export const entitlementsByUserType: Record<UserType, Entitlements> = {
    */
   guest: {
     maxMessagesPerDay: 20,
-    availableChatModelIds: ["chat-model", "chat-model-reasoning", "agent-k"],
+    availableChatModelIds: ["chat-model", "chat-model-reasoning", "agent-k", "devstral-local"],
 
     rateLimit: {
       perMinute: 5,
@@ -83,7 +83,7 @@ export const entitlementsByUserType: Record<UserType, Entitlements> = {
    */
   regular: {
     maxMessagesPerDay: 100,
-    availableChatModelIds: ["chat-model", "chat-model-reasoning", "agent-k"],
+    availableChatModelIds: ["chat-model", "chat-model-reasoning", "agent-k", "devstral-local"],
 
     rateLimit: {
       perMinute: 10,
@@ -119,7 +119,7 @@ export const entitlementsByUserType: Record<UserType, Entitlements> = {
  */
 export const premiumEntitlements: Entitlements = {
   maxMessagesPerDay: 1000,
-  availableChatModelIds: ["chat-model", "chat-model-reasoning", "agent-k"],
+  availableChatModelIds: ["chat-model", "chat-model-reasoning", "agent-k", "devstral-local"],
 
   rateLimit: {
     perMinute: 30,

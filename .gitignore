@@ -148,3 +148,4 @@ refs/
 .gitattributes
 *.pyc
 pydantic-ai-docs.txt
+backend/site/

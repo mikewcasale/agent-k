@@ -25,6 +25,7 @@ __all__ = [
     'CONVERGENCE_THRESHOLD_GENERATIONS',
     # Model identifiers
     'DEFAULT_MODEL',
+    'DEVSTRAL_MODEL',
     'DEFAULT_KAGGLE_MCP_URL',
     # Memory
     'MEMORY_SESSION_TTL_SECONDS',
@@ -61,6 +62,8 @@ CONVERGENCE_THRESHOLD_GENERATIONS: Final[int] = 5
 # Section 4: Model and Platform Constants
 # =============================================================================
 DEFAULT_MODEL: Final[str] = 'anthropic:claude-sonnet-4-5'
+# Devstral model for local LM Studio server
+DEVSTRAL_MODEL: Final[str] = 'devstral:local'
 DEFAULT_KAGGLE_MCP_URL: Final[str] = 'https://mcp.kaggle.com'
 KAGGLE_API_BASE_URL: Final[str] = 'https://www.kaggle.com/api/v1'
 

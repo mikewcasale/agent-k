@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { unstable_serialize } from "swr/infinite";
+import { MissionDashboard } from "@/components/agent-k/mission-dashboard";
 import { ChatHeader } from "@/components/chat-header";
 import {
   AlertDialog,
@@ -17,6 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useAgentKState } from "@/hooks/use-agent-k-state";
 import { useArtifactSelector } from "@/hooks/use-artifact";
 import { useAutoResume } from "@/hooks/use-auto-resume";
 import { useChatVisibility } from "@/hooks/use-chat-visibility";
@@ -58,6 +60,13 @@ export function Chat({
   });
 
   const { mutate } = useSWRConfig();
+
+  // Check if Agent-K mission is active
+  const { state: agentKState } = useAgentKState();
+  const hasMission =
+    agentKState.mission.phases.length > 0 ||
+    agentKState.mission.evolution ||
+    agentKState.mission.competition;
 
   // Handle browser back/forward navigation
   useEffect(() => {
@@ -187,6 +196,13 @@ export function Chat({
           status={status}
           votes={votes}
         />
+
+        {/* Show Mission Dashboard when Agent-K mission is active */}
+        {hasMission && (
+          <div className="mx-auto w-full max-w-5xl px-4">
+            <MissionDashboard />
+          </div>
+        )}
 
         <div className="sticky bottom-0 z-1 mx-auto flex w-full max-w-4xl gap-2 border-t-0 bg-background px-2 pb-3 md:px-4 md:pb-4">
           {!isReadonly && (

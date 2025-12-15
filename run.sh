@@ -44,7 +44,7 @@ trap cleanup SIGINT SIGTERM
 
 echo "🚀 Starting backend server on http://localhost:9000..."
 cd "$SCRIPT_DIR/backend"
-uv run python -m agent_k.ui.ag_ui &
+source .venv/bin/activate && python -m agent_k.ui.ag_ui &
 BACKEND_PID=$!
 
 echo "🚀 Starting frontend server on http://localhost:3000..."

@@ -1,161 +1,277 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance for Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+AGENT-K is an autonomous multi-agent system for participating in Kaggle competitions. Built with Pydantic-AI and FastAPI, it orchestrates specialized agents through five mission phases: Discovery, Research, Prototype, Evolution, and Submission.
 
 ## Development Commands
 
-### Core Development Tasks
+### Backend (`backend/`)
 
-- **Install dependencies**: `make install` (requires uv, pre-commit, and deno)
-- **Run all checks**: `pre-commit run --all-files`
-- **Run tests**: `make test`
-- **Build docs**: `make docs` or `make docs-serve` (local development)
+```bash
+cd backend
 
-### Single Test Commands
+# Install dependencies
+uv sync
 
-- **Run specific test**: `uv run pytest tests/test_agent.py::test_function_name -v`
-- **Run test file**: `uv run pytest tests/test_agent.py -v`
-- **Run with debug**: `uv run pytest tests/test_agent.py -v -s`
+# Run tests
+uv run pytest -v
+
+# Run specific test
+uv run pytest tests/test_file.py::test_name -v
+
+# Linting and formatting
+uv run ruff check .
+uv run ruff format .
+uv run mypy .
+
+# Run multi-agent demo
+uv run python examples/multi_agent_playbook.py --model devstral:local
+uv run python examples/multi_agent_playbook.py --model anthropic:claude-3-haiku-20240307
+
+# Start FastAPI server (port 9000)
+uvicorn cli:app --host 0.0.0.0 --port 9000 --reload
+# Or:
+python -m agent_k.ui.ag_ui
+```
+
+### Frontend (`frontend/`)
+
+```bash
+cd frontend
+
+# Install dependencies
+pnpm install
+
+# Development server (port 3000)
+pnpm dev
+
+# Production build
+pnpm build
+
+# Linting (uses Ultracite)
+pnpm lint
+pnpm format
+
+# E2E tests
+pnpm test:e2e
+```
+
+### Start Both Servers
+
+```bash
+./run.sh  # Starts backend (9000) and frontend (3000)
+```
 
 ## Project Architecture
 
-### Core Components
+```
+agent-k/
+├── backend/
+│   └── agent_k/
+│       ├── agents/           # Multi-agent system
+│       │   ├── lycurgus/     # Orchestrator (state machine coordinator)
+│       │   ├── lobbyist/     # Competition discovery
+│       │   ├── scientist/    # Research and analysis
+│       │   └── evolver/      # Evolutionary optimization
+│       ├── adapters/         # External service adapters
+│       │   ├── kaggle/       # Kaggle API
+│       │   └── openevolve/   # OpenEvolve integration
+│       ├── graph/            # Pydantic-Graph state machine
+│       │   ├── nodes.py      # Phase nodes (Discovery, Research, etc.)
+│       │   ├── state.py      # MissionState model
+│       │   └── edges.py      # Transition logic
+│       ├── toolsets/         # FunctionToolset implementations
+│       │   ├── kaggle.py     # kaggle_search_competitions, kaggle_get_leaderboard
+│       │   ├── search.py     # web_search, search_papers, search_kaggle
+│       │   └── memory.py     # memory_store, memory_retrieve
+│       ├── core/             # Domain models and types
+│       ├── services/         # Business logic
+│       ├── infra/            # Config, logging, model factory
+│       └── ui/ag_ui/         # AG-UI protocol (FastAPI)
+├── frontend/
+│   ├── components/agent-k/   # Mission dashboard components
+│   ├── hooks/                # useAgentKState, etc.
+│   └── lib/ai/               # Model configuration
+└── examples/                 # Demo scripts
+```
 
-**Agent System (`pydantic_ai_slim/pydantic_ai/agent/`)**
-- `Agent[AgentDepsT, OutputDataT]`: Main orchestrator class with generic types for dependency injection and output validation
-- Entry points: `run()`, `run_sync()`, `run_stream()` methods
-- Handles tool management, system prompts, and model interaction
+## Key Patterns
 
-**Model Integration (`pydantic_ai_slim/pydantic_ai/models/`)**
-- Unified interface across providers: OpenAI, Anthropic, Google, Groq, Cohere, Mistral, Bedrock, HuggingFace
-- Model strings: `"openai:gpt-5"`, `"anthropic:claude-sonnet-4-5"`, `"google:gemini-2.5-pro"`
-- `ModelRequestParameters` for configuration, `StreamedResponse` for streaming
+### Agent Factory Pattern
 
-**Graph-based Execution (`pydantic_graph/` + `_agent_graph.py`)**
-- State machine execution through: `UserPromptNode` → `ModelRequestNode` → `CallToolsNode`
-- `GraphAgentState` maintains message history and usage tracking
-- `GraphRunContext` provides execution context
+Each agent has a factory function that creates a configured Pydantic-AI Agent:
 
-**Tool System (`tools.py`, `toolsets/`)**
-- `@agent.tool` decorator for function registration
-- `RunContext[AgentDepsT]` provides dependency injection in tools
-- Support for sync/async functions with automatic schema generation
+```python
+def create_lobbyist_agent(model: str) -> Agent[LobbyistDeps, DiscoveryResult]:
+    model = get_model(model)
+    agent = Agent(
+        model,
+        deps_type=LobbyistDeps,
+        output_type=DiscoveryResult,
+        instructions="...",
+        toolsets=[kaggle_toolset, search_toolset],
+    )
+    
+    @agent.tool
+    async def custom_tool(ctx: RunContext[LobbyistDeps]) -> str:
+        return await ctx.deps.platform_adapter.do_something()
+    
+    return agent
+```
 
-**Output Handling**
-- `TextOutput`: Plain text responses
-- `ToolOutput`: Structured data via tool calls
-- `NativeOutput`: Provider-specific structured output
-- `PromptedOutput`: Prompt-based structured extraction
+### Dependency Injection
 
-### Key Design Patterns
+Dependencies are passed via dataclasses:
 
-**Dependency Injection**
 ```python
 @dataclass
-class MyDeps:
-    database: DatabaseConn
-
-agent = Agent('openai:gpt-5', deps_type=MyDeps)
-
-@agent.tool
-async def get_data(ctx: RunContext[MyDeps]) -> str:
-    return await ctx.deps.database.fetch_data()
+class LobbyistDeps:
+    http_client: httpx.AsyncClient
+    platform_adapter: PlatformAdapter
+    event_emitter: EventEmitter
 ```
 
-**Type-Safe Agents**
-```python
-class OutputModel(BaseModel):
-    result: str
-    confidence: float
+### FunctionToolset Pattern
 
-agent: Agent[MyDeps, OutputModel] = Agent(
-    'openai:gpt-5',
-    deps_type=MyDeps,
-    output_type=OutputModel
-)
-```
-
-## Workspace Structure
-
-This is a uv workspace with multiple packages:
-- **`pydantic_ai_slim/`**: Core framework (minimal dependencies)
-- **`pydantic_evals/`**: Evaluation system
-- **`pydantic_graph/`**: Graph execution engine
-- **`examples/`**: Example applications
-- **`clai/`**: CLI tool
-
-## Testing Strategy
-
-- **Unit tests**: `tests/` directory with comprehensive model and component coverage
-- **VCR cassettes**: `tests/cassettes/` for recorded LLM API interactions
-- **Test models**: Use `TestModel` for deterministic testing
-- **Examples testing**: `tests/test_examples.py` validates all documentation examples
-- **Multi-version testing**: Python 3.10-3.13 support
-
-## Key Configuration Files
-
-- **`pyproject.toml`**: Main workspace configuration with dependency groups
-- **`pydantic_ai_slim/pyproject.toml`**: Core package with model optional dependencies
-- **`Makefile`**: Development task automation
-- **`uv.lock`**: Locked dependencies for reproducible builds
-
-## Important Implementation Notes
-
-- **Model Provider Integration**: Each provider in `models/` directory implements the `Model` abstract base class
-- **Message System**: Vendor-agnostic message format in `messages.py` with rich content type support
-- **Streaming Architecture**: Real-time response processing with validation during streaming
-- **Error Handling**: Specific exception types with retry mechanisms at multiple levels
-- **OpenTelemetry Integration**: Built-in observability support
-
-## Documentation Development
-
-- **Local docs**: `make docs-serve` (serves at http://localhost:8000)
-- **Docs source**: `docs/` directory (MkDocs with Material theme)
-- **API reference**: Auto-generated from docstrings using mkdocstrings
-
-## Dependencies Management
-
-- **Package manager**: uv (fast Python package manager)
-- **Lock file**: `uv.lock` (commit this file)
-- **Sync command**: `make sync` to update dependencies
-- **Optional extras**: Define groups in `pyproject.toml` optional-dependencies
-
-## Best Practices
-
-This is the list of best practices for working with the codebase.
-
-### Rename a class
-
-When asked to rename a class, you need to rename the class in the code and add a deprecation warning to the old class.
+Toolsets are model-agnostic (work with any provider):
 
 ```python
-from typing_extensions import deprecated
-
-class NewClass: ...  # This class was renamed from OldClass.
-
-@deprecated("Use `NewClass` instead.")
-class OldClass(NewClass): ...
+def create_kaggle_toolset(adapter: KaggleAdapter) -> FunctionToolset[Any]:
+    toolset = FunctionToolset(id='kaggle')
+    
+    @toolset.tool
+    async def kaggle_search_competitions(
+        categories: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
+        """Search Kaggle for active competitions."""
+        async for comp in adapter.search_competitions(categories=categories):
+            yield comp.model_dump()
+    
+    return toolset
 ```
 
-In the test suite, you MUST use the `NewClass` instead of the `OldClass`, and create a new test to verify the
-deprecation warning:
+### Graph State Machine
+
+Mission phases are nodes in a pydantic-graph:
 
 ```python
-def test_old_class_is_deprecated():
-    with pytest.warns(DeprecationWarning, match="Use `NewClass` instead."):
-        OldClass()
+@dataclass
+class DiscoveryNode(BaseNode[MissionState, MissionResult]):
+    async def run(
+        self,
+        ctx: GraphRunContext[MissionState, GraphContext],
+    ) -> ResearchNode | End[MissionResult]:
+        # Execute discovery logic
+        return ResearchNode(scientist_agent=...)
 ```
 
-In the documentation, you should not have references to the old class, only the new class.
+## Model Configuration
 
-### Writing documentation
+Supported model specifications via `get_model()` in `backend/agent_k/infra/models.py`:
 
-Always reference Python objects with the "`" (backticks) around them, and link to the API reference, for example:
+| Spec | Description |
+|------|-------------|
+| `devstral:local` | Local LM Studio (default: `http://192.168.105.1:1234/v1`) |
+| `devstral:http://host:port/v1` | Custom Devstral endpoint |
+| `anthropic:claude-3-haiku-20240307` | Claude Haiku |
+| `anthropic:claude-sonnet-4-20250514` | Claude Sonnet |
+| `openrouter:mistralai/devstral-small` | Devstral via OpenRouter |
+| `openai:gpt-4o` | GPT-4o |
 
-```markdown
-The [`Agent`][pydantic_ai.agent.Agent] class is the main entry point for creating and running agents.
+## Environment Variables
+
+Required in `backend/.env`:
+
+```bash
+# Kaggle API (required)
+KAGGLE_USERNAME=your_username
+KAGGLE_KEY=your_api_key
+
+# Model providers (at least one)
+ANTHROPIC_API_KEY=sk-ant-...
+OPENROUTER_API_KEY=sk-or-v1-...
+OPENAI_API_KEY=sk-...
+
+# Optional
+DEVSTRAL_BASE_URL=http://192.168.105.1:1234/v1
+LOGFIRE_TOKEN=...
 ```
 
-### Coverage
+## Key Files
 
-Every pull request MUST have 100% coverage. You can check the coverage by running `make test`.
+| File | Purpose |
+|------|---------|
+| `backend/agent_k/infra/models.py` | Model factory (`get_model()`) |
+| `backend/agent_k/toolsets/__init__.py` | Toolset exports |
+| `backend/agent_k/agents/lycurgus/agent.py` | Orchestrator |
+| `backend/agent_k/graph/nodes.py` | State machine phases |
+| `backend/examples/multi_agent_playbook.py` | Full demo |
+| `frontend/components/agent-k/mission-dashboard.tsx` | Main UI |
+| `render.yaml` | Render deployment config |
+
+## Testing
+
+```bash
+# Backend
+cd backend
+uv run pytest -v                          # All tests
+uv run pytest tests/test_file.py -v       # Single file
+uv run pytest -k "discovery" -v           # Pattern match
+
+# Frontend E2E
+cd frontend
+pnpm test:e2e
+```
+
+## Mission Lifecycle
+
+```
+Discovery → Research → Prototype → Evolution → Submission
+    │           │          │           │           │
+    ▼           ▼          ▼           ▼           ▼
+  Find      Analyze     Build      Optimize    Submit
+  comps    leaderboard  baseline   solution    final
+```
+
+Each phase is a `BaseNode` that returns either the next node or `End[MissionResult]`.
+
+## Adding a New Agent
+
+1. Create directory `backend/agent_k/agents/my_agent/`
+2. Add files:
+   - `agent.py` - Agent factory and class
+   - `prompts.py` - System instructions
+   - `tools.py` - Agent-specific tools (optional)
+   - `__init__.py` - Exports
+3. Export from `backend/agent_k/agents/__init__.py`
+
+## Adding a New Toolset
+
+1. Create `backend/agent_k/toolsets/my_toolset.py`:
+
+```python
+from pydantic_ai.toolsets import FunctionToolset
+
+def create_my_toolset() -> FunctionToolset:
+    toolset = FunctionToolset(id='my_toolset')
+    
+    @toolset.tool
+    async def my_tool(query: str) -> str:
+        """Tool description for the LLM."""
+        return f"Result for {query}"
+    
+    return toolset
+```
+
+2. Export from `backend/agent_k/toolsets/__init__.py`
+
+## Deployment
+
+Deploys to Render via `render.yaml`:
+- Backend: FastAPI on port 9000
+- Frontend: Next.js on port 3000
+
+Environment variables are set in Render's `agent-k-secrets` group.

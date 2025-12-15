@@ -16,6 +16,7 @@ from pydantic_ai.builtin_tools import WebSearchTool
 from ...core.constants import DEFAULT_MODEL, DISCOVERY_TIMEOUT_SECONDS
 from ...core.models import Competition, CompetitionType
 from ...core.protocols import PlatformAdapter
+from ...infra.models import get_model
 from ...ui.ag_ui.event_stream import EventEmitter
 
 __all__ = ['LobbyistAgent', 'LobbyistDeps', 'DiscoveryResult']
@@ -63,9 +64,18 @@ def create_lobbyist_agent(
     """Create and configure the Lobbyist agent.
     
     Per spec Section 7, uses WebSearchTool builtin for web discovery.
+    
+    Args:
+        model: Model specification string. Supports:
+            - Standard pydantic-ai strings: 'anthropic:claude-sonnet-4-5'
+            - Devstral local: 'devstral:local'
+            - Devstral with custom URL: 'devstral:http://localhost:1234/v1'
     """
+    # Resolve model specification to Model instance or string
+    resolved_model = get_model(model)
+    
     agent = Agent(
-        model,
+        resolved_model,
         deps_type=LobbyistDeps,
         output_type=DiscoveryResult,
         instructions=_get_lobbyist_instructions(),

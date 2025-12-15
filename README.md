@@ -20,7 +20,7 @@
 
 AGENT-K is an autonomous multi-agent system that discovers, researches, prototypes, evolves, and submits solutions to Kaggle competitions. The system leverages:
 
-- **Pydantic-AI** agents with builtin tools (MCPServerTool, MemoryTool, CodeExecutionTool, WebSearchTool)
+- **Pydantic-AI** agents with FunctionToolsets (Kaggle, Search, Memory)
 - **Pydantic-Graph** state machine for orchestration
 - **OpenEvolve** framework for evolutionary code search
 - **Pydantic Logfire** for comprehensive observability
@@ -43,16 +43,16 @@ AGENT-K is an autonomous multi-agent system that discovers, researches, prototyp
 │         ▼                   ▼                   ▼                   ▼        │
 │  ┌──────────────────────────────────────────────────────────────────────┐   │
 │  │                        SHARED TOOLSETS                                │   │
-│  │  • Kaggle MCP (MCPServerTool)     • Code Executor (CodeExecutionTool) │   │
-│  │  • Web Search (WebSearchTool)      • Memory (MemoryTool)              │   │
-│  │  • Browser Automation              • Scholarly Search                  │   │
+│  │  • KaggleToolset (API)              • CodeExecutorToolset             │   │
+│  │  • SearchToolset (Web/Papers)       • MemoryToolset (Persistence)     │   │
+│  │  • BrowserToolset                   • ScholarlyToolset                │   │
 │  └──────────────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────────────┘
                                       │
                                       ▼
                           ┌─────────────────────┐
                           │    KAGGLE PLATFORM  │
-                          │   (via Kaggle MCP)  │
+                          │   (via Kaggle API)  │
                           └─────────────────────┘
 ```
 
@@ -84,7 +84,7 @@ Evolves solutions using evolutionary code search to maximize competition score. 
 |---------|-------------|
 | **Multi-Agent Orchestration** | Pydantic-Graph state machine coordinates specialized agents through competition lifecycle |
 | **Evolutionary Code Search** | OpenEvolve integration for population-based solution optimization |
-| **Kaggle Integration** | MCP-based platform operations for seamless competition interaction |
+| **Kaggle Integration** | FunctionToolset-based platform operations for seamless competition interaction |
 | **Real-Time Observability** | Pydantic Logfire instrumentation for tracing, metrics, and debugging |
 | **Interactive Dashboard** | Next.js frontend with mission monitoring, evolution visualization, and tool call inspection |
 | **Memory Persistence** | Cross-session context and checkpoint management for long-running missions |
@@ -127,7 +127,7 @@ AGENT-K executes missions through a 5-phase lifecycle:
 | Agent Framework | [Pydantic-AI](https://ai.pydantic.dev/) | Agent definitions, tool registration, structured outputs |
 | Orchestration | [Pydantic-Graph](https://ai.pydantic.dev/graph/) | State machine, phase transitions |
 | Evolution | OpenEvolve | Evolutionary code search |
-| Kaggle API | Kaggle MCP | Platform operations |
+| Kaggle API | KaggleToolset | Platform operations |
 | Observability | [Pydantic Logfire](https://pydantic.dev/logfire) | Tracing, metrics, logging |
 | HTTP Client | HTTPX | Async HTTP requests |
 
@@ -149,6 +149,7 @@ AGENT-K executes missions through a 5-phase lifecycle:
 ### Prerequisites
 
 - Python 3.11+
+- [uv](https://github.com/astral-sh/uv) (Python package manager)
 - Node.js 20+
 - pnpm
 - Kaggle API credentials
@@ -158,14 +159,13 @@ AGENT-K executes missions through a 5-phase lifecycle:
 ```bash
 cd backend
 
-# Create virtual environment
-python -m venv .venv
+# Install dependencies with uv
+uv sync
+
+# Activate virtual environment (uv creates .venv automatically)
 source .venv/bin/activate  # or .venv\Scripts\activate on Windows
 
-# Install dependencies
-pip install -e .
-
-# Set environment variables
+# Set environment variables (or create backend/.env)
 export ANTHROPIC_API_KEY="your-api-key"
 export KAGGLE_USERNAME="your-kaggle-username"
 export KAGGLE_KEY="your-kaggle-key"
@@ -187,7 +187,29 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-### Run a Mission
+### Run Both Servers
+
+```bash
+# From project root - starts backend (9000) and frontend (3000)
+./run.sh
+```
+
+### Run Multi-Agent Demo
+
+```bash
+cd backend
+
+# Local Devstral (LM Studio)
+uv run python examples/multi_agent_playbook.py --model devstral:local
+
+# Claude Haiku (Anthropic)
+uv run python examples/multi_agent_playbook.py --model anthropic:claude-3-haiku-20240307
+
+# Devstral via OpenRouter
+uv run python examples/multi_agent_playbook.py --model openrouter:mistralai/devstral-small
+```
+
+### Run a Mission (Programmatic)
 
 ```python
 import asyncio
@@ -208,6 +230,21 @@ async def main():
 
 asyncio.run(main())
 ```
+
+---
+
+## Model Configuration
+
+AGENT-K supports multiple model providers via `get_model()`:
+
+| Model Spec | Description |
+|------------|-------------|
+| `devstral:local` | Local LM Studio server (default: `http://192.168.105.1:1234/v1`) |
+| `devstral:http://custom:port/v1` | Custom Devstral endpoint |
+| `anthropic:claude-3-haiku-20240307` | Claude Haiku via Anthropic |
+| `anthropic:claude-sonnet-4-20250514` | Claude Sonnet via Anthropic |
+| `openrouter:mistralai/devstral-small` | Devstral via OpenRouter |
+| `openai:gpt-4o` | GPT-4o via OpenAI |
 
 ---
 
@@ -234,7 +271,10 @@ agent-k/
 │       │   ├── nodes.py            # Phase nodes
 │       │   ├── state.py            # Mission state
 │       │   └── persistence.py      # Checkpoint management
-│       ├── toolsets/               # Agent tools
+│       ├── toolsets/               # FunctionToolset implementations
+│       │   ├── kaggle.py           # Kaggle API operations
+│       │   ├── search.py           # Web/paper search
+│       │   ├── memory.py           # Persistent memory
 │       │   ├── browser.py          # Browser automation
 │       │   ├── code_executor.py    # Code execution
 │       │   └── scholarly.py        # Academic search
@@ -243,12 +283,15 @@ agent-k/
 │       │   ├── evolution.py        # Evolution orchestration
 │       │   └── submission.py       # Submission handling
 │       ├── ui/                     # UI adapters
-│       │   ├── ag_ui/              # AG-UI protocol
+│       │   ├── ag_ui/              # AG-UI protocol (FastAPI)
 │       │   └── console/            # Terminal console
 │       └── infra/                  # Infrastructure
 │           ├── config.py           # Configuration
+│           ├── models.py           # Model factory (get_model)
 │           ├── logging.py          # Logging setup
 │           └── instrumentation.py  # Observability
+│   └── examples/                   # Demo scripts
+│       └── multi_agent_playbook.py # Full multi-agent demo
 │
 ├── frontend/
 │   ├── app/                        # Next.js app router
@@ -265,11 +308,16 @@ agent-k/
 │   ├── hooks/                      # React hooks
 │   │   └── use-agent-k-state.tsx   # Mission state hook
 │   └── lib/
+│       ├── ai/                     # Model configuration
+│       │   └── models.ts           # Available chat models
 │       └── types/
 │           └── agent-k.ts          # TypeScript types
 │
 ├── docs/                           # Documentation
 │   └── logo.png                    # Project logo
+│
+├── run.sh                          # Start both servers
+├── render.yaml                     # Render deployment config
 │
 └── refs/                           # Reference documentation
     ├── python_spec_v2.md           # Architecture specification
@@ -284,11 +332,16 @@ agent-k/
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `ANTHROPIC_API_KEY` | Anthropic API key for Claude models | Yes |
+| `ANTHROPIC_API_KEY` | Anthropic API key for Claude models | Yes* |
+| `OPENROUTER_API_KEY` | OpenRouter API key | Yes* |
+| `OPENAI_API_KEY` | OpenAI API key | Yes* |
 | `KAGGLE_USERNAME` | Kaggle account username | Yes |
 | `KAGGLE_KEY` | Kaggle API key | Yes |
+| `DEVSTRAL_BASE_URL` | Local LM Studio endpoint (default: `http://192.168.105.1:1234/v1`) | No |
 | `LOGFIRE_TOKEN` | Pydantic Logfire token | No |
 | `DATABASE_URL` | PostgreSQL connection string | Frontend |
+
+*At least one model provider API key is required.
 
 ### Mission Criteria
 
@@ -346,11 +399,14 @@ logfire.instrument_asyncio()
 ```bash
 # Backend tests
 cd backend
-pytest
+uv run pytest -v
 
-# Frontend tests
+# Run specific test
+uv run pytest tests/test_file.py::test_name -v
+
+# Frontend E2E tests
 cd frontend
-pnpm test
+pnpm test:e2e
 ```
 
 ### Code Quality
@@ -358,15 +414,27 @@ pnpm test
 ```bash
 # Backend linting
 cd backend
-ruff check .
-ruff format .
-mypy .
+uv run ruff check .
+uv run ruff format .
+uv run mypy .
 
-# Frontend linting
+# Frontend linting (uses Ultracite)
 cd frontend
 pnpm lint
 pnpm format
 ```
+
+---
+
+## Deployment
+
+Deploys to Render via `render.yaml`:
+
+- **Backend**: FastAPI on port 9000 (`agent-k-api`)
+- **Frontend**: Next.js on port 3000 (`agent-k-frontend`)
+- **Database**: PostgreSQL (`agent-k-postgres`)
+
+Environment variables are set in Render's `agent-k-secrets` group.
 
 ---
 

@@ -338,44 +338,51 @@ export async function POST(request: Request) {
     // =========================================================================
     // Defense Layer 2: Rate Limiting (Burst Protection)
     // =========================================================================
-    const rateLimitResult = await checkRateLimit(userId, userType);
-    if (!rateLimitResult.allowed) {
-      return new ChatSDKError("rate_limit:burst").toResponse();
-    }
+    // NOTE: Rate limiting disabled for development
+    // const rateLimitResult = await checkRateLimit(userId, userType);
+    // if (!rateLimitResult.allowed) {
+    //   return new ChatSDKError("rate_limit:burst").toResponse();
+    // }
 
     // =========================================================================
     // Defense Layer 3: Daily Message Limit
     // =========================================================================
-    const messageCount = await getMessageCountByUserId({
-      id: userId,
-      differenceInHours: 24,
-    });
+    // NOTE: Disabled for development
+    // const messageCount = await getMessageCountByUserId({
+    //   id: userId,
+    //   differenceInHours: 24,
+    // });
 
-    if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
-      return new ChatSDKError("rate_limit:chat").toResponse();
-    }
+    // if (messageCount > entitlementsByUserType[userType].maxMessagesPerDay) {
+    //   return new ChatSDKError("rate_limit:chat").toResponse();
+    // }
 
     // =========================================================================
     // Defense Layer 4: Token Budget Check
     // =========================================================================
-    const tokenBudgetStatus = await checkTokenBudget(userId, userType);
-    if (!tokenBudgetStatus.withinBudget) {
-      return new ChatSDKError("rate_limit:tokens").toResponse();
-    }
+    // NOTE: Disabled for development
+    // const tokenBudgetStatus = await checkTokenBudget(userId, userType);
+    // if (!tokenBudgetStatus.withinBudget) {
+    //   return new ChatSDKError("rate_limit:tokens").toResponse();
+    // }
 
     // =========================================================================
     // Defense Layer 5: Concurrent Request Limit
     // =========================================================================
-    const concurrentResult = await checkConcurrentLimit(userId, userType);
-    if (!concurrentResult.allowed) {
-      return new ChatSDKError("rate_limit:concurrent").toResponse();
-    }
+    // NOTE: Disabled for development
+    // const concurrentResult = await checkConcurrentLimit(userId, userType);
+    // if (!concurrentResult.allowed) {
+    //   return new ChatSDKError("rate_limit:concurrent").toResponse();
+    // }
 
     // Acquire request slot and get release function
-    const releaseSlot = await acquireRequestSlot(userId, requestId);
+    // NOTE: Disabled for development
+    // const releaseSlot = await acquireRequestSlot(userId, requestId);
+    const releaseSlot = () => Promise.resolve(); // No-op for development
 
     // Record this request for rate limiting
-    await recordRequest(userId);
+    // NOTE: Disabled for development
+    // await recordRequest(userId);
 
     // Route to Python backend for Agent K model
     if (selectedChatModel === "agent-k") {

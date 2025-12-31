@@ -1,20 +1,29 @@
 """AGENT-K package initialization.
 
-This package implements the AGENT-K multi-agent Kaggle competition framework
-as defined by the python_spec_v2 specification.
+(c) Mike Casale 2025.
+Licensed under the MIT License.
+See LICENSE file for details.
 """
-from __future__ import annotations
 
+from __future__ import annotations as _annotations
+
+# =============================================================================
+# Section 1: Imports
+# =============================================================================
+# Local imports (core first, then alphabetical)
 from ._version import __version__
-from .agents.evolver.agent import EvolverAgent
-from .agents.lobbyist.agent import LobbyistAgent
-from .agents.lycurgus.agent import LycurgusOrchestrator
-from .agents.scientist.agent import ScientistAgent
+from .agents.evolver import evolver_agent
+from .agents.lobbyist import lobbyist_agent
+from .agents.lycurgus import LycurgusOrchestrator
+from .agents.scientist import scientist_agent
 
-__all__ = [
-    '__version__',
-    'LobbyistAgent',
-    'ScientistAgent',
-    'EvolverAgent',
-    'LycurgusOrchestrator',
-]
+# =============================================================================
+# Section 2: Module Exports
+# =============================================================================
+__all__ = (
+    "__version__",
+    "lobbyist_agent",
+    "scientist_agent",
+    "evolver_agent",
+    "LycurgusOrchestrator",
+)

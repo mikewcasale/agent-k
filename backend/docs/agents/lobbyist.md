@@ -9,36 +9,31 @@ The LOBBYIST agent discovers and evaluates Kaggle competitions matching user-spe
 - Score and rank competitions by fit
 - Store findings for downstream agents
 
-## Toolsets
+## Tools
 
-| Toolset | Tools | Purpose |
-|---------|-------|---------|
-| **KaggleToolset** | `kaggle_search_competitions` | Query Kaggle API |
-| **SearchToolset** | `web_search`, `search_kaggle` | Web discovery |
-| **MemoryToolset** | `memory_store` | Persist findings |
+| Tool | Purpose |
+|------|---------|
+| `web_search` (builtin) | Web discovery |
+| `search_kaggle_competitions` | Query Kaggle API |
+| `get_competition_details` | Fetch competition details |
+| `score_competition_fit` | Rank competitions by criteria |
+| `memory` (builtin) | Store shared notes (create/view) |
 
 ## Basic Usage
 
 ```python
-from agent_k.agents.lobbyist import create_lobbyist_agent, LobbyistDeps
-from agent_k.adapters.kaggle import KaggleAdapter
-from agent_k.toolsets import create_kaggle_toolset, create_search_toolset, create_memory_toolset
+from agent_k.agents.lobbyist import LobbyistDeps, lobbyist_agent
+from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
+from agent_k.ui.ag_ui import EventEmitter
 import httpx
 
 # Create dependencies
 async with httpx.AsyncClient() as http:
-    # Setup toolsets
-    kaggle = create_kaggle_toolset(KaggleAdapter(...))
-    search = create_search_toolset()
-    memory = create_memory_toolset(Path("memory.json"))
-    
-    # Create agent
-    agent = create_lobbyist_agent(
-        model='anthropic:claude-3-haiku-20240307',
-        toolsets=[kaggle, search, memory],
+    config = KaggleSettings(
+        username="your_kaggle_username",
+        api_key="your_kaggle_api_key",
     )
-    
-    # Create dependencies
+    kaggle_adapter = KaggleAdapter(config)
     deps = LobbyistDeps(
         http_client=http,
         platform_adapter=kaggle_adapter,
@@ -46,7 +41,7 @@ async with httpx.AsyncClient() as http:
     )
     
     # Run discovery
-    result = await agent.run(
+    run_result = await lobbyist_agent.run(
         prompt="""
         Find featured Kaggle competitions that:
         - Have at least $10,000 prize pool
@@ -57,7 +52,8 @@ async with httpx.AsyncClient() as http:
         deps=deps,
     )
     
-    print(f"Found {len(result.data.competitions)} competitions")
+    output = run_result.output
+    print(f"Found {len(output.competitions)} competitions")
 ```
 
 ## Discovery Process
@@ -134,13 +130,11 @@ def calculate_fit_score(comp: Competition, criteria: MissionCriteria) -> float:
 ### 5. Store Best Match
 
 ```python
-await memory_store(key="target_competition", value={
-    "id": best_comp.id,
-    "title": best_comp.title,
-    "domain": best_comp.domain,
-    "deadline": best_comp.deadline.isoformat(),
-    "fit_score": best_score,
-})
+await memory(
+    command="create",
+    path="shared/target_competition.md",
+    file_text=f"{best_comp.title} ({best_comp.id})\\nfit_score={best_score}",
+)
 ```
 
 ## Dependencies
@@ -195,7 +189,7 @@ Your mission is to discover Kaggle competitions that match the user's criteria.
 AVAILABLE TOOLS:
 1. kaggle_search_competitions - Search Kaggle API for active competitions
 2. web_search - Search the web for competition news and discussions
-3. memory_store - Save your findings for other agents
+3. memory - Store shared notes for other agents (create/view)
 
 WORKFLOW:
 1. Parse the user's criteria into searchable parameters
@@ -206,7 +200,7 @@ WORKFLOW:
    - Prize pool (weight: 20%)
    - Competition type (weight: 10%)
 4. Select the best match
-5. Store the selected competition using memory_store
+5. Store the selected competition using the MemoryTool
 
 OUTPUT FORMAT:
 Return a DiscoveryResult with:
@@ -223,7 +217,9 @@ Return a DiscoveryResult with:
 Add custom tools to the agent:
 
 ```python
-agent = create_lobbyist_agent(model)
+from agent_k.agents.lobbyist import lobbyist_agent
+
+agent = lobbyist_agent
 
 @agent.tool
 async def score_competition_fit(
@@ -297,4 +293,3 @@ class DiscoveryNode(BaseNode[MissionState, MissionResult]):
 ## API Reference
 
 See [API Reference: LOBBYIST](../api/agents/lobbyist.md) for complete documentation.
-

@@ -17,6 +17,7 @@ dependencies = [
     "opentelemetry-api>=1.27.0",
     "fastapi>=0.115.0",
     "uvicorn>=0.32.0",
+    "numpy>=1.26.0",
 ]
 
 [project.optional-dependencies]
@@ -29,6 +30,7 @@ dev = [
     "inline-snapshot>=0.8.0",
     "pytest-httpx>=0.30.0",
     "pytest-mock>=3.14.0",
+    "pydantic-evals>=0.2.0",
 ]
 docs = [
     "mkdocs>=1.6.0",
@@ -55,14 +57,15 @@ dev-dependencies = [
     "inline-snapshot>=0.8.0",
     "pytest-httpx>=0.30.0",
     "pytest-mock>=3.14.0",
+    "pydantic-evals>=0.2.0",
 ]
 
 [tool.uv.sources]
 # Add any git/local sources here if needed
 
 [tool.ruff]
-line-length = 120
-target-version = "py311"
+line-length = 100
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "TCH"]
@@ -72,7 +75,7 @@ ignore = ["E501"]
 known-first-party = ["agent_k"]
 
 [tool.ruff.format]
-quote-style = "single"
+quote-style = "double"
 
 [tool.mypy]
 python_version = "3.11"

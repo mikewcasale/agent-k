@@ -6,6 +6,63 @@ This file provides guidance for Claude Code (claude.ai/code) when working with c
 
 AGENT-K is an autonomous multi-agent system for participating in Kaggle competitions. Built with Pydantic-AI and FastAPI, it orchestrates specialized agents through five mission phases: Discovery, Research, Prototype, Evolution, and Submission.
 
+## Backend Python Style (Required)
+
+All backend code under `backend/` must follow `docs/python-ai-style-guide.md`. If this file conflicts with that guide, the style guide wins.
+
+Required backend conventions (summary):
+- Module layout: module docstring with MIT license notice, `from __future__ import annotations as _annotations`, ordered imports, `TYPE_CHECKING` block, module TypeVars, `__all__` tuple, then constants/enums/ABCs/models/classes/functions.
+- Typing: lowercase generics (`list[str]`), unions with `|`, `TypeAliasType` for complex aliases, `collections.abc` for Callables/Iterators.
+- Formatting: 4-space indent, 88-100 char lines, trailing commas for multiline, double quotes, early-return control flow.
+- Observability: use `logfire` (avoid `logging.getLogger()` in backend).
+- Prefer built-in `pydantic-ai`, `pydantic-graph`, `pydantic-evals`, and `logfire` tools before custom implementations.
+
+## Backend Module Layout (Example)
+
+```python
+"""Agent module.
+
+(c) Mike Casale 2025.
+Licensed under the MIT License.
+See LICENSE file for details.
+"""
+from __future__ import annotations as _annotations
+
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+from pydantic import BaseModel, Field
+from pydantic_ai import Agent
+
+if TYPE_CHECKING:
+    import httpx
+
+__all__ = (
+    "AgentDeps",
+    "AgentResult",
+    "agent",
+)
+
+SCHEMA_VERSION: str = "1.0.0"
+AGENT_SYSTEM_PROMPT = """System prompt for the agent."""
+
+
+@dataclass
+class AgentDeps:
+    """Dependencies for the agent."""
+
+    http_client: httpx.AsyncClient
+
+
+class AgentResult(BaseModel):
+    """Result payload for the agent."""
+
+    schema_version: str = Field(default=SCHEMA_VERSION)
+
+
+agent: Agent[AgentDeps, AgentResult] = ...
+```
+
 ## Development Commands
 
 ### Backend (`backend/`)
@@ -70,56 +127,64 @@ pnpm test:e2e
 ```
 agent-k/
 ├── backend/
-│   └── agent_k/
-│       ├── agents/           # Multi-agent system
-│       │   ├── lycurgus/     # Orchestrator (state machine coordinator)
-│       │   ├── lobbyist/     # Competition discovery
-│       │   ├── scientist/    # Research and analysis
-│       │   └── evolver/      # Evolutionary optimization
-│       ├── adapters/         # External service adapters
-│       │   ├── kaggle/       # Kaggle API
-│       │   └── openevolve/   # OpenEvolve integration
-│       ├── graph/            # Pydantic-Graph state machine
-│       │   ├── nodes.py      # Phase nodes (Discovery, Research, etc.)
-│       │   ├── state.py      # MissionState model
-│       │   └── edges.py      # Transition logic
-│       ├── toolsets/         # FunctionToolset implementations
-│       │   ├── kaggle.py     # kaggle_search_competitions, kaggle_get_leaderboard
-│       │   ├── search.py     # web_search, search_papers, search_kaggle
-│       │   └── memory.py     # memory_store, memory_retrieve
-│       ├── core/             # Domain models and types
-│       ├── services/         # Business logic
-│       ├── infra/            # Config, logging, model factory
-│       └── ui/ag_ui/         # AG-UI protocol (FastAPI)
+│   ├── agent_k/
+│   │   ├── agents/           # Multi-agent system
+│   │   │   ├── base.py
+│   │   │   ├── evolver.py
+│   │   │   ├── lobbyist.py
+│   │   │   ├── lycurgus.py
+│   │   │   └── scientist.py
+│   │   ├── adapters/         # External service adapters
+│   │   │   ├── kaggle.py
+│   │   │   └── openevolve.py
+│   │   ├── mission/          # Pydantic-Graph state machine
+│   │   │   ├── nodes.py      # Phase nodes (Discovery, Research, etc.)
+│   │   │   ├── state.py      # MissionState model
+│   │   │   └── edges.py      # Transition logic
+│   │   ├── toolsets/         # FunctionToolset implementations
+│   │   │   ├── browser.py
+│   │   │   ├── code.py
+│   │   │   ├── kaggle.py
+│   │   │   ├── memory.py
+│   │   │   ├── scholarly.py
+│   │   │   └── search.py
+│   │   ├── core/             # Domain models and types
+│   │   ├── embeddings/       # RAG utilities
+│   │   ├── evals/            # Evaluation framework
+│   │   ├── infra/            # Config, logging, model providers
+│   │   └── ui/               # AG-UI protocol (FastAPI)
+│   └── examples/             # Demo scripts
 ├── frontend/
 │   ├── components/agent-k/   # Mission dashboard components
 │   ├── hooks/                # useAgentKState, etc.
 │   └── lib/ai/               # Model configuration
-└── examples/                 # Demo scripts
+└── docs/                     # Project docs and style guide
 ```
 
 ## Key Patterns
 
-### Agent Factory Pattern
+Snippets omit the standard module header; include the Backend Module Layout above for all backend files.
 
-Each agent has a factory function that creates a configured Pydantic-AI Agent:
+### Agent Singleton Pattern
+
+Each agent is defined once at module level and registered:
 
 ```python
-def create_lobbyist_agent(model: str) -> Agent[LobbyistDeps, DiscoveryResult]:
-    model = get_model(model)
-    agent = Agent(
-        model,
-        deps_type=LobbyistDeps,
-        output_type=DiscoveryResult,
-        instructions="...",
-        toolsets=[kaggle_toolset, search_toolset],
-    )
-    
-    @agent.tool
-    async def custom_tool(ctx: RunContext[LobbyistDeps]) -> str:
-        return await ctx.deps.platform_adapter.do_something()
-    
-    return agent
+settings = LobbyistSettings()
+
+lobbyist_agent: Agent[LobbyistDeps, DiscoveryResult] = Agent(
+    model=get_model(settings.model),
+    deps_type=LobbyistDeps,
+    output_type=DiscoveryResult,
+    instructions=LOBBYIST_SYSTEM_PROMPT,
+    name="lobbyist",
+    model_settings=settings.model_settings,
+    retries=settings.tool_retries,
+    output_retries=settings.output_retries,
+    instrument=True,
+)
+
+register_agent("lobbyist", lobbyist_agent)
 ```
 
 ### Dependency Injection
@@ -127,8 +192,13 @@ def create_lobbyist_agent(model: str) -> Agent[LobbyistDeps, DiscoveryResult]:
 Dependencies are passed via dataclasses:
 
 ```python
+from dataclasses import dataclass
+
+
 @dataclass
 class LobbyistDeps:
+    """Dependencies for the Lobbyist agent."""
+
     http_client: httpx.AsyncClient
     platform_adapter: PlatformAdapter
     event_emitter: EventEmitter
@@ -139,18 +209,28 @@ class LobbyistDeps:
 Toolsets are model-agnostic (work with any provider):
 
 ```python
-def create_kaggle_toolset(adapter: KaggleAdapter) -> FunctionToolset[Any]:
-    toolset = FunctionToolset(id='kaggle')
-    
-    @toolset.tool
-    async def kaggle_search_competitions(
-        categories: list[str] | None = None,
-    ) -> list[dict[str, Any]]:
-        """Search Kaggle for active competitions."""
-        async for comp in adapter.search_competitions(categories=categories):
-            yield comp.model_dump()
-    
-    return toolset
+from typing import Any
+
+from pydantic_ai import RunContext
+from pydantic_ai.toolsets import FunctionToolset
+
+from agent_k.core.deps import KaggleDeps
+
+kaggle_toolset: FunctionToolset[KaggleDeps] = FunctionToolset(id="kaggle")
+
+
+@kaggle_toolset.tool
+async def kaggle_search_competitions(
+    ctx: RunContext[KaggleDeps],
+    categories: list[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Search Kaggle for active competitions."""
+    competitions: list[dict[str, Any]] = []
+    async for comp in ctx.deps.kaggle_adapter.search_competitions(
+        categories=categories,
+    ):
+        competitions.append(comp.model_dump())
+    return competitions
 ```
 
 ### Graph State Machine
@@ -158,19 +238,23 @@ def create_kaggle_toolset(adapter: KaggleAdapter) -> FunctionToolset[Any]:
 Mission phases are nodes in a pydantic-graph:
 
 ```python
+from dataclasses import dataclass
+
+
 @dataclass
 class DiscoveryNode(BaseNode[MissionState, MissionResult]):
+    """Discovery phase for the mission graph."""
+
     async def run(
         self,
         ctx: GraphRunContext[MissionState, GraphContext],
     ) -> ResearchNode | End[MissionResult]:
-        # Execute discovery logic
         return ResearchNode(scientist_agent=...)
 ```
 
 ## Model Configuration
 
-Supported model specifications via `get_model()` in `backend/agent_k/infra/models.py`:
+Supported model specifications via `get_model()` in `backend/agent_k/infra/providers.py`:
 
 | Spec | Description |
 |------|-------------|
@@ -180,6 +264,10 @@ Supported model specifications via `get_model()` in `backend/agent_k/infra/model
 | `anthropic:claude-sonnet-4-20250514` | Claude Sonnet |
 | `openrouter:mistralai/devstral-small` | Devstral via OpenRouter |
 | `openai:gpt-4o` | GPT-4o |
+
+Devstral is treated like any other model provider. Use the standard examples with a `--model` flag
+(`devstral:local`, `openrouter:mistralai/devstral-small`, etc.) and avoid creating dedicated
+Devstral-only scripts.
 
 ## Environment Variables
 
@@ -204,10 +292,11 @@ LOGFIRE_TOKEN=...
 
 | File | Purpose |
 |------|---------|
-| `backend/agent_k/infra/models.py` | Model factory (`get_model()`) |
+| `docs/python-ai-style-guide.md` | Backend coding conventions (required) |
+| `backend/agent_k/infra/providers.py` | Model factory (`get_model()`) |
 | `backend/agent_k/toolsets/__init__.py` | Toolset exports |
-| `backend/agent_k/agents/lycurgus/agent.py` | Orchestrator |
-| `backend/agent_k/graph/nodes.py` | State machine phases |
+| `backend/agent_k/agents/lycurgus.py` | Orchestrator |
+| `backend/agent_k/mission/nodes.py` | State machine phases |
 | `backend/examples/multi_agent_playbook.py` | Full demo |
 | `frontend/components/agent-k/mission-dashboard.tsx` | Main UI |
 | `render.yaml` | Render deployment config |
@@ -240,33 +329,30 @@ Each phase is a `BaseNode` that returns either the next node or `End[MissionResu
 
 ## Adding a New Agent
 
-1. Create directory `backend/agent_k/agents/my_agent/`
-2. Add files:
-   - `agent.py` - Agent factory and class
-   - `prompts.py` - System instructions
-   - `tools.py` - Agent-specific tools (optional)
-   - `__init__.py` - Exports
-3. Export from `backend/agent_k/agents/__init__.py`
+1. Create `backend/agent_k/agents/<agentname>.py` (single lowercase word, no underscores).
+2. Keep settings, deps, output models, prompts, toolsets, and the agent singleton in the same file unless it exceeds ~500-800 lines or splits along distinct domains.
+3. Follow `docs/python-ai-style-guide.md` for module layout, docstrings, import order, `__all__`, typing, and formatting.
+4. Export from `backend/agent_k/agents/__init__.py`.
 
 ## Adding a New Toolset
 
-1. Create `backend/agent_k/toolsets/my_toolset.py`:
+1. Create `backend/agent_k/toolsets/<toolsetname>.py` (single lowercase word, no underscores).
+2. Use the Backend Module Layout above, then define a module-level `<toolsetname>_toolset` with `FunctionToolset`.
+3. Export from `backend/agent_k/toolsets/__init__.py` and register in `TOOLSET_REGISTRY` when needed.
 
 ```python
+from typing import Any
+
 from pydantic_ai.toolsets import FunctionToolset
 
-def create_my_toolset() -> FunctionToolset:
-    toolset = FunctionToolset(id='my_toolset')
-    
-    @toolset.tool
-    async def my_tool(query: str) -> str:
-        """Tool description for the LLM."""
-        return f"Result for {query}"
-    
-    return toolset
-```
+analysis_toolset: FunctionToolset[Any] = FunctionToolset(id="analysis")
 
-2. Export from `backend/agent_k/toolsets/__init__.py`
+
+@analysis_toolset.tool
+async def analyze(query: str) -> str:
+    """Tool description for the LLM."""
+    return f"Result for {query}"
+```
 
 ## Deployment
 

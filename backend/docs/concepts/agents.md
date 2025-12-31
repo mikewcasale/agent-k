@@ -11,14 +11,14 @@ graph TB
     L --> EV[EVOLVER<br/>Optimization]
     
     LB --> T1[KaggleToolset]
-    LB --> T2[SearchToolset]
-    LB --> T3[MemoryToolset]
+    LB --> T2[WebSearchTool]
+    LB --> T3[MemoryTool]
     
     SC --> T1
     SC --> T2
     SC --> T3
     
-    EV --> T4[CodeExecutorToolset]
+    EV --> T4[CodeExecutionTool]
     EV --> T3
 ```
 
@@ -52,8 +52,8 @@ Discovers and evaluates Kaggle competitions matching user-specified criteria.
 **Tools Used:**
 
 - `kaggle_search_competitions` — Query Kaggle API for active competitions
-- `web_search` — Search web for competition news and discussions
-- `memory_store` — Save findings for other agents
+- `web_search` — Built-in web search for competition news and discussions
+- `memory` — Built-in MemoryTool for shared notes (create/view)
 
 **Discovery Process:**
 
@@ -69,9 +69,8 @@ Conducts comprehensive research on the selected competition.
 **Tools Used:**
 
 - `kaggle_get_leaderboard` — Analyze current standings
-- `search_papers` — Find relevant academic papers
-- `search_kaggle` — Find winning solutions from past competitions
-- `memory_retrieve` / `memory_store` — Access and save research
+- `web_search` — Find relevant papers and Kaggle discussions (site-scoped queries)
+- `memory` — Built-in MemoryTool for reading and writing research notes
 
 **Research Process:**
 
@@ -87,8 +86,8 @@ Evolves solutions using evolutionary code search.
 
 **Tools Used:**
 
-- `code_executor` — Execute and evaluate candidate solutions
-- `memory_retrieve` — Get research findings and baseline code
+- `code_execution` — Execute and evaluate candidate solutions (built-in)
+- `memory` — Built-in MemoryTool for retrieving research notes
 
 **Evolution Process:**
 
@@ -98,42 +97,35 @@ Evolves solutions using evolutionary code search.
 4. Track best solutions
 5. Detect convergence
 
-## Agent Factory Pattern
+## Agent Singleton Pattern
 
-Each agent is created using a factory function that configures the Pydantic-AI Agent:
+Each agent is defined once at module level and registered for discovery:
 
 ```python
-from pydantic_ai import Agent, RunContext
-from agent_k.infra.models import get_model
-from agent_k.toolsets import create_kaggle_toolset, create_search_toolset
+from pydantic_ai import Agent
 
-def create_lobbyist_agent(
-    model: str = 'anthropic:claude-3-haiku-20240307',
-) -> Agent[LobbyistDeps, DiscoveryResult]:
-    """Create and configure the LOBBYIST agent."""
-    
-    resolved_model = get_model(model)
-    
-    agent = Agent(
-        resolved_model,
-        deps_type=LobbyistDeps,
-        output_type=DiscoveryResult,
-        instructions=get_lobbyist_instructions(),
-        toolsets=[kaggle_toolset, search_toolset],
-        retries=2,
-        name='lobbyist',
-    )
-    
-    # Add custom tools
-    @agent.tool
-    async def score_competition_fit(
-        ctx: RunContext[LobbyistDeps],
-        competition_id: str,
-    ) -> dict:
-        """Score how well a competition fits criteria."""
-        ...
-    
-    return agent
+from agent_k.agents import register_agent
+from agent_k.infra.providers import get_model
+from .config import LobbyistSettings
+from .deps import LobbyistDeps
+from .output import DiscoveryResult
+from .prompts import LOBBYIST_SYSTEM_PROMPT
+
+settings = LobbyistSettings()
+
+lobbyist_agent: Agent[LobbyistDeps, DiscoveryResult] = Agent(
+    model=get_model(settings.model),
+    deps_type=LobbyistDeps,
+    output_type=DiscoveryResult,
+    instructions=LOBBYIST_SYSTEM_PROMPT,
+    name='lobbyist',
+    model_settings=settings.model_settings,
+    retries=settings.tool_retries,
+    output_retries=settings.output_retries,
+    instrument=True,
+)
+
+register_agent('lobbyist', lobbyist_agent)
 ```
 
 ## Dependency Injection
@@ -163,20 +155,16 @@ This allows:
 
 Agents communicate through:
 
-1. **Memory Toolset** — Persistent key-value storage
+1. **MemoryTool** — Persistent shared notes (file-backed)
 2. **State Machine** — Pass data through node transitions
 3. **Event Emitter** — Real-time events for UI
 
 ```python
 # LOBBYIST stores findings
-await memory_store(key="target_competition", value={
-    "id": "titanic",
-    "title": "Titanic - Machine Learning from Disaster",
-    "score": 0.85,
-})
+await memory(command=\"create\", path=\"shared/target_competition.md\", file_text=\"Titanic details...\")
 
 # SCIENTIST retrieves them
-competition = await memory_retrieve(key="target_competition")
+notes = await memory(command=\"view\", path=\"shared/target_competition.md\")
 ```
 
 ## Agent Instructions
@@ -191,14 +179,14 @@ Your mission is to discover Kaggle competitions matching criteria.
 
 AVAILABLE TOOLS:
 - kaggle_search_competitions: Search Kaggle API
-- web_search: Search the web
-- memory_store: Save findings
+- web_search: Built-in web search
+- memory: Built-in MemoryTool for shared notes
 
 WORKFLOW:
 1. Parse the user's criteria
 2. Search Kaggle API for competitions
 3. Score competitions by fit
-4. Store best candidate for SCIENTIST
+4. Store best candidate for SCIENTIST via MemoryTool
 """
 ```
 
@@ -207,4 +195,3 @@ WORKFLOW:
 - [State Machine Graph](graph.md) — How phases are orchestrated
 - [Toolsets](toolsets.md) — FunctionToolset implementations
 - [Model Configuration](models.md) — Supported model providers
-

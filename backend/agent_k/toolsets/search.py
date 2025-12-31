@@ -1,206 +1,162 @@
-"""Web search toolset for AGENT-K agents.
+"""Search tool helpers for AGENT-K agents.
 
-Provides web search functionality as a pydantic-ai toolset that works
-with any model provider.
-
-Uses FunctionToolset to properly integrate with pydantic-ai's tool system.
+(c) Mike Casale 2025.
+Licensed under the MIT License.
+See LICENSE file for details.
 """
-from __future__ import annotations
 
-import re
-from typing import Any
-from urllib.parse import unquote
+from __future__ import annotations as _annotations
 
-import httpx
-import logfire
-from pydantic_ai.toolsets import FunctionToolset
+# =============================================================================
+# Section 1: Imports
+# =============================================================================
+# Standard library (alphabetical)
+from typing import Any, Literal, cast
 
-__all__ = ['create_search_toolset']
+# Third-party (alphabetical)
+from pydantic_ai import RunContext  # noqa: TC002
+from pydantic_ai.builtin_tools import WebFetchTool, WebSearchTool, WebSearchUserLocation
+
+try:  # pragma: no cover - optional dependency
+    from pydantic_ai.models.openai import OpenAIChatModel
+except ImportError:  # pragma: no cover - optional dependency
+    OpenAIChatModel = None  # type: ignore[misc,assignment]
+
+# =============================================================================
+# Section 2: Module Exports
+# =============================================================================
+__all__ = (
+    "build_kaggle_search_query",
+    "build_scholarly_query",
+    "create_web_fetch_tool",
+    "create_web_search_tool",
+    "prepare_web_fetch",
+    "prepare_web_search",
+)
+
+# =============================================================================
+# Section 12: Functions
+# =============================================================================
 
 
-def create_search_toolset(
-    http_client: httpx.AsyncClient | None = None,
-) -> FunctionToolset[Any]:
-    """Create a web search toolset.
-    
-    This creates a FunctionToolset with tools for web search.
-    Uses DuckDuckGo (no API key required).
-    Works with any model provider including OpenAI-compatible endpoints.
-    
-    Example:
-        >>> toolset = create_search_toolset()
-        >>> agent = Agent('devstral:local', toolsets=[toolset])
-    """
-    toolset: FunctionToolset[Any] = FunctionToolset(id='web_search')
-    
-    # Cache for search results
-    _cache: dict[str, list[dict[str, str]]] = {}
-    _client: httpx.AsyncClient | None = http_client
-    
-    async def _get_client() -> httpx.AsyncClient:
-        nonlocal _client
-        if _client is None:
-            _client = httpx.AsyncClient(timeout=30, follow_redirects=True)
-        return _client
-    
-    async def _duckduckgo_search(
-        query: str,
-        num_results: int,
-    ) -> list[dict[str, str]]:
-        """Search using DuckDuckGo HTML interface."""
-        try:
-            client = await _get_client()
-            url = 'https://html.duckduckgo.com/html/'
-            data = {'q': query, 's': '0'}
-            
-            response = await client.post(
-                url,
-                data=data,
-                headers={
-                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) '
-                                  'AppleWebKit/537.36 (KHTML, like Gecko) '
-                                  'Chrome/120.0.0.0 Safari/537.36',
-                },
-            )
-            
-            if response.status_code != 200:
-                logfire.warning('duckduckgo_search_failed', status=response.status_code)
-                return []
-            
-            return _parse_duckduckgo_html(response.text)[:num_results]
-            
-        except Exception as e:
-            logfire.error('web_search_error', error=str(e))
-            return []
-    
-    def _parse_duckduckgo_html(html: str) -> list[dict[str, str]]:
-        """Parse search results from DuckDuckGo HTML."""
-        results = []
-        
-        # Find result links
-        links = re.findall(r'href="//duckduckgo\.com/l/\?uddg=([^&"]+)', html)
-        titles = re.findall(r'class="result__a"[^>]*>([^<]+)</a>', html)
-        snippets = re.findall(r'class="result__snippet"[^>]*>([^<]+)', html)
-        
-        for i, (link, title) in enumerate(zip(links, titles)):
-            url = unquote(link)
-            snippet = snippets[i] if i < len(snippets) else ''
-            
-            results.append({
-                'title': title.strip(),
-                'url': url,
-                'snippet': snippet.strip(),
-            })
-        
-        return results
-    
-    @toolset.tool
-    async def web_search(
-        query: str,
-        num_results: int = 5,
-    ) -> dict[str, Any]:
-        """Search the web for information.
-        
-        Args:
-            query: The search query
-            num_results: Maximum number of results (default: 5)
-        
-        Returns:
-            Search results with titles, URLs, and snippets.
-        """
-        with logfire.span('web_search', query=query):
-            # Check cache
-            cache_key = f'web:{query.lower().strip()}'
-            if cache_key in _cache:
-                return {
-                    'query': query,
-                    'cached': True,
-                    'results': _cache[cache_key][:num_results],
-                }
-            
-            results = await _duckduckgo_search(query, num_results)
-            _cache[cache_key] = results
-            
-            return {
-                'query': query,
-                'cached': False,
-                'count': len(results),
-                'results': results,
-            }
-    
-    @toolset.tool
-    async def search_kaggle(
-        query: str,
-    ) -> dict[str, Any]:
-        """Search specifically for Kaggle content.
-        
-        Args:
-            query: Search query (will be scoped to kaggle.com)
-        
-        Returns:
-            Kaggle-specific search results.
-        """
-        with logfire.span('search_kaggle', query=query):
-            full_query = f'site:kaggle.com {query}'
-            
-            cache_key = f'kaggle:{query.lower().strip()}'
-            if cache_key in _cache:
-                return {
-                    'query': query,
-                    'cached': True,
-                    'results': _cache[cache_key],
-                }
-            
-            results = await _duckduckgo_search(full_query, 10)
-            _cache[cache_key] = results
-            
-            return {
-                'query': query,
-                'cached': False,
-                'count': len(results),
-                'results': results,
-            }
-    
-    @toolset.tool
-    async def search_papers(
-        topic: str,
-        source: str = 'all',
-    ) -> dict[str, Any]:
-        """Search for academic papers on arXiv or Papers with Code.
-        
-        Args:
-            topic: Research topic to search for
-            source: Source to search - 'arxiv', 'paperswithcode', or 'all'
-        
-        Returns:
-            Academic paper search results.
-        """
-        with logfire.span('search_papers', topic=topic, source=source):
-            if source == 'arxiv':
-                query = f'site:arxiv.org {topic}'
-            elif source == 'paperswithcode':
-                query = f'site:paperswithcode.com {topic}'
-            else:
-                query = f'site:arxiv.org OR site:paperswithcode.com {topic}'
-            
-            cache_key = f'papers:{source}:{topic.lower().strip()}'
-            if cache_key in _cache:
-                return {
-                    'topic': topic,
-                    'source': source,
-                    'cached': True,
-                    'results': _cache[cache_key],
-                }
-            
-            results = await _duckduckgo_search(query, 10)
-            _cache[cache_key] = results
-            
-            return {
-                'topic': topic,
-                'source': source,
-                'cached': False,
-                'count': len(results),
-                'results': results,
-            }
-    
-    return toolset
+def build_kaggle_search_query(query: str) -> str:
+    """Build a Kaggle-scoped web search query."""
+    return f"site:kaggle.com {query}".strip()
+
+
+def build_scholarly_query(topic: str, source: str = "all") -> str:
+    """Build a web search query for academic sources."""
+    if source == "arxiv":
+        return f"site:arxiv.org {topic}".strip()
+    if source == "paperswithcode":
+        return f"site:paperswithcode.com {topic}".strip()
+    return f"site:arxiv.org OR site:paperswithcode.com {topic}".strip()
+
+
+def create_web_search_tool(
+    *,
+    search_context_size: Literal["low", "medium", "high"] = "medium",
+    user_location: WebSearchUserLocation | None = None,
+    blocked_domains: list[str] | None = None,
+    allowed_domains: list[str] | None = None,
+    max_uses: int | None = None,
+) -> WebSearchTool:
+    """Create a WebSearchTool with explicit configuration."""
+    return WebSearchTool(
+        search_context_size=search_context_size,
+        user_location=user_location,
+        blocked_domains=blocked_domains,
+        allowed_domains=allowed_domains,
+        max_uses=max_uses,
+    )
+
+
+async def prepare_web_search(ctx: RunContext[Any]) -> WebSearchTool | None:
+    """Prepare WebSearchTool dynamically based on RunContext."""
+    if ctx.model.system not in {"anthropic", "openai", "google", "groq"}:
+        return None
+    if OpenAIChatModel is not None and isinstance(ctx.model, OpenAIChatModel):
+        return None
+    if getattr(ctx.deps, "offline_mode", False):
+        return None
+
+    user_location = _coerce_user_location(getattr(ctx.deps, "user_location", None))
+    blocked_domains = getattr(ctx.deps, "blocked_domains", None)
+    allowed_domains = getattr(ctx.deps, "allowed_domains", None)
+    max_uses = getattr(ctx.deps, "search_budget", None)
+
+    return create_web_search_tool(
+        user_location=user_location,
+        blocked_domains=blocked_domains,
+        allowed_domains=allowed_domains,
+        max_uses=max_uses,
+    )
+
+
+def create_web_fetch_tool(
+    *,
+    allowed_domains: list[str] | None = None,
+    blocked_domains: list[str] | None = None,
+    max_uses: int | None = None,
+    enable_citations: bool = True,
+    max_content_tokens: int | None = None,
+) -> WebFetchTool:
+    """Create a WebFetchTool with explicit configuration."""
+    return WebFetchTool(
+        allowed_domains=allowed_domains,
+        blocked_domains=blocked_domains,
+        max_uses=max_uses,
+        enable_citations=enable_citations,
+        max_content_tokens=max_content_tokens,
+    )
+
+
+async def prepare_web_fetch(ctx: RunContext[Any]) -> WebFetchTool | None:
+    """Prepare WebFetchTool dynamically based on RunContext."""
+    if ctx.model.system not in {"anthropic", "google"}:
+        return None
+    if getattr(ctx.deps, "offline_mode", False):
+        return None
+
+    allowed_domains = getattr(ctx.deps, "allowed_domains", None)
+    blocked_domains = getattr(ctx.deps, "blocked_domains", None)
+    max_uses = getattr(ctx.deps, "fetch_budget", None)
+
+    return create_web_fetch_tool(
+        allowed_domains=allowed_domains,
+        blocked_domains=blocked_domains,
+        max_uses=max_uses,
+    )
+
+
+def _coerce_user_location(value: Any) -> WebSearchUserLocation | None:
+    if value is None:
+        return None
+    if isinstance(value, dict):
+        cleaned = {
+            key: val
+            for key, val in value.items()
+            if key in {"city", "country", "region", "timezone"} and isinstance(val, str)
+        }
+        return cast(WebSearchUserLocation, cleaned) if cleaned else None
+
+    def _as_str(entry: Any) -> str | None:
+        return entry if isinstance(entry, str) else None
+
+    city = _as_str(getattr(value, "city", None))
+    country = _as_str(getattr(value, "country", None))
+    region = _as_str(getattr(value, "region", None))
+    timezone = _as_str(getattr(value, "timezone", None))
+    if not any([city, country, region, timezone]):
+        return None
+
+    data: dict[str, str] = {}
+    if city:
+        data["city"] = city
+    if country:
+        data["country"] = country
+    if region:
+        data["region"] = region
+    if timezone:
+        data["timezone"] = timezone
+    return cast(WebSearchUserLocation, data) if data else None

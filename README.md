@@ -269,11 +269,14 @@ agent-k/
 │       │   ├── kaggle/             # Kaggle API adapter
 │       │   └── openevolve/         # OpenEvolve integration
 │       ├── core/                   # Domain models and protocols
+│       │   ├── constants.py        # Domain constants
+│       │   ├── deps.py             # Shared dependencies
+│       │   ├── exceptions.py       # Exception hierarchy
 │       │   ├── models.py           # Pydantic models
 │       │   ├── protocols.py        # Interface definitions
-│       │   ├── exceptions.py       # Exception hierarchy
+│       │   ├── settings.py         # Shared settings
 │       │   └── types.py            # Type aliases
-│       ├── graph/                  # State machine
+│       ├── mission/                # State machine
 │       │   ├── nodes.py            # Phase nodes
 │       │   ├── state.py            # Mission state
 │       │   └── persistence.py      # Checkpoint management
@@ -282,18 +285,22 @@ agent-k/
 │       │   ├── search.py           # Web/paper search
 │       │   ├── memory.py           # Persistent memory
 │       │   ├── browser.py          # Browser automation
-│       │   ├── code_executor.py    # Code execution
+│       │   ├── code.py             # Code execution
 │       │   └── scholarly.py        # Academic search
-│       ├── services/               # Application services
-│       │   ├── competition.py      # Competition management
-│       │   ├── evolution.py        # Evolution orchestration
-│       │   └── submission.py       # Submission handling
+│       ├── embeddings/             # RAG support
+│       │   ├── embedder.py         # Embedding utilities
+│       │   ├── retriever.py        # Retrieval logic
+│       │   └── store.py            # Vector store helpers
+│       ├── evals/                  # Evaluation framework
+│       │   ├── datasets.py         # Dataset definitions
+│       │   ├── evaluators.py       # Evaluation logic
+│       │   └── discovery.yaml      # Sample eval cases
 │       ├── ui/                     # UI adapters
 │       │   ├── ag_ui/              # AG-UI protocol (FastAPI)
 │       │   └── console/            # Terminal console
 │       └── infra/                  # Infrastructure
 │           ├── config.py           # Configuration
-│           ├── models.py           # Model factory (get_model)
+│           ├── providers.py        # Model factory (get_model)
 │           ├── logging.py          # Logging setup
 │           └── instrumentation.py  # Observability
 │   └── examples/                   # Demo scripts

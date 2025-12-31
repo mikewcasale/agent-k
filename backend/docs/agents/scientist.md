@@ -10,37 +10,36 @@ The SCIENTIST agent conducts comprehensive research on the selected competition.
 - Synthesize strategic recommendations
 - Store findings for EVOLVER
 
-## Toolsets
+## Tools
 
-| Toolset | Tools | Purpose |
-|---------|-------|---------|
-| **KaggleToolset** | `kaggle_get_leaderboard`, `kaggle_get_competition` | Leaderboard analysis |
-| **SearchToolset** | `search_papers`, `search_kaggle`, `web_search` | Research discovery |
-| **MemoryToolset** | `memory_retrieve`, `memory_store` | Access and persist findings |
+| Tool | Purpose |
+|------|---------|
+| `analyze_leaderboard` | Summarize leaderboard stats |
+| `get_kaggle_notebooks` | Find top notebooks |
+| `analyze_data_characteristics` | Inspect dataset structure |
+| `compute_baseline_estimate` | Estimate baseline performance |
+| `web_search` (builtin) | Retrieve papers and Kaggle discussions |
+| `memory` (builtin) | Persist research notes (create/view) |
 
 ## Basic Usage
 
 ```python
-from agent_k.agents.scientist import create_scientist_agent, ScientistDeps
-from agent_k.toolsets import create_kaggle_toolset, create_search_toolset, create_memory_toolset
-
-# Create agent
-agent = create_scientist_agent(
-    model='anthropic:claude-3-haiku-20240307',
-    toolsets=[kaggle_toolset, search_toolset, memory_toolset],
-)
+from agent_k.agents.scientist import ScientistDeps, scientist_agent
+from agent_k.ui.ag_ui import EventEmitter
 
 # Create dependencies
+competition = await kaggle_adapter.get_competition("titanic")
 deps = ScientistDeps(
     http_client=http,
     platform_adapter=kaggle_adapter,
+    competition=competition,
     event_emitter=EventEmitter(),
 )
 
 # Run research
-result = await agent.run(
+run_result = await scientist_agent.run(
     prompt="""
-    Research the competition stored in memory under "target_competition".
+    Research the provided competition.
     
     Analyze:
     1. Leaderboard score distribution
@@ -53,7 +52,8 @@ result = await agent.run(
     deps=deps,
 )
 
-print(result.data.strategy_recommendations)
+output = run_result.output
+print(output.recommended_approaches)
 ```
 
 ## Research Process
@@ -72,7 +72,7 @@ graph TD
 ### 1. Retrieve Competition
 
 ```python
-competition = await memory_retrieve(key="target_competition")
+notes = await memory(command="view", path="shared/target_competition.md")
 ```
 
 ### 2. Get Leaderboard
@@ -120,26 +120,18 @@ def get_target_score(
 
 ### 5. Search Papers
 
-```python
-@toolset.tool
-async def search_papers(
-    query: str,
-    max_results: int = 10,
-) -> list[dict[str, Any]]:
-    """Search academic papers."""
-    ...
+Use the built-in `web_search` tool with academic site filters:
+
+```text
+web_search(query="site:arxiv.org OR site:paperswithcode.com <topic>")
 ```
 
 ### 6. Find Winning Solutions
 
-```python
-@toolset.tool
-async def search_kaggle(
-    query: str,
-    search_type: str = "discussions",
-) -> list[dict[str, Any]]:
-    """Search Kaggle discussions and notebooks."""
-    ...
+Use the built-in `web_search` tool scoped to Kaggle:
+
+```text
+web_search(query="site:kaggle.com <topic> winning solution")
 ```
 
 ### 7. Synthesize Strategy
@@ -149,12 +141,11 @@ The agent combines findings into actionable recommendations.
 ### 8. Store Findings
 
 ```python
-await memory_store(key="research_findings", value={
-    "leaderboard_analysis": analysis,
-    "papers": papers,
-    "approaches": approaches,
-    "strategy_recommendations": recommendations,
-})
+await memory(
+    command="create",
+    path="shared/research_findings.md",
+    file_text="...research summary...",
+)
 ```
 
 ## Output Model
@@ -190,21 +181,19 @@ def get_scientist_instructions() -> str:
 Your mission is to conduct comprehensive research on a Kaggle competition.
 
 AVAILABLE TOOLS:
-1. memory_retrieve - Get competition from LOBBYIST
+1. memory - Retrieve competition notes from LOBBYIST (view)
 2. kaggle_get_leaderboard - Analyze current standings
-3. search_papers - Find relevant academic papers
-4. search_kaggle - Find winning solutions from past competitions
-5. web_search - Search for tips and discussions
-6. memory_store - Save your findings
+3. web_search - Find academic papers and Kaggle discussions
+4. memory - Save your findings (create)
 
 WORKFLOW:
-1. Retrieve the target competition: memory_retrieve("target_competition")
+1. Retrieve the target competition: memory(view shared/target_competition.md)
 2. Get and analyze the leaderboard
 3. Calculate target score for user's percentile goal
-4. Search for relevant papers and techniques
-5. Find winning approaches from similar competitions
+4. Search for relevant papers and techniques (web_search with site filters)
+5. Find winning approaches from similar competitions (web_search site:kaggle.com)
 6. Synthesize strategy recommendations
-7. Store findings: memory_store("research_findings", {...})
+7. Store findings via MemoryTool (create shared/research_findings.md)
 
 ANALYSIS FOCUS:
 - What separates top performers from average?
@@ -245,41 +234,19 @@ async def analyze_leaderboard(
 
 ## Paper Search
 
-The SCIENTIST searches for relevant academic papers:
+The SCIENTIST uses the built-in `web_search` tool for academic sources:
 
-```python
-# Search by competition topic
-papers = await search_papers(
-    query="Titanic survival prediction machine learning",
-    max_results=10,
-)
-
-# Search by technique
-technique_papers = await search_papers(
-    query="gradient boosting ensemble methods tabular data",
-    max_results=5,
-)
+```text
+web_search(query="site:arxiv.org OR site:paperswithcode.com Titanic survival prediction machine learning")
+web_search(query="site:arxiv.org OR site:paperswithcode.com gradient boosting ensemble methods tabular data")
 ```
 
 ## Winning Solution Analysis
 
-Extract insights from winning solutions:
+Use `web_search` scoped to Kaggle for winning solution discussions:
 
-```python
-# Search past competition winners
-winners = await search_kaggle(
-    query="Titanic winning solution",
-    search_type="discussions",
-)
-
-# Extract techniques
-techniques = []
-for winner in winners:
-    if "feature engineering" in winner["content"].lower():
-        techniques.append("feature_engineering")
-    if "ensemble" in winner["content"].lower():
-        techniques.append("ensemble")
-    # ...
+```text
+web_search(query="site:kaggle.com Titanic winning solution discussion")
 ```
 
 ## Strategy Synthesis
@@ -342,4 +309,3 @@ class ResearchNode(BaseNode[MissionState, MissionResult]):
 ## API Reference
 
 See [API Reference: SCIENTIST](../api/agents/scientist.md) for complete documentation.
-

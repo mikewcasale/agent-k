@@ -1,0 +1,6 @@
+cases:
+  - name: sample_submission
+    inputs: Submit best solution for competition
+    expected_output: Submission result includes id and status
+    metadata:
+      category: submission

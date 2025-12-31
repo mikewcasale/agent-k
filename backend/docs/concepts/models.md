@@ -18,7 +18,7 @@ AGENT-K supports multiple model providers through a unified `get_model()` factor
 The `get_model()` function resolves model specifications:
 
 ```python
-from agent_k.infra.models import get_model
+from agent_k.infra.providers import get_model
 
 # Standard Pydantic-AI model string (passed through)
 model = get_model('anthropic:claude-3-haiku-20240307')
@@ -140,28 +140,33 @@ model = get_model('openai:gpt-4-turbo')
 
 ## Using Models with Agents
 
-Pass the model spec to agent factories:
+Agents are module-level singletons. Configure their model via environment variables
+before importing them:
 
-```python
-from agent_k.agents.lobbyist import create_lobbyist_agent
-
+```bash
 # With Anthropic
-agent = create_lobbyist_agent(model='anthropic:claude-3-haiku-20240307')
+export LOBBYIST_MODEL=anthropic:claude-3-haiku-20240307
 
 # With local Devstral
-agent = create_lobbyist_agent(model='devstral:local')
+export LOBBYIST_MODEL=devstral:local
 
 # With OpenRouter
-agent = create_lobbyist_agent(model='openrouter:mistralai/devstral-small')
+export LOBBYIST_MODEL=openrouter:mistralai/devstral-small
+```
+
+```python
+from agent_k.agents.lobbyist import lobbyist_agent
+
+result = await lobbyist_agent.run('Find featured competitions', deps=deps)
 ```
 
 ## Using Models with Orchestrator
 
 ```python
-from agent_k.agents.lycurgus import LycurgusOrchestrator, OrchestratorConfig
+from agent_k.agents.lycurgus import LycurgusOrchestrator, LycurgusSettings
 
 # Via config
-config = OrchestratorConfig(
+config = LycurgusSettings(
     default_model='anthropic:claude-3-haiku-20240307',
 )
 orchestrator = LycurgusOrchestrator(config=config)
@@ -170,7 +175,7 @@ orchestrator = LycurgusOrchestrator(config=config)
 orchestrator = LycurgusOrchestrator(model='devstral:local')
 
 # Devstral helper
-config = OrchestratorConfig.with_devstral(
+config = LycurgusSettings.with_devstral(
     base_url='http://localhost:1234/v1'  # Optional
 )
 ```
@@ -202,7 +207,7 @@ For standard specs like `anthropic:...`, the string is passed directly to pydant
 ## Checking Model Type
 
 ```python
-from agent_k.infra.models import is_devstral_model
+from agent_k.infra.providers import is_devstral_model
 
 # Check if using Devstral
 if is_devstral_model('devstral:local'):
@@ -249,4 +254,3 @@ agent = Agent(
 - [Agents](agents.md) — How agents use models
 - [Toolsets](toolsets.md) — Tools that work with any model
 - [Quick Start](../quick-start.md) — Try different models
-

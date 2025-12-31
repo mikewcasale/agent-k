@@ -1,48 +1,47 @@
-"""Tests for the search toolset."""
-from __future__ import annotations
+"""Tests for the search tool helpers.
 
-from unittest.mock import AsyncMock, patch
+(c) Mike Casale 2025.
+Licensed under the MIT License.
+See LICENSE file for details.
+"""
 
-import pytest
+from __future__ import annotations as _annotations
 
-from agent_k.toolsets.search import create_search_toolset
-
-pytestmark = pytest.mark.anyio
-
-
-class TestCreateSearchToolset:
-    """Tests for the create_search_toolset factory function."""
-    
-    def test_creates_toolset(self) -> None:
-        """Toolset should be created."""
-        toolset = create_search_toolset()
-        assert toolset is not None
-        assert toolset.id == 'web_search'
+from agent_k.toolsets.search import (
+    build_kaggle_search_query,
+    build_scholarly_query,
+    create_web_fetch_tool,
+    create_web_search_tool,
+)
 
 
-class TestWebSearch:
-    """Tests for the web_search tool."""
-    
-    async def test_web_search_basic(self) -> None:
-        """Web search should be callable."""
-        toolset = create_search_toolset()
-        assert toolset is not None
+__all__ = ()
 
 
-class TestSearchPapers:
-    """Tests for the search_papers tool."""
-    
-    async def test_search_papers_basic(self) -> None:
-        """Search papers should be callable."""
-        toolset = create_search_toolset()
-        assert toolset is not None
+def test_build_kaggle_search_query() -> None:
+    assert build_kaggle_search_query("titanic") == "site:kaggle.com titanic"
 
 
-class TestSearchKaggle:
-    """Tests for the search_kaggle tool."""
-    
-    async def test_search_kaggle_basic(self) -> None:
-        """Search kaggle should be callable."""
-        toolset = create_search_toolset()
-        assert toolset is not None
+def test_build_scholarly_query_all() -> None:
+    assert build_scholarly_query("xgboost") == "site:arxiv.org OR site:paperswithcode.com xgboost"
 
+
+def test_build_scholarly_query_arxiv() -> None:
+    assert build_scholarly_query("xgboost", source="arxiv") == "site:arxiv.org xgboost"
+
+
+def test_build_scholarly_query_papers_with_code() -> None:
+    assert (
+        build_scholarly_query("xgboost", source="paperswithcode")
+        == "site:paperswithcode.com xgboost"
+    )
+
+
+def test_create_web_search_tool() -> None:
+    tool = create_web_search_tool(search_context_size="high")
+    assert tool.search_context_size == "high"
+
+
+def test_create_web_fetch_tool() -> None:
+    tool = create_web_fetch_tool(allowed_domains=["kaggle.com"])
+    assert tool.allowed_domains == ["kaggle.com"]

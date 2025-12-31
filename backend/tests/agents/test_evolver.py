@@ -1,39 +1,37 @@
-"""Tests for the EVOLVER optimization agent."""
-from __future__ import annotations
+"""Tests for the EVOLVER optimization agent.
 
-from unittest.mock import AsyncMock, MagicMock
+(c) Mike Casale 2025.
+Licensed under the MIT License.
+See LICENSE file for details.
+"""
+
+from __future__ import annotations as _annotations
 
 import pytest
+from pydantic_ai import Agent
 
-# Note: EvolverAgent uses MCPServerTool which may have API changes
-# These tests are marked to skip if there are initialization issues
+from agent_k.agents import get_agent
+
+__all__ = ()
+
+try:
+    from agent_k.agents.evolver import evolver_agent
+except TypeError as exc:
+    if "MCPServerTool" in str(exc):
+        pytest.skip(f"MCPServerTool API issue: {exc}", allow_module_level=True)
+    raise
 
 pytestmark = pytest.mark.anyio
 
 
-class TestEvolverAgent:
-    """Tests for the EvolverAgent class."""
-    
-    def test_agent_initialization(self) -> None:
-        """Agent should initialize with devstral model."""
-        try:
-            from agent_k.agents.evolver import EvolverAgent
-            agent = EvolverAgent(model='devstral:local')
-            assert agent is not None
-        except TypeError as e:
-            # Skip if MCPServerTool has API issues
-            if 'MCPServerTool' in str(e):
-                pytest.skip(f'MCPServerTool API issue: {e}')
-            raise
-    
-    def test_agent_initialization_with_model(self) -> None:
-        """Agent should accept custom model."""
-        try:
-            from agent_k.agents.evolver import EvolverAgent
-            agent = EvolverAgent(model='devstral:local')
-            assert agent is not None
-        except TypeError as e:
-            if 'MCPServerTool' in str(e):
-                pytest.skip(f'MCPServerTool API issue: {e}')
-            raise
+class TestEvolverAgentSingleton:
+    """Tests for the Evolver agent singleton."""
 
+    def test_agent_is_registered(self) -> None:
+        """Agent should be registered in the registry."""
+        assert get_agent("evolver") is evolver_agent
+
+    def test_agent_metadata(self) -> None:
+        """Agent should be configured with a name."""
+        assert isinstance(evolver_agent, Agent)
+        assert evolver_agent.name == "evolver"

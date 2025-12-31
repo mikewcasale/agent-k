@@ -1,13 +1,28 @@
-"""Platform adapter implementations."""
-from __future__ import annotations
+"""Platform adapter implementations.
 
-from ._base import PlatformAdapter
-from .kaggle import KaggleAdapter, KaggleConfig
-from .openevolve import OpenEvolveAdapter
+(c) Mike Casale 2025.
+Licensed under the MIT License.
+See LICENSE file for details.
+"""
 
-__all__ = [
-    'PlatformAdapter',
-    'KaggleAdapter',
-    'KaggleConfig',
-    'OpenEvolveAdapter',
-]
+from __future__ import annotations as _annotations
+
+# =============================================================================
+# Section 1: Imports
+# =============================================================================
+# Local imports (core first, then alphabetical)
+from agent_k.core.protocols import PlatformAdapter
+
+from .kaggle import KaggleAdapter, KaggleSettings
+from .openevolve import OpenEvolveAdapter, OpenEvolveSettings
+
+# =============================================================================
+# Section 2: Module Exports
+# =============================================================================
+__all__ = (
+    "PlatformAdapter",
+    "KaggleAdapter",
+    "KaggleSettings",
+    "OpenEvolveAdapter",
+    "OpenEvolveSettings",
+)

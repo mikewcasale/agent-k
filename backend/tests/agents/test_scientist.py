@@ -1,25 +1,31 @@
-"""Tests for the SCIENTIST research agent."""
-from __future__ import annotations
+"""Tests for the SCIENTIST research agent.
 
-from unittest.mock import AsyncMock, MagicMock
+(c) Mike Casale 2025.
+Licensed under the MIT License.
+See LICENSE file for details.
+"""
+
+from __future__ import annotations as _annotations
 
 import pytest
+from pydantic_ai import Agent
 
-from agent_k.agents.scientist import ScientistAgent
+from agent_k.agents import get_agent
+from agent_k.agents.scientist import scientist_agent
+
+__all__ = ()
 
 pytestmark = pytest.mark.anyio
 
 
-class TestScientistAgent:
-    """Tests for the ScientistAgent class."""
-    
-    def test_agent_initialization(self) -> None:
-        """Agent should initialize with devstral model."""
-        agent = ScientistAgent(model='devstral:local')
-        assert agent is not None
-    
-    def test_agent_initialization_with_model(self) -> None:
-        """Agent should accept custom model."""
-        agent = ScientistAgent(model='devstral:local')
-        assert agent is not None
+class TestScientistAgentSingleton:
+    """Tests for the Scientist agent singleton."""
 
+    def test_agent_is_registered(self) -> None:
+        """Agent should be registered in the registry."""
+        assert get_agent("scientist") is scientist_agent
+
+    def test_agent_metadata(self) -> None:
+        """Agent should be configured with a name."""
+        assert isinstance(scientist_agent, Agent)
+        assert scientist_agent.name == "scientist"

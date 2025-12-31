@@ -54,28 +54,17 @@ asyncio.run(run_mission())
 
 ## Configuration
 
-### OrchestratorConfig
+### LycurgusSettings
 
 ```python
-from agent_k.agents.lycurgus import OrchestratorConfig
+from agent_k.agents.lycurgus import LycurgusSettings
 
-config = OrchestratorConfig(
+config = LycurgusSettings(
     # Model for all agents
     default_model='anthropic:claude-3-haiku-20240307',
     
     # Evolution settings
     max_evolution_rounds=100,
-    evolution_timeout_seconds=7200,
-    
-    # Phase timeouts
-    discovery_timeout_seconds=300,
-    research_timeout_seconds=600,
-    prototype_timeout_seconds=600,
-    submission_timeout_seconds=300,
-    
-    # Retry settings
-    max_retries=3,
-    retry_delay_seconds=5,
 )
 
 orchestrator = LycurgusOrchestrator(config=config)
@@ -86,7 +75,7 @@ orchestrator = LycurgusOrchestrator(config=config)
 For local Devstral:
 
 ```python
-config = OrchestratorConfig.with_devstral(
+config = LycurgusSettings.with_devstral(
     base_url='http://localhost:1234/v1'  # Optional
 )
 orchestrator = LycurgusOrchestrator(config=config)
@@ -102,9 +91,11 @@ orchestrator = LycurgusOrchestrator(model='openrouter:mistralai/devstral-small')
 
 1. **Initialize Agents**
    ```python
-   self._lobbyist = create_lobbyist_agent(model)
-   self._scientist = create_scientist_agent(model)
-   self._evolver = create_evolver_agent(model)
+   self._agents = {
+       'lobbyist': lobbyist_agent,
+       'scientist': scientist_agent,
+       'evolver': evolver_agent,
+   }
    ```
 
 2. **Build Graph**
@@ -127,7 +118,7 @@ orchestrator = LycurgusOrchestrator(model='openrouter:mistralai/devstral-small')
 4. **Execute Graph**
    ```python
    result = await self._graph.run(
-       DiscoveryNode(lobbyist_agent=self._lobbyist),
+       DiscoveryNode(lobbyist_agent=lobbyist_agent),
        state=self._state,
    )
    ```
@@ -306,4 +297,3 @@ async def start_mission(request: MissionRequest):
 ## API Reference
 
 See [API Reference: LYCURGUS](../api/agents/lycurgus.md) for complete documentation.
-

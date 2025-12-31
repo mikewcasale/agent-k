@@ -46,26 +46,26 @@ Examples support multiple models:
 ```bash
 cd backend
 uv run python -c "
-from agent_k.infra.models import get_model
+from agent_k.infra.providers import get_model
 print('✓ agent_k importable')
 
-from agent_k.toolsets import create_memory_toolset
-print('✓ toolsets available')
+from agent_k.toolsets import create_memory_backend, prepare_web_search
+print('✓ tool helpers available')
 "
 ```
 
 ## Running Examples
 
-All examples are in `backend/examples/`:
+All examples are in `backend/examples/`. Use the same playbook for any model provider by passing `--model`:
 
 ```bash
 cd backend
 
-# Multi-agent playbook
-uv run python examples/multi_agent_playbook.py --model devstral:local
+# Multi-agent playbook (built-in tools)
+uv run python examples/multi_agent_playbook.py --model anthropic:claude-3-haiku-20240307
 
-# Discovery only
-uv run python examples/devstral_discovery.py
+# Multi-agent playbook (Devstral local)
+uv run python examples/multi_agent_playbook.py --model devstral:local
 ```
 
 ## Local Devstral Setup
@@ -87,4 +87,3 @@ export DEVSTRAL_BASE_URL=http://localhost:1234/v1
 
 - [Multi-Agent Demo](multi-agent-demo.md) — Full walkthrough
 - [Custom Agent](custom-agent.md) — Create your own agent
-

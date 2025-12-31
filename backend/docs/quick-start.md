@@ -68,8 +68,8 @@ You'll see output like:
 │                                                               │
 │ Tools being used:                                             │
 │ • kaggle_search_competitions (Kaggle API)                     │
-│ • web_search (DuckDuckGo)                                     │
-│ • memory_store (Persistence)                                  │
+│ • web_search (Built-in WebSearchTool)                         │
+│ • memory (Built-in MemoryTool, Anthropic only)                │
 ╰──────────────────────────────────────────────────────────────╯
 ```
 
@@ -77,27 +77,27 @@ You'll see output like:
 
 ### Tool Calls
 
-Each agent uses toolsets to interact with external services:
+Each agent uses toolsets and built-in tools to interact with external services:
 
-| Toolset | Tools | Purpose |
+| Toolset / Tool | Tools | Purpose |
 |---------|-------|---------|
 | **KaggleToolset** | `kaggle_search_competitions`, `kaggle_get_leaderboard` | Kaggle API operations |
-| **SearchToolset** | `web_search`, `search_papers`, `search_kaggle` | Web and academic search |
-| **MemoryToolset** | `memory_store`, `memory_retrieve` | Cross-agent persistence |
+| **WebSearchTool** | `web_search` | Web search (built-in) |
+| **MemoryTool** | `memory` | Cross-agent persistence (Anthropic only) |
 
 ### Memory Persistence
 
-Information is shared between agents via the memory toolset:
+Information is shared between agents via the MemoryTool:
 
 ```python
 # LOBBYIST stores findings
-memory_store(key="target_competition", value={"id": "titanic", ...})
+memory(command="create", path="shared/target_competition.md", file_text="Titanic summary")
 
 # SCIENTIST retrieves them
-competition = memory_retrieve(key="target_competition")
+notes = memory(command="view", path="shared/target_competition.md")
 ```
 
-Memory is persisted to `examples/mission_memory.json`.
+Memory is persisted to `examples/mission_memory/`.
 
 ## Programmatic Usage
 
@@ -105,12 +105,12 @@ You can also use AGENT-K programmatically:
 
 ```python
 import asyncio
-from agent_k.agents.lycurgus import LycurgusOrchestrator, OrchestratorConfig
+from agent_k.agents.lycurgus import LycurgusOrchestrator, LycurgusSettings
 from agent_k.core.models import MissionCriteria, CompetitionType
 
 async def run_mission():
     # Configure the orchestrator
-    config = OrchestratorConfig(
+    config = LycurgusSettings(
         default_model='anthropic:claude-3-haiku-20240307',
         max_evolution_rounds=50,
     )
@@ -163,4 +163,3 @@ The dashboard shows:
 - [Concepts: Agents](concepts/agents.md) — Understand the multi-agent architecture
 - [Concepts: Toolsets](concepts/toolsets.md) — Learn about FunctionToolsets
 - [Examples: Custom Agent](examples/custom-agent.md) — Create your own agent
-

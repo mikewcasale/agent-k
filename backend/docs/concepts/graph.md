@@ -26,8 +26,7 @@ Each phase is implemented as a `BaseNode` subclass:
 from dataclasses import dataclass
 from pydantic_graph import BaseNode, End, GraphRunContext
 
-from agent_k.core.models import MissionResult, MissionState
-from agent_k.graph.state import GraphContext
+from agent_k.mission.state import GraphContext, MissionResult, MissionState
 
 @dataclass
 class DiscoveryNode(BaseNode[MissionState, MissionResult]):
@@ -277,4 +276,3 @@ await emitter.emit_phase_complete(
 - [Toolsets](toolsets.md) — Tools available to agents
 - [Model Configuration](models.md) — Supported model providers
 - [Mission Lifecycle](mission-lifecycle.md) — Detailed phase descriptions
-

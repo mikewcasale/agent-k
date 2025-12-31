@@ -88,8 +88,8 @@ MissionCriteria(
 
 4. **Select Best Match**
    ```
-   Tool: memory_store
-   - Store top competition for SCIENTIST
+   Tool: memory
+   - Create shared/target_competition.md for SCIENTIST
    ```
 
 ### Output
@@ -124,7 +124,7 @@ DiscoveryResult(
 
 1. **Retrieve Competition**
    ```
-   Tool: memory_retrieve(key="target_competition")
+   Tool: memory (view shared/target_competition.md)
    ```
 
 2. **Analyze Leaderboard**
@@ -137,21 +137,21 @@ DiscoveryResult(
 
 3. **Search Papers**
    ```
-   Tool: search_papers
+   Tool: web_search (site:arxiv.org OR site:paperswithcode.com)
    - Find relevant academic research
    - Identify state-of-the-art techniques
    ```
 
 4. **Find Winning Solutions**
    ```
-   Tool: search_kaggle
+   Tool: web_search (site:kaggle.com)
    - Search past competition winners
    - Extract common patterns
    ```
 
 5. **Synthesize Strategy**
    ```
-   Tool: memory_store(key="research_findings")
+   Tool: memory (create shared/research_findings.md)
    - Recommended approaches
    - Key techniques to try
    - Potential pitfalls
@@ -427,4 +427,3 @@ except CriticalError:
 - [Agents](agents.md) — Detailed agent documentation
 - [State Machine Graph](graph.md) — Graph implementation
 - [Examples](../examples/multi-agent-demo.md) — See missions in action
-

@@ -17,6 +17,7 @@ dependencies = [
     "opentelemetry-api>=1.27.0",
     "fastapi>=0.115.0",
     "uvicorn>=0.32.0",
+    "numpy>=1.26.0",
 ]
 
 [project.optional-dependencies]
@@ -29,6 +30,7 @@ dev = [
     "inline-snapshot>=0.8.0",
     "pytest-httpx>=0.30.0",
     "pytest-mock>=3.14.0",
+    "pydantic-evals>=0.2.0",
 ]
 docs = [
     "mkdocs>=1.6.0",
@@ -55,6 +57,7 @@ dev-dependencies = [
     "inline-snapshot>=0.8.0",
     "pytest-httpx>=0.30.0",
     "pytest-mock>=3.14.0",
+    "pydantic-evals>=0.2.0",
 ]
 
 [tool.uv.sources]
@@ -62,17 +65,50 @@ dev-dependencies = [
 
 [tool.ruff]
 line-length = 120
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "SIM", "TCH"]
-ignore = ["E501"]
+preview = true
+extend-select = [
+    "Q",        # flake8-quotes
+    "RUF100",   # unused noqa
+    "RUF018",   # assignment in assert
+    "C90",      # mccabe complexity
+    "UP",       # pyupgrade
+    "I",        # isort
+    "D",        # pydocstyle
+    "TID251",   # banned imports
+    "PLW1514",  # unspecified encoding
+]
+flake8-quotes = { inline-quotes = "single", multiline-quotes = "double" }
+mccabe = { max-complexity = 15 }
+ignore = [
+    "D100",    # missing module docstring
+    "D102",    # missing public method docstring
+    "D104",    # missing public package docstring
+    "D105",    # missing magic method docstring
+    "D107",    # missing __init__ docstring
+    "UP040",   # TypeAlias annotation - griffe doesn't support PEP 695 type statement
+    "UP046",   # Generic class with Generic subclass - griffe doesn't support PEP 695
+    "UP047",   # Generic function with type parameters - griffe doesn't support PEP 695
+]
 
 [tool.ruff.lint.isort]
+combine-as-imports = true
 known-first-party = ["agent_k"]
+split-on-trailing-comma = false
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"typing.TypedDict".msg = "Use typing_extensions.TypedDict instead."
+"typing.assert_never".msg = "Use typing_extensions.assert_never instead."
 
 [tool.ruff.format]
+docstring-code-format = true
 quote-style = "single"
+skip-magic-trailing-comma = true
 
 [tool.mypy]
 python_version = "3.11"

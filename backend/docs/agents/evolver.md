@@ -26,48 +26,34 @@ graph TB
     E --> |Max Generations| R
 ```
 
-## Toolsets
+## Builtin Tools
 
-| Toolset | Tools | Purpose |
-|---------|-------|---------|
-| **CodeExecutorToolset** | `code_executor`, `validate_code` | Execute and evaluate solutions |
-| **MemoryToolset** | `memory_retrieve` | Get research and prototype |
+| Tool | Purpose |
+|------|---------|
+| `CodeExecutionTool` | Execute and evaluate solutions |
+| `MemoryTool` | Store/retrieve evolution context |
+| `MCPServerTool` (Kaggle) | Submit and inspect leaderboard |
 
 ## Basic Usage
 
 ```python
-from agent_k.agents.evolver import create_evolver_agent, EvolverDeps, EvolutionConfig
-from agent_k.toolsets import create_code_executor_toolset, create_memory_toolset
-
-# Configure evolution
-evolution_config = EvolutionConfig(
-    population_size=50,
-    max_generations=100,
-    mutation_rate=0.3,
-    crossover_rate=0.7,
-    elite_size=5,
-    convergence_threshold=0.001,
-    convergence_generations=10,
-)
-
-# Create agent
-agent = create_evolver_agent(
-    model='anthropic:claude-3-haiku-20240307',
-    config=evolution_config,
-    toolsets=[code_executor_toolset, memory_toolset],
-)
+from agent_k.agents.evolver import EvolverDeps, evolver_agent
+from agent_k.ui.ag_ui import EventEmitter
 
 # Create dependencies
+competition = await kaggle_adapter.get_competition("titanic")
 deps = EvolverDeps(
-    http_client=http,
-    execution_sandbox=DockerSandbox(),
+    competition=competition,
     event_emitter=EventEmitter(),
+    initial_solution="print('baseline')",
+    max_generations=100,
+    target_score=0.90,
 )
 
 # Run evolution
-result = await agent.run(
+run_result = await evolver_agent.run(
     prompt="""
-    Evolve the prototype solution from memory to achieve fitness > 0.90.
+    Evolve the prototype solution to achieve fitness > 0.90.
     
     Use evolutionary strategies:
     - Mutation: Small code changes
@@ -77,7 +63,8 @@ result = await agent.run(
     deps=deps,
 )
 
-print(f"Best fitness: {result.data.best_solution.fitness}")
+output = run_result.output
+print(f"Best fitness: {output.best_fitness}")
 ```
 
 ## Evolution Process
@@ -204,34 +191,47 @@ def check_convergence(
     return False, ""
 ```
 
-## Evolution Config
+## Evolver Settings
 
 ```python
-from dataclasses import dataclass
+from pydantic import Field
+from pydantic_ai import ModelSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-@dataclass
-class EvolutionConfig:
-    """Evolution hyperparameters."""
-    
-    # Population
-    population_size: int = 50
-    elite_size: int = 5
-    
-    # Generations
-    max_generations: int = 100
-    timeout_seconds: int = 7200
-    
-    # Operators
-    mutation_rate: float = 0.3
-    crossover_rate: float = 0.7
-    tournament_size: int = 3
-    
-    # Convergence
-    convergence_threshold: float = 0.001
-    convergence_generations: int = 10
-    
-    # Target
-    target_fitness: float | None = None
+from agent_k.core.constants import DEFAULT_MODEL, EVOLUTION_POPULATION_SIZE, MAX_EVOLUTION_GENERATIONS
+
+
+class EvolverSettings(BaseSettings):
+    """Configuration for the Evolver agent."""
+
+    model_config = SettingsConfigDict(
+        env_prefix='EVOLVER_',
+        env_file='.env',
+        extra='ignore',
+        validate_default=True,
+    )
+
+    model: str = Field(default=DEFAULT_MODEL, description='Model identifier for evolution tasks')
+    temperature: float = Field(default=0.7, ge=0.0, le=2.0, description='Sampling temperature')
+    max_tokens: int = Field(default=4096, ge=1, description='Maximum tokens for responses')
+
+    tool_retries: int = Field(default=3, ge=0, description='Tool retry attempts')
+    output_retries: int = Field(default=2, ge=0, description='Output validation retry attempts')
+
+    population_size: int = Field(default=EVOLUTION_POPULATION_SIZE, ge=1, description='Population size')
+    max_generations: int = Field(default=MAX_EVOLUTION_GENERATIONS, ge=1, description='Max generations')
+    convergence_threshold: int = Field(default=5, ge=1, description='Generations without improvement')
+
+    enable_thinking: bool = Field(default=True, description='Enable extended reasoning mode')
+    thinking_budget_tokens: int = Field(default=4096, ge=0, description='Thinking token budget')
+
+    @property
+    def model_settings(self) -> ModelSettings:
+        """Build ModelSettings from configuration."""
+        return ModelSettings(
+            temperature=self.temperature,
+            max_tokens=self.max_tokens,
+        )
 ```
 
 ## Output Model
@@ -277,7 +277,7 @@ def get_evolver_instructions() -> str:
 Your mission is to optimize a solution through evolutionary code search.
 
 AVAILABLE TOOLS:
-1. memory_retrieve - Get prototype and research findings
+1. memory - Get prototype and research findings (view)
 2. evaluate_fitness - Evaluate a solution's score
 3. validate_code - Check code validity before evaluation
 
@@ -415,4 +415,3 @@ class EvolutionNode(BaseNode[MissionState, MissionResult]):
 ## API Reference
 
 See [API Reference: EVOLVER](../api/agents/evolver.md) for complete documentation.
-

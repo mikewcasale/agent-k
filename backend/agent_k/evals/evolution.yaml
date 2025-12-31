@@ -1,0 +1,6 @@
+cases:
+  - name: simple_optimization
+    inputs: Optimize this solution: def predict(x): return 0
+    expected_output: Improved solution with better logic
+    metadata:
+      difficulty: easy

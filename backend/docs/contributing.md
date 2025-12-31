@@ -133,10 +133,12 @@ agent-k/
 │   └── agent_k/
 │       ├── agents/       # Agent implementations
 │       ├── adapters/     # External service adapters
-│       ├── graph/        # State machine
+│       ├── mission/      # State machine
 │       ├── toolsets/     # FunctionToolset implementations
 │       ├── core/         # Domain models
-│       ├── infra/        # Config, logging, models
+│       ├── embeddings/   # RAG support
+│       ├── evals/        # Evaluation framework
+│       ├── infra/        # Config, logging, providers
 │       └── ui/           # AG-UI protocol
 └── frontend/
     ├── components/       # React components
@@ -165,7 +167,7 @@ See [Creating a Custom Agent](examples/custom-agent.md) for details.
 
 ### New API Endpoint
 
-1. Add route in `backend/agent_k/ui/ag_ui/routes/`
+1. Add route in `backend/agent_k/ui/ag_ui.py`
 2. Update OpenAPI schema if needed
 3. Add tests in `backend/tests/ui/`
 
@@ -263,9 +265,9 @@ Test components working together:
 
 ```python
 async def test_agent_with_toolset():
-    agent = create_my_agent()
+    agent = my_agent
     result = await agent.run('do something', deps=mock_deps)
-    assert result.data.success
+    assert result.output is not None
 ```
 
 ### Mocking
@@ -290,4 +292,3 @@ def mock_http():
 ## License
 
 AGENT-K is MIT licensed. By contributing, you agree that your contributions will be licensed under the MIT License.
-

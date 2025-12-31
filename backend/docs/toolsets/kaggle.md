@@ -14,23 +14,34 @@ The Kaggle toolset provides tools for interacting with the Kaggle API, including
 ## Setup
 
 ```python
-from agent_k.adapters.kaggle import KaggleAdapter, KaggleConfig
-from agent_k.toolsets import create_kaggle_toolset
+from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
+from agent_k.core.deps import KaggleDeps
+from agent_k.toolsets import kaggle_toolset
+from agent_k.ui.ag_ui import EventEmitter
 
 # Configure adapter
-config = KaggleConfig(
+config = KaggleSettings(
     username="your_kaggle_username",
     api_key="your_kaggle_api_key",
 )
 
-# Create adapter and toolset
+# Create adapter
 adapter = KaggleAdapter(config)
-kaggle_toolset = create_kaggle_toolset(adapter)
+deps = KaggleDeps(
+    kaggle_adapter=adapter,
+    event_emitter=EventEmitter(),
+)
 
 # Use with agent
 agent = Agent(
     'anthropic:claude-3-haiku-20240307',
+    deps_type=KaggleDeps,
     toolsets=[kaggle_toolset],
+)
+
+result = await agent.run(
+    "List featured Kaggle competitions",
+    deps=deps,
 )
 ```
 
@@ -174,9 +185,9 @@ async def kaggle_list_datasets(
 The `KaggleAdapter` handles API authentication and rate limiting:
 
 ```python
-from agent_k.adapters.kaggle import KaggleAdapter, KaggleConfig
+from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
 
-config = KaggleConfig(
+config = KaggleSettings(
     username="your_username",     # KAGGLE_USERNAME env var
     api_key="your_api_key",       # KAGGLE_KEY env var
     rate_limit_per_minute=100,    # Default: 100
@@ -226,7 +237,12 @@ async def kaggle_search_competitions(...):
 Mock the adapter for testing:
 
 ```python
+from types import SimpleNamespace
 from unittest.mock import AsyncMock
+
+from agent_k.core.deps import KaggleDeps
+from agent_k.toolsets.kaggle import kaggle_search_competitions
+from agent_k.ui.ag_ui import EventEmitter
 
 @pytest.fixture
 def mock_adapter():
@@ -237,14 +253,12 @@ def mock_adapter():
     return adapter
 
 async def test_kaggle_search(mock_adapter):
-    toolset = create_kaggle_toolset(mock_adapter)
-    results = await toolset.get_tool("kaggle_search_competitions")(
-        categories=["Featured"]
-    )
+    deps = KaggleDeps(kaggle_adapter=mock_adapter, event_emitter=EventEmitter())
+    ctx = SimpleNamespace(deps=deps)
+    results = await kaggle_search_competitions(ctx, categories=["Featured"])
     assert len(results) == 1
 ```
 
 ## API Reference
 
 See [API Reference: KaggleToolset](../api/toolsets/kaggle.md) for complete documentation.
-

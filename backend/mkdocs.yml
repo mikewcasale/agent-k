@@ -49,14 +49,14 @@ nav:
           - api/toolsets/kaggle.md
           - api/toolsets/search.md
           - api/toolsets/memory.md
-      - agent_k.graph:
-          - api/graph/nodes.md
-          - api/graph/state.md
+      - agent_k.mission:
+          - api/mission/nodes.md
+          - api/mission/state.md
       - agent_k.core:
           - api/core/models.md
           - api/core/exceptions.md
       - agent_k.infra:
-          - api/infra/models.md
+          - api/infra/providers.md
 
   - Project:
       - contributing.md

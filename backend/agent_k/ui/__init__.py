@@ -1,4 +1,11 @@
-"""User interface adapters for AGENT-K."""
-from __future__ import annotations
+"""User interface adapters for AGENT-K.
 
-__all__: list[str] = []
+(c) Mike Casale 2025.
+Licensed under the MIT License.
+"""
+
+from __future__ import annotations as _annotations
+
+# (None)
+
+__all__ = ()

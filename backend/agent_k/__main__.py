@@ -1,9 +1,15 @@
-"""Command-line entry point for AGENT-K."""
-from __future__ import annotations
+"""Command-line entry point for AGENT-K.
 
+(c) Mike Casale 2025.
+Licensed under the MIT License.
+"""
+
+from __future__ import annotations as _annotations
+
+# Local imports (core first, then alphabetical)
 from . import __version__
 
-__all__ = ['main']
+__all__ = ('main',)
 
 
 def main() -> None:

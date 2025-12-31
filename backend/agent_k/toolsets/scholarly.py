@@ -1,4 +1,11 @@
-"""Academic search toolset."""
-from __future__ import annotations
+"""Academic search toolset.
 
-__all__: list[str] = []
+(c) Mike Casale 2025.
+Licensed under the MIT License.
+"""
+
+from __future__ import annotations as _annotations
+
+# (None)
+
+__all__ = ()

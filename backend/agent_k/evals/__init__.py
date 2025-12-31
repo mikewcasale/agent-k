@@ -1,0 +1,20 @@
+"""Evaluation utilities for Agent-K.
+
+(c) Mike Casale 2025.
+Licensed under the MIT License.
+"""
+
+from __future__ import annotations as _annotations
+
+# Local imports (core first, then alphabetical)
+from .datasets import discovery_dataset, evolution_dataset, load_dataset
+from .evaluators import CompetitionSelected, FitnessImprovement, ValidPython
+
+__all__ = (
+    'CompetitionSelected',
+    'FitnessImprovement',
+    'ValidPython',
+    'discovery_dataset',
+    'evolution_dataset',
+    'load_dataset',
+)

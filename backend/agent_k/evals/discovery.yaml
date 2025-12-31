@@ -1,0 +1,11 @@
+cases:
+  - name: featured_competition
+    inputs: Find featured competitions with >$10k prize
+    expected_output: Competition selected with prize pool
+    metadata:
+      category: discovery
+  - name: research_competition
+    inputs: Find research competitions about NLP
+    expected_output: NLP competition selected
+    metadata:
+      category: discovery

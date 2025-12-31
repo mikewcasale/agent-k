@@ -1,30 +1,39 @@
-"""Shared test fixtures and helpers for AGENT-K tests."""
-from __future__ import annotations
+"""Shared test fixtures and helpers for AGENT-K tests.
+
+(c) Mike Casale 2025.
+Licensed under the MIT License.
+"""
+
+from __future__ import annotations as _annotations
 
 import asyncio
 import os
-from collections.abc import AsyncIterator, Iterator
-from dataclasses import dataclass, field
-from datetime import datetime
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeVar
+from unittest.mock import AsyncMock, MagicMock
 
 import httpx
 import pytest
-from pytest_mock import MockerFixture
-from unittest.mock import AsyncMock, MagicMock
+
+# Ensure provider keys are present during test collection to avoid import errors.
+os.environ.setdefault('ANTHROPIC_API_KEY', 'test-anthropic-key')
+os.environ.setdefault('OPENAI_API_KEY', 'test-openai-key')
 
 # Re-export dirty_equals for convenience
 if TYPE_CHECKING:
+    from collections.abc import AsyncIterator, Iterator
+    from datetime import datetime
+
     T = TypeVar('T')
 
-    def IsInstance(arg: type[T]) -> T: ...
-    def IsDatetime(*args: Any, **kwargs: Any) -> datetime: ...
-    def IsFloat(*args: Any, **kwargs: Any) -> float: ...
-    def IsInt(*args: Any, **kwargs: Any) -> int: ...
-    def IsNow(*args: Any, **kwargs: Any) -> datetime: ...
-    def IsStr(*args: Any, **kwargs: Any) -> str: ...
-    def IsBytes(*args: Any, **kwargs: Any) -> bytes: ...
+    def IsInstance(arg: type[T]) -> T: ...  # noqa: D103
+    def IsDatetime(*args: Any, **kwargs: Any) -> datetime: ...  # noqa: D103
+    def IsFloat(*args: Any, **kwargs: Any) -> float: ...  # noqa: D103
+    def IsInt(*args: Any, **kwargs: Any) -> int: ...  # noqa: D103
+    def IsNow(*args: Any, **kwargs: Any) -> datetime: ...  # noqa: D103
+    def IsStr(*args: Any, **kwargs: Any) -> str: ...  # noqa: D103
+    def IsBytes(*args: Any, **kwargs: Any) -> bytes: ...  # noqa: D103
 else:
     from dirty_equals import IsBytes, IsDatetime, IsFloat, IsInstance, IsInt, IsNow as _IsNow, IsStr
 
@@ -35,21 +44,12 @@ else:
         return _IsNow(*args, **kwargs)
 
 
-__all__ = (
-    'IsDatetime',
-    'IsFloat',
-    'IsNow',
-    'IsStr',
-    'IsBytes',
-    'IsInt',
-    'IsInstance',
-    'TestEnv',
-)
+__all__ = ('IsDatetime', 'IsFloat', 'IsNow', 'IsStr', 'IsBytes', 'IsInt', 'IsInstance', 'TestEnv')
 
 
 class TestEnv:
     """Helper for managing environment variables in tests."""
-    
+
     __test__ = False  # Prevent pytest from collecting this class
 
     def __init__(self) -> None:
@@ -106,8 +106,10 @@ async def mock_http_client() -> AsyncIterator[httpx.AsyncClient]:
 @pytest.fixture
 def mock_http_transport() -> httpx.MockTransport:
     """Create a mock HTTP transport for testing."""
+
     def handler(request: httpx.Request) -> httpx.Response:
         return httpx.Response(200, json={'status': 'ok'})
+
     return httpx.MockTransport(handler)
 
 
@@ -170,9 +172,11 @@ def temp_memory_path(tmp_path: Path) -> Path:
 
 # Mock data fixtures
 
+
 @dataclass
 class MockCompetition:
     """Mock competition data for testing."""
+
     id: str = 'titanic'
     title: str = 'Titanic - Machine Learning from Disaster'
     category: str = 'Getting Started'
@@ -180,7 +184,7 @@ class MockCompetition:
     deadline: str = '2030-01-01T00:00:00Z'
     team_count: int = 50000
     kernel_count: int = 10000
-    
+
     def model_dump(self) -> dict[str, Any]:
         return {
             'id': self.id,
@@ -196,16 +200,13 @@ class MockCompetition:
 @dataclass
 class MockLeaderboardEntry:
     """Mock leaderboard entry for testing."""
+
     rank: int = 1
     team_name: str = 'top_team'
     score: float = 0.99999
-    
+
     def model_dump(self) -> dict[str, Any]:
-        return {
-            'rank': self.rank,
-            'team_name': self.team_name,
-            'score': self.score,
-        }
+        return {'rank': self.rank, 'team_name': self.team_name, 'score': self.score}
 
 
 @pytest.fixture
@@ -238,24 +239,22 @@ def mock_leaderboard() -> list[MockLeaderboardEntry]:
 
 # Adapter mocks
 
+
 @pytest.fixture
 def mock_kaggle_adapter(
-    mock_competitions: list[MockCompetition],
-    mock_leaderboard: list[MockLeaderboardEntry],
+    mock_competitions: list[MockCompetition], mock_leaderboard: list[MockLeaderboardEntry]
 ) -> AsyncMock:
     """Create a mock Kaggle adapter for testing."""
     adapter = AsyncMock()
     adapter.search_competitions.return_value = [c.model_dump() for c in mock_competitions]
     adapter.get_competition.return_value = mock_competitions[0].model_dump()
     adapter.get_leaderboard.return_value = [e.model_dump() for e in mock_leaderboard]
-    adapter.list_datasets.return_value = [
-        {'name': 'train.csv', 'size': 59760},
-        {'name': 'test.csv', 'size': 27960},
-    ]
+    adapter.list_datasets.return_value = [{'name': 'train.csv', 'size': 59760}, {'name': 'test.csv', 'size': 27960}]
     return adapter
 
 
 # Platform adapter mock
+
 
 @pytest.fixture
 def mock_platform_adapter() -> AsyncMock:
@@ -266,4 +265,3 @@ def mock_platform_adapter() -> AsyncMock:
     adapter.get_leaderboard = AsyncMock(return_value=[])
     adapter.submit = AsyncMock(return_value={'submission_id': 'test_123'})
     return adapter
-

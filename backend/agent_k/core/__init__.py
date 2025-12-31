@@ -1,6 +1,12 @@
-"""Core domain primitives, models, and protocols for AGENT-K."""
-from __future__ import annotations
+"""Core domain primitives, models, and protocols for AGENT-K.
 
+(c) Mike Casale 2025.
+Licensed under the MIT License.
+"""
+
+from __future__ import annotations as _annotations
+
+# Local imports (core first, then alphabetical)
 from .constants import (
     CHECKPOINT_INTERVAL_GENERATIONS,
     CONVERGENCE_THRESHOLD_GENERATIONS,
@@ -20,9 +26,11 @@ from .constants import (
     PROTOTYPE_TIMEOUT_SECONDS,
     RESEARCH_TIMEOUT_SECONDS,
     RETRY_DELAY_SECONDS,
+    SOLUTION_EXECUTION_TIMEOUT_SECONDS,
     SUBMISSION_TIMEOUT_SECONDS,
     VALID_COMPETITION_TYPES,
 )
+from .deps import BaseDeps, KaggleDeps
 from .exceptions import (
     AdapterError,
     AgentError,
@@ -53,8 +61,8 @@ from .models import (
     Competition,
     CompetitionType,
     ErrorEvent,
-    EvolutionState,
     EvaluationMetric,
+    EvolutionState,
     GenerationMetrics,
     KaggleMCPCall,
     LeaderboardAnalysis,
@@ -65,8 +73,6 @@ from .models import (
     MemoryState,
     MissionCriteria,
     MissionPlan,
-    MissionResult,
-    MissionState,
     PhasePlan,
     PlannedTask,
     ResearchFindings,
@@ -75,6 +81,7 @@ from .models import (
     WebSearchCall,
 )
 from .protocols import PlatformAdapter
+from .settings import AgentKSettings
 from .types import (
     AgentDepsT,
     AsyncCallback,
@@ -103,7 +110,7 @@ from .types import (
     ToolType,
 )
 
-__all__ = [
+__all__ = (
     'CHECKPOINT_INTERVAL_GENERATIONS',
     'CONVERGENCE_THRESHOLD_GENERATIONS',
     'DEFAULT_KAGGLE_MCP_URL',
@@ -122,6 +129,7 @@ __all__ = [
     'PROTOTYPE_TIMEOUT_SECONDS',
     'RESEARCH_TIMEOUT_SECONDS',
     'RETRY_DELAY_SECONDS',
+    'SOLUTION_EXECUTION_TIMEOUT_SECONDS',
     'SUBMISSION_TIMEOUT_SECONDS',
     'VALID_COMPETITION_TYPES',
     'AdapterError',
@@ -147,6 +155,8 @@ __all__ = [
     'StateTransitionError',
     'SubmissionError',
     'ToolExecutionError',
+    'BaseDeps',
+    'KaggleDeps',
     'Checkpoint',
     'CodeExecutorCall',
     'Competition',
@@ -164,14 +174,13 @@ __all__ = [
     'MemoryState',
     'MissionCriteria',
     'MissionPlan',
-    'MissionResult',
-    'MissionState',
     'PhasePlan',
     'PlannedTask',
     'ResearchFindings',
     'Submission',
     'ToolCall',
     'WebSearchCall',
+    'AgentKSettings',
     'AgentDepsT',
     'AsyncCallback',
     'CompetitionId',
@@ -197,4 +206,4 @@ __all__ = [
     'TaskStatus',
     'ToolResult',
     'ToolType',
-]
+)

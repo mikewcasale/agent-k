@@ -86,37 +86,43 @@ agent_k/
 │
 ├── core/                       # Domain primitives
 │   ├── constants.py            # Domain constants
+│   ├── deps.py                 # Shared dependency containers
 │   ├── exceptions.py           # Exception hierarchy
 │   ├── models.py               # Core Pydantic models
 │   ├── protocols.py            # Interface definitions
+│   ├── settings.py             # Shared settings
 │   └── types.py                # Type aliases
 │
-├── graph/                      # State machine
+├── mission/                    # State machine
 │   ├── nodes.py                # Phase nodes (Discovery, Research, etc.)
 │   ├── edges.py                # Transition definitions
 │   ├── state.py                # Mission state models
 │   └── persistence.py          # Checkpoint management
 │
 ├── toolsets/                   # Agent tools
+│   ├── kaggle.py               # Kaggle toolset
+│   ├── search.py               # Web + paper search
+│   ├── memory.py               # Persistent memory
 │   ├── browser.py              # Browser automation
-│   ├── code_executor.py        # Sandboxed code execution
+│   ├── code.py                 # Sandboxed code execution
 │   └── scholarly.py            # Academic search
 │
-├── services/                   # Application services
-│   ├── competition.py          # Competition management
-│   ├── evolution.py            # Evolution orchestration
-│   └── submission.py           # Submission handling
+├── embeddings/                 # RAG support
+│   ├── embedder.py             # Embedding utilities
+│   ├── retriever.py            # Retrieval logic
+│   └── store.py                # Vector store helpers
+│
+├── evals/                      # Evaluation framework
+│   ├── datasets.py             # Dataset definitions
+│   ├── evaluators.py           # Evaluation logic
+│   └── discovery.yaml          # Sample eval cases
 │
 ├── ui/                         # UI adapters
-│   ├── ag_ui/                  # AG-UI protocol
-│   │   ├── adapter.py          # Event adapter
-│   │   ├── event_stream.py     # SSE streaming
-│   │   └── app.py              # FastAPI app
-│   └── console/                # Terminal console
-│       └── app.py              # Rich console UI
+│   └── ag_ui.py                # AG-UI protocol + EventEmitter
 │
 └── infra/                      # Infrastructure
     ├── config.py               # Configuration management
+    ├── providers.py            # Model provider configuration
     ├── logging.py              # Centralized logging
     └── instrumentation.py      # Logfire setup
 ```
@@ -140,10 +146,12 @@ orchestrator = LycurgusOrchestrator(model='anthropic:claude-sonnet-4-5')
 Discovers and evaluates Kaggle competitions matching user-specified criteria.
 
 ```python
-from agent_k import LobbyistAgent
+from agent_k import lobbyist_agent
 
-lobbyist = LobbyistAgent(model='anthropic:claude-sonnet-4-5')
-result = await lobbyist.run('Find featured competitions with $10k+ prize', deps=deps)
+result = await lobbyist_agent.run(
+    'Find featured competitions with $10k+ prize',
+    deps=deps,
+)
 ```
 
 ### SCIENTIST (Research)
@@ -151,10 +159,12 @@ result = await lobbyist.run('Find featured competitions with $10k+ prize', deps=
 Conducts comprehensive research including literature review, leaderboard analysis, and EDA.
 
 ```python
-from agent_k import ScientistAgent
+from agent_k import scientist_agent
 
-scientist = ScientistAgent(model='anthropic:claude-sonnet-4-5')
-report = await scientist.research('Analyze this tabular competition', deps=deps)
+report = await scientist_agent.run(
+    'Analyze this tabular competition',
+    deps=deps,
+)
 ```
 
 ### EVOLVER (Optimization)
@@ -162,10 +172,12 @@ report = await scientist.research('Analyze this tabular competition', deps=deps)
 Evolves solutions using evolutionary code search to maximize competition score.
 
 ```python
-from agent_k import EvolverAgent
+from agent_k import evolver_agent
 
-evolver = EvolverAgent(model='anthropic:claude-sonnet-4-5')
-result = await evolver.evolve('Optimize this XGBoost solution', deps=deps)
+result = await evolver_agent.run(
+    'Optimize this XGBoost solution',
+    deps=deps,
+)
 ```
 
 ---

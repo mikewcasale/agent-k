@@ -1451,12 +1451,12 @@ def _generate_fallback_prototype(
     def _normalize_label(label):
         return str(label).lower().replace("class_", "").replace("class ", "")
     
-    predictions = {}
+    predictions = {{}}
     for column in TRAIN_TARGET_COLUMNS:
         targets = _load_targets("train.csv", column)
         predictions[column] = _prediction(targets)
     
-    class_probs = {}
+    class_probs = {{}}
     if len(TRAIN_TARGET_COLUMNS) == 1 and len(TARGET_COLUMNS) > 1:
         targets = _load_targets("train.csv", TRAIN_TARGET_COLUMNS[0])
         counts = Counter(targets)

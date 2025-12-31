@@ -79,12 +79,12 @@ __all__ = (
 # =============================================================================
 # Section 4: Type Aliases
 # =============================================================================
-type CompetitionId = str
-type MissionId = str
-type TaskId = str
-type LeaderboardRank = int
-type Score = float
-type FitnessScore = float
+CompetitionId = TypeAliasType("CompetitionId", str)
+MissionId = TypeAliasType("MissionId", str)
+TaskId = TypeAliasType("TaskId", str)
+LeaderboardRank = TypeAliasType("LeaderboardRank", int)
+Score = TypeAliasType("Score", float)
+FitnessScore = TypeAliasType("FitnessScore", float)
 
 JsonDict = TypeAliasType("JsonDict", dict[str, Any])
 MessageHistory = TypeAliasType("MessageHistory", list["ModelMessage"])

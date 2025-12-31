@@ -17,6 +17,15 @@ from typing import TYPE_CHECKING, Any, Final
 if TYPE_CHECKING:
     from pydantic_ai import Agent
 
+    from agent_k.agents.evolver import evolver_agent as evolver_agent
+    from agent_k.agents.lobbyist import lobbyist_agent as lobbyist_agent
+    from agent_k.agents.lycurgus import (
+        LycurgusOrchestrator as LycurgusOrchestrator,
+        LycurgusSettings as LycurgusSettings,
+        MissionStatus as MissionStatus,
+    )
+    from agent_k.agents.scientist import scientist_agent as scientist_agent
+
 # =============================================================================
 # Section 2: Module Exports
 # =============================================================================
@@ -55,10 +64,31 @@ def get_agent(name: str) -> Agent[Any, Any]:
     return AGENT_REGISTRY[name]
 
 
-# =============================================================================
-# Section 13: Agent Imports (registration side effects)
-# =============================================================================
-from agent_k.agents.evolver import evolver_agent  # noqa: E402
-from agent_k.agents.lobbyist import lobbyist_agent  # noqa: E402
-from agent_k.agents.lycurgus import LycurgusOrchestrator, LycurgusSettings, MissionStatus  # noqa: E402
-from agent_k.agents.scientist import scientist_agent  # noqa: E402
+def __getattr__(name: str):
+    """Lazy import agents to avoid requiring API keys at import time."""
+    if name == "evolver_agent":
+        from agent_k.agents.evolver import evolver_agent
+
+        return evolver_agent
+    if name == "lobbyist_agent":
+        from agent_k.agents.lobbyist import lobbyist_agent
+
+        return lobbyist_agent
+    if name == "scientist_agent":
+        from agent_k.agents.scientist import scientist_agent
+
+        return scientist_agent
+    if name == "LycurgusOrchestrator":
+        from agent_k.agents.lycurgus import LycurgusOrchestrator
+
+        return LycurgusOrchestrator
+    if name == "LycurgusSettings":
+        from agent_k.agents.lycurgus import LycurgusSettings
+
+        return LycurgusSettings
+    if name == "MissionStatus":
+        from agent_k.agents.lycurgus import MissionStatus
+
+        return MissionStatus
+    msg = f"module {__name__!r} has no attribute {name!r}"
+    raise AttributeError(msg)

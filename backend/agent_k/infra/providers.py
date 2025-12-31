@@ -12,7 +12,7 @@ from __future__ import annotations as _annotations
 # =============================================================================
 # Standard library (alphabetical)
 import os
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Final, TypeAlias
 
 # Third-party (alphabetical)
 from pydantic_ai.models.openai import OpenAIChatModel
@@ -47,7 +47,7 @@ DEVSTRAL_BASE_URL: Final[str] = os.getenv(
 # =============================================================================
 # Section 4: Type Aliases
 # =============================================================================
-type ModelType = str
+ModelType: TypeAlias = str
 
 
 # =============================================================================

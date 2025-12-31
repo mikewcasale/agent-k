@@ -9,12 +9,15 @@ from __future__ import annotations as _annotations
 
 import csv
 import math
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
 from agent_k.core.models import EvaluationMetric
 from agent_k.mission.nodes import _compute_baseline_score, _evaluate_metric, _prediction_value
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 __all__ = ()
 

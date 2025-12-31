@@ -7,15 +7,9 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 from typing import Final
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = (
     "DISCOVERY_TIMEOUT_SECONDS",
     "RESEARCH_TIMEOUT_SECONDS",
@@ -41,9 +35,6 @@ __all__ = (
     "KAGGLE_API_BASE_URL",
 )
 
-# =============================================================================
-# Section 3: Constants
-# =============================================================================
 # Timeouts (seconds)
 DISCOVERY_TIMEOUT_SECONDS: Final[int] = 300
 RESEARCH_TIMEOUT_SECONDS: Final[int] = 600

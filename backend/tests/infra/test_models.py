@@ -21,7 +21,6 @@ from agent_k.infra.providers import (
     is_devstral_model,
 )
 
-
 __all__ = ()
 
 

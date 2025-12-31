@@ -7,34 +7,27 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 import asyncio
 import os
-from collections.abc import Awaitable, Callable, Iterator
 from contextlib import contextmanager
 from functools import wraps
-from typing import Any, Literal, ParamSpec, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Literal, ParamSpec, TypeVar, cast
 
 # Third-party (alphabetical)
 import logfire
 from opentelemetry import trace
 from opentelemetry.trace import Span, Status, StatusCode
 
-# =============================================================================
-# Section 2: Type Variables
-# =============================================================================
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable, Iterator
+
 P = ParamSpec("P")
 """Parameter specification for traced decorators."""
 
 R = TypeVar("R")
 """Type variable for traced return values."""
 
-# =============================================================================
-# Section 3: Module Exports
-# =============================================================================
 __all__ = (
     "configure_instrumentation",
     "get_logger",
@@ -44,9 +37,6 @@ __all__ = (
 )
 
 
-# =============================================================================
-# Section 11: Classes
-# =============================================================================
 class Metrics:
     """Centralized metrics recording.
 
@@ -115,9 +105,6 @@ class Metrics:
         )
 
 
-# =============================================================================
-# Section 12: Functions
-# =============================================================================
 def configure_instrumentation(
     *,
     service_name: str = "agent-k",

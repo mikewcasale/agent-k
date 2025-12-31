@@ -7,18 +7,12 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from .types import ErrorCategory, RecoveryStrategy
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = (
     "AgentKError",
     "AgentError",

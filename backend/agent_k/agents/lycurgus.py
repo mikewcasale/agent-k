@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 import inspect
 import json
@@ -31,6 +28,7 @@ from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
 from agent_k.adapters.openevolve import OpenEvolveAdapter
 from agent_k.agents.evolver import evolver_agent
 from agent_k.agents.lobbyist import lobbyist_agent
+from agent_k.agents.prompts import LYCURGUS_SYSTEM_PROMPT
 from agent_k.agents.scientist import scientist_agent
 from agent_k.core.constants import DEFAULT_MODEL
 from agent_k.core.exceptions import CompetitionNotFoundError
@@ -52,9 +50,6 @@ if TYPE_CHECKING:
 
     from agent_k.core.protocols import PlatformAdapter
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = (
     "LycurgusDeps",
     "LycurgusOrchestrator",
@@ -66,15 +61,9 @@ __all__ = (
     "validate_mission_result",
 )
 
-# =============================================================================
-# Section 3: Constants
-# =============================================================================
 SCHEMA_VERSION: Final[str] = "1.0.0"
 
 
-# =============================================================================
-# Section 4: Settings
-# =============================================================================
 class LycurgusSettings(BaseSettings):
     """Settings for the Lycurgus orchestrator."""
 
@@ -111,9 +100,6 @@ class LycurgusSettings(BaseSettings):
         return cls(default_model=model)
 
 
-# =============================================================================
-# Section 5: Dependencies
-# =============================================================================
 @dataclass
 class LycurgusDeps:
     """Dependencies for the Lycurgus orchestrator."""
@@ -123,9 +109,6 @@ class LycurgusDeps:
     platform_adapter: PlatformAdapter
 
 
-# =============================================================================
-# Section 6: Output Types
-# =============================================================================
 @dataclass
 class MissionStatus:
     """Mission status snapshot."""
@@ -137,23 +120,9 @@ class MissionStatus:
     ABORTED: ClassVar[str] = "aborted"
 
 
-# =============================================================================
-# Section 7: System Prompt
-# =============================================================================
-LYCURGUS_SYSTEM_PROMPT: Final[str] = (
-    "You are LYCURGUS, orchestrating the AGENT-K multi-agent system."
-)
-
-
-# =============================================================================
-# Section 8: Agent Singleton
-# =============================================================================
 # (None - LYCURGUS is represented by the orchestrator class below.)
 
 
-# =============================================================================
-# Section 9: Tools
-# =============================================================================
 class LycurgusOrchestrator:
     """Orchestration agent coordinating the multi-agent Kaggle competition system.
 
@@ -456,7 +425,7 @@ class LycurgusOrchestrator:
         state = self._state
         if state is None:
             raise RuntimeError("No active mission")
-        progress = _calculate_progress(state)
+        progress = self._calculate_progress(state)
         metrics = {
             "phases_completed": list(state.phases_completed),
             "competitions_found": len(state.discovered_competitions),
@@ -554,6 +523,40 @@ class LycurgusOrchestrator:
     # =========================================================================
     # Private Methods (internal implementation)
     # =========================================================================
+    def _calculate_progress(self, state: MissionState) -> float:
+        """Calculate mission progress from the current state."""
+        phases = ("discovery", "research", "prototype", "evolution", "submission")
+        completed = float(len(state.phases_completed))
+        if state.current_phase in phases and state.current_phase not in state.phases_completed:
+            completed += 0.5
+        return round(min(completed / len(phases), 1.0), 3)
+
+    def _create_platform_adapter(self) -> PlatformAdapter:
+        """Create a platform adapter based on available credentials."""
+        username = os.getenv("KAGGLE_USERNAME")
+        api_key = os.getenv("KAGGLE_KEY")
+        if username and api_key:
+            return KaggleAdapter(KaggleSettings(username=username, api_key=api_key))
+        return OpenEvolveAdapter()
+
+    async def _maybe_enter(self, adapter: PlatformAdapter) -> None:
+        """Enter adapter context or authenticate when required."""
+        enter = getattr(adapter, "__aenter__", None)
+        if callable(enter):
+            result = enter()
+            if inspect.isawaitable(result):
+                await result
+            return
+        await adapter.authenticate()
+
+    async def _maybe_exit(self, adapter: PlatformAdapter) -> None:
+        """Exit adapter context manager when supported."""
+        exit_fn = getattr(adapter, "__aexit__", None)
+        if callable(exit_fn):
+            result = exit_fn(None, None, None)
+            if inspect.isawaitable(result):
+                await result
+
     async def _initialize_resources(self) -> None:
         """Initialize async resources."""
         if self._resources_ready:
@@ -566,10 +569,10 @@ class LycurgusOrchestrator:
             self._http_client = httpx.AsyncClient()
 
         if self._platform_adapter is None:
-            self._platform_adapter = _create_platform_adapter()
+            self._platform_adapter = self._create_platform_adapter()
             self._owns_platform_adapter = True
 
-        await _maybe_enter(self._platform_adapter)
+        await self._maybe_enter(self._platform_adapter)
         self._resources_ready = True
 
     async def _cleanup_resources(self) -> None:
@@ -578,7 +581,7 @@ class LycurgusOrchestrator:
             return
 
         if self._owns_platform_adapter and self._platform_adapter:
-            await _maybe_exit(self._platform_adapter)
+            await self._maybe_exit(self._platform_adapter)
 
         if self._owns_http_client and self._http_client:
             await self._http_client.aclose()
@@ -614,41 +617,4 @@ def validate_mission_result(result: MissionResult) -> MissionResult:
     return result
 
 
-def _calculate_progress(state: MissionState) -> float:
-    phases = ("discovery", "research", "prototype", "evolution", "submission")
-    completed = float(len(state.phases_completed))
-    if state.current_phase in phases and state.current_phase not in state.phases_completed:
-        completed += 0.5
-    return round(min(completed / len(phases), 1.0), 3)
-
-
-def _create_platform_adapter() -> PlatformAdapter:
-    username = os.getenv("KAGGLE_USERNAME")
-    api_key = os.getenv("KAGGLE_KEY")
-    if username and api_key:
-        return KaggleAdapter(KaggleSettings(username=username, api_key=api_key))
-    return OpenEvolveAdapter()
-
-
-async def _maybe_enter(adapter: PlatformAdapter) -> None:
-    enter = getattr(adapter, "__aenter__", None)
-    if callable(enter):
-        result = enter()
-        if inspect.isawaitable(result):
-            await result
-        return
-    await adapter.authenticate()
-
-
-async def _maybe_exit(adapter: PlatformAdapter) -> None:
-    exit_fn = getattr(adapter, "__aexit__", None)
-    if callable(exit_fn):
-        result = exit_fn(None, None, None)
-        if inspect.isawaitable(result):
-            await result
-
-
-# =============================================================================
-# Section 11: Dynamic Instructions
-# =============================================================================
 # (None)

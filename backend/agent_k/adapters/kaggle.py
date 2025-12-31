@@ -7,19 +7,15 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 import asyncio
 import csv
 import io
 import re
-from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Final
+from typing import TYPE_CHECKING, Any, Final
 
 # Third-party (alphabetical)
 import httpx
@@ -44,24 +40,18 @@ from agent_k.core.models import (
 )
 from agent_k.core.protocols import PlatformAdapter
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
 __all__ = (
     "KaggleAdapter",
     "KaggleSettings",
     "SCHEMA_VERSION",
 )
 
-# =============================================================================
-# Section 3: Constants
-# =============================================================================
 SCHEMA_VERSION: Final[str] = "1.0.0"
 
 
-# =============================================================================
-# Section 4: Settings
-# =============================================================================
 class KaggleSettings(BaseSettings):
     """Settings for Kaggle adapter.
 
@@ -98,9 +88,6 @@ class KaggleSettings(BaseSettings):
     )
 
 
-# =============================================================================
-# Section 11: Classes
-# =============================================================================
 @dataclass
 class KaggleAdapter(PlatformAdapter):
     """Kaggle platform adapter.

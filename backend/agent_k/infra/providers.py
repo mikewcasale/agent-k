@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 import os
 from typing import TYPE_CHECKING, Final, TypeAlias
@@ -22,9 +19,6 @@ from pydantic_ai.providers.openrouter import OpenRouterProvider
 if TYPE_CHECKING:
     from pydantic_ai.models import Model
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = (
     "get_model",
     "create_devstral_model",
@@ -35,24 +29,15 @@ __all__ = (
     "ModelType",
 )
 
-# =============================================================================
-# Section 3: Constants
-# =============================================================================
 DEVSTRAL_MODEL_ID: Final[str] = "mistralai/devstral-small-2-2512"
 DEVSTRAL_BASE_URL: Final[str] = os.getenv(
     "DEVSTRAL_BASE_URL",
     "http://192.168.105.1:1234/v1",
 )
 
-# =============================================================================
-# Section 4: Type Aliases
-# =============================================================================
 ModelType: TypeAlias = str
 
 
-# =============================================================================
-# Section 12: Functions
-# =============================================================================
 def create_devstral_model(
     model_id: str = DEVSTRAL_MODEL_ID,
     base_url: str | None = None,

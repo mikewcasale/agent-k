@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 import csv
 import hashlib
@@ -21,9 +18,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import Enum
 from pathlib import Path
-from typing import Any, Final
-
-from typing_extensions import TypeAliasType
+from typing import Any, Final, TypeAlias
 
 # Third-party (alphabetical)
 import logfire
@@ -47,9 +42,6 @@ from agent_k.core.models import (
 )
 from agent_k.core.protocols import PlatformAdapter
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = (
     "OpenEvolveAdapter",
     "OpenEvolveEvolutionConfig",
@@ -60,18 +52,12 @@ __all__ = (
     "SCHEMA_VERSION",
 )
 
-# =============================================================================
-# Section 3: Constants
-# =============================================================================
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _DEFAULT_PRIZE_POOL: Final[int] = 50_000
 _DEFAULT_SUBMISSION_ROWS: Final[int] = 50
 _LEADERBOARD_SIZE: Final[int] = 25
 
 
-# =============================================================================
-# Section 4: Settings
-# =============================================================================
 class OpenEvolveSettings(BaseSettings):
     """Settings for OpenEvolve adapter.
 
@@ -116,9 +102,6 @@ class OpenEvolveSettings(BaseSettings):
     )
 
 
-# =============================================================================
-# Section 6: Enumerations
-# =============================================================================
 class OpenEvolveJobState(str, Enum):
     """Lifecycle state for an OpenEvolve job."""
 
@@ -128,9 +111,6 @@ class OpenEvolveJobState(str, Enum):
     FAILED = "failed"
 
 
-# =============================================================================
-# Section 8: Pydantic Models
-# =============================================================================
 class OpenEvolveEvolutionConfig(BaseModel):
     """Evolution configuration for OpenEvolve jobs."""
 
@@ -172,22 +152,10 @@ class OpenEvolveSolution(BaseModel):
     created_at: datetime = Field(..., description="When the solution was finalized")
 
 
-# =============================================================================
-# Section 4: Type Aliases
-# =============================================================================
-FitnessFunction = TypeAliasType(
-    "FitnessFunction",
-    Callable[[str], float | Awaitable[float]],
-)
-EvolutionConfigInput = TypeAliasType(
-    "EvolutionConfigInput",
-    OpenEvolveEvolutionConfig | dict[str, Any] | None,
-)
+FitnessFunction: TypeAlias = Callable[[str], float | Awaitable[float]]
+EvolutionConfigInput: TypeAlias = "OpenEvolveEvolutionConfig | dict[str, Any] | None"
 
 
-# =============================================================================
-# Section 9: Dataclasses
-# =============================================================================
 @dataclass
 class _OpenEvolveJob:
     """Internal tracking for OpenEvolve evolution jobs."""
@@ -204,9 +172,6 @@ class _OpenEvolveJob:
     error_message: str | None = None
 
 
-# =============================================================================
-# Section 11: Classes
-# =============================================================================
 @dataclass
 class OpenEvolveAdapter(PlatformAdapter):
     """In-memory adapter for OpenEvolve integration."""
@@ -487,9 +452,6 @@ class OpenEvolveAdapter(PlatformAdapter):
             self._evolution_jobs.pop(job_id, None)
 
 
-# =============================================================================
-# Section 12: Functions
-# =============================================================================
 def _build_default_catalog() -> list[Competition]:
     """Create a default set of OpenEvolve competitions."""
     now = datetime.now(UTC)

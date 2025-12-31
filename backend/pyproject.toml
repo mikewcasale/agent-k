@@ -69,7 +69,13 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "TCH"]
-ignore = ["E501"]
+ignore = [
+    "E501",    # Line too long (handled by formatter)
+    "UP040",   # TypeAlias annotation - griffe doesn't support PEP 695 type statement
+    "UP046",   # Generic class with Generic subclass - griffe doesn't support PEP 695
+    "UP047",   # Generic function with type parameters - griffe doesn't support PEP 695
+    "TC003",   # Move import into type-checking block - not always desirable
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["agent_k"]

@@ -7,28 +7,16 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 from functools import lru_cache
 from importlib import import_module
 from typing import Final, Protocol, cast, runtime_checkable
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = ("DEFAULT_MODEL", "embed_documents", "embed_query", "get_embedder")
 
-# =============================================================================
-# Section 3: Constants
-# =============================================================================
 DEFAULT_MODEL: Final[str] = "openai:text-embedding-3-small"
 
 
-# =============================================================================
-# Section 12: Functions
-# =============================================================================
 @runtime_checkable
 class EmbedQueryResult(Protocol):
     """Protocol for embed_query results."""
@@ -107,4 +95,4 @@ def _resolve_embedder_class() -> type[Embedder]:
     embedder_cls = getattr(module, "Embedder", None)
     if embedder_cls is None:  # pragma: no cover - optional dependency
         raise RuntimeError("pydantic_ai Embedder is not available")
-    return cast(type[Embedder], embedder_cls)
+    return cast("type[Embedder]", embedder_cls)

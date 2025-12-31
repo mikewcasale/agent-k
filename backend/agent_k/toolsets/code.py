@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 from typing import Any
 
@@ -23,9 +20,6 @@ try:  # pragma: no cover - optional dependency
 except ImportError:  # pragma: no cover - optional dependency
     OpenAIChatModel = None  # type: ignore[misc,assignment]
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = (
     "code_toolset",
     "create_code_execution_tool",
@@ -37,9 +31,6 @@ __all__ = (
 # =============================================================================
 code_toolset: FunctionToolset[Any] = FunctionToolset(id="code")
 
-# =============================================================================
-# Section 12: Functions
-# =============================================================================
 
 
 def create_code_execution_tool() -> CodeExecutionTool:

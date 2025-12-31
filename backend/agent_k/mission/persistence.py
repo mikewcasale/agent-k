@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 from datetime import UTC, datetime
 from pathlib import Path
@@ -22,20 +19,11 @@ from pydantic_graph.persistence.file import FileStatePersistence
 # Local imports (core first, then alphabetical)
 from .state import MissionResult, MissionState
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = ("MissionPersistence", "create_persistence", "CHECKPOINT_DIR")
 
-# =============================================================================
-# Section 3: Constants
-# =============================================================================
 CHECKPOINT_DIR: Final[Path] = Path("~/.agent_k/checkpoints").expanduser()
 
 
-# =============================================================================
-# Section 11: Classes
-# =============================================================================
 class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
     """Mission-specific persistence with checkpoint rotation."""
 
@@ -73,9 +61,6 @@ class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
             old_checkpoint.unlink()
 
 
-# =============================================================================
-# Section 12: Functions
-# =============================================================================
 def create_persistence(mission_id: str) -> MissionPersistence:
     """Factory for mission persistence."""
     return MissionPersistence(mission_id)

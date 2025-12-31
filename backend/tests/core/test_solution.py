@@ -7,7 +7,7 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -17,6 +17,11 @@ from agent_k.core.solution import (
     execute_solution,
     parse_baseline_score,
 )
+
+if TYPE_CHECKING:
+    from pathlib import Path
+
+    from tests.conftest import TestEnv
 
 __all__ = ()
 
@@ -64,7 +69,7 @@ class TestEnvSanitization:
 
     def test_sanitize_env_filters_sensitive_keys(
         self,
-        env: "TestEnv",
+        env: TestEnv,
         tmp_path: Path,
     ) -> None:
         """Sanitization should drop sensitive keys and set defaults."""

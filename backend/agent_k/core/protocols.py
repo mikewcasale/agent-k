@@ -8,18 +8,16 @@ See LICENSE file for details.
 from __future__ import annotations as _annotations
 
 from abc import abstractmethod
-from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
     from .models import Competition, LeaderboardEntry, Submission
 
 __all__ = ("PlatformAdapter",)
 
 
-# =============================================================================
-# Section 10: Protocols
-# =============================================================================
 @runtime_checkable
 class PlatformAdapter(Protocol):
     """Protocol for platform adapters.

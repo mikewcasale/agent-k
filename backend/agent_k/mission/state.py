@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -35,20 +32,11 @@ if TYPE_CHECKING:
     from agent_k.core.protocols import PlatformAdapter
     from agent_k.ui.ag_ui import EventEmitter
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = ("MissionResult", "MissionState", "GraphContext", "SCHEMA_VERSION")
 
-# =============================================================================
-# Section 3: Constants
-# =============================================================================
 SCHEMA_VERSION: Final[str] = "1.0.0"
 
 
-# =============================================================================
-# Section 8: Pydantic Models
-# =============================================================================
 class MissionState(BaseModel):
     """State flowing through the mission graph."""
 
@@ -195,9 +183,6 @@ class MissionResult(BaseModel):
     )
 
 
-# =============================================================================
-# Section 9: Dataclasses
-# =============================================================================
 @dataclass(slots=True)
 class GraphContext:
     """Context passed to graph execution."""

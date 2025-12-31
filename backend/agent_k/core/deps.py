@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
@@ -20,15 +17,9 @@ if TYPE_CHECKING:
     from agent_k.adapters.kaggle import KaggleAdapter
     from agent_k.ui.ag_ui import EventEmitter
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = ("BaseDeps", "KaggleDeps")
 
 
-# =============================================================================
-# Section 9: Dataclasses
-# =============================================================================
 @dataclass(kw_only=True)
 class BaseDeps:
     """Base dependencies shared across agents."""

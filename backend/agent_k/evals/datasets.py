@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 from pathlib import Path
 
@@ -17,15 +14,9 @@ from pathlib import Path
 from pydantic_evals import Case, Dataset
 from pydantic_evals.evaluators import Contains, IsInstance, LLMJudge, MaxDuration
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = ("discovery_dataset", "evolution_dataset", "load_dataset")
 
 
-# =============================================================================
-# Section 12: Functions
-# =============================================================================
 def load_dataset(name: str) -> Dataset:
     """Load dataset from YAML file.
 

@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 import os
 import shutil
@@ -42,9 +39,6 @@ else:
         pass
 
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = (
     "AgentKMemoryTool",
     "create_memory_backend",
@@ -52,15 +46,9 @@ __all__ = (
     "register_memory_tool",
 )
 
-# =============================================================================
-# Section 3: Constants
-# =============================================================================
 _DEFAULT_MEMORY_DIR = Path(os.getenv("AGENT_K_MEMORY_DIR", ".agent_k_memory"))
 
 
-# =============================================================================
-# Section 11: Classes
-# =============================================================================
 class AgentKMemoryTool(_MemoryBase):  # pragma: no cover - optional dependency
     """File-backed memory implementation for Anthropic MemoryTool."""
 
@@ -200,9 +188,6 @@ class AgentKMemoryTool(_MemoryBase):  # pragma: no cover - optional dependency
         path.write_text(text, encoding="utf-8")
 
 
-# =============================================================================
-# Section 12: Functions
-# =============================================================================
 
 
 def create_memory_backend(storage_path: Path | None = None) -> AgentKMemoryTool:

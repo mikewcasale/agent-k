@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 import asyncio
 import base64
@@ -18,8 +15,7 @@ import re
 import sys
 import time
 from dataclasses import dataclass
-from pathlib import Path
-from typing import Any, Final, cast
+from typing import TYPE_CHECKING, Any, Final, cast
 
 # Third-party (alphabetical)
 from pydantic_ai import Agent, ModelSettings
@@ -29,14 +25,11 @@ from pydantic_ai.messages import BuiltinToolReturnPart, ModelResponse
 # Local imports (core first, then alphabetical)
 from agent_k.infra.providers import get_model
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
+if TYPE_CHECKING:
+    from pathlib import Path
+
 __all__ = ("BASELINE_SCORE_PATTERN", "ExecutionResult", "execute_solution", "parse_baseline_score")
 
-# =============================================================================
-# Section 3: Constants
-# =============================================================================
 BASELINE_SCORE_PATTERN: Final[re.Pattern[str]] = re.compile(
     r"Baseline .*? score:\s*(-?[0-9.]+)",
     re.IGNORECASE,
@@ -69,9 +62,6 @@ _SENSITIVE_ENV_TOKENS: Final[tuple[str, ...]] = (
 _CODE_EXECUTION_AGENT_CACHE: dict[str, Agent[None, str]] = {}
 
 
-# =============================================================================
-# Section 9: Dataclasses
-# =============================================================================
 @dataclass(frozen=True, slots=True)
 class ExecutionResult:
     """Result of executing a solution script."""
@@ -83,9 +73,6 @@ class ExecutionResult:
     timed_out: bool
 
 
-# =============================================================================
-# Section 12: Functions
-# =============================================================================
 async def execute_solution(
     code: str,
     work_path: Path,
@@ -159,7 +146,7 @@ async def _execute_solution_local(
                 process.communicate(),
                 timeout=timeout_seconds,
             )
-    except asyncio.TimeoutError:
+    except TimeoutError:
         timed_out = True
         process.kill()
         stdout, stderr = await process.communicate()
@@ -213,7 +200,7 @@ def _get_code_execution_agent(model_spec: str) -> Agent[None, str]:
         return cached
 
     model_settings = cast(
-        ModelSettings,
+        "ModelSettings",
         {
             "temperature": 0.0,
             "max_tokens": 256,
@@ -330,16 +317,13 @@ def _sanitize_env(
     *,
     work_path: Path,
 ) -> dict[str, str]:
-    sanitized = {
-        key: value
-        for key, value in os.environ.items()
-        if not _is_sensitive_env_key(key)
-    }
+    sanitized = {key: value for key, value in os.environ.items() if not _is_sensitive_env_key(key)}
     if extra_env:
         sanitized.update(extra_env)
     sanitized.setdefault("PYTHONNOUSERSITE", "1")
     sanitized.setdefault("PYTHONDONTWRITEBYTECODE", "1")
-    sanitized.setdefault("HOME", str(work_path))
+    # Always override HOME to isolate execution in the work directory
+    sanitized["HOME"] = str(work_path)
     return sanitized
 
 

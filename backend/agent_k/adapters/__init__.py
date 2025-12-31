@@ -7,18 +7,12 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Local imports (core first, then alphabetical)
 from agent_k.core.protocols import PlatformAdapter
 
 from .kaggle import KaggleAdapter, KaggleSettings
 from .openevolve import OpenEvolveAdapter, OpenEvolveSettings
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = (
     "PlatformAdapter",
     "KaggleAdapter",

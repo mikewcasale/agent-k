@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 import asyncio
 import json
@@ -19,7 +16,7 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any, Final, Literal
+from typing import TYPE_CHECKING, Any, Final, Literal, TypeAlias
 
 # Third-party (alphabetical)
 import logfire
@@ -28,7 +25,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic_ai import Agent
-from typing_extensions import TypeAliasType
 
 # Local imports (core first, then alphabetical)
 from agent_k.core.constants import DEFAULT_MODEL
@@ -40,9 +36,6 @@ from agent_k.mission.state import GraphContext, MissionState
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = (
     "AgentKEvent",
     "EventEmitter",
@@ -60,9 +53,6 @@ __all__ = (
     "transform_to_vercel_stream",
 )
 
-# =============================================================================
-# Section 3: Constants
-# =============================================================================
 SCHEMA_VERSION: Final[str] = "1.0.0"
 APP_VERSION: Final[str] = "0.1.0"
 DEFAULT_HOST: Final[str] = "0.0.0.0"
@@ -145,52 +135,43 @@ AGENT_K_EVENT_TYPES: Final[frozenset[str]] = frozenset(
     }
 )
 
-# =============================================================================
-# Section 4: Type Aliases
-# =============================================================================
-EventType = TypeAliasType(
-    "EventType",
-    Literal[
-        # State management
-        "state-snapshot",
-        "state-delta",
-        # Phase lifecycle
-        "phase-start",
-        "phase-complete",
-        "phase-error",
-        # Task lifecycle
-        "task-start",
-        "task-progress",
-        "task-complete",
-        "task-error",
-        # Tool usage
-        "tool-start",
-        "tool-thinking",
-        "tool-result",
-        "tool-error",
-        # Evolution specific
-        "generation-start",
-        "generation-complete",
-        "fitness-update",
-        "submission-result",
-        "convergence-detected",
-        # Memory operations
-        "memory-store",
-        "memory-retrieve",
-        "checkpoint-created",
-        # Error handling
-        "error-occurred",
-        "recovery-attempt",
-        "recovery-complete",
-        # Mission lifecycle
-        "mission-complete",
-    ],
-)
+EventType: TypeAlias = """Literal[
+    # State management
+    "state-snapshot",
+    "state-delta",
+    # Phase lifecycle
+    "phase-start",
+    "phase-complete",
+    "phase-error",
+    # Task lifecycle
+    "task-start",
+    "task-progress",
+    "task-complete",
+    "task-error",
+    # Tool usage
+    "tool-start",
+    "tool-thinking",
+    "tool-result",
+    "tool-error",
+    # Evolution specific
+    "generation-start",
+    "generation-complete",
+    "fitness-update",
+    "submission-result",
+    "convergence-detected",
+    # Memory operations
+    "memory-store",
+    "memory-retrieve",
+    "checkpoint-created",
+    # Error handling
+    "error-occurred",
+    "recovery-attempt",
+    "recovery-complete",
+    # Mission lifecycle
+    "mission-complete",
+]"""
 
 
-# =============================================================================
-# Section 8: Pydantic Models
-# =============================================================================
 class MissionRequest(BaseModel):
     """Request to start a new mission."""
 
@@ -240,9 +221,6 @@ intent_agent: Final[Agent[None, MissionIntentOutput]] = Agent(
 )
 
 
-# =============================================================================
-# Section 9: Dataclasses
-# =============================================================================
 @dataclass(slots=True)
 class EventEmitter:
     """Emitter for AG-UI events.
@@ -721,9 +699,6 @@ class TaskEmissionContext:
         await self.emitter.emit_task_progress(self.task_id, progress, message)
 
 
-# =============================================================================
-# Section 11: Classes
-# =============================================================================
 @dataclass(slots=True)
 class MissionIntentResult:
     """Result of mission intent parsing."""
@@ -944,9 +919,6 @@ class ChatHandler:
             emitter.close()
 
 
-# =============================================================================
-# Section 12: Functions
-# =============================================================================
 def _extract_latest_user_message(messages: list[dict[str, Any]]) -> str | None:
     user_messages = [message for message in messages if message.get("role") == "user"]
     if not user_messages:

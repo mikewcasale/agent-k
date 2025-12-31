@@ -27,7 +27,6 @@ from agent_k.core.models import (
 )
 from agent_k.mission.state import MissionResult
 
-
 __all__ = ()
 
 

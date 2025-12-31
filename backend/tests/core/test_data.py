@@ -9,9 +9,12 @@ from __future__ import annotations as _annotations
 
 import csv
 import zipfile
-from pathlib import Path
+from typing import TYPE_CHECKING
 
 from agent_k.core.data import infer_competition_schema, locate_data_files, stage_competition_data
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 __all__ = ()
 

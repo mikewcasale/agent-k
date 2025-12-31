@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 from dataclasses import dataclass
 from typing import Any
@@ -20,15 +17,9 @@ import numpy as np
 # Local imports (core first, then alphabetical)
 from .embedder import embed_query
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = ("RAGRetriever", "RetrievalResult")
 
 
-# =============================================================================
-# Section 9: Dataclasses
-# =============================================================================
 @dataclass(frozen=True, slots=True)
 class RetrievalResult:
     """Single retrieval result."""
@@ -38,9 +29,6 @@ class RetrievalResult:
     metadata: dict[str, Any]
 
 
-# =============================================================================
-# Section 11: Classes
-# =============================================================================
 class RAGRetriever:
     """Simple RAG retriever with cosine similarity."""
 

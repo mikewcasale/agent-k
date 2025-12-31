@@ -7,11 +7,8 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Local imports (core first, then alphabetical)
 from ._version import __version__
 
@@ -21,9 +18,6 @@ if TYPE_CHECKING:
     from .agents.lycurgus import LycurgusOrchestrator as LycurgusOrchestrator
     from .agents.scientist import scientist_agent as scientist_agent
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = (
     "__version__",
     "lobbyist_agent",
@@ -33,7 +27,7 @@ __all__ = (
 )
 
 
-def __getattr__(name: str):
+def __getattr__(name: str) -> Any:
     """Lazy import agents to avoid requiring API keys at import time."""
     if name == "evolver_agent":
         from .agents.evolver import evolver_agent

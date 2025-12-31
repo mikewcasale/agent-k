@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 import asyncio
 import csv
@@ -27,7 +24,8 @@ import logfire
 from pydantic_graph import BaseNode, End, GraphRunContext
 
 # Local imports (core first, then alphabetical)
-from ..agents.evolver import EvolutionFailure, EvolverDeps, evolver_agent, settings as evolver_settings
+from ..agents.evolver import EvolutionFailure, EvolverDeps, evolver_agent
+from ..agents.evolver import settings as evolver_settings
 from ..agents.lobbyist import LobbyistDeps
 from ..agents.scientist import ScientistDeps, scientist_agent
 from ..core.constants import (
@@ -54,9 +52,6 @@ if TYPE_CHECKING:
     from ..core.protocols import PlatformAdapter
     from ..ui.ag_ui import EventEmitter
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = (
     "DiscoveryNode",
     "ResearchNode",
@@ -1172,9 +1167,6 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
         return int(delta.total_seconds() * 1000)
 
 
-# =============================================================================
-# Section 12: Functions
-# =============================================================================
 def _require_context(
     context: GraphContext,
 ) -> tuple[EventEmitter, httpx.AsyncClient, PlatformAdapter]:
@@ -1304,9 +1296,9 @@ def _evaluate_metric(
         valid_values = [value for value in values if value >= 0]
         if not valid_values:
             return 0.0
-        mse = sum(
-            (math.log1p(value) - math.log1p(pred)) ** 2 for value in valid_values
-        ) / len(valid_values)
+        mse = sum((math.log1p(value) - math.log1p(pred)) ** 2 for value in valid_values) / len(
+            valid_values
+        )
         return math.sqrt(mse)
 
     return 0.0
@@ -1462,9 +1454,9 @@ def _generate_fallback_prototype(
         counts = Counter(targets)
         total = sum(counts.values())
         if total > 0:
-            class_probs = {
+            class_probs = {{
                 _normalize_label(label): count / total for label, count in counts.items()
-            }
+            }}
     
     with open("test.csv", newline="", encoding="utf-8") as handle:
         reader = csv.DictReader(handle)

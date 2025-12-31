@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 import ast
 from dataclasses import dataclass
@@ -18,15 +15,9 @@ from typing import Any
 # Third-party (alphabetical)
 from pydantic_evals.evaluators import Evaluator, EvaluatorContext
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = ("CompetitionSelected", "FitnessImprovement", "ValidPython")
 
 
-# =============================================================================
-# Section 9: Dataclasses
-# =============================================================================
 @dataclass
 class ValidPython(Evaluator[str, str]):
     """Evaluate if output is valid Python code."""

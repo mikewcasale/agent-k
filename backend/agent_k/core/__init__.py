@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Local imports (core first, then alphabetical)
 from .constants import (
     CHECKPOINT_INTERVAL_GENERATIONS,
@@ -114,9 +111,6 @@ from .types import (
     ToolType,
 )
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = (
     "CHECKPOINT_INTERVAL_GENERATIONS",
     "CONVERGENCE_THRESHOLD_GENERATIONS",

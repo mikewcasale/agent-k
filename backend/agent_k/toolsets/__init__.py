@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 from dataclasses import replace
 from typing import Any, TypeVar
@@ -43,9 +40,6 @@ from .search import (
 DepsT = TypeVar("DepsT")
 """Type variable for toolset dependencies."""
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = (
     "AgentKMemoryTool",
     "build_kaggle_search_query",
@@ -66,17 +60,11 @@ __all__ = (
     "TOOLSET_REGISTRY",
 )
 
-# =============================================================================
-# Section 3: Constants
-# =============================================================================
 TOOLSET_REGISTRY: dict[str, FunctionToolset[Any]] = {
     "kaggle": kaggle_toolset,
     "code": code_toolset,
 }
 
-# =============================================================================
-# Section 12: Functions
-# =============================================================================
 
 
 def compose_toolsets(names: list[str], *, prefix: bool = True) -> AbstractToolset:

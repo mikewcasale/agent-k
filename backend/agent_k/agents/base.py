@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field, replace
@@ -22,9 +19,6 @@ if TYPE_CHECKING:
     import httpx
     from pydantic_ai import Agent, RunContext, ToolDefinition
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = (
     "BaseAgentMixin",
     "AgentDeps",
@@ -33,9 +27,6 @@ __all__ = (
 )
 
 
-# =============================================================================
-# Section 9: Dataclasses
-# =============================================================================
 @dataclass
 class AgentDeps:
     """Base dependency container for all agents.
@@ -48,10 +39,7 @@ class AgentDeps:
     memory_store: dict[str, Any] = field(default_factory=dict)
 
 
-# =============================================================================
-# Section 11: Classes
-# =============================================================================
-class BaseAgentMixin(ABC, Generic[AgentDepsT, OutputT]):
+class BaseAgentMixin(ABC, Generic[AgentDepsT, OutputT]):  # noqa: UP046
     """Base mixin providing common agent functionality.
 
     Per spec Section 3.2, class structure follows visibility-based ordering.
@@ -97,9 +85,6 @@ class BaseAgentMixin(ABC, Generic[AgentDepsT, OutputT]):
         return self.__class__.__name__
 
 
-# =============================================================================
-# Section 12: Functions
-# =============================================================================
 async def universal_tool_preparation(
     ctx: RunContext[AgentDepsT],
     tool_defs: list[ToolDefinition],

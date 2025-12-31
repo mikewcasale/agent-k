@@ -12,6 +12,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from agent_k.core.models import EvaluationMetric
 from agent_k.mission.nodes import (
     DiscoveryNode,
     EvolutionNode,
@@ -20,7 +21,6 @@ from agent_k.mission.nodes import (
     SubmissionNode,
     _evaluate_metric,
 )
-from agent_k.core.models import EvaluationMetric
 
 __all__ = ()
 

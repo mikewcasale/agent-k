@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 import csv
 import os
@@ -17,11 +14,11 @@ import shutil
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
+from typing import TYPE_CHECKING
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
 __all__ = (
     "CompetitionSchema",
     "infer_competition_schema",
@@ -30,9 +27,6 @@ __all__ = (
 )
 
 
-# =============================================================================
-# Section 9: Dataclasses
-# =============================================================================
 @dataclass(frozen=True, slots=True)
 class CompetitionSchema:
     """Schema details inferred from competition data files."""
@@ -42,9 +36,6 @@ class CompetitionSchema:
     train_target_columns: list[str]
 
 
-# =============================================================================
-# Section 12: Functions
-# =============================================================================
 def infer_competition_schema(
     train_path: Path,
     test_path: Path,
@@ -62,9 +53,7 @@ def infer_competition_schema(
     target_columns = sample_header[1:]
 
     train_target_columns = [
-        column
-        for column in train_header
-        if column not in test_header and column != id_column
+        column for column in train_header if column not in test_header and column != id_column
     ]
     if not train_target_columns:
         train_target_columns = list(target_columns)

@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 import hashlib
 import random
@@ -30,6 +27,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 # Local imports (core first, then alphabetical)
 from agent_k.agents import register_agent
 from agent_k.agents.base import universal_tool_preparation
+from agent_k.agents.prompts import EVOLVER_SYSTEM_PROMPT
 from agent_k.core.constants import (
     DEFAULT_KAGGLE_MCP_URL,
     DEFAULT_MODEL,
@@ -55,13 +53,11 @@ if TYPE_CHECKING:
     from agent_k.core.protocols import PlatformAdapter
     from agent_k.ui.ag_ui import EventEmitter
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = (
     "EVOLUTION_OUTPUT_TYPE",
     "EvolutionFailure",
     "EvolutionResult",
+    "EvolverAgent",
     "EvolverDeps",
     "EvolverSettings",
     "EVOLVER_SYSTEM_PROMPT",
@@ -69,9 +65,6 @@ __all__ = (
     "evolver_agent",
 )
 
-# =============================================================================
-# Section 3: Constants
-# =============================================================================
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _NUMBER_PATTERN: Final[re.Pattern[str]] = re.compile(r"(?<![\w.])(-?\d+\.?\d*)(?![\w.])")
 _HYPERPARAM_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
@@ -91,9 +84,6 @@ _MODEL_SWAPS: Final[dict[str, str]] = {
 }
 
 
-# =============================================================================
-# Section 4: Settings
-# =============================================================================
 class EvolverSettings(BaseSettings):
     """Configuration for the Evolver agent."""
 
@@ -181,7 +171,7 @@ class EvolverSettings(BaseSettings):
 
         if self.enable_thinking and "anthropic" in self.model:
             return cast(
-                ModelSettings,
+                "ModelSettings",
                 {
                     **settings,
                     "anthropic_thinking": {
@@ -194,9 +184,6 @@ class EvolverSettings(BaseSettings):
         return settings
 
 
-# =============================================================================
-# Section 5: Dependencies
-# =============================================================================
 @dataclass
 class EvolverDeps:
     """Dependencies for the Evolver agent."""
@@ -220,9 +207,6 @@ class EvolverDeps:
     generation_history: list[dict[str, Any]] = field(default_factory=list)
 
 
-# =============================================================================
-# Section 6: Output Types
-# =============================================================================
 class EvolutionResult(BaseModel):
     """Result of evolution process."""
 
@@ -282,667 +266,701 @@ EVOLUTION_OUTPUT_TYPE: Final[list[ToolOutput[EvolutionResult] | ToolOutput[Evolu
 ]
 
 
-# =============================================================================
-# Section 7: System Prompt
-# =============================================================================
-EVOLVER_SYSTEM_PROMPT: Final[str] = """You are the EVOLVER agent in the AGENT-K multi-agent system.
+class EvolverAgent:
+    """Evolver agent encapsulating evolutionary optimization functionality.
 
-Your mission is to optimize competition solutions using evolutionary code search.
+    This class wraps the pydantic-ai Agent and provides all evolution tools
+    as instance methods for cleaner organization and testing.
+    """
 
-AVAILABLE BUILTIN TOOLS:
-- Kaggle MCP: Use for all Kaggle platform operations (submit, download data, check leaderboard)
-- Memory: Use to persist and retrieve context across long evolution runs
-- Code Executor: Use to safely execute and evaluate solution candidates
+    def __init__(self, settings: EvolverSettings | None = None) -> None:
+        """Initialize the Evolver agent.
 
-CUSTOM TOOLS:
-- mutate_solution: Apply mutations to solutions
-- evaluate_fitness: Compute fitness scores
-- record_generation: Log generation metrics
-- check_convergence: Detect when to stop evolution
-- submit_to_kaggle: Submit best solution
+        Args:
+            settings: Configuration for the agent. Uses defaults if not provided.
+        """
+        self._settings = settings or EvolverSettings()
+        self._toolset: FunctionToolset[EvolverDeps] = FunctionToolset(id="evolver")
+        self._memory_backend = self._init_memory_backend()
+        self._register_tools()
+        self._agent = self._create_agent()
+        register_agent("evolver", self._agent)
+        self._setup_memory()
 
-EVOLUTION WORKFLOW:
-1. Initialize population from the provided prototype solution
-2. For each generation:
-   a. Evaluate fitness of all candidates using evaluate_fitness
-   b. Select top performers based on fitness
-   c. Apply mutations using mutate_solution (vary mutation types)
-   d. Record metrics using record_generation
-   e. Check convergence using check_convergence
-   f. Save best solution to Memory for recovery
-3. When converged or max generations reached:
-   a. Submit best solution using submit_to_kaggle
-   b. Return EvolutionResult with final metrics (or EvolutionFailure on errors)
+    @property
+    def agent(self) -> Agent[EvolverDeps, EvolutionResult | EvolutionFailure]:
+        """Return the underlying pydantic-ai Agent."""
+        return self._agent
 
-MUTATION STRATEGY:
-- Use point mutations for fine-tuning (small parameter changes)
-- Use structural mutations for exploring new architectures
-- Use hyperparameter mutations for learning rate, regularization
-- Use crossover to combine successful solutions
+    @property
+    def settings(self) -> EvolverSettings:
+        """Return current settings."""
+        return self._settings
 
-IMPORTANT:
-- Always save promising solutions to Memory before applying risky mutations
-- Use submit_to_kaggle periodically for leaderboard validation
-- Respect rate limits when submitting to Kaggle
-- Record all generation metrics for convergence analysis
-- Keep the baseline print line in candidate code: "Baseline <metric> score: <value>"
-- Preserve TARGET_COLUMNS and TRAIN_TARGET_COLUMNS to support multi-target submissions
-"""
+    # =========================================================================
+    # Tool Methods
+    # =========================================================================
 
+    async def mutate_solution(
+        self,
+        ctx: RunContext[EvolverDeps],
+        solution_code: str,
+        mutation_type: str,
+        mutation_params: dict[str, Any] | None = None,
+    ) -> str:
+        """Apply mutation to a solution.
 
-# =============================================================================
-# Section 8: Agent Singleton
-# =============================================================================
-settings = EvolverSettings()
+        Args:
+            ctx: Run context with dependencies.
+            solution_code: The solution code to mutate.
+            mutation_type: Type of mutation (point, structural, hyperparameter, crossover).
+            mutation_params: Optional parameters for the mutation.
 
-evolver_toolset: FunctionToolset[EvolverDeps] = FunctionToolset(id="evolver")
-
-_kaggle_mcp = MCPServerTool(
-    id="kaggle",
-    url=DEFAULT_KAGGLE_MCP_URL,
-)
-try:
-    _memory_backend: AgentKMemoryTool | None = create_memory_backend()
-except RuntimeError:  # pragma: no cover - optional dependency
-    _memory_backend = None
-
-_builtin_tools: list[Any] = [_kaggle_mcp, prepare_code_execution_tool]
-if _memory_backend is not None:
-    _builtin_tools.append(prepare_memory_tool)
-
-evolver_agent: Agent[EvolverDeps, EvolutionResult | EvolutionFailure] = Agent(
-    model=get_model(settings.model),
-    deps_type=EvolverDeps,
-    output_type=EVOLUTION_OUTPUT_TYPE,
-    instructions=EVOLVER_SYSTEM_PROMPT,
-    name="evolver",
-    model_settings=settings.model_settings,
-    retries=settings.tool_retries,
-    output_retries=settings.output_retries,
-    builtin_tools=_builtin_tools,
-    toolsets=[
-        create_production_toolset(
-            [evolver_toolset, cast(FunctionToolset[EvolverDeps], code_toolset)],
-            require_approval_for=["submit_to_kaggle"],
-        ),
-    ],
-    prepare_tools=universal_tool_preparation,
-    instrument=True,
-)
-
-register_agent("evolver", evolver_agent)
-
-if _memory_backend is not None:
-    register_memory_tool(evolver_agent, _memory_backend)
-
-
-# =============================================================================
-# Section 9: Tools
-# =============================================================================
-@evolver_toolset.tool
-async def mutate_solution(
-    ctx: RunContext[EvolverDeps],
-    solution_code: str,
-    mutation_type: str,
-    mutation_params: dict[str, Any] | None = None,
-) -> str:
-    """Apply mutation to a solution."""
-    with logfire.span("evolver.mutate", mutation_type=mutation_type):
-        await ctx.deps.event_emitter.emit(
-            "tool-start",
-            {
-                "taskId": "evolution_mutate",
-                "toolCallId": f"mutate_{mutation_type}",
-                "toolType": "code_executor",
-                "operation": f"mutate_{mutation_type}",
-            },
-        )
-
-        params = mutation_params or {}
-
-        if mutation_type == "point":
-            mutated = _apply_point_mutation(solution_code, params)
-        elif mutation_type == "structural":
-            mutated = _apply_structural_mutation(solution_code, params)
-        elif mutation_type == "hyperparameter":
-            mutated = _apply_hyperparameter_mutation(solution_code, params)
-        elif mutation_type == "crossover":
-            other_solution = params.get("other_solution", "")
-            mutated = _apply_crossover(solution_code, other_solution, params)
-        else:
-            mutated = solution_code
-
-        return mutated
-
-
-@evolver_toolset.tool
-async def evaluate_fitness(
-    ctx: RunContext[EvolverDeps],
-    solution_code: str,
-    validation_split: float = 0.2,
-) -> ToolReturn:
-    """Evaluate solution fitness."""
-    with logfire.span("evolver.evaluate_fitness"):
-        tool_call_id = f"fitness_{id(solution_code):x}"
-
-        await ctx.deps.event_emitter.emit_tool_start(
-            task_id="evolution_evaluate",
-            tool_call_id=tool_call_id,
-            tool_type="code_executor",
-            operation="evaluate_fitness",
-        )
-
-        result = await _evaluate_solution(
-            ctx,
-            solution_code,
-            validation_split=validation_split,
-        )
-
-        if result["valid"]:
-            if ctx.deps.best_fitness is None or result["fitness"] > ctx.deps.best_fitness:
-                ctx.deps.best_fitness = result["fitness"]
-                ctx.deps.best_solution = solution_code
-
+        Returns:
+            Mutated solution code.
+        """
+        with logfire.span("evolver.mutate", mutation_type=mutation_type):
             await ctx.deps.event_emitter.emit(
-                "fitness-update",
+                "tool-start",
                 {
-                    "fitness": result["fitness"],
-                    "cv_score": result["cv_score"],
-                    "validation_split": validation_split,
+                    "taskId": "evolution_mutate",
+                    "toolCallId": f"mutate_{mutation_type}",
+                    "toolType": "code_executor",
+                    "operation": f"mutate_{mutation_type}",
                 },
             )
-        else:
-            await ctx.deps.event_emitter.emit_tool_error(
+
+            params = mutation_params or {}
+
+            if mutation_type == "point":
+                mutated = self._apply_point_mutation(solution_code, params)
+            elif mutation_type == "structural":
+                mutated = self._apply_structural_mutation(solution_code, params)
+            elif mutation_type == "hyperparameter":
+                mutated = self._apply_hyperparameter_mutation(solution_code, params)
+            elif mutation_type == "crossover":
+                other_solution = params.get("other_solution", "")
+                mutated = self._apply_crossover(solution_code, other_solution, params)
+            else:
+                mutated = solution_code
+
+            return mutated
+
+    async def evaluate_fitness(
+        self,
+        ctx: RunContext[EvolverDeps],
+        solution_code: str,
+        validation_split: float = 0.2,
+    ) -> ToolReturn:
+        """Evaluate solution fitness.
+
+        Args:
+            ctx: Run context with dependencies.
+            solution_code: Solution code to evaluate.
+            validation_split: Fraction of data for validation.
+
+        Returns:
+            ToolReturn with fitness results.
+        """
+        with logfire.span("evolver.evaluate_fitness"):
+            tool_call_id = f"fitness_{id(solution_code):x}"
+
+            await ctx.deps.event_emitter.emit_tool_start(
                 task_id="evolution_evaluate",
                 tool_call_id=tool_call_id,
-                error=result.get("error") or "Invalid solution",
+                tool_type="code_executor",
+                operation="evaluate_fitness",
             )
 
-        await ctx.deps.event_emitter.emit_tool_result(
-            task_id="evolution_evaluate",
-            tool_call_id=tool_call_id,
-            result=result,
-            duration_ms=result["runtime_ms"],
-        )
+            result = await self._evaluate_solution(
+                ctx,
+                solution_code,
+                validation_split=validation_split,
+            )
 
-        summary = (
-            f"Fitness {result['fitness']:.4f}, CV {result['cv_score']:.4f}, valid={result['valid']}"
-        )
+            if result["valid"]:
+                if ctx.deps.best_fitness is None or result["fitness"] > ctx.deps.best_fitness:
+                    ctx.deps.best_fitness = result["fitness"]
+                    ctx.deps.best_solution = solution_code
 
-        return ToolReturn(
-            return_value=result,
-            content=summary,
-            metadata={
-                "tool_call_id": tool_call_id,
-                "runtime_ms": result["runtime_ms"],
-            },
-        )
+                await ctx.deps.event_emitter.emit(
+                    "fitness-update",
+                    {
+                        "fitness": result["fitness"],
+                        "cv_score": result["cv_score"],
+                        "validation_split": validation_split,
+                    },
+                )
+            else:
+                await ctx.deps.event_emitter.emit_tool_error(
+                    task_id="evolution_evaluate",
+                    tool_call_id=tool_call_id,
+                    error=result.get("error") or "Invalid solution",
+                )
 
+            await ctx.deps.event_emitter.emit_tool_result(
+                task_id="evolution_evaluate",
+                tool_call_id=tool_call_id,
+                result=result,
+                duration_ms=result["runtime_ms"],
+            )
 
-@evolver_toolset.tool
-async def record_generation(
-    ctx: RunContext[EvolverDeps],
-    generation: int,
-    best_fitness: float,
-    mean_fitness: float,
-    worst_fitness: float,
-    mutations: dict[str, int],
-) -> None:
-    """Record generation metrics."""
-    metrics = {
-        "generation": generation,
-        "best_fitness": best_fitness,
-        "mean_fitness": mean_fitness,
-        "worst_fitness": worst_fitness,
-        "mutations": mutations,
-    }
+            summary = (
+                f"Fitness {result['fitness']:.4f}, CV {result['cv_score']:.4f}, "
+                f"valid={result['valid']}"
+            )
 
-    ctx.deps.generation_history.append(metrics)
+            return ToolReturn(
+                return_value=result,
+                content=summary,
+                metadata={
+                    "tool_call_id": tool_call_id,
+                    "runtime_ms": result["runtime_ms"],
+                },
+            )
 
-    await ctx.deps.event_emitter.emit_generation_complete(
-        generation=generation,
-        best_fitness=best_fitness,
-        mean_fitness=mean_fitness,
-        worst_fitness=worst_fitness,
-        population_size=ctx.deps.population_size,
-        mutations=mutations,
-    )
+    async def record_generation(
+        self,
+        ctx: RunContext[EvolverDeps],
+        generation: int,
+        best_fitness: float,
+        mean_fitness: float,
+        worst_fitness: float,
+        mutations: dict[str, int],
+    ) -> None:
+        """Record generation metrics.
 
-    logfire.info(
-        "evolution_generation",
-        generation=generation,
-        best_fitness=best_fitness,
-        mean_fitness=mean_fitness,
-    )
-
-
-@evolver_toolset.tool
-async def check_convergence(
-    ctx: RunContext[EvolverDeps],
-    threshold_generations: int = 5,
-    improvement_threshold: float = 0.001,
-) -> dict[str, Any]:
-    """Check if evolution has converged."""
-    history = ctx.deps.generation_history
-
-    if len(history) < threshold_generations:
-        return {"converged": False, "reason": "Not enough generations"}
-
-    recent = history[-threshold_generations:]
-    fitness_values = [g["best_fitness"] for g in recent]
-    max_improvement = max(fitness_values) - min(fitness_values)
-
-    if max_improvement < improvement_threshold:
-        return {
-            "converged": True,
-            "reason": f"No improvement for {threshold_generations} generations",
-            "best_fitness": max(fitness_values),
+        Args:
+            ctx: Run context with dependencies.
+            generation: Generation number.
+            best_fitness: Best fitness in generation.
+            mean_fitness: Mean fitness in generation.
+            worst_fitness: Worst fitness in generation.
+            mutations: Count of each mutation type applied.
+        """
+        metrics = {
+            "generation": generation,
+            "best_fitness": best_fitness,
+            "mean_fitness": mean_fitness,
+            "worst_fitness": worst_fitness,
+            "mutations": mutations,
         }
 
-    if ctx.deps.target_score > 0 and max(fitness_values) >= ctx.deps.target_score:
-        return {
-            "converged": True,
-            "reason": "Target score achieved",
-            "best_fitness": max(fitness_values),
-        }
+        ctx.deps.generation_history.append(metrics)
 
-    return {
-        "converged": False,
-        "reason": "Evolution in progress",
-        "recent_improvement": max_improvement,
-    }
-
-
-@evolver_toolset.tool(requires_approval=True)
-async def submit_to_kaggle(
-    ctx: RunContext[EvolverDeps],
-    solution_code: str,
-    message: str = "AGENT-K submission",
-) -> dict[str, Any]:
-    """Submit solution to Kaggle via the platform adapter."""
-    with logfire.span(
-        "evolver.submit",
-        competition_id=ctx.deps.competition.id,
-    ):
-        tool_call_id = f"submit_{len(ctx.deps.generation_history)}"
-        await ctx.deps.event_emitter.emit(
-            "tool-start",
-            {
-                "taskId": "evolution_submit",
-                "toolCallId": tool_call_id,
-                "toolType": "kaggle_mcp",
-                "operation": "competitions.submit",
-            },
+        await ctx.deps.event_emitter.emit_generation_complete(
+            generation=generation,
+            best_fitness=best_fitness,
+            mean_fitness=mean_fitness,
+            worst_fitness=worst_fitness,
+            population_size=ctx.deps.population_size,
+            mutations=mutations,
         )
 
-        result = await _submit_solution(ctx, solution_code, message=message)
+        logfire.info(
+            "evolution_generation",
+            generation=generation,
+            best_fitness=best_fitness,
+            mean_fitness=mean_fitness,
+        )
 
-        if result.get("status") == "failed":
-            await ctx.deps.event_emitter.emit_tool_error(
+    async def check_convergence(
+        self,
+        ctx: RunContext[EvolverDeps],
+        threshold_generations: int = 5,
+        improvement_threshold: float = 0.001,
+    ) -> dict[str, Any]:
+        """Check if evolution has converged.
+
+        Args:
+            ctx: Run context with dependencies.
+            threshold_generations: Generations to check for improvement.
+            improvement_threshold: Minimum improvement required.
+
+        Returns:
+            Convergence status dictionary.
+        """
+        history = ctx.deps.generation_history
+
+        if len(history) < threshold_generations:
+            return {"converged": False, "reason": "Not enough generations"}
+
+        recent = history[-threshold_generations:]
+        fitness_values = [g["best_fitness"] for g in recent]
+        max_improvement = max(fitness_values) - min(fitness_values)
+
+        if max_improvement < improvement_threshold:
+            return {
+                "converged": True,
+                "reason": f"No improvement for {threshold_generations} generations",
+                "best_fitness": max(fitness_values),
+            }
+
+        if ctx.deps.target_score > 0 and max(fitness_values) >= ctx.deps.target_score:
+            return {
+                "converged": True,
+                "reason": "Target score achieved",
+                "best_fitness": max(fitness_values),
+            }
+
+        return {
+            "converged": False,
+            "reason": "Evolution in progress",
+            "recent_improvement": max_improvement,
+        }
+
+    async def submit_to_kaggle(
+        self,
+        ctx: RunContext[EvolverDeps],
+        solution_code: str,
+        message: str = "AGENT-K submission",
+    ) -> dict[str, Any]:
+        """Submit solution to Kaggle via the platform adapter.
+
+        Args:
+            ctx: Run context with dependencies.
+            solution_code: Solution code to submit.
+            message: Submission message.
+
+        Returns:
+            Submission result dictionary.
+        """
+        with logfire.span(
+            "evolver.submit",
+            competition_id=ctx.deps.competition.id,
+        ):
+            tool_call_id = f"submit_{len(ctx.deps.generation_history)}"
+            await ctx.deps.event_emitter.emit(
+                "tool-start",
+                {
+                    "taskId": "evolution_submit",
+                    "toolCallId": tool_call_id,
+                    "toolType": "kaggle_mcp",
+                    "operation": "competitions.submit",
+                },
+            )
+
+            result = await self._submit_solution(ctx, solution_code, message=message)
+
+            if result.get("status") == "failed":
+                await ctx.deps.event_emitter.emit_tool_error(
+                    task_id="evolution_submit",
+                    tool_call_id=tool_call_id,
+                    error=result.get("error", "Submission failed"),
+                )
+                return result
+
+            await ctx.deps.event_emitter.emit_tool_result(
                 task_id="evolution_submit",
                 tool_call_id=tool_call_id,
-                error=result.get("error", "Submission failed"),
+                result=result,
+                duration_ms=result.get("runtime_ms", 0),
             )
+
             return result
 
-        await ctx.deps.event_emitter.emit_tool_result(
-            task_id="evolution_submit",
-            tool_call_id=tool_call_id,
-            result=result,
-            duration_ms=result.get("runtime_ms", 0),
-        )
-
-        return result
-
-
-# =============================================================================
-# Section 10: Validators
-# =============================================================================
-@evolver_agent.output_validator
-async def validate_evolution_result(
-    ctx: RunContext[EvolverDeps],
-    result: EvolutionResult | EvolutionFailure,
-) -> EvolutionResult | EvolutionFailure:
-    """Validate evolution results."""
-    if ctx.partial_output:
-        return result
-    if isinstance(result, EvolutionFailure):
-        if not result.error_type or not result.error_message:
-            raise ModelRetry("EvolutionFailure must include error_type and error_message.")
-        return result
-    if result.best_fitness < 0:
-        raise ModelRetry("best_fitness must be >= 0. Provide a valid fitness score.")
-    if not result.best_solution:
-        raise ModelRetry("best_solution is required. Provide the best solution code.")
-    return result
-
-
-# =============================================================================
-# Section 11: Dynamic Instructions
-# =============================================================================
-@evolver_agent.instructions
-async def add_evolution_context(ctx: RunContext[EvolverDeps]) -> str:
-    """Add evolution-specific context to instructions."""
-    comp = ctx.deps.competition
-    history = ctx.deps.generation_history
-
-    context = (
-        "COMPETITION CONTEXT:\n"
-        f"- ID: {comp.id}\n"
-        f"- Title: {comp.title}\n"
-        f"- Metric: {comp.metric.value} ({comp.metric_direction})\n"
-        f"- Target Score: {ctx.deps.target_score}\n\n"
-        "EVOLUTION STATE:\n"
-        f"- Generations Completed: {len(history)}\n"
-        f"- Population Size: {ctx.deps.population_size}\n"
-        f"- Max Generations: {ctx.deps.max_generations}"
-    )
-
-    if history:
-        last_gen = history[-1]
-        context += (
-            "\n\nLAST GENERATION:\n"
-            f"- Best Fitness: {last_gen.get('best_fitness', 'N/A')}\n"
-            f"- Mean Fitness: {last_gen.get('mean_fitness', 'N/A')}"
-        )
-
-    if ctx.deps.best_solution:
-        context += f"\n\nBEST SOLUTION AVAILABLE: {len(ctx.deps.best_solution)} chars"
-
-    return context
-
-
-def _build_execution_env(validation_split: float) -> dict[str, str]:
-    return {"AGENT_K_VALIDATION_SPLIT": f"{validation_split:.6f}"}
-
-
-def _fitness_from_score(score: float, direction: str) -> float:
-    if direction == "minimize":
-        return 1.0 / (1.0 + max(score, 0.0))
-    return max(score, 0.0)
-
-
-async def _evaluate_solution(
-    ctx: RunContext[EvolverDeps],
-    solution_code: str,
-    *,
-    validation_split: float,
-) -> dict[str, Any]:
-    error: str | None = None
-    score: float | None = None
-    stderr: str | None = None
-    returncode = 0
-    timed_out = False
-    runtime_ms = 0
-
-    with tempfile.TemporaryDirectory(dir=str(ctx.deps.data_dir)) as run_dir:
-        run_path = Path(run_dir)
-        stage_competition_data(
-            ctx.deps.train_path,
-            ctx.deps.test_path,
-            ctx.deps.sample_path,
-            run_path,
-        )
-        execution = await execute_solution(
-            solution_code,
-            run_path,
-            timeout_seconds=ctx.deps.solution_timeout,
-            env=_build_execution_env(validation_split),
-            use_builtin_code_execution=True,
-            model_spec=settings.model,
-        )
-        runtime_ms = execution.runtime_ms
-        timed_out = execution.timed_out
-        returncode = execution.returncode
-        stderr = execution.stderr.strip() if execution.stderr else None
-        score = parse_baseline_score(execution.stdout)
-
-        if timed_out:
-            error = "Execution timed out"
-        elif returncode != 0:
-            error = f"Execution failed (exit {returncode})"
-        elif score is None:
-            error = "Baseline score not found in output"
-
-    cv_score = score if score is not None else 0.0
-    fitness = (
-        _fitness_from_score(cv_score, ctx.deps.competition.metric_direction)
-        if error is None
-        else 0.0
-    )
-
-    return {
-        "fitness": round(fitness, 6),
-        "cv_score": round(cv_score, 6),
-        "valid": error is None,
-        "runtime_ms": runtime_ms,
-        "timed_out": timed_out,
-        "returncode": returncode,
-        "error": error,
-        "stderr": stderr,
-    }
-
-
-async def _submit_solution(
-    ctx: RunContext[EvolverDeps],
-    solution_code: str,
-    *,
-    message: str,
-) -> dict[str, Any]:
-    error: str | None = None
-    runtime_ms = 0
-    submission_id: str | None = None
-    status: str = "failed"
-
-    with tempfile.TemporaryDirectory(dir=str(ctx.deps.data_dir)) as run_dir:
-        run_path = Path(run_dir)
-        stage_competition_data(
-            ctx.deps.train_path,
-            ctx.deps.test_path,
-            ctx.deps.sample_path,
-            run_path,
-        )
-        execution = await execute_solution(
-            solution_code,
-            run_path,
-            timeout_seconds=ctx.deps.solution_timeout,
-            env=_build_execution_env(0.2),
-            use_builtin_code_execution=True,
-            model_spec=settings.model,
-        )
-        runtime_ms = execution.runtime_ms
-        if execution.timed_out:
-            error = "Execution timed out"
-        elif execution.returncode != 0:
-            error = f"Execution failed (exit {execution.returncode})"
-
-        submission_path = run_path / "submission.csv"
-        if error is None and not submission_path.exists():
-            error = "submission.csv not found after execution"
-
-        if error is None:
-            submission = await ctx.deps.platform_adapter.submit(
-                ctx.deps.competition.id,
-                str(submission_path),
-                message=message,
-            )
-            submission_id = submission.id
-            status = submission.status
-
-    payload: dict[str, Any] = {
-        "submission_id": submission_id,
-        "status": status,
-        "generation": len(ctx.deps.generation_history),
-        "runtime_ms": runtime_ms,
-    }
-    if error:
-        payload["error"] = error
-    return payload
-
-
-def _seeded_rng(solution_code: str, params: dict[str, Any], salt: str) -> random.Random:
-    seed_input = f"{salt}:{solution_code}:{sorted(params.items())}".encode()
-    seed = int(hashlib.sha256(seed_input).hexdigest(), 16)
-    return random.Random(seed)
-
-
-def _mutate_numbers(
-    code: str,
-    rng: random.Random,
-    *,
-    max_changes: int,
-    magnitude: float,
-) -> str:
-    changes = 0
-
-    def replacer(match: re.Match[str]) -> str:
-        nonlocal changes
-        if changes >= max_changes:
-            return match.group(0)
-        raw = match.group(1)
+    def _init_memory_backend(self) -> AgentKMemoryTool | None:
         try:
-            value = float(raw)
-        except ValueError:
-            return raw
-        if value == 0:
-            value = 0.1
-        direction = -1 if rng.random() < 0.5 else 1
-        mutated = value * (1 + direction * magnitude)
-        changes += 1
-        if raw.isdigit():
-            return str(max(1, int(round(mutated))))
-        return f"{mutated:.6g}"
+            return create_memory_backend()
+        except RuntimeError:  # pragma: no cover - optional dependency
+            return None
 
-    return _NUMBER_PATTERN.sub(replacer, code)
+    def _create_agent(self) -> Agent[EvolverDeps, EvolutionResult | EvolutionFailure]:
+        """Create the underlying pydantic-ai agent."""
+        kaggle_mcp = MCPServerTool(
+            id="kaggle",
+            url=DEFAULT_KAGGLE_MCP_URL,
+        )
+        builtin_tools: list[Any] = [kaggle_mcp, prepare_code_execution_tool]
+        if self._memory_backend is not None:
+            builtin_tools.append(prepare_memory_tool)
 
+        agent: Agent[EvolverDeps, EvolutionResult | EvolutionFailure] = Agent(
+            model=get_model(self._settings.model),
+            deps_type=EvolverDeps,
+            output_type=EVOLUTION_OUTPUT_TYPE,
+            instructions=EVOLVER_SYSTEM_PROMPT,
+            name="evolver",
+            model_settings=self._settings.model_settings,
+            retries=self._settings.tool_retries,
+            output_retries=self._settings.output_retries,
+            builtin_tools=builtin_tools,
+            toolsets=[
+                create_production_toolset(
+                    [self._toolset, cast("FunctionToolset[EvolverDeps]", code_toolset)],
+                    require_approval_for=["submit_to_kaggle"],
+                ),
+            ],
+            prepare_tools=universal_tool_preparation,
+            instrument=True,
+        )
 
-def _swap_model_family(code: str) -> str:
-    for source, target in _MODEL_SWAPS.items():
-        if source in code:
-            return code.replace(source, target)
-    return code
+        agent.output_validator(self._validate_evolution_result)
+        agent.instructions(self._add_evolution_context)
 
+        return agent
 
-def _inject_fillna(code: str) -> str:
-    if "fillna(" in code:
+    def _setup_memory(self) -> None:
+        """Set up memory tool if available."""
+        if self._memory_backend is None:
+            return
+        register_memory_tool(self._agent, self._memory_backend)
+
+    def _register_tools(self) -> None:
+        """Register all evolution tools with the toolset."""
+        self._toolset.tool(self.mutate_solution)
+        self._toolset.tool(self.evaluate_fitness)
+        self._toolset.tool(self.record_generation)
+        self._toolset.tool(self.check_convergence)
+        self._toolset.tool(requires_approval=True)(self.submit_to_kaggle)
+
+    # =========================================================================
+    # Validator Methods
+    # =========================================================================
+
+    async def _validate_evolution_result(
+        self,
+        ctx: RunContext[EvolverDeps],
+        result: EvolutionResult | EvolutionFailure,
+    ) -> EvolutionResult | EvolutionFailure:
+        """Validate evolution results."""
+        if ctx.partial_output:
+            return result
+        if isinstance(result, EvolutionFailure):
+            if not result.error_type or not result.error_message:
+                raise ModelRetry("EvolutionFailure must include error_type and error_message.")
+            return result
+        if result.best_fitness < 0:
+            raise ModelRetry("best_fitness must be >= 0. Provide a valid fitness score.")
+        if not result.best_solution:
+            raise ModelRetry("best_solution is required. Provide the best solution code.")
+        return result
+
+    async def _add_evolution_context(self, ctx: RunContext[EvolverDeps]) -> str:
+        """Add evolution-specific context to instructions."""
+        comp = ctx.deps.competition
+        history = ctx.deps.generation_history
+
+        context = (
+            "COMPETITION CONTEXT:\n"
+            f"- ID: {comp.id}\n"
+            f"- Title: {comp.title}\n"
+            f"- Metric: {comp.metric.value} ({comp.metric_direction})\n"
+            f"- Target Score: {ctx.deps.target_score}\n\n"
+            "EVOLUTION STATE:\n"
+            f"- Generations Completed: {len(history)}\n"
+            f"- Population Size: {ctx.deps.population_size}\n"
+            f"- Max Generations: {ctx.deps.max_generations}"
+        )
+
+        if history:
+            last_gen = history[-1]
+            context += (
+                "\n\nLAST GENERATION:\n"
+                f"- Best Fitness: {last_gen.get('best_fitness', 'N/A')}\n"
+                f"- Mean Fitness: {last_gen.get('mean_fitness', 'N/A')}"
+            )
+
+        if ctx.deps.best_solution:
+            context += f"\n\nBEST SOLUTION AVAILABLE: {len(ctx.deps.best_solution)} chars"
+
+        return context
+
+    # =========================================================================
+    # Private Helper Methods
+    # =========================================================================
+
+    def _build_execution_env(self, validation_split: float) -> dict[str, str]:
+        return {"AGENT_K_VALIDATION_SPLIT": f"{validation_split:.6f}"}
+
+    def _fitness_from_score(self, score: float, direction: str) -> float:
+        if direction == "minimize":
+            return 1.0 / (1.0 + max(score, 0.0))
+        return max(score, 0.0)
+
+    async def _evaluate_solution(
+        self,
+        ctx: RunContext[EvolverDeps],
+        solution_code: str,
+        *,
+        validation_split: float,
+    ) -> dict[str, Any]:
+        error: str | None = None
+        score: float | None = None
+        stderr: str | None = None
+        returncode = 0
+        timed_out = False
+        runtime_ms = 0
+
+        with tempfile.TemporaryDirectory(dir=str(ctx.deps.data_dir)) as run_dir:
+            run_path = Path(run_dir)
+            stage_competition_data(
+                ctx.deps.train_path,
+                ctx.deps.test_path,
+                ctx.deps.sample_path,
+                run_path,
+            )
+            execution = await execute_solution(
+                solution_code,
+                run_path,
+                timeout_seconds=ctx.deps.solution_timeout,
+                env=self._build_execution_env(validation_split),
+                use_builtin_code_execution=True,
+                model_spec=self._settings.model,
+            )
+            runtime_ms = execution.runtime_ms
+            timed_out = execution.timed_out
+            returncode = execution.returncode
+            stderr = execution.stderr.strip() if execution.stderr else None
+            score = parse_baseline_score(execution.stdout)
+
+            if timed_out:
+                error = "Execution timed out"
+            elif returncode != 0:
+                error = f"Execution failed (exit {returncode})"
+            elif score is None:
+                error = "Baseline score not found in output"
+
+        cv_score = score if score is not None else 0.0
+        fitness = (
+            self._fitness_from_score(cv_score, ctx.deps.competition.metric_direction)
+            if error is None
+            else 0.0
+        )
+
+        return {
+            "fitness": round(fitness, 6),
+            "cv_score": round(cv_score, 6),
+            "valid": error is None,
+            "runtime_ms": runtime_ms,
+            "timed_out": timed_out,
+            "returncode": returncode,
+            "error": error,
+            "stderr": stderr,
+        }
+
+    async def _submit_solution(
+        self,
+        ctx: RunContext[EvolverDeps],
+        solution_code: str,
+        *,
+        message: str,
+    ) -> dict[str, Any]:
+        error: str | None = None
+        runtime_ms = 0
+        submission_id: str | None = None
+        status: str = "failed"
+
+        with tempfile.TemporaryDirectory(dir=str(ctx.deps.data_dir)) as run_dir:
+            run_path = Path(run_dir)
+            stage_competition_data(
+                ctx.deps.train_path,
+                ctx.deps.test_path,
+                ctx.deps.sample_path,
+                run_path,
+            )
+            execution = await execute_solution(
+                solution_code,
+                run_path,
+                timeout_seconds=ctx.deps.solution_timeout,
+                env=self._build_execution_env(0.2),
+                use_builtin_code_execution=True,
+                model_spec=self._settings.model,
+            )
+            runtime_ms = execution.runtime_ms
+            if execution.timed_out:
+                error = "Execution timed out"
+            elif execution.returncode != 0:
+                error = f"Execution failed (exit {execution.returncode})"
+
+            submission_path = run_path / "submission.csv"
+            if error is None and not submission_path.exists():
+                error = "submission.csv not found after execution"
+
+            if error is None:
+                submission = await ctx.deps.platform_adapter.submit(
+                    ctx.deps.competition.id,
+                    str(submission_path),
+                    message=message,
+                )
+                submission_id = submission.id
+                status = submission.status
+
+        payload: dict[str, Any] = {
+            "submission_id": submission_id,
+            "status": status,
+            "generation": len(ctx.deps.generation_history),
+            "runtime_ms": runtime_ms,
+        }
+        if error:
+            payload["error"] = error
+        return payload
+
+    # =========================================================================
+    # Mutation Methods
+    # =========================================================================
+
+    def _seeded_rng(self, solution_code: str, params: dict[str, Any], salt: str) -> random.Random:
+        seed_input = f"{salt}:{solution_code}:{sorted(params.items())}".encode()
+        seed = int(hashlib.sha256(seed_input).hexdigest(), 16)
+        return random.Random(seed)
+
+    def _mutate_numbers(
+        self,
+        code: str,
+        rng: random.Random,
+        *,
+        max_changes: int,
+        magnitude: float,
+    ) -> str:
+        changes = 0
+
+        def replacer(match: re.Match[str]) -> str:
+            nonlocal changes
+            if changes >= max_changes:
+                return match.group(0)
+            raw = match.group(1)
+            try:
+                value = float(raw)
+            except ValueError:
+                return raw
+            if value == 0:
+                value = 0.1
+            direction = -1 if rng.random() < 0.5 else 1
+            mutated = value * (1 + direction * magnitude)
+            changes += 1
+            if raw.isdigit():
+                return str(max(1, int(round(mutated))))
+            return f"{mutated:.6g}"
+
+        return _NUMBER_PATTERN.sub(replacer, code)
+
+    def _swap_model_family(self, code: str) -> str:
+        for source, target in _MODEL_SWAPS.items():
+            if source in code:
+                return code.replace(source, target)
         return code
-    pattern = re.compile(
-        r"^(?P<indent>\s*)(?P<var>\w+)\s*=\s*pd\.read_csv\(.*\)$",
-        re.MULTILINE,
-    )
-    match = pattern.search(code)
-    if not match:
-        return code
-    indent = match.group("indent")
-    var = match.group("var")
-    insert = f"\n{indent}{var} = {var}.fillna(0)"
-    return code[: match.end()] + insert + code[match.end() :]
 
-
-def _merge_imports(primary: list[str], secondary: list[str]) -> list[str]:
-    seen: set[str] = set()
-    merged: list[str] = []
-    for line in primary + secondary:
-        normalized = line.strip()
-        if not normalized or normalized in seen:
-            continue
-        seen.add(normalized)
-        merged.append(line)
-    return merged
-
-
-def _split_imports(code: str) -> tuple[list[str], list[str]]:
-    import_lines: list[str] = []
-    body_lines: list[str] = []
-    for line in code.splitlines():
-        stripped = line.lstrip()
-        if stripped.startswith(("import ", "from ")) and not stripped.startswith("from __future__"):
-            import_lines.append(line)
-        else:
-            body_lines.append(line)
-    return import_lines, body_lines
-
-
-def _extract_top_level_defs(code: str) -> dict[str, str]:
-    lines = code.splitlines()
-    blocks: dict[str, list[str]] = {}
-    current_name: str | None = None
-    current_lines: list[str] = []
-
-    for line in lines:
-        if line.startswith("def ") and not line.startswith("def __"):
-            if current_name and current_lines:
-                blocks[current_name] = current_lines
-            current_name = line.split("def ")[1].split("(")[0].strip()
-            current_lines = [line]
-            continue
-        if current_name:
-            if line.startswith(("def ", "class ")):
-                blocks[current_name] = current_lines
-                current_name = None
-                current_lines = []
-            else:
-                current_lines.append(line)
-
-    if current_name and current_lines:
-        blocks[current_name] = current_lines
-
-    return {name: "\n".join(lines) for name, lines in blocks.items()}
-
-
-def _apply_point_mutation(code: str, params: dict[str, Any]) -> str:
-    rng = _seeded_rng(code, params, "point")
-    magnitude = float(params.get("delta", 0.1))
-    max_changes = int(params.get("max_changes", 2))
-    return _mutate_numbers(code, rng, max_changes=max_changes, magnitude=magnitude)
-
-
-def _apply_structural_mutation(code: str, params: dict[str, Any]) -> str:
-    swapped = _swap_model_family(code)
-    if swapped != code:
-        return swapped
-    injected = _inject_fillna(code)
-    if injected != code:
-        return injected
-    return _apply_point_mutation(code, params)
-
-
-def _apply_hyperparameter_mutation(code: str, params: dict[str, Any]) -> str:
-    rng = _seeded_rng(code, params, "hyperparameter")
-    magnitude = float(params.get("magnitude", 0.2))
-    for name, pattern in _HYPERPARAM_PATTERNS.items():
+    def _inject_fillna(self, code: str) -> str:
+        if "fillna(" in code:
+            return code
+        pattern = re.compile(
+            r"^(?P<indent>\s*)(?P<var>\w+)\s*=\s*pd\.read_csv\(.*\)$",
+            re.MULTILINE,
+        )
         match = pattern.search(code)
         if not match:
-            continue
-        prefix, value_text = match.groups()
-        try:
-            value = float(value_text)
-        except ValueError:
-            continue
-        direction = -1 if rng.random() < 0.5 else 1
-        mutated = value * (1 + direction * magnitude)
-        if name in {"n_estimators", "max_depth", "min_samples_leaf"}:
-            mutated_text = str(max(1, int(round(mutated))))
-        else:
-            mutated_text = f"{max(0.0001, mutated):.6g}"
-        return pattern.sub(f"{prefix}{mutated_text}", code, count=1)
-    return _apply_point_mutation(code, params)
+            return code
+        indent = match.group("indent")
+        var = match.group("var")
+        insert = f"\n{indent}{var} = {var}.fillna(0)"
+        return code[: match.end()] + insert + code[match.end() :]
+
+    def _merge_imports(self, primary: list[str], secondary: list[str]) -> list[str]:
+        seen: set[str] = set()
+        merged: list[str] = []
+        for line in primary + secondary:
+            normalized = line.strip()
+            if not normalized or normalized in seen:
+                continue
+            seen.add(normalized)
+            merged.append(line)
+        return merged
+
+    def _split_imports(self, code: str) -> tuple[list[str], list[str]]:
+        import_lines: list[str] = []
+        body_lines: list[str] = []
+        for line in code.splitlines():
+            stripped = line.lstrip()
+            if stripped.startswith(("import ", "from ")) and not stripped.startswith(
+                "from __future__"
+            ):
+                import_lines.append(line)
+            else:
+                body_lines.append(line)
+        return import_lines, body_lines
+
+    def _extract_top_level_defs(self, code: str) -> dict[str, str]:
+        lines = code.splitlines()
+        blocks: dict[str, list[str]] = {}
+        current_name: str | None = None
+        current_lines: list[str] = []
+
+        for line in lines:
+            if line.startswith("def ") and not line.startswith("def __"):
+                if current_name and current_lines:
+                    blocks[current_name] = current_lines
+                current_name = line.split("def ")[1].split("(")[0].strip()
+                current_lines = [line]
+                continue
+            if current_name:
+                if line.startswith(("def ", "class ")):
+                    blocks[current_name] = current_lines
+                    current_name = None
+                    current_lines = []
+                else:
+                    current_lines.append(line)
+
+        if current_name and current_lines:
+            blocks[current_name] = current_lines
+
+        return {name: "\n".join(lines) for name, lines in blocks.items()}
+
+    def _apply_point_mutation(self, code: str, params: dict[str, Any]) -> str:
+        rng = self._seeded_rng(code, params, "point")
+        magnitude = float(params.get("delta", 0.1))
+        max_changes = int(params.get("max_changes", 2))
+        return self._mutate_numbers(code, rng, max_changes=max_changes, magnitude=magnitude)
+
+    def _apply_structural_mutation(self, code: str, params: dict[str, Any]) -> str:
+        swapped = self._swap_model_family(code)
+        if swapped != code:
+            return swapped
+        injected = self._inject_fillna(code)
+        if injected != code:
+            return injected
+        return self._apply_point_mutation(code, params)
+
+    def _apply_hyperparameter_mutation(self, code: str, params: dict[str, Any]) -> str:
+        rng = self._seeded_rng(code, params, "hyperparameter")
+        magnitude = float(params.get("magnitude", 0.2))
+        for name, pattern in _HYPERPARAM_PATTERNS.items():
+            match = pattern.search(code)
+            if not match:
+                continue
+            prefix, value_text = match.groups()
+            try:
+                value = float(value_text)
+            except ValueError:
+                continue
+            direction = -1 if rng.random() < 0.5 else 1
+            mutated = value * (1 + direction * magnitude)
+            if name in {"n_estimators", "max_depth", "min_samples_leaf"}:
+                mutated_text = str(max(1, int(round(mutated))))
+            else:
+                mutated_text = f"{max(0.0001, mutated):.6g}"
+            return pattern.sub(f"{prefix}{mutated_text}", code, count=1)
+        return self._apply_point_mutation(code, params)
+
+    def _apply_crossover(self, code: str, other: str, params: dict[str, Any]) -> str:
+        if not other.strip():
+            return code
+        primary_imports, primary_body = self._split_imports(code)
+        other_imports, _ = self._split_imports(other)
+        merged_imports = self._merge_imports(primary_imports, other_imports)
+
+        primary_defs = self._extract_top_level_defs(code)
+        other_defs = self._extract_top_level_defs(other)
+        extra_defs = [block for name, block in other_defs.items() if name not in primary_defs]
+
+        body = "\n".join(primary_body).strip()
+        if extra_defs:
+            body = f"{body}\n\n" + "\n\n".join(extra_defs)
+        if merged_imports:
+            return "\n".join(merged_imports) + "\n\n" + body
+        return body
 
 
-def _apply_crossover(code: str, other: str, params: dict[str, Any]) -> str:
-    if not other.strip():
-        return code
-    primary_imports, primary_body = _split_imports(code)
-    other_imports, _ = _split_imports(other)
-    merged_imports = _merge_imports(primary_imports, other_imports)
-
-    primary_defs = _extract_top_level_defs(code)
-    other_defs = _extract_top_level_defs(other)
-    extra_defs = [block for name, block in other_defs.items() if name not in primary_defs]
-
-    body = "\n".join(primary_body).strip()
-    if extra_defs:
-        body = f"{body}\n\n" + "\n\n".join(extra_defs)
-    if merged_imports:
-        return "\n".join(merged_imports) + "\n\n" + body
-    return body
+# Module-level singleton for backward compatibility
+evolver_agent_instance = EvolverAgent()
+evolver_agent = evolver_agent_instance.agent

@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 import time
 from functools import wraps
@@ -29,15 +26,9 @@ if TYPE_CHECKING:
     from agent_k.core.models import Competition
     from agent_k.core.protocols import PlatformAdapter
 
-# =============================================================================
-# Section 1.5: Type Variables
-# =============================================================================
 P = ParamSpec("P")
 ToolResultT = TypeVar("ToolResultT")
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = ("KaggleDeps", "kaggle_toolset")
 
 # =============================================================================

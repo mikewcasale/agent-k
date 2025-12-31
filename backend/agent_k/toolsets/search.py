@@ -7,9 +7,6 @@ See LICENSE file for details.
 
 from __future__ import annotations as _annotations
 
-# =============================================================================
-# Section 1: Imports
-# =============================================================================
 # Standard library (alphabetical)
 from typing import Any, Literal, cast
 
@@ -22,9 +19,6 @@ try:  # pragma: no cover - optional dependency
 except ImportError:  # pragma: no cover - optional dependency
     OpenAIChatModel = None  # type: ignore[misc,assignment]
 
-# =============================================================================
-# Section 2: Module Exports
-# =============================================================================
 __all__ = (
     "build_kaggle_search_query",
     "build_scholarly_query",
@@ -34,9 +28,6 @@ __all__ = (
     "prepare_web_search",
 )
 
-# =============================================================================
-# Section 12: Functions
-# =============================================================================
 
 
 def build_kaggle_search_query(query: str) -> str:
@@ -138,7 +129,7 @@ def _coerce_user_location(value: Any) -> WebSearchUserLocation | None:
             for key, val in value.items()
             if key in {"city", "country", "region", "timezone"} and isinstance(val, str)
         }
-        return cast(WebSearchUserLocation, cleaned) if cleaned else None
+        return cast("WebSearchUserLocation", cleaned) if cleaned else None
 
     def _as_str(entry: Any) -> str | None:
         return entry if isinstance(entry, str) else None
@@ -159,4 +150,4 @@ def _coerce_user_location(value: Any) -> WebSearchUserLocation | None:
         data["region"] = region
     if timezone:
         data["timezone"] = timezone
-    return cast(WebSearchUserLocation, data) if data else None
+    return cast("WebSearchUserLocation", data) if data else None

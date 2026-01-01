@@ -55,7 +55,7 @@ export function SearchCriteriaForm({
       }}
     >
       <div className="space-y-3">
-        <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+        <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <Filter className="size-3.5" />
           Paid status
         </label>
@@ -66,8 +66,8 @@ export function SearchCriteriaForm({
               className={cn(
                 "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
                 criteria.paidStatus === option.id
-                  ? "border-blue-500 bg-blue-50 text-blue-700"
-                  : "border-zinc-200 bg-white text-zinc-600 hover:border-blue-300 hover:bg-blue-50/60"
+                  ? "border-blue-500/60 bg-blue-500/10 text-blue-600 dark:text-blue-300"
+                  : "border-border bg-background text-muted-foreground hover:border-blue-500/40 hover:bg-blue-500/5"
               )}
               onClick={() =>
                 onChange({ ...criteria, paidStatus: option.id as typeof criteria.paidStatus })
@@ -81,7 +81,7 @@ export function SearchCriteriaForm({
       </div>
 
       <div className="space-y-3">
-        <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+        <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <Target className="size-3.5" />
           Subject domains
         </label>
@@ -94,8 +94,8 @@ export function SearchCriteriaForm({
                 className={cn(
                   "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
                   isActive
-                    ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                    : "border-zinc-200 bg-white text-zinc-600 hover:border-emerald-300 hover:bg-emerald-50/60"
+                    ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
+                    : "border-border bg-background text-muted-foreground hover:border-emerald-500/40 hover:bg-emerald-500/5"
                 )}
                 onClick={() =>
                   onChange({
@@ -113,7 +113,7 @@ export function SearchCriteriaForm({
       </div>
 
       <div className="space-y-3">
-        <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+        <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <Award className="size-3.5" />
           Competition types
         </label>
@@ -126,8 +126,8 @@ export function SearchCriteriaForm({
                 className={cn(
                   "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
                   isActive
-                    ? "border-purple-500 bg-purple-50 text-purple-700"
-                    : "border-zinc-200 bg-white text-zinc-600 hover:border-purple-300 hover:bg-purple-50/60"
+                    ? "border-purple-500/60 bg-purple-500/10 text-purple-600 dark:text-purple-300"
+                    : "border-border bg-background text-muted-foreground hover:border-purple-500/40 hover:bg-purple-500/5"
                 )}
                 onClick={() =>
                   onChange({
@@ -146,12 +146,12 @@ export function SearchCriteriaForm({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+          <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             <Award className="size-3.5" />
             Min prize ($)
           </label>
           <input
-            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none placeholder:text-muted-foreground focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
             min={0}
             onChange={(event) => {
               const value = event.target.value;
@@ -166,12 +166,12 @@ export function SearchCriteriaForm({
           />
         </div>
         <div className="space-y-2">
-          <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+          <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             <Calendar className="size-3.5" />
             Min days remaining
           </label>
           <input
-            className="w-full rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+            className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none placeholder:text-muted-foreground focus:border-blue-500/60 focus:ring-2 focus:ring-blue-500/20"
             min={1}
             onChange={(event) => {
               const value = Number.parseInt(event.target.value, 10);

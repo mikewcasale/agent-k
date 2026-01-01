@@ -50,65 +50,69 @@ export function CompetitionPreview({
     : Math.ceil((deadline.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-indigo-100 px-2.5 py-1 text-xs font-semibold text-indigo-700">
+            <span className="rounded-full border border-indigo-500/40 bg-indigo-500/10 px-2.5 py-1 text-xs font-semibold text-indigo-600 dark:text-indigo-300">
               {formatCompetitionType(competition.competitionType)}
             </span>
             {matchCount !== null && matchCount !== undefined && (
-              <span className="text-xs text-zinc-500">{matchCount} matches</span>
+              <span className="text-xs text-muted-foreground">
+                {matchCount} matches
+              </span>
             )}
           </div>
-          <h3 className="text-xl font-semibold text-zinc-900">{competition.title}</h3>
+          <h3 className="text-xl font-semibold text-foreground">
+            {competition.title}
+          </h3>
           {competition.description && (
-            <p className="max-w-2xl text-sm text-zinc-600">
+            <p className="max-w-2xl text-sm text-muted-foreground">
               {competition.description}
             </p>
           )}
         </div>
-        <div className="flex flex-col gap-2 rounded-xl border border-zinc-100 bg-zinc-50 px-4 py-3 text-xs text-zinc-600">
+        <div className="flex flex-col gap-2 rounded-xl border border-border bg-muted px-4 py-3 text-xs text-muted-foreground">
           <div className="flex items-center gap-2">
-            <Award className="size-3.5 text-emerald-600" />
+            <Award className="size-3.5 text-emerald-500 dark:text-emerald-400" />
             {competition.prizePool
               ? `$${competition.prizePool.toLocaleString()} prize`
               : "No prize pool"}
           </div>
           <div className="flex items-center gap-2">
-            <Calendar className="size-3.5 text-blue-600" />
+            <Calendar className="size-3.5 text-blue-500 dark:text-blue-400" />
             {Number.isNaN(deadline.getTime())
               ? "Deadline unavailable"
               : deadline.toLocaleDateString()}
           </div>
           {daysRemaining !== null && (
             <div className="flex items-center gap-2">
-              <Flag className="size-3.5 text-amber-600" />
+              <Flag className="size-3.5 text-amber-500 dark:text-amber-400" />
               {daysRemaining} days remaining
             </div>
           )}
         </div>
       </div>
 
-      <div className="mt-4 grid gap-3 text-sm text-zinc-600 md:grid-cols-2">
+      <div className="mt-4 grid gap-3 text-sm text-muted-foreground md:grid-cols-2">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-zinc-700">Metric</span>
+          <span className="font-semibold text-foreground">Metric</span>
           <span>
             {formatMetric(competition.metric)} ({competition.metricDirection})
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-zinc-700">Submissions</span>
+          <span className="font-semibold text-foreground">Submissions</span>
           <span>{competition.maxDailySubmissions} per day</span>
         </div>
       </div>
 
       {competition.tags?.length ? (
-        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <Tags className="size-3.5" />
           {competition.tags.map((tag) => (
             <span
-              className="rounded-full border border-zinc-200 bg-zinc-50 px-2 py-0.5"
+              className="rounded-full border border-border bg-muted/60 px-2 py-0.5"
               key={tag}
             >
               {tag}
@@ -120,7 +124,7 @@ export function CompetitionPreview({
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <button
           className={cn(
-            "rounded-xl border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-600 transition-colors hover:border-zinc-300 hover:bg-zinc-50",
+            "rounded-xl border border-border px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted",
             isStarting && "cursor-not-allowed opacity-60"
           )}
           disabled={isStarting}
@@ -144,7 +148,7 @@ export function CompetitionPreview({
         </button>
         <button
           className={cn(
-            "rounded-xl border border-zinc-200 px-4 py-2 text-sm font-semibold text-zinc-600 transition-colors hover:border-zinc-300 hover:bg-zinc-50",
+            "rounded-xl border border-border px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted",
             isStarting && "cursor-not-allowed opacity-60"
           )}
           disabled={isStarting}
@@ -166,10 +170,10 @@ export function CompetitionPreview({
               mission.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-600">
+          <div className="rounded-lg border border-border bg-muted px-3 py-2 text-xs text-muted-foreground">
             Rules page:{" "}
             <a
-              className="font-semibold text-blue-600 hover:text-blue-700"
+              className="font-semibold text-blue-500 hover:text-blue-600 dark:text-blue-300 dark:hover:text-blue-200"
               href={rulesUrl}
               rel="noreferrer"
               target="_blank"

@@ -174,7 +174,6 @@ class OpenEvolveAdapter(PlatformAdapter):
         """Search the in-memory competition catalog."""
         keyword_terms = [term.lower() for term in (keywords or [])]
         category_terms = {_normalize_category(value) for value in (categories or [])}
-
         for competition in self.catalog:
             if active_only and not competition.is_active:
                 continue
@@ -210,7 +209,6 @@ class OpenEvolveAdapter(PlatformAdapter):
 
         payload = _load_submission_payload(file_path)
         submission_id = _submission_id(competition_id, payload, message)
-
         submission = Submission(
             id=submission_id,
             competition_id=competition_id,
@@ -219,9 +217,7 @@ class OpenEvolveAdapter(PlatformAdapter):
         )
         self._submissions[competition_id][submission_id] = submission
         self._submission_payloads[submission_id] = payload
-
         logfire.info('openevolve_submission_received', competition_id=competition_id, submission_id=submission_id)
-
         return submission
 
     async def get_submission_status(self, competition_id: str, submission_id: str) -> Submission:
@@ -236,7 +232,6 @@ class OpenEvolveAdapter(PlatformAdapter):
 
         payload = self._submission_payloads.get(submission_id, '')
         score = _score_payload(payload, competition_id)
-
         updated = Submission(
             id=submission.id,
             competition_id=submission.competition_id,
@@ -253,7 +248,6 @@ class OpenEvolveAdapter(PlatformAdapter):
         competition = await self.get_competition(competition_id)
         dest_path = Path(destination)
         dest_path.mkdir(parents=True, exist_ok=True)
-
         train_path = dest_path / 'train.csv'
         test_path = dest_path / 'test.csv'
         submission_path = dest_path / 'sample_submission.csv'
@@ -263,7 +257,6 @@ class OpenEvolveAdapter(PlatformAdapter):
         _write_submission_template(submission_path)
 
         logfire.info('openevolve_data_prepared', competition_id=competition.id, destination=str(dest_path))
-
         return [str(train_path), str(test_path), str(submission_path)]
 
     async def submit_evolution(
@@ -277,7 +270,6 @@ class OpenEvolveAdapter(PlatformAdapter):
         created_at = datetime.now(UTC)
         ready_at = created_at + timedelta(seconds=self.config.simulated_latency)
         job_id = _evolution_job_id()
-
         job = _OpenEvolveJob(
             job_id=job_id,
             prototype=prototype,

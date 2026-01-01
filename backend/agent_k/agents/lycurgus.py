@@ -96,11 +96,7 @@ class MissionStatus:
     phase: str
     progress: float
     metrics: dict[str, Any]
-
     ABORTED: ClassVar[str] = 'aborted'
-
-
-# (None - LYCURGUS is represented by the orchestrator class below.)
 
 
 class LycurgusOrchestrator:
@@ -145,9 +141,6 @@ class LycurgusOrchestrator:
         '_resources_ready',
     )
 
-    # =========================================================================
-    # __init__ and __new__
-    # =========================================================================
     def __init__(
         self,
         *,
@@ -178,7 +171,6 @@ class LycurgusOrchestrator:
         self._paused = False
         self._entered = False
         self._resources_ready = False
-
         self._agents = self._initialize_agents()
         self._graph = self._build_orchestration_graph()
         self._state: MissionState | None = None
@@ -542,6 +534,3 @@ async def orchestrate(
 def validate_mission_result(result: MissionResult) -> MissionResult:
     """Validate mission result payload."""
     return result
-
-
-# (None)

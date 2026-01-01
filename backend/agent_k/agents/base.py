@@ -13,12 +13,13 @@ from typing import TYPE_CHECKING, Any, Generic
 
 # Local imports (core first, then alphabetical)
 from ..core.types import AgentDepsT, OutputT
+from ..toolsets import AgentKMemoryTool, create_memory_backend, register_memory_tool
 
 if TYPE_CHECKING:
     import httpx
     from pydantic_ai import Agent, RunContext, ToolDefinition
 
-__all__ = ('BaseAgentMixin', 'AgentDeps', 'prepare_output_tools_strict', 'universal_tool_preparation')
+__all__ = ('BaseAgentMixin', 'MemoryMixin', 'AgentDeps', 'prepare_output_tools_strict', 'universal_tool_preparation')
 
 
 @dataclass
@@ -72,6 +73,25 @@ class BaseAgentMixin(ABC, Generic[AgentDepsT, OutputT]):
     def _get_agent_name(self) -> str:
         """Return agent name for logging."""
         return self.__class__.__name__
+
+
+class MemoryMixin:
+    """Mixin providing memory backend initialization for agents."""
+
+    _memory_backend: AgentKMemoryTool | None
+    _agent: Agent[Any, Any]
+
+    def _init_memory_backend(self) -> AgentKMemoryTool | None:
+        try:
+            return create_memory_backend()
+        except RuntimeError:  # pragma: no cover - optional dependency
+            return None
+
+    def _setup_memory(self) -> None:
+        """Set up memory tool if available."""
+        if self._memory_backend is None:
+            return
+        register_memory_tool(self._agent, self._memory_backend)
 
 
 async def universal_tool_preparation(

@@ -19,20 +19,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Local imports (core first, then alphabetical)
 from agent_k.agents import register_agent
-from agent_k.agents.base import universal_tool_preparation
+from agent_k.agents.base import MemoryMixin, universal_tool_preparation
 from agent_k.agents.prompts import LOBBYIST_SYSTEM_PROMPT
 from agent_k.core.constants import DEFAULT_MODEL
 from agent_k.core.models import Competition
 from agent_k.infra.providers import get_model
-from agent_k.toolsets import (
-    AgentKMemoryTool,
-    create_memory_backend,
-    create_production_toolset,
-    kaggle_toolset,
-    prepare_memory_tool,
-    prepare_web_search,
-    register_memory_tool,
-)
+from agent_k.toolsets import create_production_toolset, kaggle_toolset, prepare_memory_tool, prepare_web_search
 
 if TYPE_CHECKING:
     import httpx
@@ -92,7 +84,7 @@ class DiscoveryResult(BaseModel):
     filters_applied: list[str] = Field(default_factory=list, description='Filters applied during discovery')
 
 
-class LobbyistAgent:
+class LobbyistAgent(MemoryMixin):
     """Lobbyist agent encapsulating competition discovery functionality."""
 
     def __init__(self, settings: LobbyistSettings | None = None) -> None:
@@ -175,7 +167,6 @@ class LobbyistAgent:
 
         score = 0.0
         reasons: list[str] = []
-
         if any(domain.lower() in ' '.join(competition.tags).lower() for domain in target_domains):
             score += 0.4
             reasons.append('matches_domain')
@@ -191,19 +182,12 @@ class LobbyistAgent:
 
         score += min(0.1, target_percentile / 100.0)
         reasons.append('target_percentile')
-
         return {
             'competition_id': competition_id,
             'score': round(score, 2),
             'reasons': reasons,
             'days_remaining': days_remaining,
         }
-
-    def _init_memory_backend(self) -> AgentKMemoryTool | None:
-        try:
-            return create_memory_backend()
-        except RuntimeError:  # pragma: no cover - optional dependency
-            return None
 
     def _create_agent(self) -> Agent[LobbyistDeps, DiscoveryResult]:
         """Create the underlying pydantic-ai agent."""
@@ -230,14 +214,7 @@ class LobbyistAgent:
 
         agent.output_validator(self._validate_discovery_result)
         agent.instructions(self._add_search_context)
-
         return agent
-
-    def _setup_memory(self) -> None:
-        """Set up memory tool if available."""
-        if self._memory_backend is None:
-            return
-        register_memory_tool(self._agent, self._memory_backend)
 
     def _register_tools(self) -> None:
         """Register all discovery tools with the toolset."""

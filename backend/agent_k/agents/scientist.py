@@ -22,19 +22,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Local imports (core first, then alphabetical)
 from agent_k.agents import register_agent
-from agent_k.agents.base import universal_tool_preparation
+from agent_k.agents.base import MemoryMixin, universal_tool_preparation
 from agent_k.agents.prompts import SCIENTIST_SYSTEM_PROMPT
 from agent_k.core.constants import DEFAULT_MODEL
 from agent_k.infra.providers import get_model
-from agent_k.toolsets import (
-    AgentKMemoryTool,
-    create_memory_backend,
-    create_production_toolset,
-    kaggle_toolset,
-    prepare_memory_tool,
-    prepare_web_search,
-    register_memory_tool,
-)
+from agent_k.toolsets import create_production_toolset, kaggle_toolset, prepare_memory_tool, prepare_web_search
 
 if TYPE_CHECKING:
     import httpx
@@ -145,7 +137,7 @@ class ResearchReport(BaseModel):
     key_challenges: list[str] = Field(default_factory=list, description='Primary competition challenges')
 
 
-class ScientistAgent:
+class ScientistAgent(MemoryMixin):
     """Scientist agent encapsulating research and analysis functionality."""
 
     def __init__(self, settings: ScientistSettings | None = None) -> None:
@@ -236,12 +228,6 @@ class ScientistAgent:
 
         return median * difficulty_multiplier
 
-    def _init_memory_backend(self) -> AgentKMemoryTool | None:
-        try:
-            return create_memory_backend()
-        except RuntimeError:  # pragma: no cover - optional dependency
-            return None
-
     def _create_agent(self) -> Agent[ScientistDeps, ResearchReport]:
         """Create the underlying pydantic-ai agent."""
         builtin_tools: list[Any] = [prepare_web_search]
@@ -269,12 +255,6 @@ class ScientistAgent:
         agent.instructions(self._add_competition_context)
 
         return agent
-
-    def _setup_memory(self) -> None:
-        """Set up memory tool if available."""
-        if self._memory_backend is None:
-            return
-        register_memory_tool(self._agent, self._memory_backend)
 
     def _register_tools(self) -> None:
         """Register all research tools with the toolset."""
@@ -325,7 +305,6 @@ class ScientistAgent:
             return []
 
         response = await ctx.deps.http_client.get(_KAGGLE_KERNELS_ENDPOINT, params=params, auth=auth)
-
         if response.status_code != 200:
             return []
 
@@ -366,9 +345,7 @@ class ScientistAgent:
                 continue
 
             file_info: dict[str, Any] = {'name': path.name, 'size_mb': round(path.stat().st_size / (1024 * 1024), 2)}
-
             summary['total_size_mb'] += file_info['size_mb']
-
             if path.suffix.lower() == '.csv':
                 file_info.update(self._summarize_csv(path))
 
@@ -388,19 +365,16 @@ class ScientistAgent:
         header = rows[0]
         sample_rows = rows[1:101]
         missing_counts = {col: 0 for col in header}
-
         for row in sample_rows:
             for col, value in zip(header, row, strict=False):
                 if value.strip().lower() in _MISSING_VALUE_TOKENS:
                     missing_counts[col] += 1
 
-        missing_summary = {col: count for col, count in missing_counts.items() if count > 0}
-
         return {
             'row_count': len(rows) - 1,
             'column_count': len(header),
             'columns': header,
-            'missing_values': missing_summary,
+            'missing_values': {col: count for col, count in missing_counts.items() if count > 0},
         }
 
     def _fallback_dataset_summary(self, competition: Competition) -> dict[str, Any]:

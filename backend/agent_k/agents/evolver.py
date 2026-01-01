@@ -54,6 +54,7 @@ __all__ = (
     'EVOLVER_SYSTEM_PROMPT',
     'SCHEMA_VERSION',
     'evolver_agent',
+    'settings',
 )
 
 SCHEMA_VERSION: Final[str] = '1.0.0'
@@ -629,11 +630,13 @@ class EvolverAgent(MemoryMixin):
 
     def _merge_imports(self, primary: list[str], secondary: list[str]) -> list[str]:
         seen: set[str] = set()
-        return [
-            line
-            for line in primary + secondary
-            if (normalized := line.strip()) and normalized not in seen and not seen.add(normalized)
-        ]
+        result: list[str] = []
+        for line in primary + secondary:
+            normalized = line.strip()
+            if normalized and normalized not in seen:
+                seen.add(normalized)
+                result.append(line)
+        return result
 
     def _split_imports(self, code: str) -> tuple[list[str], list[str]]:
         def is_import(line: str) -> bool:
@@ -692,3 +695,4 @@ class EvolverAgent(MemoryMixin):
 # Module-level singleton for backward compatibility
 evolver_agent_instance = EvolverAgent()
 evolver_agent = evolver_agent_instance.agent
+settings = evolver_agent_instance.settings

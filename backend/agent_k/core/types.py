@@ -76,33 +76,14 @@ JsonDict: TypeAlias = 'dict[str, Any]'
 MessageHistory: TypeAlias = 'list["ModelMessage"]'
 ToolResult: TypeAlias = 'str | dict[str, Any]'
 
-MetricDirection: TypeAlias = 'Literal["maximize", "minimize"]'
-MissionPhase: TypeAlias = """Literal[
-    "discovery",
-    "research",
-    "prototype",
-    "evolution",
-    "submission",
-]"""
-TaskStatus: TypeAlias = """Literal[
-    "pending",
-    "in_progress",
-    "completed",
-    "failed",
-    "blocked",
-    "skipped",
-]"""
-TaskPriority: TypeAlias = 'Literal["critical", "high", "medium", "low"]'
-ToolType: TypeAlias = """Literal[
-    "web_search",
-    "kaggle_mcp",
-    "code_executor",
-    "memory",
-    "browser",
-]"""
-MemoryScope: TypeAlias = 'Literal["session", "persistent", "global"]'
-ErrorCategory: TypeAlias = 'Literal["transient", "recoverable", "fatal"]'
-RecoveryStrategy: TypeAlias = 'Literal["retry", "fallback", "skip", "replan", "abort"]'
+MetricDirection: TypeAlias = Literal['maximize', 'minimize']
+MissionPhase: TypeAlias = Literal['discovery', 'research', 'prototype', 'evolution', 'submission']
+TaskStatus: TypeAlias = Literal['pending', 'in_progress', 'completed', 'failed', 'blocked', 'skipped']
+TaskPriority: TypeAlias = Literal['critical', 'high', 'medium', 'low']
+ToolType: TypeAlias = Literal['web_search', 'kaggle_mcp', 'code_executor', 'memory', 'browser']
+MemoryScope: TypeAlias = Literal['session', 'persistent', 'global']
+ErrorCategory: TypeAlias = Literal['transient', 'recoverable', 'fatal']
+RecoveryStrategy: TypeAlias = Literal['retry', 'fallback', 'skip', 'replan', 'abort']
 
 AsyncCallback: TypeAlias = 'Callable[[str], Awaitable[None]]'
 EventCallback: TypeAlias = 'Callable[[str, JsonDict], Awaitable[None]]'

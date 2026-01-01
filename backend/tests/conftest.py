@@ -27,16 +27,15 @@ if TYPE_CHECKING:
 
     T = TypeVar('T')
 
-    def IsInstance(arg: type[T]) -> T: ...
-    def IsDatetime(*args: Any, **kwargs: Any) -> datetime: ...
-    def IsFloat(*args: Any, **kwargs: Any) -> float: ...
-    def IsInt(*args: Any, **kwargs: Any) -> int: ...
-    def IsNow(*args: Any, **kwargs: Any) -> datetime: ...
-    def IsStr(*args: Any, **kwargs: Any) -> str: ...
-    def IsBytes(*args: Any, **kwargs: Any) -> bytes: ...
+    def IsInstance(arg: type[T]) -> T: ...  # noqa: D103
+    def IsDatetime(*args: Any, **kwargs: Any) -> datetime: ...  # noqa: D103
+    def IsFloat(*args: Any, **kwargs: Any) -> float: ...  # noqa: D103
+    def IsInt(*args: Any, **kwargs: Any) -> int: ...  # noqa: D103
+    def IsNow(*args: Any, **kwargs: Any) -> datetime: ...  # noqa: D103
+    def IsStr(*args: Any, **kwargs: Any) -> str: ...  # noqa: D103
+    def IsBytes(*args: Any, **kwargs: Any) -> bytes: ...  # noqa: D103
 else:
-    from dirty_equals import IsBytes, IsDatetime, IsFloat, IsInstance, IsInt, IsStr
-    from dirty_equals import IsNow as _IsNow
+    from dirty_equals import IsBytes, IsDatetime, IsFloat, IsInstance, IsInt, IsNow as _IsNow, IsStr
 
     def IsNow(*args: Any, **kwargs: Any):
         """IsNow with increased delta for test stability."""

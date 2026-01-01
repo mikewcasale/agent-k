@@ -121,7 +121,7 @@ class TestIsDevstralModel:
         assert is_devstral_model('devstral:local') is True
 
     def test_devstral_custom_url(self) -> None:
-        """devstral with custom URL should be identified as Devstral."""
+        """Devstral with custom URL should be identified as Devstral."""
         assert is_devstral_model('devstral:http://localhost:8080/v1') is True
 
     def test_anthropic_not_devstral(self) -> None:

@@ -77,7 +77,14 @@ def locate_data_files(paths: Iterable[str | Path]) -> tuple[Path, Path, Path]:
     return train_path, test_path, sample_path
 
 
-def stage_competition_data(train_path: Path, test_path: Path, sample_path: Path, destination: Path) -> dict[str, Path]:
+def stage_competition_data(
+    train_path: Path,
+    test_path: Path,
+    sample_path: Path,
+    destination: Path,
+    *,
+    competition_id: str | None = None,
+) -> dict[str, Path]:
     """Stage competition data into canonical filenames."""
     destination.mkdir(parents=True, exist_ok=True)
 
@@ -90,6 +97,13 @@ def stage_competition_data(train_path: Path, test_path: Path, sample_path: Path,
     _link_or_copy(train_path, staged['train'])
     _link_or_copy(test_path, staged['test'])
     _link_or_copy(sample_path, staged['sample'])
+
+    if competition_id:
+        competition_dir = destination / competition_id
+        competition_dir.mkdir(parents=True, exist_ok=True)
+        _link_or_copy(staged['train'], competition_dir / staged['train'].name)
+        _link_or_copy(staged['test'], competition_dir / staged['test'].name)
+        _link_or_copy(staged['sample'], competition_dir / staged['sample'].name)
 
     return staged
 

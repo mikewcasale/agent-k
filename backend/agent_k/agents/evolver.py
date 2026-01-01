@@ -7,6 +7,7 @@ Licensed under the MIT License.
 from __future__ import annotations as _annotations
 
 # Standard library (alphabetical)
+import csv
 import hashlib
 import json
 import random
@@ -539,7 +540,17 @@ class EvolverAgent(MemoryMixin):
     ) -> dict[str, Any]:
         with tempfile.TemporaryDirectory(dir=str(ctx.deps.data_dir)) as run_dir:
             run_path = Path(run_dir)
-            stage_competition_data(ctx.deps.train_path, ctx.deps.test_path, ctx.deps.sample_path, run_path)
+            stage_competition_data(
+                ctx.deps.train_path,
+                ctx.deps.test_path,
+                ctx.deps.sample_path,
+                run_path,
+                competition_id=ctx.deps.competition.id,
+            )
+            if ctx.deps.max_generations <= 5:
+                _truncate_csv(run_path / 'train.csv', max_rows=800)
+                _truncate_csv(run_path / 'test.csv', max_rows=800)
+                _truncate_csv(run_path / 'sample_submission.csv', max_rows=800)
             execution = await execute_solution(
                 solution_code,
                 run_path,
@@ -577,7 +588,13 @@ class EvolverAgent(MemoryMixin):
     ) -> dict[str, Any]:
         with tempfile.TemporaryDirectory(dir=str(ctx.deps.data_dir)) as run_dir:
             run_path = Path(run_dir)
-            stage_competition_data(ctx.deps.train_path, ctx.deps.test_path, ctx.deps.sample_path, run_path)
+            stage_competition_data(
+                ctx.deps.train_path,
+                ctx.deps.test_path,
+                ctx.deps.sample_path,
+                run_path,
+                competition_id=ctx.deps.competition.id,
+            )
             execution = await execute_solution(
                 solution_code,
                 run_path,
@@ -616,7 +633,6 @@ class EvolverAgent(MemoryMixin):
             'generation': len(ctx.deps.generation_history),
             'runtime_ms': execution.runtime_ms,
         }
-
     def _seeded_rng(self, solution_code: str, params: dict[str, Any], salt: str) -> random.Random:
         seed_input = f'{salt}:{solution_code}:{sorted(params.items())}'.encode()
         seed = int(hashlib.sha256(seed_input).hexdigest(), 16)
@@ -714,6 +730,25 @@ class EvolverAgent(MemoryMixin):
         imports = '\n'.join(self._merge_imports(primary_imports, other_imports))
         body = '\n\n'.join(part for part in body_parts if part)
         return f'{imports}\n\n{body}' if imports else body
+
+
+def _truncate_csv(path: Path, *, max_rows: int) -> None:
+    if max_rows <= 0:
+        return
+    temp_path = path.with_suffix(f'{path.suffix}.tmp')
+    with path.open('r', encoding='utf-8', errors='ignore', newline='') as source:
+        reader = csv.reader(source)
+        header = next(reader, None)
+        if header is None:
+            return
+        with temp_path.open('w', encoding='utf-8', errors='ignore', newline='') as target:
+            writer = csv.writer(target)
+            writer.writerow(header)
+            for idx, row in enumerate(reader):
+                if idx >= max_rows:
+                    break
+                writer.writerow(row)
+    temp_path.replace(path)
 
 
 # Module-level singleton for backward compatibility

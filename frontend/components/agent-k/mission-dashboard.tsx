@@ -1,6 +1,7 @@
 "use client";
 
 import type React from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Activity,
@@ -17,8 +18,20 @@ import { LogsView } from "./logs-view";
 import { MemoryView } from "./memory-view";
 import { PlanView } from "./plan-view";
 import { ResearchView } from "./research-view";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { buttonVariants } from "@/components/ui/button";
 import { useAgentKState } from "@/hooks/use-agent-k-state";
 import { cn } from "@/lib/utils";
+import { buildCompetitionRulesUrl, isRulesAcceptanceError } from "@/lib/utils/kaggle";
 import { formatRelativeTime } from "@/lib/utils/time";
 
 const tabs: Array<{
@@ -36,6 +49,7 @@ const tabs: Array<{
 export function MissionDashboard() {
   const { state, setActiveTab, hasErrors } = useAgentKState();
   const mission = state.mission;
+  const [showRulesDialog, setShowRulesDialog] = useState(false);
 
   // Avoid rendering until mission initialized
   if (!mission.phases.length && !mission.evolution && !mission.competition) {
@@ -44,6 +58,26 @@ export function MissionDashboard() {
 
   const activeTab = state.ui.activeTab;
   const overallProgress = mission.overallProgress ?? 0;
+  const rulesUrl = useMemo(
+    () => buildCompetitionRulesUrl(mission.competition, mission.competitionId),
+    [mission.competition, mission.competitionId]
+  );
+  const rulesError = useMemo(() => {
+    const messages: string[] = [];
+    for (const error of mission.errors) {
+      messages.push(error.message);
+    }
+    for (const phase of mission.phases) {
+      for (const task of phase.tasks) {
+        for (const toolCall of task.toolCalls ?? []) {
+          if (toolCall.error) {
+            messages.push(toolCall.error);
+          }
+        }
+      }
+    }
+    return messages.find((message) => isRulesAcceptanceError(message));
+  }, [mission.errors, mission.phases]);
 
   return (
     <motion.div
@@ -54,6 +88,35 @@ export function MissionDashboard() {
     >
       <div className="border-b border-zinc-200 px-4 py-4 dark:border-zinc-800 md:px-6">
         <Header />
+        {rulesError && (
+          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            <div className="flex items-center gap-2 font-semibold">
+              <AlertTriangle className="size-4 text-amber-600" />
+              Kaggle rules acceptance required
+            </div>
+            <p className="mt-1 text-amber-800">
+              Kaggle blocks API downloads until you accept the competition rules in your
+              active browser session.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                className="rounded-full bg-amber-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
+                onClick={() => setShowRulesDialog(true)}
+                type="button"
+              >
+                Review Kaggle Rules
+              </button>
+              <a
+                className={cn(buttonVariants({ variant: "outline" }))}
+                href={rulesUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                Open rules page
+              </a>
+            </div>
+          </div>
+        )}
         <div className="mt-4 flex flex-wrap items-center gap-2">
           {tabs.map((tab) => (
             <button
@@ -80,6 +143,45 @@ export function MissionDashboard() {
         {activeTab === "memory" && <MemoryView />}
         {activeTab === "logs" && <LogsView />}
       </div>
+
+      <AlertDialog onOpenChange={setShowRulesDialog} open={showRulesDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Accept Kaggle competition rules</AlertDialogTitle>
+            <AlertDialogDescription>
+              Kaggle requires a one-time manual acceptance in your browser session before
+              API access works. Open the rules page, confirm you are signed in to the
+              correct Kaggle account, accept the rules, then return here to retry the
+              mission.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            Rules page:{" "}
+            <a
+              className="font-semibold text-blue-700 hover:text-blue-800"
+              href={rulesUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              {rulesUrl}
+            </a>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Not now</AlertDialogCancel>
+            <a
+              className={cn(buttonVariants({ variant: "outline" }))}
+              href={rulesUrl}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Open rules page
+            </a>
+            <AlertDialogAction onClick={() => setShowRulesDialog(false)}>
+              I've accepted
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </motion.div>
   );
 }

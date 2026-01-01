@@ -37,6 +37,7 @@ _CODE_EXECUTION_SYSTEM_PROMPT: Final[str] = (
 )
 _DEFAULT_MAX_INLINE_DATA_BYTES: Final[int] = 100_000
 _EXECUTION_DATA_FILES: Final[tuple[str, ...]] = ('train.csv', 'test.csv', 'sample_submission.csv')
+_KAGGLE_INPUT_PREFIX: Final[str] = '/kaggle/input'
 _SENSITIVE_ENV_TOKENS: Final[tuple[str, ...]] = (
     'KEY',
     'TOKEN',
@@ -76,14 +77,19 @@ async def execute_solution(
     max_inline_data_bytes: int = _DEFAULT_MAX_INLINE_DATA_BYTES,
 ) -> ExecutionResult:
     """Execute solution code in a working directory."""
+    normalized_code = _normalize_kaggle_paths(code)
     if use_builtin_code_execution:
         tool_result = await _execute_with_builtin_tool(
-            code, work_path, env=env, model_spec=model_spec, max_inline_data_bytes=max_inline_data_bytes
+            normalized_code,
+            work_path,
+            env=env,
+            model_spec=model_spec,
+            max_inline_data_bytes=max_inline_data_bytes,
         )
         if tool_result is not None:
             return tool_result
 
-    return await _execute_solution_local(code, work_path, timeout_seconds=timeout_seconds, env=env)
+    return await _execute_solution_local(normalized_code, work_path, timeout_seconds=timeout_seconds, env=env)
 
 
 def parse_baseline_score(output: str) -> float | None:
@@ -94,6 +100,12 @@ def parse_baseline_score(output: str) -> float | None:
         except ValueError:
             pass
     return None
+
+
+def _normalize_kaggle_paths(code: str) -> str:
+    if _KAGGLE_INPUT_PREFIX not in code:
+        return code
+    return code.replace(_KAGGLE_INPUT_PREFIX, '.')
 
 
 async def _execute_solution_local(

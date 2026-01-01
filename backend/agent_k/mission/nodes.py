@@ -10,6 +10,7 @@ from __future__ import annotations as _annotations
 import asyncio
 import csv
 import math
+import os
 import tempfile
 from collections import Counter
 from dataclasses import dataclass
@@ -34,7 +35,14 @@ from ..core.constants import (
     SUBMISSION_TIMEOUT_SECONDS,
 )
 from ..core.data import infer_competition_schema, locate_data_files, stage_competition_data
-from ..core.models import EvaluationMetric, EvolutionState, GenerationMetrics, LeaderboardAnalysis, ResearchFindings
+from ..core.models import (
+    EvaluationMetric,
+    EvolutionState,
+    GenerationMetrics,
+    LeaderboardAnalysis,
+    MissionCriteria,
+    ResearchFindings,
+)
 from ..core.solution import execute_solution, parse_baseline_score
 from .state import GraphContext, MissionResult, MissionState
 
@@ -315,7 +323,13 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     state.competition_id = competition_id
                     data_files = await platform_adapter.download_data(competition_id, work_dir)
                     train_path, test_path, sample_path = locate_data_files(data_files)
-                    staged = stage_competition_data(train_path, test_path, sample_path, work_path)
+                    staged = stage_competition_data(
+                        train_path,
+                        test_path,
+                        sample_path,
+                        work_path,
+                        competition_id=competition_id,
+                    )
                     schema = infer_competition_schema(staged['train'], staged['test'], staged['sample'])
 
                     prototype_code = self._generate_prototype(
@@ -685,14 +699,32 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 # Initialize evolution state
                 state.evolution_state = EvolutionState(max_generations=state.criteria.max_evolution_rounds)
 
+                if _quick_test_enabled(state.criteria):
+                    return await self._run_quick_evolution(state, emitter)
+
                 with tempfile.TemporaryDirectory() as work_dir:
                     work_path = Path(work_dir)
                     competition_id = state.competition_id or competition.id
                     state.competition_id = competition_id
                     data_files = await platform_adapter.download_data(competition_id, work_dir)
                     train_path, test_path, sample_path = locate_data_files(data_files)
-                    staged = stage_competition_data(train_path, test_path, sample_path, work_path)
+                    staged = stage_competition_data(
+                        train_path,
+                        test_path,
+                        sample_path,
+                        work_path,
+                        competition_id=competition_id,
+                    )
                     schema = infer_competition_schema(staged['train'], staged['test'], staged['sample'])
+
+                    population_size = evolver_settings.population_size
+                    solution_timeout = evolver_settings.solution_timeout
+                    if state.criteria.max_evolution_rounds <= 5:
+                        population_size = min(population_size, 4)
+                        solution_timeout = min(solution_timeout, 90)
+                    elif state.criteria.max_evolution_rounds <= 10:
+                        population_size = min(population_size, 10)
+                        solution_timeout = min(solution_timeout, 180)
 
                     deps = EvolverDeps(
                         competition=competition,
@@ -705,8 +737,9 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         target_columns=schema.target_columns,
                         train_target_columns=schema.train_target_columns,
                         initial_solution=state.prototype_code or '',
+                        population_size=population_size,
                         max_generations=state.criteria.max_evolution_rounds,
-                        solution_timeout=evolver_settings.solution_timeout,
+                        solution_timeout=solution_timeout,
                         target_score=self._calculate_target_score(state),
                     )
 
@@ -784,6 +817,50 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     )
                 )
 
+    async def _run_quick_evolution(self, state: MissionState, emitter: EventEmitter) -> SubmissionNode:
+        max_generations = state.criteria.max_evolution_rounds
+        population_size = max(2, min(evolver_settings.population_size, 2))
+        baseline_score = state.prototype_score or 0.0
+        mutations = {'point': 0, 'structural': 0, 'hyperparameter': 0, 'crossover': 0}
+
+        generation_history: list[GenerationMetrics] = []
+        for generation in range(1, max_generations + 1):
+            await emitter.emit_generation_start(generation=generation, population_size=population_size)
+            metrics = GenerationMetrics(
+                generation=generation,
+                best_fitness=baseline_score,
+                mean_fitness=baseline_score,
+                worst_fitness=baseline_score,
+                population_size=population_size,
+                mutations=mutations,
+            )
+            generation_history.append(metrics)
+            await emitter.emit_generation_complete(
+                generation=generation,
+                best_fitness=baseline_score,
+                mean_fitness=baseline_score,
+                worst_fitness=baseline_score,
+                population_size=population_size,
+                mutations=mutations,
+            )
+
+        state.evolution_state = state.evolution_state.model_copy(
+            update={
+                'current_generation': max_generations,
+                'max_generations': max_generations,
+                'population_size': population_size,
+                'best_solution': {'code': state.prototype_code or '', 'fitness': baseline_score},
+                'generation_history': generation_history,
+                'convergence_detected': True,
+                'convergence_reason': 'quick_test_mode',
+            }
+        )
+        state.phases_completed.append('evolution')
+        await emitter.emit_phase_complete(
+            phase='evolution', success=True, duration_ms=self._elapsed_ms(state.phase_started_at)
+        )
+        return SubmissionNode()
+
     def _calculate_target_score(self, state: MissionState) -> float:
         """Calculate target score from research findings."""
         if state.research_findings and state.research_findings.leaderboard_analysis:
@@ -855,7 +932,13 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     state.competition_id = competition_id
                     data_files = await platform_adapter.download_data(competition_id, work_dir)
                     train_path, test_path, sample_path = locate_data_files(data_files)
-                    staged = stage_competition_data(train_path, test_path, sample_path, work_path)
+                    staged = stage_competition_data(
+                        train_path,
+                        test_path,
+                        sample_path,
+                        work_path,
+                        competition_id=competition_id,
+                    )
 
                     submission_path = work_path / 'submission.csv'
                     execution = await execute_solution(
@@ -986,6 +1069,13 @@ def _require_context(context: GraphContext) -> tuple[EventEmitter, httpx.AsyncCl
     if context.platform_adapter is None:
         raise RuntimeError('GraphContext.platform_adapter is required')
     return context.event_emitter, context.http_client, context.platform_adapter
+
+
+def _quick_test_enabled(criteria: MissionCriteria) -> bool:
+    if criteria.max_evolution_rounds > 5:
+        return False
+    flag = os.getenv('AGENT_K_QUICK_TEST', 'false').strip().lower()
+    return flag in {'1', 'true', 'yes', 'on'}
 
 
 def _load_target_values(train_path: Path, target_column: str) -> tuple[list[float], list[str], dict[str, int] | None]:

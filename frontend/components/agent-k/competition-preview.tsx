@@ -15,6 +15,7 @@ import {
 import { buttonVariants } from "@/components/ui/button";
 import type { CompetitionInfo } from "@/lib/types/agent-k";
 import { cn } from "@/lib/utils";
+import { buildCompetitionRulesUrl } from "@/lib/utils/kaggle";
 
 type CompetitionPreviewProps = {
   competition: CompetitionInfo;
@@ -34,19 +35,6 @@ function formatMetric(value: string) {
   return value.replace(/_/g, " ").toUpperCase();
 }
 
-function buildRulesUrl(competition: CompetitionInfo) {
-  if (competition.url) {
-    try {
-      const parsed = new URL(competition.url);
-      const cleanedPath = parsed.pathname.replace(/\/rules\/?$/, "").replace(/\/$/, "");
-      return `${parsed.origin}${cleanedPath}/rules`;
-    } catch {
-      // Fall back to the canonical rules path.
-    }
-  }
-  return `https://www.kaggle.com/competitions/${competition.id}/rules`;
-}
-
 export function CompetitionPreview({
   competition,
   matchCount,
@@ -55,7 +43,7 @@ export function CompetitionPreview({
   onBack,
 }: CompetitionPreviewProps) {
   const [showRulesDialog, setShowRulesDialog] = useState(false);
-  const rulesUrl = useMemo(() => buildRulesUrl(competition), [competition]);
+  const rulesUrl = useMemo(() => buildCompetitionRulesUrl(competition), [competition]);
   const deadline = new Date(competition.deadline);
   const daysRemaining = Number.isNaN(deadline.getTime())
     ? null

@@ -24,6 +24,7 @@ __all__ = (
     'RateLimitError',
     'CompetitionError',
     'CompetitionNotFoundError',
+    'CompetitionRulesNotAcceptedError',
     'SubmissionError',
     'DeadlinePassedError',
     'EvolutionError',
@@ -152,6 +153,23 @@ class CompetitionNotFoundError(CompetitionError):
         self.competition_id = competition_id
         super().__init__(
             f'Competition not found: {competition_id}', context={'competition_id': competition_id}, recoverable=False
+        )
+
+
+class CompetitionRulesNotAcceptedError(CompetitionError):
+    """Raised when competition rules have not been accepted."""
+
+    def __init__(self, competition_id: str) -> None:
+        self.competition_id = competition_id
+        rules_url = f'https://www.kaggle.com/competitions/{competition_id}/rules'
+        message = (
+            f'Competition rules not accepted for {competition_id}. '
+            f'Open {rules_url} and accept the rules before downloading data.'
+        )
+        super().__init__(
+            message,
+            context={'competition_id': competition_id, 'rules_url': rules_url},
+            recoverable=False,
         )
 
 

@@ -80,6 +80,8 @@ IMPORTANT:
 - Record all generation metrics for convergence analysis
 - Keep the baseline print line in candidate code: "Baseline <metric> score: <value>"
 - Preserve TARGET_COLUMNS and TRAIN_TARGET_COLUMNS to support multi-target submissions
+- Use local data files (train.csv, test.csv, sample_submission.csv) in the working directory
+- Do not reference /kaggle/input paths
 """
 
 LYCURGUS_SYSTEM_PROMPT: Final[str] = 'You are LYCURGUS, orchestrating the AGENT-K multi-agent system.'

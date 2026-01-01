@@ -117,13 +117,21 @@ plan-view.tsx            # Mission plan overview
 └── task dependencies
 ```
 
+### Quick Start
+
+```
+quick-start.tsx          # Empty-state onboarding panel
+```
+
 ---
 
 ## State Management
 
 ### AG-UI Protocol
 
-The frontend communicates with the backend through the AG-UI protocol, receiving real-time updates via Server-Sent Events (SSE).
+The frontend proxies Agent K requests through the AG-UI protocol, forwarding to the
+Python backend SSE endpoint and transforming events into the Vercel AI data stream
+consumed by the UI.
 
 ### Mission State Hook
 
@@ -188,7 +196,8 @@ frontend/
 │   │   ├── research-view.tsx
 │   │   ├── memory-view.tsx
 │   │   ├── logs-view.tsx
-│   │   └── plan-view.tsx
+│   │   ├── plan-view.tsx
+│   │   └── quick-start.tsx
 │   ├── ui/                     # Shared UI components (shadcn/ui)
 │   └── elements/               # Custom elements
 │
@@ -248,20 +257,24 @@ pnpm format       # Fix code style
 
 ### Environment Variables
 
-Create a `.env.local` file with:
+Create a `.env.local` file (see `.env.example`) with:
 
 ```bash
-# Database
-DATABASE_URL="postgresql://..."
-
 # Authentication
 AUTH_SECRET="your-auth-secret"
+AUTH_TRUST_HOST=true
+AUTH_URL="http://localhost:3000"
 
-# AI Gateway (for Vercel deployments)
-AI_GATEWAY_API_KEY="your-gateway-key"
+# Database
+POSTGRES_URL="postgresql://..."
 
-# Backend Connection
-AGENT_K_BACKEND_URL="http://localhost:8000"
+# Agent K backend
+PYTHON_BACKEND_URL="http://localhost:9000/agentic_generative_ui/"
+
+# Optional integrations
+ANTHROPIC_API_KEY="sk-ant-..."
+BLOB_READ_WRITE_TOKEN="..."
+REDIS_URL="redis://..."
 ```
 
 ### Database
@@ -278,25 +291,25 @@ pnpm db:studio    # Open Drizzle Studio
 
 ## Connecting to Backend
 
-### Development Proxy
+### Backend URL
 
-The frontend proxies API requests to the backend. Configure in `proxy.ts`:
+Agent K requests are forwarded in `app/(chat)/api/chat/route.ts` using
+`PYTHON_BACKEND_URL` (defined in `lib/constants.ts`):
 
 ```typescript
-const BACKEND_URL = process.env.AGENT_K_BACKEND_URL || 'http://localhost:8000';
+export const PYTHON_BACKEND_URL =
+  process.env.PYTHON_BACKEND_URL ||
+  "http://localhost:9000/agentic_generative_ui/";
 ```
 
-### AG-UI Event Stream
+### Stream Bridge
 
-The frontend subscribes to the backend's SSE endpoint for real-time updates:
+The API route POSTs to the backend SSE endpoint and transforms the response into
+Vercel AI data stream events for the UI:
 
 ```typescript
-const eventSource = new EventSource('/api/agent-k/events');
-
-eventSource.onmessage = (event) => {
-  const patch = JSON.parse(event.data);
-  dispatch({ type: 'APPLY_PATCH', patch });
-};
+const backendResponse = await fetch(PYTHON_BACKEND_URL, { /* ... */ });
+const transformedStream = transformAgentKStream(backendResponse.body!);
 ```
 
 ---

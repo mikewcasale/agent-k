@@ -240,15 +240,17 @@ asyncio.run(main())
 
 ## Model Configuration
 
-AGENT-K supports multiple model providers via `get_model()`:
+AGENT-K supports multiple model providers via `get_model()`. Standard Pydantic-AI model
+strings are passed through; `devstral:` and `openrouter:` specs resolve to
+OpenAI-compatible models.
 
 | Model Spec | Description |
 |------------|-------------|
 | `devstral:local` | Local LM Studio server (default: `http://192.168.105.1:1234/v1`) |
 | `devstral:http://host:port/v1` | Custom Devstral endpoint |
+| `devstral:mistralai/devstral-small-2-2512` | Local LM Studio with explicit model id |
 | `anthropic:claude-3-haiku-20240307` | Claude Haiku via Anthropic |
 | `anthropic:claude-sonnet-4-5` | Claude Sonnet (backend default) |
-| `anthropic:claude-sonnet-4-20250514` | Claude Sonnet via Anthropic |
 | `openrouter:mistralai/devstral-small-2-2512` | Devstral via OpenRouter |
 | `openai:gpt-4o` | GPT-4o via OpenAI |
 
@@ -309,7 +311,7 @@ agent-k/
 │   │   └── ui/                     # AG-UI protocol (FastAPI)
 │   │       └── ag_ui.py
 │   ├── cli.py                      # FastAPI app entrypoint
-│   ├── docs/                       # Backend docs (mkdocs)
+│   ├── docs/                       # Backend docs (mkdocs + logo.png)
 │   └── tests/
 │
 ├── frontend/
@@ -332,15 +334,8 @@ agent-k/
 │       └── types/
 │           └── agent-k.ts          # TypeScript types
 │
-├── docs/                           # Documentation
-│   └── logo.png                    # Project logo
-│
 ├── run.sh                          # Start both servers
-├── render.yaml                     # Render deployment config
-│
-└── refs/                           # Reference documentation
-    ├── python_spec_v2.md           # Architecture specification
-    └── agent_k_playbook.md         # Operational playbook
+└── render.yaml                     # Render deployment config
 ```
 
 ---
@@ -348,6 +343,8 @@ agent-k/
 ## Configuration
 
 ### Environment Variables
+
+#### Backend (`backend/.env`)
 
 | Variable | Description | Required |
 |----------|-------------|----------|
@@ -359,7 +356,19 @@ agent-k/
 | `DEVSTRAL_BASE_URL` | Local LM Studio endpoint (default: `http://192.168.105.1:1234/v1`) | No |
 | `LOGFIRE_TOKEN` | Pydantic Logfire token | No |
 | `AGENT_K_MEMORY_DIR` | Memory tool storage path | No |
-| `DATABASE_URL` | PostgreSQL connection string | Frontend |
+
+#### Frontend (`frontend/.env.local`)
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `AUTH_SECRET` | Auth.js signing secret | Yes |
+| `AUTH_TRUST_HOST` | Required behind reverse proxies (Render, etc.) | Conditional |
+| `AUTH_URL` | Base URL for Auth.js callbacks | Yes |
+| `POSTGRES_URL` | PostgreSQL connection string | Yes |
+| `PYTHON_BACKEND_URL` | Agent K backend SSE endpoint | Yes (Agent K) |
+| `ANTHROPIC_API_KEY` | Claude models for in-app chat | Optional |
+| `BLOB_READ_WRITE_TOKEN` | Vercel Blob storage for uploads | Optional |
+| `REDIS_URL` | Redis cache | Optional |
 
 *Required for Kaggle platform access. If absent, the orchestrator falls back to OpenEvolve.
 
@@ -474,6 +483,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-<div align="center">
-  <sub>Built with Pydantic-AI • Powered by Claude</sub>
-</div>
+<!-- <div align="center">
+  <sub>Built with ❤️</sub>
+</div> -->

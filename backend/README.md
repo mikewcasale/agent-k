@@ -34,6 +34,9 @@ pip install -e .
 
 ```bash
 cd backend
+uv sync
+
+# Optional: install in editable mode
 uv pip install -e .
 ```
 
@@ -296,12 +299,10 @@ configure_instrumentation(
 
 ---
 
-## Architecture Reference
+## Documentation
 
-For detailed architecture specifications, see:
-
-- [Python Enterprise Architecture Specification](../refs/python_spec_v2.md) - Code organization and patterns
-- [AGENT-K Operational Playbook](../refs/agent_k_playbook.md) - Mission lifecycle and agent coordination
+MkDocs source lives in `docs/` (including `docs/logo.png`), with build settings in
+`mkdocs.yml`.
 
 ---
 

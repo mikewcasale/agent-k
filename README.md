@@ -41,25 +41,20 @@ AGENT-K is an autonomous multi-agent system that discovers, researches, prototyp
 │                           LYCURGUS ORCHESTRATOR                              │
 │                    (Pydantic-Graph State Machine)                            │
 │                                                                              │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐    ┌───────────┐  │
-│  │   LOBBYIST   │───▶│  SCIENTIST   │───▶│   EVOLVER    │───▶│ SUBMITTER │  │
-│  │  Discovery   │    │   Research   │    │  Evolution   │    │   Final   │  │
-│  └──────────────┘    └──────────────┘    └──────────────┘    └───────────┘  │
-│         │                   │                   │                   │        │
-│         ▼                   ▼                   ▼                   ▼        │
+│  Discovery -> Research -> Prototype -> Evolution -> Submission               │
+│     |           |             |            |           |                     │
+│  LOBBYIST    SCIENTIST      baseline     EVOLVER    adapter submit           │
+│                                                                              │
 │  ┌──────────────────────────────────────────────────────────────────────┐   │
-│  │                        SHARED TOOLSETS                                │   │
-│  │  • KaggleToolset (API)              • CodeExecutorToolset             │   │
-│  │  • SearchToolset (Web/Papers)       • MemoryToolset (Persistence)     │   │
-│  │  • BrowserToolset                   • ScholarlyToolset                │   │
+│  │                           TOOLING & ADAPTERS                          │   │
+│  │  • Kaggle Toolset (FunctionToolset)                                    │   │
+│  │  • Built-in WebSearch/WebFetch                                         │   │
+│  │  • MemoryTool + AgentKMemoryTool (Anthropic only)                      │   │
+│  │  • CodeExecutionTool (provider)                                        │   │
+│  │  • Kaggle MCP (evolver submissions)                                    │   │
+│  │  • Platform Adapters: Kaggle API or OpenEvolve (in-memory)             │   │
 │  └──────────────────────────────────────────────────────────────────────┘   │
 └─────────────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      ▼
-                          ┌─────────────────────┐
-                          │    KAGGLE PLATFORM  │
-                          │   (via Kaggle API)  │
-                          └─────────────────────┘
 ```
 
 ---
@@ -90,7 +85,7 @@ Evolves solutions using evolutionary code search to maximize competition score. 
 |---------|-------------|
 | **Multi-Agent Orchestration** | Pydantic-Graph state machine coordinates specialized agents through competition lifecycle |
 | **Evolutionary Code Search** | OpenEvolve integration for population-based solution optimization |
-| **Kaggle Integration** | FunctionToolset-based platform operations for seamless competition interaction |
+| **Kaggle Integration** | FunctionToolset-based platform operations with OpenEvolve fallback for offline runs |
 | **Real-Time Observability** | Pydantic Logfire instrumentation for tracing, metrics, and debugging |
 | **Interactive Dashboard** | Next.js frontend with mission monitoring, evolution visualization, and tool call inspection |
 | **Memory Persistence** | Cross-session context and checkpoint management for long-running missions |
@@ -172,7 +167,11 @@ uv sync
 source .venv/bin/activate  # or .venv\Scripts\activate on Windows
 
 # Set environment variables (or create backend/.env)
+# At least one model provider API key is required
 export ANTHROPIC_API_KEY="your-api-key"
+# or: OPENROUTER_API_KEY / OPENAI_API_KEY
+
+# Kaggle credentials are required for live competitions
 export KAGGLE_USERNAME="your-kaggle-username"
 export KAGGLE_KEY="your-kaggle-key"
 ```
@@ -200,19 +199,19 @@ pnpm dev
 ./run.sh
 ```
 
-### Run Multi-Agent Demo
+### Run Backend API (AG-UI)
 
 ```bash
 cd backend
+python -m agent_k.ui.ag_ui
+```
 
-# Local Devstral (LM Studio)
-uv run python examples/multi_agent_playbook.py --model devstral:local
+Run a mission through the chat endpoint (streams Vercel AI data events):
 
-# Claude Haiku (Anthropic)
-uv run python examples/multi_agent_playbook.py --model anthropic:claude-3-haiku-20240307
-
-# Devstral via OpenRouter
-uv run python examples/multi_agent_playbook.py --model openrouter:mistralai/devstral-small
+```bash
+curl -N -X POST http://localhost:9000/agentic_generative_ui/ \
+  -H "Content-Type: application/json" \
+  -d '{"id":"demo","messages":[{"role":"user","parts":[{"type":"text","text":"Find a Kaggle competition with a $10k+ prize"}]}]}'
 ```
 
 ### Run a Mission (Programmatic)
@@ -246,10 +245,11 @@ AGENT-K supports multiple model providers via `get_model()`:
 | Model Spec | Description |
 |------------|-------------|
 | `devstral:local` | Local LM Studio server (default: `http://192.168.105.1:1234/v1`) |
-| `devstral:http://custom:port/v1` | Custom Devstral endpoint |
+| `devstral:http://host:port/v1` | Custom Devstral endpoint |
 | `anthropic:claude-3-haiku-20240307` | Claude Haiku via Anthropic |
+| `anthropic:claude-sonnet-4-5` | Claude Sonnet (backend default) |
 | `anthropic:claude-sonnet-4-20250514` | Claude Sonnet via Anthropic |
-| `openrouter:mistralai/devstral-small` | Devstral via OpenRouter |
+| `openrouter:mistralai/devstral-small-2-2512` | Devstral via OpenRouter |
 | `openai:gpt-4o` | GPT-4o via OpenAI |
 
 ---
@@ -259,52 +259,58 @@ AGENT-K supports multiple model providers via `get_model()`:
 ```
 agent-k/
 ├── backend/
-│   └── agent_k/
-│       ├── agents/                 # Pydantic-AI agent definitions
-│       │   ├── lobbyist/           # Competition discovery
-│       │   ├── scientist/          # Research and analysis
-│       │   ├── evolver/            # Solution optimization
-│       │   └── lycurgus/           # Orchestration
-│       ├── adapters/               # Platform integrations
-│       │   ├── kaggle/             # Kaggle API adapter
-│       │   └── openevolve/         # OpenEvolve integration
-│       ├── core/                   # Domain models and protocols
-│       │   ├── constants.py        # Domain constants
-│       │   ├── deps.py             # Shared dependencies
-│       │   ├── exceptions.py       # Exception hierarchy
-│       │   ├── models.py           # Pydantic models
-│       │   ├── protocols.py        # Interface definitions
-│       │   ├── settings.py         # Shared settings
-│       │   └── types.py            # Type aliases
-│       ├── mission/                # State machine
-│       │   ├── nodes.py            # Phase nodes
-│       │   ├── state.py            # Mission state
-│       │   └── persistence.py      # Checkpoint management
-│       ├── toolsets/               # FunctionToolset implementations
-│       │   ├── kaggle.py           # Kaggle API operations
-│       │   ├── search.py           # Web/paper search
-│       │   ├── memory.py           # Persistent memory
-│       │   ├── browser.py          # Browser automation
-│       │   ├── code.py             # Code execution
-│       │   └── scholarly.py        # Academic search
-│       ├── embeddings/             # RAG support
-│       │   ├── embedder.py         # Embedding utilities
-│       │   ├── retriever.py        # Retrieval logic
-│       │   └── store.py            # Vector store helpers
-│       ├── evals/                  # Evaluation framework
-│       │   ├── datasets.py         # Dataset definitions
-│       │   ├── evaluators.py       # Evaluation logic
-│       │   └── discovery.yaml      # Sample eval cases
-│       ├── ui/                     # UI adapters
-│       │   ├── ag_ui/              # AG-UI protocol (FastAPI)
-│       │   └── console/            # Terminal console
-│       └── infra/                  # Infrastructure
-│           ├── config.py           # Configuration
-│           ├── providers.py        # Model factory (get_model)
-│           ├── logging.py          # Logging setup
-│           └── instrumentation.py  # Observability
-│   └── examples/                   # Demo scripts
-│       └── multi_agent_playbook.py # Full multi-agent demo
+│   ├── agent_k/
+│   │   ├── agents/                 # Pydantic-AI agent definitions
+│   │   │   ├── base.py
+│   │   │   ├── evolver.py
+│   │   │   ├── lobbyist.py
+│   │   │   ├── lycurgus.py
+│   │   │   ├── scientist.py
+│   │   │   └── prompts.py
+│   │   ├── adapters/               # Platform integrations
+│   │   │   ├── kaggle.py
+│   │   │   └── openevolve.py
+│   │   ├── core/                   # Domain models and helpers
+│   │   │   ├── constants.py
+│   │   │   ├── data.py
+│   │   │   ├── deps.py
+│   │   │   ├── exceptions.py
+│   │   │   ├── models.py
+│   │   │   ├── protocols.py
+│   │   │   ├── settings.py
+│   │   │   ├── solution.py
+│   │   │   └── types.py
+│   │   ├── mission/                # State machine
+│   │   │   ├── nodes.py
+│   │   │   ├── persistence.py
+│   │   │   └── state.py
+│   │   ├── toolsets/               # FunctionToolset helpers
+│   │   │   ├── code.py
+│   │   │   ├── kaggle.py
+│   │   │   ├── memory.py
+│   │   │   ├── search.py
+│   │   │   ├── browser.py          # Placeholder
+│   │   │   └── scholarly.py        # Placeholder
+│   │   ├── embeddings/             # RAG support
+│   │   │   ├── embedder.py
+│   │   │   ├── retriever.py
+│   │   │   └── store.py
+│   │   ├── evals/                  # Evaluation framework
+│   │   │   ├── datasets.py
+│   │   │   ├── evaluators.py
+│   │   │   ├── discovery.yaml
+│   │   │   ├── evolution.yaml
+│   │   │   └── submission.yaml
+│   │   ├── infra/                  # Infrastructure
+│   │   │   ├── config.py
+│   │   │   ├── instrumentation.py
+│   │   │   ├── logging.py
+│   │   │   └── providers.py
+│   │   └── ui/                     # AG-UI protocol (FastAPI)
+│   │       └── ag_ui.py
+│   ├── cli.py                      # FastAPI app entrypoint
+│   ├── docs/                       # Backend docs (mkdocs)
+│   └── tests/
 │
 ├── frontend/
 │   ├── app/                        # Next.js app router
@@ -345,16 +351,19 @@ agent-k/
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `ANTHROPIC_API_KEY` | Anthropic API key for Claude models | Yes* |
-| `OPENROUTER_API_KEY` | OpenRouter API key | Yes* |
-| `OPENAI_API_KEY` | OpenAI API key | Yes* |
-| `KAGGLE_USERNAME` | Kaggle account username | Yes |
-| `KAGGLE_KEY` | Kaggle API key | Yes |
+| `KAGGLE_USERNAME` | Kaggle account username | Yes* |
+| `KAGGLE_KEY` | Kaggle API key | Yes* |
+| `ANTHROPIC_API_KEY` | Anthropic API key for Claude models | Yes** |
+| `OPENROUTER_API_KEY` | OpenRouter API key | Yes** |
+| `OPENAI_API_KEY` | OpenAI API key | Yes** |
 | `DEVSTRAL_BASE_URL` | Local LM Studio endpoint (default: `http://192.168.105.1:1234/v1`) | No |
 | `LOGFIRE_TOKEN` | Pydantic Logfire token | No |
+| `AGENT_K_MEMORY_DIR` | Memory tool storage path | No |
 | `DATABASE_URL` | PostgreSQL connection string | Frontend |
 
-*At least one model provider API key is required.
+*Required for Kaggle platform access. If absent, the orchestrator falls back to OpenEvolve.
+
+**At least one model provider API key is required.
 
 ### Mission Criteria
 
@@ -381,18 +390,12 @@ criteria = MissionCriteria(
 AGENT-K uses Pydantic Logfire for comprehensive observability:
 
 ```python
-import logfire
+from agent_k.infra.instrumentation import configure_instrumentation
 
-# Configure at startup
-logfire.configure(
-    service_name='agent-k',
-    environment='production',
+configure_instrumentation(
+    service_name="agent-k",
+    environment="production",
 )
-
-# Automatic instrumentation
-logfire.instrument_pydantic_ai()
-logfire.instrument_httpx()
-logfire.instrument_asyncio()
 ```
 
 ### Metrics Tracked

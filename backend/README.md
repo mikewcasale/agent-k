@@ -15,7 +15,9 @@
 
 ## Overview
 
-The AGENT-K backend is a Python package implementing a multi-agent system for autonomous Kaggle competition participation. Built on Pydantic-AI, it coordinates specialized agents through a state machine to discover competitions, conduct research, prototype solutions, evolve optimizations, and submit entries.
+The AGENT-K backend is a Python package implementing a multi-agent system for autonomous Kaggle competition participation. Built on Pydantic-AI and Pydantic-Graph, it coordinates specialized agents through a state machine to discover competitions, conduct research, prototype solutions, evolve optimizations, and submit entries.
+
+The orchestrator will use the Kaggle API when credentials are available; otherwise it falls back to the in-memory OpenEvolve adapter for offline runs.
 
 ---
 
@@ -39,11 +41,14 @@ uv pip install -e .
 
 Core dependencies from `pyproject.toml`:
 
-- `pydantic-ai[ag-ui]>=0.2.0` - Agent framework with AG-UI support
+- `pydantic-ai>=0.2.0` - Agent framework
 - `pydantic-graph>=0.2.0` - State machine orchestration
+- `fastapi>=0.115.0` - API server for AG-UI
+- `uvicorn>=0.32.0` - ASGI server
 - `logfire>=0.44.0` - Observability and tracing
 - `httpx>=0.27.0` - Async HTTP client
 - `opentelemetry-api>=1.27.0` - Telemetry instrumentation
+- `numpy>=1.26.0` - Numerical utilities
 
 ---
 
@@ -56,56 +61,40 @@ agent_k/
 ├── _version.py                 # Version singleton
 │
 ├── agents/                     # Pydantic-AI agent definitions
-│   ├── _base.py                # Base agent abstractions
-│   ├── lobbyist/               # Competition discovery
-│   │   ├── agent.py            # LobbyistAgent
-│   │   ├── tools.py            # Discovery tools
-│   │   └── prompts.py          # System prompts
-│   ├── scientist/              # Research and analysis
-│   │   ├── agent.py            # ScientistAgent
-│   │   ├── tools.py            # Research tools
-│   │   └── prompts.py          # System prompts
-│   ├── evolver/                # Solution optimization
-│   │   ├── agent.py            # EvolverAgent
-│   │   ├── tools.py            # Evolution tools
-│   │   └── prompts.py          # System prompts
-│   └── lycurgus/               # Orchestration
-│       ├── agent.py            # LycurgusOrchestrator
-│       ├── tools.py            # Orchestration tools
-│       └── prompts.py          # System prompts
+│   ├── base.py                 # Base agent patterns
+│   ├── lobbyist.py             # Competition discovery
+│   ├── scientist.py            # Research and analysis
+│   ├── evolver.py              # Solution optimization
+│   ├── lycurgus.py             # Orchestration
+│   └── prompts.py              # System prompts
 │
 ├── adapters/                   # Platform integrations
-│   ├── _base.py                # Adapter protocol
-│   ├── kaggle/                 # Kaggle platform
-│   │   ├── adapter.py          # KaggleAdapter
-│   │   ├── api.py              # API client
-│   │   └── models.py           # Kaggle-specific models
-│   └── openevolve/             # OpenEvolve integration
-│       ├── adapter.py          # Evolution engine adapter
-│       └── models.py           # Evolution models
+│   ├── kaggle.py               # Kaggle platform adapter
+│   └── openevolve.py           # OpenEvolve in-memory adapter
 │
 ├── core/                       # Domain primitives
 │   ├── constants.py            # Domain constants
+│   ├── data.py                 # Dataset helpers
 │   ├── deps.py                 # Shared dependency containers
 │   ├── exceptions.py           # Exception hierarchy
 │   ├── models.py               # Core Pydantic models
 │   ├── protocols.py            # Interface definitions
 │   ├── settings.py             # Shared settings
+│   ├── solution.py             # Solution execution helpers
 │   └── types.py                # Type aliases
 │
 ├── mission/                    # State machine
 │   ├── nodes.py                # Phase nodes (Discovery, Research, etc.)
-│   ├── edges.py                # Transition definitions
 │   ├── state.py                # Mission state models
 │   └── persistence.py          # Checkpoint management
 │
 ├── toolsets/                   # Agent tools
 │   ├── kaggle.py               # Kaggle toolset
-│   ├── search.py               # Web + paper search
-│   ├── memory.py               # Persistent memory
-│   ├── browser.py              # Browser automation
-│   ├── code.py                 # Sandboxed code execution
-│   └── scholarly.py            # Academic search
+│   ├── search.py               # Web search helpers
+│   ├── memory.py               # Memory backend helpers
+│   ├── code.py                 # Code execution helpers
+│   ├── browser.py              # Placeholder for browser automation
+│   └── scholarly.py            # Placeholder for scholarly search
 │
 ├── embeddings/                 # RAG support
 │   ├── embedder.py             # Embedding utilities
@@ -115,15 +104,17 @@ agent_k/
 ├── evals/                      # Evaluation framework
 │   ├── datasets.py             # Dataset definitions
 │   ├── evaluators.py           # Evaluation logic
-│   └── discovery.yaml          # Sample eval cases
+│   ├── discovery.yaml          # Sample eval cases
+│   ├── evolution.yaml          # Sample eval cases
+│   └── submission.yaml         # Sample eval cases
 │
-├── ui/                         # UI adapters
-│   └── ag_ui.py                # AG-UI protocol + EventEmitter
+├── ui/                         # AG-UI protocol
+│   └── ag_ui.py                # FastAPI app and event emitter
 │
 └── infra/                      # Infrastructure
     ├── config.py               # Configuration management
     ├── providers.py            # Model provider configuration
-    ├── logging.py              # Centralized logging
+    ├── logging.py              # Logging helpers
     └── instrumentation.py      # Logfire setup
 ```
 
@@ -138,7 +129,7 @@ The central orchestrator coordinating the multi-agent competition lifecycle. Imp
 ```python
 from agent_k import LycurgusOrchestrator
 
-orchestrator = LycurgusOrchestrator(model='anthropic:claude-sonnet-4-5')
+orchestrator = LycurgusOrchestrator(model="anthropic:claude-sonnet-4-5")
 ```
 
 ### LOBBYIST (Discovery)
@@ -149,7 +140,7 @@ Discovers and evaluates Kaggle competitions matching user-specified criteria.
 from agent_k import lobbyist_agent
 
 result = await lobbyist_agent.run(
-    'Find featured competitions with $10k+ prize',
+    "Find featured competitions with $10k+ prize",
     deps=deps,
 )
 ```
@@ -162,7 +153,7 @@ Conducts comprehensive research including literature review, leaderboard analysi
 from agent_k import scientist_agent
 
 report = await scientist_agent.run(
-    'Analyze this tabular competition',
+    "Analyze this tabular competition",
     deps=deps,
 )
 ```
@@ -175,7 +166,7 @@ Evolves solutions using evolutionary code search to maximize competition score.
 from agent_k import evolver_agent
 
 result = await evolver_agent.run(
-    'Optimize this XGBoost solution',
+    "Optimize this XGBoost solution",
     deps=deps,
 )
 ```
@@ -200,34 +191,36 @@ async def main():
         }),
         min_prize_pool=10000,
         min_days_remaining=14,
-        target_domains=frozenset({'computer_vision', 'nlp'}),
+        target_domains=frozenset({"computer_vision", "nlp"}),
         max_evolution_rounds=100,
         target_leaderboard_percentile=0.10,
     )
-    
+
     # Execute mission
     async with LycurgusOrchestrator() as orchestrator:
         result = await orchestrator.execute_mission(
-            competition_id='titanic',
+            competition_id="titanic",
             criteria=criteria,
         )
-        
-        print(f'Success: {result.success}')
-        print(f'Final Rank: {result.final_rank}')
-        print(f'Final Score: {result.final_score}')
-        print(f'Generations: {result.evolution_generations}')
+
+        print(f"Success: {result.success}")
+        print(f"Final Rank: {result.final_rank}")
+        print(f"Final Score: {result.final_score}")
+        print(f"Generations: {result.evolution_generations}")
 
 asyncio.run(main())
 ```
 
 ### Configuration from File
 
+`LycurgusSettings.from_file()` expects a JSON file.
+
 ```python
 from pathlib import Path
 from agent_k import LycurgusOrchestrator
 
 orchestrator = LycurgusOrchestrator.from_config_file(
-    Path('config/mission.json')
+    Path("config/mission.json")
 )
 ```
 
@@ -239,15 +232,25 @@ orchestrator = LycurgusOrchestrator.from_config_file(
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `ANTHROPIC_API_KEY` | Anthropic API key for Claude models | Yes |
-| `KAGGLE_USERNAME` | Kaggle account username | Yes |
-| `KAGGLE_KEY` | Kaggle API key | Yes |
+| `KAGGLE_USERNAME` | Kaggle account username | Yes* |
+| `KAGGLE_KEY` | Kaggle API key | Yes* |
+| `ANTHROPIC_API_KEY` | Anthropic API key for Claude models | Yes** |
+| `OPENROUTER_API_KEY` | OpenRouter API key | Yes** |
+| `OPENAI_API_KEY` | OpenAI API key | Yes** |
+| `DEVSTRAL_BASE_URL` | Local LM Studio endpoint | No |
 | `LOGFIRE_TOKEN` | Pydantic Logfire token | No |
+| `AGENT_K_MEMORY_DIR` | Memory tool storage path | No |
+
+*Required for Kaggle platform access. If absent, the orchestrator falls back to OpenEvolve.
+
+**At least one model provider API key is required.
 
 ### Setting Environment Variables
 
 ```bash
 export ANTHROPIC_API_KEY="your-api-key"
+export OPENROUTER_API_KEY="your-openrouter-key"
+export OPENAI_API_KEY="your-openai-key"
 export KAGGLE_USERNAME="your-kaggle-username"
 export KAGGLE_KEY="your-kaggle-key"
 export LOGFIRE_TOKEN="your-logfire-token"  # Optional
@@ -260,41 +263,20 @@ export LOGFIRE_TOKEN="your-logfire-token"  # Optional
 ### Running Tests
 
 ```bash
-pytest
-pytest --cov=agent_k  # With coverage
+cd backend
+
+uv run pytest -v
+uv run pytest tests/test_file.py -v
 ```
 
 ### Linting and Formatting
 
 ```bash
-# Check code style
-ruff check .
+cd backend
 
-# Format code
-ruff format .
-
-# Type checking
-mypy .
-```
-
-### Code Quality Tools
-
-The project uses:
-- **Ruff** - Fast Python linter and formatter
-- **MyPy** - Static type checking with Pydantic plugin
-- **Pytest** - Testing with async support
-
-Configuration is in `pyproject.toml`:
-
-```toml
-[tool.ruff]
-line-length = 120
-target-version = "py311"
-
-[tool.mypy]
-python_version = "3.11"
-strict = true
-plugins = ["pydantic.mypy"]
+uv run ruff check .
+uv run ruff format .
+uv run mypy .
 ```
 
 ---
@@ -304,29 +286,12 @@ plugins = ["pydantic.mypy"]
 AGENT-K uses Pydantic Logfire for comprehensive observability:
 
 ```python
-import logfire
 from agent_k.infra.instrumentation import configure_instrumentation
 
-# Configure at startup
 configure_instrumentation(
-    service_name='agent-k',
-    environment='production',
+    service_name="agent-k",
+    environment="production",
 )
-
-# Automatic instrumentation
-logfire.instrument_pydantic_ai()
-logfire.instrument_httpx()
-logfire.instrument_asyncio()
-```
-
-### Custom Spans
-
-```python
-import logfire
-
-with logfire.span('custom_operation', param=value):
-    # Your code here
-    pass
 ```
 
 ---

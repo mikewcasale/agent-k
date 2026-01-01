@@ -34,19 +34,11 @@ class MissionState(BaseModel):
 
     model_config = ConfigDict(validate_assignment=True, arbitrary_types_allowed=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
-
-    # Identity
     mission_id: MissionId = Field(description='Unique mission identifier')
     competition_id: CompetitionId | None = Field(default=None, description='Selected competition id')
-
-    # Configuration
     criteria: MissionCriteria = Field(default_factory=MissionCriteria, description='Mission selection criteria')
-
-    # Phase tracking
     current_phase: MissionPhase = Field(default='discovery', description='Current mission phase')
     phases_completed: list[MissionPhase] = Field(default_factory=list, description='Completed phases')
-
-    # Phase results
     discovered_competitions: list[Competition] = Field(
         default_factory=list, description='Competitions found during discovery'
     )
@@ -60,18 +52,10 @@ class MissionState(BaseModel):
     final_submission_id: str | None = Field(default=None, description='Final submission identifier')
     final_score: float | None = Field(default=None, description='Final leaderboard score')
     final_rank: int | None = Field(default=None, description='Final leaderboard rank')
-
-    # Error tracking
     errors: list[dict[str, Any]] = Field(default_factory=list, description='Collected error details')
-
-    # Timing
     started_at: datetime = Field(default_factory=lambda: datetime.now(UTC), description='Mission start time')
     phase_started_at: datetime | None = Field(default=None, description='Current phase start time')
-
-    # Memory
     memory: MemoryState = Field(default_factory=MemoryState, description='Mission memory state')
-
-    # Planning (for frontend)
     phases: list[PhasePlan] = Field(default_factory=list, description='Phase plans for UI display')
     current_task_id: TaskId | None = Field(default=None, description='Current task identifier')
     overall_progress: float = Field(default=0.0, ge=0.0, le=100.0, description='Overall mission progress (percentage)')

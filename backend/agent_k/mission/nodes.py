@@ -47,9 +47,6 @@ if TYPE_CHECKING:
 __all__ = ('DiscoveryNode', 'ResearchNode', 'PrototypeNode', 'EvolutionNode', 'SubmissionNode')
 
 
-# =============================================================================
-# Discovery Node
-# =============================================================================
 @dataclass
 class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
     """Discovery phase node.
@@ -173,9 +170,6 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
         return scientist_agent
 
 
-# =============================================================================
-# Research Node
-# =============================================================================
 @dataclass
 class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
     """Research phase node.
@@ -263,9 +257,6 @@ class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
         return int((datetime.now(UTC) - start).total_seconds() * 1000) if start else 0
 
 
-# =============================================================================
-# Prototype Node
-# =============================================================================
 @dataclass
 class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
     """Prototype phase node.
@@ -637,9 +628,6 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         return evolver_agent
 
 
-# =============================================================================
-# Evolution Node
-# =============================================================================
 @dataclass
 class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
     """Evolution phase node.
@@ -796,9 +784,6 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
         return int((datetime.now(UTC) - start).total_seconds() * 1000) if start else 0
 
 
-# =============================================================================
-# Submission Node
-# =============================================================================
 @dataclass
 class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
     """Submission phase node.

@@ -10,11 +10,4 @@ from __future__ import annotations as _annotations
 from .datasets import discovery_dataset, evolution_dataset, load_dataset
 from .evaluators import CompetitionSelected, FitnessImprovement, ValidPython
 
-__all__ = (
-    "CompetitionSelected",
-    "FitnessImprovement",
-    "ValidPython",
-    "discovery_dataset",
-    "evolution_dataset",
-    "load_dataset",
-)
+__all__ = ("CompetitionSelected", "FitnessImprovement", "ValidPython", "discovery_dataset", "evolution_dataset", "load_dataset")

@@ -58,27 +58,13 @@ DEFAULT_HOST: Final[str] = "0.0.0.0"
 DEFAULT_PORT: Final[int] = 9000
 APP_MODULE: Final[str] = "agent_k.ui.ag_ui:app"
 
-_MISSION_KEYWORDS: Final[tuple[str, ...]] = (
-    "find",
-    "competition",
-    "kaggle",
-    "compete",
-    "enter",
-    "discover",
-    "search",
-    "challenge",
-    "participate",
-)
+_MISSION_KEYWORDS: Final[tuple[str, ...]] = ("find", "competition", "kaggle", "compete", "enter", "discover", "search", "challenge", "participate")
 _ANTI_KEYWORDS: Final[tuple[str, ...]] = ("what is", "explain", "how does", "tell me about", "help")
-_PRIZE_PATTERN: Final[re.Pattern[str]] = re.compile(
-    r"\$([\d,]+(?:\.\d+)?)\s*(k|m|thousand|million)?\b"
-)
+_PRIZE_PATTERN: Final[re.Pattern[str]] = re.compile(r"\$([\d,]+(?:\.\d+)?)\s*(k|m|thousand|million)?\b")
 _DAYS_PATTERN: Final[re.Pattern[str]] = re.compile(r"(\d+)\s*(days?|weeks?)")
 _PERCENTILE_PATTERN: Final[re.Pattern[str]] = re.compile(r"top\s+(\d+)%")
 
-INTENT_SYSTEM_PROMPT: Final[
-    str
-] = """You are an intent detection system for AGENT-K, a multi-agent Kaggle competition system.
+INTENT_SYSTEM_PROMPT: Final[str] = """You are an intent detection system for AGENT-K, a multi-agent Kaggle competition system.
 
 Your task is to determine if the user wants to start a Kaggle competition mission, and if so, extract the mission criteria.
 
@@ -178,9 +164,7 @@ class MissionRequest(BaseModel):
 
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
     criteria: MissionCriteria = Field(..., description="Mission selection criteria")
-    user_prompt: str | None = Field(
-        default=None, description="Optional user context for the mission"
-    )
+    user_prompt: str | None = Field(default=None, description="Optional user context for the mission")
 
 
 class AgentKEvent(BaseModel):
@@ -211,13 +195,7 @@ class MissionIntentOutput(BaseModel):
 # =============================================================================
 # Agent Singleton (Module-Level)
 # =============================================================================
-intent_agent: Final[Agent[None, MissionIntentOutput]] = Agent(
-    get_model(DEFAULT_MODEL),
-    output_type=MissionIntentOutput,
-    instructions=INTENT_SYSTEM_PROMPT,
-    retries=1,
-    name="intent_parser",
-)
+intent_agent: Final[Agent[None, MissionIntentOutput]] = Agent(get_model(DEFAULT_MODEL), output_type=MissionIntentOutput, instructions=INTENT_SYSTEM_PROMPT, retries=1, name="intent_parser")
 
 
 @dataclass(slots=True)
@@ -243,18 +221,10 @@ class EventEmitter:
         if self._closed:
             return
 
-        event = AgentKEvent(
-            type=event_type,
-            timestamp=datetime.now(UTC).isoformat(),
-            data=data,
-        )
+        event = AgentKEvent(type=event_type, timestamp=datetime.now(UTC).isoformat(), data=data)
 
         # Log event emission
-        logfire.debug(
-            "event_emitted",
-            event_type=event_type,
-            data_keys=list(data.keys()),
-        )
+        logfire.debug("event_emitted", event_type=event_type, data_keys=list(data.keys()))
 
         await self._queue.put(event)
 
@@ -279,202 +249,60 @@ class EventEmitter:
     # =========================================================================
     # Convenience Methods for Phase Events
     # =========================================================================
-    async def emit_phase_start(
-        self,
-        phase: str,
-        objectives: list[str],
-    ) -> None:
+    async def emit_phase_start(self, phase: str, objectives: list[str]) -> None:
         """Emit phase start event."""
-        await self.emit(
-            "phase-start",
-            {
-                "phase": phase,
-                "objectives": objectives,
-            },
-        )
+        await self.emit("phase-start", {"phase": phase, "objectives": objectives})
 
-    async def emit_phase_complete(
-        self,
-        phase: str,
-        success: bool,
-        duration_ms: int,
-    ) -> None:
+    async def emit_phase_complete(self, phase: str, success: bool, duration_ms: int) -> None:
         """Emit phase completion event."""
-        await self.emit(
-            "phase-complete",
-            {
-                "phase": phase,
-                "success": success,
-                "durationMs": duration_ms,
-            },
-        )
+        await self.emit("phase-complete", {"phase": phase, "success": success, "durationMs": duration_ms})
 
-    async def emit_phase_error(
-        self,
-        phase: str,
-        error: str,
-        recoverable: bool,
-    ) -> None:
+    async def emit_phase_error(self, phase: str, error: str, recoverable: bool) -> None:
         """Emit phase error event."""
-        await self.emit(
-            "phase-error",
-            {
-                "phase": phase,
-                "error": error,
-                "recoverable": recoverable,
-            },
-        )
+        await self.emit("phase-error", {"phase": phase, "error": error, "recoverable": recoverable})
 
     # =========================================================================
     # Convenience Methods for Task Events
     # =========================================================================
-    async def emit_task_start(
-        self,
-        task_id: str,
-        phase: str,
-        name: str,
-    ) -> None:
+    async def emit_task_start(self, task_id: str, phase: str, name: str) -> None:
         """Emit task start event."""
-        await self.emit(
-            "task-start",
-            {
-                "taskId": task_id,
-                "phase": phase,
-                "name": name,
-            },
-        )
+        await self.emit("task-start", {"taskId": task_id, "phase": phase, "name": name})
 
-    async def emit_task_progress(
-        self,
-        task_id: str,
-        progress: float,
-        message: str | None = None,
-    ) -> None:
+    async def emit_task_progress(self, task_id: str, progress: float, message: str | None = None) -> None:
         """Emit task progress update."""
-        await self.emit(
-            "task-progress",
-            {
-                "taskId": task_id,
-                "progress": progress,
-                "message": message,
-            },
-        )
+        await self.emit("task-progress", {"taskId": task_id, "progress": progress, "message": message})
 
-    async def emit_task_complete(
-        self,
-        task_id: str,
-        success: bool,
-        result: Any | None = None,
-        duration_ms: int = 0,
-    ) -> None:
+    async def emit_task_complete(self, task_id: str, success: bool, result: Any | None = None, duration_ms: int = 0) -> None:
         """Emit task completion event."""
-        await self.emit(
-            "task-complete",
-            {
-                "taskId": task_id,
-                "success": success,
-                "result": result,
-                "durationMs": duration_ms,
-            },
-        )
+        await self.emit("task-complete", {"taskId": task_id, "success": success, "result": result, "durationMs": duration_ms})
 
     # =========================================================================
     # Convenience Methods for Tool Events
     # =========================================================================
-    async def emit_tool_start(
-        self,
-        task_id: str,
-        tool_call_id: str,
-        tool_type: str,
-        operation: str,
-    ) -> None:
+    async def emit_tool_start(self, task_id: str, tool_call_id: str, tool_type: str, operation: str) -> None:
         """Emit tool invocation start."""
-        await self.emit(
-            "tool-start",
-            {
-                "taskId": task_id,
-                "toolCallId": tool_call_id,
-                "toolType": tool_type,
-                "operation": operation,
-            },
-        )
+        await self.emit("tool-start", {"taskId": task_id, "toolCallId": tool_call_id, "toolType": tool_type, "operation": operation})
 
-    async def emit_tool_thinking(
-        self,
-        task_id: str,
-        tool_call_id: str,
-        chunk: str,
-    ) -> None:
+    async def emit_tool_thinking(self, task_id: str, tool_call_id: str, chunk: str) -> None:
         """Emit thinking stream chunk."""
-        await self.emit(
-            "tool-thinking",
-            {
-                "taskId": task_id,
-                "toolCallId": tool_call_id,
-                "chunk": chunk,
-            },
-        )
+        await self.emit("tool-thinking", {"taskId": task_id, "toolCallId": tool_call_id, "chunk": chunk})
 
-    async def emit_tool_result(
-        self,
-        task_id: str,
-        tool_call_id: str,
-        result: Any,
-        duration_ms: int,
-    ) -> None:
+    async def emit_tool_result(self, task_id: str, tool_call_id: str, result: Any, duration_ms: int) -> None:
         """Emit tool result."""
-        await self.emit(
-            "tool-result",
-            {
-                "taskId": task_id,
-                "toolCallId": tool_call_id,
-                "result": result,
-                "durationMs": duration_ms,
-            },
-        )
+        await self.emit("tool-result", {"taskId": task_id, "toolCallId": tool_call_id, "result": result, "durationMs": duration_ms})
 
-    async def emit_tool_error(
-        self,
-        task_id: str,
-        tool_call_id: str,
-        error: str,
-    ) -> None:
+    async def emit_tool_error(self, task_id: str, tool_call_id: str, error: str) -> None:
         """Emit tool error."""
-        await self.emit(
-            "tool-error",
-            {
-                "taskId": task_id,
-                "toolCallId": tool_call_id,
-                "error": error,
-            },
-        )
+        await self.emit("tool-error", {"taskId": task_id, "toolCallId": tool_call_id, "error": error})
 
     # =========================================================================
     # Convenience Methods for Evolution Events
     # =========================================================================
-    async def emit_generation_start(
-        self,
-        generation: int,
-        population_size: int,
-    ) -> None:
+    async def emit_generation_start(self, generation: int, population_size: int) -> None:
         """Emit generation start event."""
-        await self.emit(
-            "generation-start",
-            {
-                "generation": generation,
-                "populationSize": population_size,
-            },
-        )
+        await self.emit("generation-start", {"generation": generation, "populationSize": population_size})
 
-    async def emit_generation_complete(
-        self,
-        generation: int,
-        best_fitness: float,
-        mean_fitness: float,
-        worst_fitness: float,
-        population_size: int,
-        mutations: dict[str, int],
-    ) -> None:
+    async def emit_generation_complete(self, generation: int, best_fitness: float, mean_fitness: float, worst_fitness: float, population_size: int, mutations: dict[str, int]) -> None:
         """Emit evolution generation completion."""
         await self.emit(
             "generation-complete",
@@ -489,15 +317,7 @@ class EventEmitter:
             },
         )
 
-    async def emit_submission_result(
-        self,
-        submission_id: str,
-        generation: int,
-        cv_score: float,
-        public_score: float | None,
-        rank: int | None,
-        total_teams: int | None,
-    ) -> None:
+    async def emit_submission_result(self, submission_id: str, generation: int, cv_score: float, public_score: float | None, rank: int | None, total_teams: int | None) -> None:
         """Emit Kaggle submission result."""
         percentile = (rank / total_teams * 100) if rank and total_teams else None
 
@@ -515,79 +335,29 @@ class EventEmitter:
             },
         )
 
-    async def emit_convergence_detected(
-        self,
-        generation: int,
-        reason: str,
-    ) -> None:
+    async def emit_convergence_detected(self, generation: int, reason: str) -> None:
         """Emit convergence detection event."""
-        await self.emit(
-            "convergence-detected",
-            {
-                "generation": generation,
-                "reason": reason,
-            },
-        )
+        await self.emit("convergence-detected", {"generation": generation, "reason": reason})
 
     # =========================================================================
     # Convenience Methods for Memory Events
     # =========================================================================
-    async def emit_memory_store(
-        self,
-        key: str,
-        scope: str,
-        category: str,
-    ) -> None:
+    async def emit_memory_store(self, key: str, scope: str, category: str) -> None:
         """Emit memory store operation."""
-        await self.emit(
-            "memory-store",
-            {
-                "key": key,
-                "scope": scope,
-                "category": category,
-            },
-        )
+        await self.emit("memory-store", {"key": key, "scope": scope, "category": category})
 
-    async def emit_memory_retrieve(
-        self,
-        key: str,
-        found: bool,
-    ) -> None:
+    async def emit_memory_retrieve(self, key: str, found: bool) -> None:
         """Emit memory retrieve operation."""
-        await self.emit(
-            "memory-retrieve",
-            {
-                "key": key,
-                "found": found,
-            },
-        )
+        await self.emit("memory-retrieve", {"key": key, "found": found})
 
-    async def emit_checkpoint_created(
-        self,
-        name: str,
-        phase: str,
-    ) -> None:
+    async def emit_checkpoint_created(self, name: str, phase: str) -> None:
         """Emit checkpoint creation."""
-        await self.emit(
-            "checkpoint-created",
-            {
-                "name": name,
-                "phase": phase,
-            },
-        )
+        await self.emit("checkpoint-created", {"name": name, "phase": phase})
 
     # =========================================================================
     # Convenience Methods for Error Events
     # =========================================================================
-    async def emit_error(
-        self,
-        error_id: str,
-        category: str,
-        error_type: str,
-        message: str,
-        context: str,
-        recovery_strategy: str,
-    ) -> None:
+    async def emit_error(self, error_id: str, category: str, error_type: str, message: str, context: str, recovery_strategy: str) -> None:
         """Emit error event."""
         await self.emit(
             "error-occurred",
@@ -604,37 +374,13 @@ class EventEmitter:
             },
         )
 
-    async def emit_recovery_attempt(
-        self,
-        error_id: str,
-        strategy: str,
-        attempt: int,
-    ) -> None:
+    async def emit_recovery_attempt(self, error_id: str, strategy: str, attempt: int) -> None:
         """Emit recovery attempt event."""
-        await self.emit(
-            "recovery-attempt",
-            {
-                "errorId": error_id,
-                "strategy": strategy,
-                "attempt": attempt,
-            },
-        )
+        await self.emit("recovery-attempt", {"errorId": error_id, "strategy": strategy, "attempt": attempt})
 
-    async def emit_recovery_complete(
-        self,
-        error_id: str,
-        success: bool,
-        resolution: str | None = None,
-    ) -> None:
+    async def emit_recovery_complete(self, error_id: str, success: bool, resolution: str | None = None) -> None:
         """Emit recovery completion event."""
-        await self.emit(
-            "recovery-complete",
-            {
-                "errorId": error_id,
-                "success": success,
-                "resolution": resolution,
-            },
-        )
+        await self.emit("recovery-complete", {"errorId": error_id, "success": success, "resolution": resolution})
 
 
 class TaskEmissionContext:
@@ -648,13 +394,7 @@ class TaskEmissionContext:
             await ctx.emit_progress(0.5, 'Halfway done')
     """
 
-    def __init__(
-        self,
-        emitter: EventEmitter,
-        task_id: str,
-        phase: str,
-        name: str,
-    ) -> None:
+    def __init__(self, emitter: EventEmitter, task_id: str, phase: str, name: str) -> None:
         self.emitter = emitter
         self.task_id = task_id
         self.phase = phase
@@ -666,34 +406,15 @@ class TaskEmissionContext:
         await self.emitter.emit_task_start(self.task_id, self.phase, self.name)
         return self
 
-    async def __aexit__(
-        self,
-        exc_type: type | None,
-        exc_val: Exception | None,
-        exc_tb: Any,
-    ) -> None:
+    async def __aexit__(self, exc_type: type | None, exc_val: Exception | None, exc_tb: Any) -> None:
         duration_ms = int((time.time() - self._start_time) * 1000) if self._start_time else 0
 
         if exc_type:
-            await self.emitter.emit(
-                "task-error",
-                {
-                    "taskId": self.task_id,
-                    "error": str(exc_val),
-                },
-            )
+            await self.emitter.emit("task-error", {"taskId": self.task_id, "error": str(exc_val)})
         else:
-            await self.emitter.emit_task_complete(
-                self.task_id,
-                success=True,
-                duration_ms=duration_ms,
-            )
+            await self.emitter.emit_task_complete(self.task_id, success=True, duration_ms=duration_ms)
 
-    async def emit_progress(
-        self,
-        progress: float,
-        message: str | None = None,
-    ) -> None:
+    async def emit_progress(self, progress: float, message: str | None = None) -> None:
         """Emit progress within the task."""
         await self.emitter.emit_task_progress(self.task_id, progress, message)
 
@@ -746,11 +467,7 @@ Extract mission criteria if this is a mission request."""
 class MissionCriteriaParser:
     """Parse mission criteria from intent output."""
 
-    def parse(
-        self,
-        message: str,
-        intent: MissionIntentResult,
-    ) -> MissionCriteria | None:
+    def parse(self, message: str, intent: MissionIntentResult) -> MissionCriteria | None:
         if not intent.is_mission:
             return None
         if intent.criteria is None:
@@ -765,10 +482,7 @@ class ChatHandler:
     classifier: IntentClassifier
     parser: MissionCriteriaParser
 
-    async def parse_mission_criteria(
-        self,
-        messages: list[dict[str, Any]],
-    ) -> MissionCriteria | None:
+    async def parse_mission_criteria(self, messages: list[dict[str, Any]]) -> MissionCriteria | None:
         message_text = _extract_latest_user_message(messages)
         if not message_text:
             return None
@@ -790,29 +504,14 @@ class ChatHandler:
 
             mission_criteria = await self.parse_mission_criteria(messages)
             if mission_criteria:
-                logfire.info(
-                    "mission_mode_activated",
-                    chat_id=chat_id,
-                    criteria=mission_criteria.model_dump(),
-                )
+                logfire.info("mission_mode_activated", chat_id=chat_id, criteria=mission_criteria.model_dump())
 
                 emitter = EventEmitter()
-                asyncio.create_task(
-                    self._run_mission(
-                        emitter=emitter,
-                        chat_id=chat_id,
-                        criteria=mission_criteria,
-                    )
-                )
+                asyncio.create_task(self._run_mission(emitter=emitter, chat_id=chat_id, criteria=mission_criteria))
                 return StreamingResponse(
                     transform_to_vercel_stream(emitter),
                     media_type="text/event-stream",
-                    headers={
-                        "Cache-Control": "no-cache",
-                        "Connection": "keep-alive",
-                        "X-Accel-Buffering": "no",
-                        "X-Vercel-AI-Data-Stream": "v1",
-                    },
+                    headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no", "X-Vercel-AI-Data-Stream": "v1"},
                 )
 
             logfire.info("chat_mode_activated", chat_id=chat_id)
@@ -820,33 +519,16 @@ class ChatHandler:
             return StreamingResponse(
                 stream_text_response(response_text),
                 media_type="text/event-stream",
-                headers={
-                    "Cache-Control": "no-cache",
-                    "Connection": "keep-alive",
-                    "X-Accel-Buffering": "no",
-                    "X-Vercel-AI-Data-Stream": "v1",
-                },
+                headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no", "X-Vercel-AI-Data-Stream": "v1"},
             )
         except Exception as exc:
             logfire.error("chat_endpoint_error", error=str(exc))
             error_text = f"An error occurred: {str(exc)}"
             return StreamingResponse(
-                stream_text_response(error_text),
-                media_type="text/event-stream",
-                headers={
-                    "Cache-Control": "no-cache",
-                    "Connection": "keep-alive",
-                    "X-Vercel-AI-Data-Stream": "v1",
-                },
+                stream_text_response(error_text), media_type="text/event-stream", headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Vercel-AI-Data-Stream": "v1"}
             )
 
-    async def _run_mission(
-        self,
-        *,
-        emitter: EventEmitter,
-        chat_id: str,
-        criteria: MissionCriteria,
-    ) -> None:
+    async def _run_mission(self, *, emitter: EventEmitter, chat_id: str, criteria: MissionCriteria) -> None:
         from agent_k.agents.lycurgus import LycurgusOrchestrator
 
         error_id = f"mission_{chat_id}"
@@ -858,62 +540,23 @@ class ChatHandler:
                 try:
                     with logfire.span("mission_execution", chat_id=chat_id, attempt=attempt + 1):
                         async with LycurgusOrchestrator() as orchestrator:
-                            result = await orchestrator.execute_mission(
-                                competition_id=None,
-                                criteria=criteria,
-                                event_emitter=emitter,
-                            )
-                            await emitter.emit(
-                                "mission-complete",
-                                {
-                                    "success": result.success,
-                                    "final_rank": result.final_rank,
-                                    "final_score": result.final_score,
-                                },
-                            )
+                            result = await orchestrator.execute_mission(competition_id=None, criteria=criteria, event_emitter=emitter)
+                            await emitter.emit("mission-complete", {"success": result.success, "final_rank": result.final_rank, "final_score": result.final_score})
                     if attempt > 0:
-                        await emitter.emit_recovery_complete(
-                            error_id=error_id,
-                            success=True,
-                            resolution="mission_completed",
-                        )
+                        await emitter.emit_recovery_complete(error_id=error_id, success=True, resolution="mission_completed")
                     break
                 except Exception as exc:
                     category, strategy = classify_error(exc)
                     recoverable = isinstance(exc, AgentKError) and exc.recoverable
-                    await emitter.emit_error(
-                        error_id=error_id,
-                        category=category,
-                        error_type=type(exc).__name__,
-                        message=str(exc),
-                        context="mission_execution",
-                        recovery_strategy=strategy,
-                    )
-                    logfire.error(
-                        "mission_execution_failed",
-                        error=str(exc),
-                        chat_id=chat_id,
-                        recoverable=recoverable,
-                    )
+                    await emitter.emit_error(error_id=error_id, category=category, error_type=type(exc).__name__, message=str(exc), context="mission_execution", recovery_strategy=strategy)
+                    logfire.error("mission_execution_failed", error=str(exc), chat_id=chat_id, recoverable=recoverable)
                     if not recoverable or attempt >= max_attempts - 1:
                         if attempt > 0:
-                            await emitter.emit_recovery_complete(
-                                error_id=error_id,
-                                success=False,
-                                resolution="exhausted",
-                            )
+                            await emitter.emit_recovery_complete(error_id=error_id, success=False, resolution="exhausted")
                         break
                     attempt += 1
-                    await emitter.emit_recovery_attempt(
-                        error_id=error_id,
-                        strategy=strategy,
-                        attempt=attempt,
-                    )
-                    logfire.warning(
-                        "mission_recovery_attempt",
-                        chat_id=chat_id,
-                        attempt=attempt,
-                    )
+                    await emitter.emit_recovery_attempt(error_id=error_id, strategy=strategy, attempt=attempt)
+                    logfire.warning("mission_recovery_attempt", chat_id=chat_id, attempt=attempt)
         finally:
             emitter.close()
 
@@ -924,11 +567,7 @@ def _extract_latest_user_message(messages: list[dict[str, Any]]) -> str | None:
         return None
 
     latest_message = user_messages[-1]
-    text_parts = [
-        part.get("text", "")
-        for part in latest_message.get("parts", [])
-        if part.get("type") == "text"
-    ]
+    text_parts = [part.get("text", "") for part in latest_message.get("parts", []) if part.get("type") == "text"]
     message_text = " ".join(text_parts).strip()
     return message_text or None
 
@@ -988,13 +627,7 @@ async def transform_to_vercel_stream(emitter: EventEmitter) -> AsyncIterator[str
 
                 if event_type in AGENT_K_EVENT_TYPES:
                     # Transform to Vercel AI data event format
-                    data_part = json.dumps(
-                        {
-                            "type": event_type,
-                            "data": event_data.get("data", {}),
-                            "timestamp": event_data.get("timestamp"),
-                        }
-                    )
+                    data_part = json.dumps({"type": event_type, "data": event_data.get("data", {}), "timestamp": event_data.get("timestamp")})
                     yield f"8:{data_part}\n"
 
             except json.JSONDecodeError:
@@ -1034,11 +667,7 @@ async def stream_text_response(text: str) -> AsyncIterator[str]:
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
 
-    app = FastAPI(
-        title="AGENT-K",
-        description="Multi-agent Kaggle competition system",
-        version=APP_VERSION,
-    )
+    app = FastAPI(title="AGENT-K", description="Multi-agent Kaggle competition system", version=APP_VERSION)
 
     # CORS middleware
     app.add_middleware(
@@ -1067,17 +696,10 @@ def create_app() -> FastAPI:
         emitter = EventEmitter()
 
         # Initialize mission state
-        state = MissionState(
-            mission_id=mission_id,
-            criteria=request.criteria,
-        )
+        state = MissionState(mission_id=mission_id, criteria=request.criteria)
 
         # Store mission
-        missions[mission_id] = {
-            "state": state,
-            "emitter": emitter,
-            "context": GraphContext(event_emitter=emitter),
-        }
+        missions[mission_id] = {"state": state, "emitter": emitter, "context": GraphContext(event_emitter=emitter)}
 
         logfire.info("mission_started", mission_id=mission_id)
 
@@ -1087,10 +709,7 @@ def create_app() -> FastAPI:
     async def stream_mission(mission_id: str, request: Request) -> StreamingResponse:
         """Stream mission events via SSE."""
         if mission_id not in missions:
-            return StreamingResponse(
-                iter(['data: {"error": "Mission not found"}\n\n']),
-                media_type="text/event-stream",
-            )
+            return StreamingResponse(iter(['data: {"error": "Mission not found"}\n\n']), media_type="text/event-stream")
 
         emitter = missions[mission_id]["emitter"]
 
@@ -1100,15 +719,7 @@ def create_app() -> FastAPI:
                     break
                 yield event
 
-        return StreamingResponse(
-            event_generator(),
-            media_type="text/event-stream",
-            headers={
-                "Cache-Control": "no-cache",
-                "Connection": "keep-alive",
-                "X-Accel-Buffering": "no",
-            },
-        )
+        return StreamingResponse(event_generator(), media_type="text/event-stream", headers={"Cache-Control": "no-cache", "Connection": "keep-alive", "X-Accel-Buffering": "no"})
 
     @app.get("/api/mission/{mission_id}/status")
     async def get_mission_status(mission_id: str) -> dict[str, Any]:
@@ -1117,13 +728,7 @@ def create_app() -> FastAPI:
             return {"error": "Mission not found"}
 
         state = missions[mission_id]["state"]
-        return {
-            "missionId": mission_id,
-            "status": state.status,
-            "currentPhase": state.current_phase,
-            "progress": state.overall_progress,
-            "competitionId": state.competition_id,
-        }
+        return {"missionId": mission_id, "status": state.status, "currentPhase": state.current_phase, "progress": state.overall_progress, "competitionId": state.competition_id}
 
     @app.post("/api/mission/{mission_id}/abort")
     async def abort_mission(mission_id: str) -> dict[str, str]:
@@ -1159,12 +764,7 @@ def main() -> None:
     port = int(os.environ.get("PORT", str(DEFAULT_PORT)))
     host = os.environ.get("HOST", DEFAULT_HOST)
 
-    uvicorn.run(
-        APP_MODULE,
-        host=host,
-        port=port,
-        reload=os.environ.get("RELOAD", "false").lower() == "true",
-    )
+    uvicorn.run(APP_MODULE, host=host, port=port, reload=os.environ.get("RELOAD", "false").lower() == "true")
 
 
 def _heuristic_parse(text_lower: str) -> MissionCriteria | None:

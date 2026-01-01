@@ -9,12 +9,7 @@ from __future__ import annotations as _annotations
 # Standard library (alphabetical)
 from typing import Final
 
-__all__ = (
-    "LOBBYIST_SYSTEM_PROMPT",
-    "SCIENTIST_SYSTEM_PROMPT",
-    "EVOLVER_SYSTEM_PROMPT",
-    "LYCURGUS_SYSTEM_PROMPT",
-)
+__all__ = ("LOBBYIST_SYSTEM_PROMPT", "SCIENTIST_SYSTEM_PROMPT", "EVOLVER_SYSTEM_PROMPT", "LYCURGUS_SYSTEM_PROMPT")
 
 LOBBYIST_SYSTEM_PROMPT: Final[str] = """You are the LOBBYIST agent in the AGENT-K system.
 
@@ -35,9 +30,7 @@ IMPORTANT:
 - Search both web and API - web search may find newer competitions
 """
 
-SCIENTIST_SYSTEM_PROMPT: Final[
-    str
-] = """You are the Scientist agent in the AGENT-K multi-agent system.
+SCIENTIST_SYSTEM_PROMPT: Final[str] = """You are the Scientist agent in the AGENT-K multi-agent system.
 
 Your mission is to conduct comprehensive research for Kaggle competitions.
 
@@ -94,6 +87,4 @@ IMPORTANT:
 - Preserve TARGET_COLUMNS and TRAIN_TARGET_COLUMNS to support multi-target submissions
 """
 
-LYCURGUS_SYSTEM_PROMPT: Final[str] = (
-    "You are LYCURGUS, orchestrating the AGENT-K multi-agent system."
-)
+LYCURGUS_SYSTEM_PROMPT: Final[str] = "You are LYCURGUS, orchestrating the AGENT-K multi-agent system."

@@ -26,12 +26,7 @@ CHECKPOINT_DIR: Final[Path] = Path("~/.agent_k/checkpoints").expanduser()
 class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
     """Mission-specific persistence with checkpoint rotation."""
 
-    def __init__(
-        self,
-        mission_id: str,
-        checkpoint_dir: Path = CHECKPOINT_DIR,
-        max_checkpoints: int = 10,
-    ) -> None:
+    def __init__(self, mission_id: str, checkpoint_dir: Path = CHECKPOINT_DIR, max_checkpoints: int = 10) -> None:
         self.mission_id = mission_id
         self.max_checkpoints = max_checkpoints
         self.mission_dir = checkpoint_dir / mission_id
@@ -44,18 +39,11 @@ class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
         with logfire.span("mission.persistence.save", mission_id=self.mission_id):
             timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
             checkpoint_path = self.mission_dir / f"checkpoint_{timestamp}.json"
-            checkpoint_path.write_text(
-                state.model_dump_json(indent=2),
-                encoding="utf-8",
-            )
+            checkpoint_path.write_text(state.model_dump_json(indent=2), encoding="utf-8")
             await self._cleanup_old_checkpoints()
 
     async def _cleanup_old_checkpoints(self) -> None:
-        checkpoints = sorted(
-            self.mission_dir.glob("checkpoint_*.json"),
-            key=lambda p: p.stat().st_mtime,
-            reverse=True,
-        )
+        checkpoints = sorted(self.mission_dir.glob("checkpoint_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
         for old_checkpoint in checkpoints[self.max_checkpoints :]:
             old_checkpoint.unlink()
 

@@ -18,12 +18,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-__all__ = (
-    "CompetitionSchema",
-    "infer_competition_schema",
-    "locate_data_files",
-    "stage_competition_data",
-)
+__all__ = ("CompetitionSchema", "infer_competition_schema", "locate_data_files", "stage_competition_data")
 
 
 @dataclass(frozen=True, slots=True)
@@ -35,11 +30,7 @@ class CompetitionSchema:
     train_target_columns: list[str]
 
 
-def infer_competition_schema(
-    train_path: Path,
-    test_path: Path,
-    sample_path: Path,
-) -> CompetitionSchema:
+def infer_competition_schema(train_path: Path, test_path: Path, sample_path: Path) -> CompetitionSchema:
     """Infer competition schema from train/test/sample submission files."""
     train_header = _read_header(train_path)
     test_header = _read_header(test_path)
@@ -51,15 +42,9 @@ def infer_competition_schema(
     id_column = sample_header[0]
     target_columns = sample_header[1:]
 
-    train_target_columns = [
-            column for column in train_header if column not in test_header and column != id_column
-        ] or list(target_columns)
+    train_target_columns = [column for column in train_header if column not in test_header and column != id_column] or list(target_columns)
 
-    return CompetitionSchema(
-        id_column=id_column,
-        target_columns=list(target_columns),
-        train_target_columns=train_target_columns,
-    )
+    return CompetitionSchema(id_column=id_column, target_columns=list(target_columns), train_target_columns=train_target_columns)
 
 
 def locate_data_files(paths: Iterable[str | Path]) -> tuple[Path, Path, Path]:
@@ -88,20 +73,11 @@ def locate_data_files(paths: Iterable[str | Path]) -> tuple[Path, Path, Path]:
     return train_path, test_path, sample_path
 
 
-def stage_competition_data(
-    train_path: Path,
-    test_path: Path,
-    sample_path: Path,
-    destination: Path,
-) -> dict[str, Path]:
+def stage_competition_data(train_path: Path, test_path: Path, sample_path: Path, destination: Path) -> dict[str, Path]:
     """Stage competition data into canonical filenames."""
     destination.mkdir(parents=True, exist_ok=True)
 
-    staged = {
-        "train": destination / "train.csv",
-        "test": destination / "test.csv",
-        "sample": destination / "sample_submission.csv",
-    }
+    staged = {"train": destination / "train.csv", "test": destination / "test.csv", "sample": destination / "sample_submission.csv"}
 
     _link_or_copy(train_path, staged["train"])
     _link_or_copy(test_path, staged["test"])

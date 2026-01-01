@@ -27,13 +27,7 @@ P = ParamSpec("P")
 R = TypeVar("R")
 """Type variable for traced return values."""
 
-__all__ = (
-    "configure_instrumentation",
-    "get_logger",
-    "traced",
-    "operation_span",
-    "Metrics",
-)
+__all__ = ("configure_instrumentation", "get_logger", "traced", "operation_span", "Metrics")
 
 
 class Metrics:
@@ -44,72 +38,27 @@ class Metrics:
     """
 
     @staticmethod
-    def record_agent_run(
-        agent_name: str,
-        duration_ms: float,
-        tokens_used: int,
-        success: bool,
-    ) -> None:
+    def record_agent_run(agent_name: str, duration_ms: float, tokens_used: int, success: bool) -> None:
         """Record agent run metrics."""
-        logfire.info(
-            "agent_run",
-            agent=agent_name,
-            duration_ms=duration_ms,
-            tokens=tokens_used,
-            success=success,
-        )
+        logfire.info("agent_run", agent=agent_name, duration_ms=duration_ms, tokens=tokens_used, success=success)
 
     @staticmethod
-    def record_api_call(
-        endpoint: str,
-        status_code: int,
-        duration_ms: float,
-    ) -> None:
+    def record_api_call(endpoint: str, status_code: int, duration_ms: float) -> None:
         """Record API call metrics."""
-        logfire.info(
-            "api_call",
-            endpoint=endpoint,
-            status_code=status_code,
-            duration_ms=duration_ms,
-        )
+        logfire.info("api_call", endpoint=endpoint, status_code=status_code, duration_ms=duration_ms)
 
     @staticmethod
-    def record_submission(
-        competition_id: str,
-        score: float | None,
-        rank: int | None,
-    ) -> None:
+    def record_submission(competition_id: str, score: float | None, rank: int | None) -> None:
         """Record competition submission metrics."""
-        logfire.info(
-            "submission",
-            competition_id=competition_id,
-            score=score,
-            rank=rank,
-        )
+        logfire.info("submission", competition_id=competition_id, score=score, rank=rank)
 
     @staticmethod
-    def record_evolution_generation(
-        generation: int,
-        best_fitness: float,
-        mean_fitness: float,
-        population_size: int,
-    ) -> None:
+    def record_evolution_generation(generation: int, best_fitness: float, mean_fitness: float, population_size: int) -> None:
         """Record evolution generation metrics."""
-        logfire.info(
-            "evolution_generation",
-            generation=generation,
-            best_fitness=best_fitness,
-            mean_fitness=mean_fitness,
-            population_size=population_size,
-        )
+        logfire.info("evolution_generation", generation=generation, best_fitness=best_fitness, mean_fitness=mean_fitness, population_size=population_size)
 
 
-def configure_instrumentation(
-    *,
-    service_name: str = "agent-k",
-    environment: str | None = None,
-    send_to_logfire: bool | Literal["if-token-present"] | None = "if-token-present",
-) -> None:
+def configure_instrumentation(*, service_name: str = "agent-k", environment: str | None = None, send_to_logfire: bool | Literal["if-token-present"] | None = "if-token-present") -> None:
     """Configure global instrumentation settings.
 
     This function should be called once at application startup.
@@ -121,11 +70,7 @@ def configure_instrumentation(
     """
     environment = environment or os.getenv("ENVIRONMENT", "development")
 
-    logfire.configure(
-        service_name=service_name,
-        environment=environment,
-        send_to_logfire=send_to_logfire,
-    )
+    logfire.configure(service_name=service_name, environment=environment, send_to_logfire=send_to_logfire)
 
     # Instrument common libraries
     logfire.instrument_pydantic_ai()
@@ -150,12 +95,7 @@ def get_logger(name: str) -> logfire.Logfire:
 # =============================================================================
 # Span Decorators
 # =============================================================================
-def traced(
-    name: str | None = None,
-    *,
-    record_args: bool = True,
-    record_result: bool = True,
-) -> Callable[[Callable[P, R]], Callable[P, R]]:
+def traced(name: str | None = None, *, record_args: bool = True, record_result: bool = True) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """Decorator to add tracing to a function.
 
     Args:
@@ -218,10 +158,7 @@ def traced(
 
 
 @contextmanager
-def operation_span(
-    name: str,
-    **attributes: Any,
-) -> Iterator[Span]:
+def operation_span(name: str, **attributes: Any) -> Iterator[Span]:
     """Context manager for custom operation spans.
 
     Args:

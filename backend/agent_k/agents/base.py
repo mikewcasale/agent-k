@@ -18,12 +18,7 @@ if TYPE_CHECKING:
     import httpx
     from pydantic_ai import Agent, RunContext, ToolDefinition
 
-__all__ = (
-    "BaseAgentMixin",
-    "AgentDeps",
-    "prepare_output_tools_strict",
-    "universal_tool_preparation",
-)
+__all__ = ("BaseAgentMixin", "AgentDeps", "prepare_output_tools_strict", "universal_tool_preparation")
 
 
 @dataclass
@@ -52,12 +47,7 @@ class BaseAgentMixin(ABC, Generic[AgentDepsT, OutputT]):  # noqa: UP046
     # =========================================================================
     # Public Methods
     # =========================================================================
-    async def run(
-        self,
-        prompt: str,
-        *,
-        deps: AgentDepsT,
-    ) -> OutputT:
+    async def run(self, prompt: str, *, deps: AgentDepsT) -> OutputT:
         """Execute the agent with the given prompt.
 
         Per spec, all public methods include comprehensive docstrings.
@@ -84,10 +74,7 @@ class BaseAgentMixin(ABC, Generic[AgentDepsT, OutputT]):  # noqa: UP046
         return self.__class__.__name__
 
 
-async def universal_tool_preparation(
-    ctx: RunContext[AgentDepsT],
-    tool_defs: list[ToolDefinition],
-) -> list[ToolDefinition]:
+async def universal_tool_preparation(ctx: RunContext[AgentDepsT], tool_defs: list[ToolDefinition]) -> list[ToolDefinition]:
     """Apply universal tool configuration across agents."""
     result: list[ToolDefinition] = []
 
@@ -105,10 +92,7 @@ async def universal_tool_preparation(
     return result
 
 
-async def prepare_output_tools_strict(
-    ctx: RunContext[AgentDepsT],
-    tool_defs: list[ToolDefinition],
-) -> list[ToolDefinition]:
+async def prepare_output_tools_strict(ctx: RunContext[AgentDepsT], tool_defs: list[ToolDefinition]) -> list[ToolDefinition]:
     """Enable strict mode on output tools for OpenAI models."""
     if ctx.model.system == "openai":
         return [replace(td, strict=True) for td in tool_defs]

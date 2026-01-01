@@ -24,15 +24,7 @@ from agent_k.agents.prompts import LOBBYIST_SYSTEM_PROMPT
 from agent_k.core.constants import DEFAULT_MODEL
 from agent_k.core.models import Competition  # noqa: TC001
 from agent_k.infra.providers import get_model
-from agent_k.toolsets import (
-    AgentKMemoryTool,
-    create_memory_backend,
-    create_production_toolset,
-    kaggle_toolset,
-    prepare_memory_tool,
-    prepare_web_search,
-    register_memory_tool,
-)
+from agent_k.toolsets import AgentKMemoryTool, create_memory_backend, create_production_toolset, kaggle_toolset, prepare_memory_tool, prepare_web_search, register_memory_tool
 
 if TYPE_CHECKING:
     import httpx
@@ -40,15 +32,7 @@ if TYPE_CHECKING:
     from agent_k.core.protocols import PlatformAdapter
     from agent_k.ui.ag_ui import EventEmitter
 
-__all__ = (
-    "DiscoveryResult",
-    "LobbyistAgent",
-    "LobbyistDeps",
-    "LobbyistSettings",
-    "LOBBYIST_SYSTEM_PROMPT",
-    "SCHEMA_VERSION",
-    "lobbyist_agent",
-)
+__all__ = ("DiscoveryResult", "LobbyistAgent", "LobbyistDeps", "LobbyistSettings", "LOBBYIST_SYSTEM_PROMPT", "SCHEMA_VERSION", "lobbyist_agent")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 
@@ -56,52 +40,20 @@ SCHEMA_VERSION: Final[str] = "1.0.0"
 class LobbyistSettings(BaseSettings):
     """Configuration for the Lobbyist agent."""
 
-    model_config = SettingsConfigDict(
-        env_prefix="LOBBYIST_",
-        env_file=".env",
-        extra="ignore",
-        validate_default=True,
-    )
+    model_config = SettingsConfigDict(env_prefix="LOBBYIST_", env_file=".env", extra="ignore", validate_default=True)
 
-    model: str = Field(
-        default=DEFAULT_MODEL,
-        description="Model identifier for discovery tasks",
-    )
-    temperature: float = Field(
-        default=0.2,
-        ge=0.0,
-        le=2.0,
-        description="Sampling temperature for discovery prompts",
-    )
-    max_tokens: int = Field(
-        default=2048,
-        ge=1,
-        description="Maximum tokens for responses",
-    )
+    model: str = Field(default=DEFAULT_MODEL, description="Model identifier for discovery tasks")
+    temperature: float = Field(default=0.2, ge=0.0, le=2.0, description="Sampling temperature for discovery prompts")
+    max_tokens: int = Field(default=2048, ge=1, description="Maximum tokens for responses")
 
-    tool_retries: int = Field(
-        default=2,
-        ge=0,
-        description="Tool retry attempts",
-    )
-    output_retries: int = Field(
-        default=1,
-        ge=0,
-        description="Output validation retry attempts",
-    )
-    max_results: int = Field(
-        default=50,
-        ge=1,
-        description="Maximum competitions to return",
-    )
+    tool_retries: int = Field(default=2, ge=0, description="Tool retry attempts")
+    output_retries: int = Field(default=1, ge=0, description="Output validation retry attempts")
+    max_results: int = Field(default=50, ge=1, description="Maximum competitions to return")
 
     @property
     def model_settings(self) -> ModelSettings:
         """Build ModelSettings for the configured model."""
-        return ModelSettings(
-            temperature=self.temperature,
-            max_tokens=self.max_tokens,
-        )
+        return ModelSettings(temperature=self.temperature, max_tokens=self.max_tokens)
 
 
 @dataclass
@@ -117,26 +69,12 @@ class LobbyistDeps:
 class DiscoveryResult(BaseModel):
     """Result of competition discovery."""
 
-    model_config = ConfigDict(
-        frozen=True,
-        str_strip_whitespace=True,
-        validate_default=True,
-    )
+    model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
 
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
-    competitions: list[Competition] = Field(
-        default_factory=list,
-        description="Discovered competitions matching criteria",
-    )
-    total_searched: int = Field(
-        default=0,
-        ge=0,
-        description="Total competitions scanned",
-    )
-    filters_applied: list[str] = Field(
-        default_factory=list,
-        description="Filters applied during discovery",
-    )
+    competitions: list[Competition] = Field(default_factory=list, description="Discovered competitions matching criteria")
+    total_searched: int = Field(default=0, ge=0, description="Total competitions scanned")
+    filters_applied: list[str] = Field(default_factory=list, description="Filters applied during discovery")
 
 
 class LobbyistAgent:
@@ -170,66 +108,30 @@ class LobbyistAgent:
     # Tool Methods
     # =========================================================================
 
-    async def search_kaggle_competitions(
-        self,
-        ctx: RunContext[LobbyistDeps],
-        categories: list[str],
-        keywords: list[str] | None = None,
-        min_prize: int | None = None,
-    ) -> list[dict[str, Any]]:
+    async def search_kaggle_competitions(self, ctx: RunContext[LobbyistDeps], categories: list[str], keywords: list[str] | None = None, min_prize: int | None = None) -> list[dict[str, Any]]:
         """Search Kaggle for competitions matching criteria."""
-        with logfire.span(
-            "lobbyist.search_kaggle",
-            categories=categories,
-            keywords=keywords,
-        ):
-            await ctx.deps.event_emitter.emit_tool_start(
-                task_id="discovery_search",
-                tool_call_id=f"kaggle_search_{id(ctx)}",
-                tool_type="kaggle_mcp",
-                operation="competitions.list",
-            )
+        with logfire.span("lobbyist.search_kaggle", categories=categories, keywords=keywords):
+            await ctx.deps.event_emitter.emit_tool_start(task_id="discovery_search", tool_call_id=f"kaggle_search_{id(ctx)}", tool_type="kaggle_mcp", operation="competitions.list")
 
             adapter = ctx.deps.platform_adapter
             competitions: list[dict[str, Any]] = []
 
-            async for comp in adapter.search_competitions(
-                categories=categories,
-                keywords=keywords,
-                min_prize=min_prize,
-                active_only=True,
-            ):
+            async for comp in adapter.search_competitions(categories=categories, keywords=keywords, min_prize=min_prize, active_only=True):
                 competitions.append(comp.model_dump())
                 ctx.deps.search_cache[comp.id] = comp
 
-            await ctx.deps.event_emitter.emit_tool_result(
-                task_id="discovery_search",
-                tool_call_id=f"kaggle_search_{id(ctx)}",
-                result={"count": len(competitions)},
-                duration_ms=0,
-            )
+            await ctx.deps.event_emitter.emit_tool_result(task_id="discovery_search", tool_call_id=f"kaggle_search_{id(ctx)}", result={"count": len(competitions)}, duration_ms=0)
 
             return competitions
 
-    async def get_competition_details(
-        self,
-        ctx: RunContext[LobbyistDeps],
-        competition_id: str,
-    ) -> dict[str, Any]:
+    async def get_competition_details(self, ctx: RunContext[LobbyistDeps], competition_id: str) -> dict[str, Any]:
         """Get detailed information about a specific competition."""
         with logfire.span("lobbyist.get_details", competition_id=competition_id):
             adapter = ctx.deps.platform_adapter
             competition = await adapter.get_competition(competition_id)
             return competition.model_dump()
 
-    async def score_competition_fit(
-        self,
-        ctx: RunContext[LobbyistDeps],
-        competition_id: str,
-        target_domains: list[str],
-        min_days_remaining: int,
-        target_percentile: float,
-    ) -> dict[str, Any]:
+    async def score_competition_fit(self, ctx: RunContext[LobbyistDeps], competition_id: str, target_domains: list[str], min_days_remaining: int, target_percentile: float) -> dict[str, Any]:
         """Score how well a competition fits the mission criteria."""
         competition = ctx.deps.search_cache.get(competition_id)
         if not competition:
@@ -254,12 +156,7 @@ class LobbyistAgent:
         score += min(0.1, target_percentile / 100.0)
         reasons.append("target_percentile")
 
-        return {
-            "competition_id": competition_id,
-            "score": round(score, 2),
-            "reasons": reasons,
-            "days_remaining": days_remaining,
-        }
+        return {"competition_id": competition_id, "score": round(score, 2), "reasons": reasons, "days_remaining": days_remaining}
 
     def _init_memory_backend(self) -> AgentKMemoryTool | None:
         try:
@@ -283,11 +180,7 @@ class LobbyistAgent:
             retries=self._settings.tool_retries,
             output_retries=self._settings.output_retries,
             builtin_tools=builtin_tools,
-            toolsets=[
-                create_production_toolset(
-                    [self._toolset, cast("FunctionToolset[LobbyistDeps]", kaggle_toolset)]
-                ),
-            ],
+            toolsets=[create_production_toolset([self._toolset, cast("FunctionToolset[LobbyistDeps]", kaggle_toolset)])],
             prepare_tools=universal_tool_preparation,
             instrument=True,
         )
@@ -309,11 +202,7 @@ class LobbyistAgent:
         self._toolset.tool(self.get_competition_details)
         self._toolset.tool(self.score_competition_fit)
 
-    async def _validate_discovery_result(
-        self,
-        ctx: RunContext[LobbyistDeps],
-        result: DiscoveryResult,
-    ) -> DiscoveryResult:
+    async def _validate_discovery_result(self, ctx: RunContext[LobbyistDeps], result: DiscoveryResult) -> DiscoveryResult:
         """Validate discovery results meet minimum requirements."""
         if ctx.partial_output:
             return result

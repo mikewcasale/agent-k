@@ -19,11 +19,7 @@ try:  # pragma: no cover - optional dependency
 except ImportError:  # pragma: no cover - optional dependency
     OpenAIChatModel = None  # type: ignore[misc,assignment]
 
-__all__ = (
-    "code_toolset",
-    "create_code_execution_tool",
-    "prepare_code_execution_tool",
-)
+__all__ = ("code_toolset", "create_code_execution_tool", "prepare_code_execution_tool")
 
 # =============================================================================
 # Toolset Definition

@@ -12,14 +12,7 @@ from enum import Enum
 from typing import Any, Final, Self
 
 # Third-party (alphabetical)
-from pydantic import (
-    BaseModel,
-    ConfigDict,
-    Field,
-    computed_field,
-    field_validator,
-    model_validator,
-)
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
 
 # Local imports (core first, then alphabetical)
 from .types import (  # noqa: TC001
@@ -114,71 +107,21 @@ class Competition(BaseModel):
     and participation decisions.
     """
 
-    model_config = ConfigDict(
-        frozen=True,
-        str_strip_whitespace=True,
-        validate_default=True,
-    )
+    model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
 
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
-    id: CompetitionId = Field(
-        ...,
-        min_length=1,
-        max_length=100,
-        pattern=r"^[a-zA-Z0-9-]+$",
-        description="Unique competition identifier (slug)",
-    )
-    title: str = Field(
-        ...,
-        min_length=1,
-        max_length=500,
-        description="Competition display title",
-    )
-    description: str | None = Field(
-        default=None,
-        max_length=10000,
-        description="Competition description",
-    )
-    competition_type: CompetitionType = Field(
-        ...,
-        description="Category of competition",
-    )
-    metric: EvaluationMetric = Field(
-        ...,
-        description="Primary evaluation metric",
-    )
-    metric_direction: MetricDirection = Field(
-        default="maximize",
-        description="Whether higher or lower metric values are better",
-    )
-    deadline: datetime = Field(
-        ...,
-        description="Competition submission deadline (UTC)",
-    )
-    prize_pool: int | None = Field(
-        default=None,
-        ge=0,
-        description="Total prize pool in USD",
-    )
-    max_team_size: int = Field(
-        default=1,
-        ge=1,
-        le=100,
-        description="Maximum allowed team size",
-    )
-    max_daily_submissions: int = Field(
-        default=5,
-        ge=1,
-        description="Maximum submissions per day",
-    )
-    tags: frozenset[str] = Field(
-        default_factory=frozenset,
-        description="Competition tags/categories",
-    )
-    url: str | None = Field(
-        default=None,
-        description="Full URL to competition page",
-    )
+    id: CompetitionId = Field(..., min_length=1, max_length=100, pattern=r"^[a-zA-Z0-9-]+$", description="Unique competition identifier (slug)")
+    title: str = Field(..., min_length=1, max_length=500, description="Competition display title")
+    description: str | None = Field(default=None, max_length=10000, description="Competition description")
+    competition_type: CompetitionType = Field(..., description="Category of competition")
+    metric: EvaluationMetric = Field(..., description="Primary evaluation metric")
+    metric_direction: MetricDirection = Field(default="maximize", description="Whether higher or lower metric values are better")
+    deadline: datetime = Field(..., description="Competition submission deadline (UTC)")
+    prize_pool: int | None = Field(default=None, ge=0, description="Total prize pool in USD")
+    max_team_size: int = Field(default=1, ge=1, le=100, description="Maximum allowed team size")
+    max_daily_submissions: int = Field(default=5, ge=1, description="Maximum submissions per day")
+    tags: frozenset[str] = Field(default_factory=frozenset, description="Competition tags/categories")
+    url: str | None = Field(default=None, description="Full URL to competition page")
 
     @field_validator("deadline")
     @classmethod
@@ -224,23 +167,10 @@ class Submission(BaseModel):
     id: str = Field(..., description="Unique submission identifier")
     competition_id: CompetitionId = Field(..., description="Target competition")
     file_name: str = Field(..., description="Submission file name")
-    submitted_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
-        description="Submission timestamp",
-    )
-    public_score: float | None = Field(
-        default=None,
-        description="Public leaderboard score (if evaluated)",
-    )
-    private_score: float | None = Field(
-        default=None,
-        description="Private leaderboard score (after competition ends)",
-    )
-    status: str = Field(
-        default="pending",
-        pattern=r"^(pending|complete|error)$",
-        description="Submission status",
-    )
+    submitted_at: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Submission timestamp")
+    public_score: float | None = Field(default=None, description="Public leaderboard score (if evaluated)")
+    private_score: float | None = Field(default=None, description="Private leaderboard score (after competition ends)")
+    status: str = Field(default="pending", pattern=r"^(pending|complete|error)$", description="Submission status")
     error_message: str | None = Field(default=None, description="Error message if failed")
 
 
@@ -260,10 +190,7 @@ class ToolCall(BaseModel):
     thinking: str | None = Field(default=None, description="Agent thinking block")
     result: Any | None = Field(default=None, description="Tool result payload")
     error: str | None = Field(default=None, description="Tool error message")
-    started_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
-        description="Tool start time",
-    )
+    started_at: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Tool start time")
     completed_at: datetime | None = Field(default=None, description="Tool completion time")
     duration_ms: int | None = Field(default=None, description="Duration in milliseconds")
 
@@ -360,9 +287,7 @@ class MissionPlan(BaseModel):
     mission_id: MissionId = Field(..., description="Unique mission identifier")
     competition_id: CompetitionId | None = Field(default=None, description="Competition id")
     phases: list[PhasePlan] = Field(default_factory=list, description="Phase plans")
-    total_estimated_duration_ms: int = Field(
-        default=0, description="Total estimated duration in ms"
-    )
+    total_estimated_duration_ms: int = Field(default=0, description="Total estimated duration in ms")
     checkpoints: list[str] = Field(default_factory=list, description="Checkpoint identifiers")
 
 
@@ -380,19 +305,8 @@ class GenerationMetrics(BaseModel):
     mean_fitness: FitnessScore = Field(..., description="Mean fitness score")
     worst_fitness: FitnessScore = Field(..., description="Worst fitness score")
     population_size: int = Field(..., ge=1, description="Population size")
-    mutations: dict[str, int] = Field(
-        default_factory=lambda: {
-            "point": 0,
-            "structural": 0,
-            "hyperparameter": 0,
-            "crossover": 0,
-        },
-        description="Mutation counts by type",
-    )
-    timestamp: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
-        description="Timestamp for generation metrics",
-    )
+    mutations: dict[str, int] = Field(default_factory=lambda: {"point": 0, "structural": 0, "hyperparameter": 0, "crossover": 0}, description="Mutation counts by type")
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Timestamp for generation metrics")
 
 
 class LeaderboardSubmission(BaseModel):
@@ -408,10 +322,7 @@ class LeaderboardSubmission(BaseModel):
     rank: int | None = Field(default=None, description="Leaderboard rank")
     total_teams: int | None = Field(default=None, description="Total teams on leaderboard")
     percentile: float | None = Field(default=None, description="Leaderboard percentile")
-    submitted_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
-        description="Submission timestamp",
-    )
+    submitted_at: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Submission timestamp")
 
 
 class EvolutionState(BaseModel):
@@ -424,15 +335,10 @@ class EvolutionState(BaseModel):
     max_generations: int = Field(default=100, description="Maximum generations")
     population_size: int = Field(default=50, description="Population size")
     best_solution: dict[str, Any] | None = Field(default=None, description="Best solution payload")
-    generation_history: list[GenerationMetrics] = Field(
-        default_factory=list, description="History of generations"
-    )
+    generation_history: list[GenerationMetrics] = Field(default_factory=list, description="History of generations")
     convergence_detected: bool = Field(default=False, description="Whether convergence detected")
     convergence_reason: str | None = Field(default=None, description="Convergence reason")
-    leaderboard_submissions: list[LeaderboardSubmission] = Field(
-        default_factory=list,
-        description="Leaderboard submissions",
-    )
+    leaderboard_submissions: list[LeaderboardSubmission] = Field(default_factory=list, description="Leaderboard submissions")
 
 
 # =============================================================================
@@ -448,14 +354,8 @@ class MemoryEntry(BaseModel):
     scope: MemoryScope = Field(default="session", description="Memory scope")
     category: str = Field(..., description="Category for grouping")
     value_preview: str = Field(..., max_length=200, description="Preview of stored value")
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
-        description="Creation timestamp",
-    )
-    accessed_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
-        description="Last accessed timestamp",
-    )
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Creation timestamp")
+    accessed_at: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Last accessed timestamp")
     access_count: int = Field(default=1, description="Access count")
     size_bytes: int = Field(default=0, description="Approximate size in bytes")
 
@@ -468,10 +368,7 @@ class Checkpoint(BaseModel):
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
     name: str = Field(..., description="Checkpoint name")
     phase: MissionPhase = Field(..., description="Phase when checkpoint was created")
-    timestamp: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
-        description="Checkpoint timestamp",
-    )
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Checkpoint timestamp")
     state_snapshot: str = Field(..., description="Serialized state")
 
 
@@ -496,10 +393,7 @@ class ErrorEvent(BaseModel):
 
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
     id: str = Field(..., description="Unique error identifier")
-    timestamp: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
-        description="Error timestamp",
-    )
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Error timestamp")
     category: ErrorCategory = Field(..., description="Error category")
     error_type: str = Field(..., description="Exception class name")
     message: str = Field(..., description="Error message")
@@ -526,13 +420,9 @@ class LeaderboardAnalysis(BaseModel):
     target_score: float = Field(..., description="Target score for goal percentile")
     target_percentile: float = Field(..., description="Target percentile")
     total_teams: int = Field(..., description="Total teams on leaderboard")
-    score_distribution: list[dict[str, float]] = Field(
-        default_factory=list, description="Score distribution"
-    )
+    score_distribution: list[dict[str, float]] = Field(default_factory=list, description="Score distribution")
     common_approaches: list[str] = Field(default_factory=list, description="Common approaches")
-    improvement_opportunities: list[str] = Field(
-        default_factory=list, description="Improvement opportunities"
-    )
+    improvement_opportunities: list[str] = Field(default_factory=list, description="Improvement opportunities")
 
 
 class ResearchFindings(BaseModel):
@@ -541,15 +431,11 @@ class ResearchFindings(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
-    leaderboard_analysis: LeaderboardAnalysis | None = Field(
-        default=None, description="Leaderboard analysis"
-    )
+    leaderboard_analysis: LeaderboardAnalysis | None = Field(default=None, description="Leaderboard analysis")
     papers: list[dict[str, Any]] = Field(default_factory=list, description="Paper findings")
     approaches: list[dict[str, Any]] = Field(default_factory=list, description="Approach findings")
     eda_results: dict[str, Any] | None = Field(default=None, description="EDA results")
-    strategy_recommendations: list[str] = Field(
-        default_factory=list, description="Strategy recommendations"
-    )
+    strategy_recommendations: list[str] = Field(default_factory=list, description="Strategy recommendations")
 
 
 # =============================================================================
@@ -561,24 +447,14 @@ class MissionCriteria(BaseModel):
     model_config = ConfigDict(frozen=True)
 
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
-    target_competition_types: frozenset[CompetitionType] = Field(
-        default=frozenset({CompetitionType.FEATURED, CompetitionType.RESEARCH}),
-        description="Target competition types",
-    )
+    target_competition_types: frozenset[CompetitionType] = Field(default=frozenset({CompetitionType.FEATURED, CompetitionType.RESEARCH}), description="Target competition types")
     min_prize_pool: int | None = Field(default=None, ge=0, description="Minimum prize pool")
     max_team_size: int | None = Field(default=None, ge=1, description="Maximum team size")
     min_days_remaining: int = Field(default=7, ge=1, description="Minimum days remaining")
     target_domains: frozenset[str] = Field(default_factory=frozenset, description="Target domains")
-    exclude_domains: frozenset[str] = Field(
-        default_factory=frozenset, description="Excluded domains"
-    )
+    exclude_domains: frozenset[str] = Field(default_factory=frozenset, description="Excluded domains")
     max_evolution_rounds: int = Field(default=100, ge=1, description="Max evolution rounds")
-    target_leaderboard_percentile: float = Field(
-        default=0.10,
-        ge=0.0,
-        le=1.0,
-        description="Target top N percentile on leaderboard",
-    )
+    target_leaderboard_percentile: float = Field(default=0.10, ge=0.0, le=1.0, description="Target top N percentile on leaderboard")
 
     @model_validator(mode="after")
     def validate_domains_disjoint(self) -> Self:

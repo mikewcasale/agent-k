@@ -17,13 +17,7 @@ if TYPE_CHECKING:
     from .agents.lycurgus import LycurgusOrchestrator as LycurgusOrchestrator
     from .agents.scientist import scientist_agent as scientist_agent
 
-__all__ = (
-    "__version__",
-    "lobbyist_agent",
-    "scientist_agent",
-    "evolver_agent",
-    "LycurgusOrchestrator",
-)
+__all__ = ("__version__", "lobbyist_agent", "scientist_agent", "evolver_agent", "LycurgusOrchestrator")
 
 
 def __getattr__(name: str) -> Any:

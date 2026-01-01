@@ -31,12 +31,7 @@ class RetrievalResult:
 class RAGRetriever:
     """Simple RAG retriever with cosine similarity."""
 
-    def __init__(
-        self,
-        documents: list[str],
-        embeddings: list[list[float]],
-        metadata: list[dict[str, Any]] | None = None,
-    ) -> None:
+    def __init__(self, documents: list[str], embeddings: list[list[float]], metadata: list[dict[str, Any]] | None = None) -> None:
         if len(documents) != len(embeddings):
             raise ValueError("documents and embeddings length mismatch")
         if metadata is not None and len(metadata) != len(documents):
@@ -56,11 +51,7 @@ class RAGRetriever:
         self._norms = norms
         self._metadata = metadata or [{} for _ in documents]
 
-    async def retrieve(
-        self,
-        query: str,
-        top_k: int = 5,
-    ) -> list[RetrievalResult]:
+    async def retrieve(self, query: str, top_k: int = 5) -> list[RetrievalResult]:
         """Retrieve top-k relevant documents.
 
         Args:
@@ -89,11 +80,4 @@ class RAGRetriever:
         top_k = min(top_k, len(self._documents))
         top_indices = np.argsort(similarities)[-top_k:][::-1]
 
-        return [
-            RetrievalResult(
-                content=self._documents[i],
-                score=float(similarities[i]),
-                metadata=self._metadata[i],
-            )
-            for i in top_indices
-        ]
+        return [RetrievalResult(content=self._documents[i], score=float(similarities[i]), metadata=self._metadata[i]) for i in top_indices]

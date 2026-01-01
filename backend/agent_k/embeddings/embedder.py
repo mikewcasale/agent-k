@@ -52,10 +52,7 @@ def get_embedder(model: str = DEFAULT_MODEL) -> Embedder:
     return embedder_cls(model)
 
 
-async def embed_documents(
-    documents: list[str],
-    model: str = DEFAULT_MODEL,
-) -> list[list[float]]:
+async def embed_documents(documents: list[str], model: str = DEFAULT_MODEL) -> list[list[float]]:
     """Embed multiple documents for indexing.
 
     Args:
@@ -70,10 +67,7 @@ async def embed_documents(
     return [result[doc] for doc in documents]
 
 
-async def embed_query(
-    query: str,
-    model: str = DEFAULT_MODEL,
-) -> list[float]:
+async def embed_query(query: str, model: str = DEFAULT_MODEL) -> list[float]:
     """Embed query for similarity search.
 
     Args:

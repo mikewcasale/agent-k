@@ -65,29 +65,8 @@ MAX_RETRIES: Final[int] = 3
 RETRY_DELAY_SECONDS: Final[float] = 1.0
 
 # Collections (immutable)
-VALID_COMPETITION_TYPES: Final[frozenset[str]] = frozenset(
-    {
-        "featured",
-        "research",
-        "getting_started",
-        "playground",
-        "community",
-    },
-)
+VALID_COMPETITION_TYPES: Final[frozenset[str]] = frozenset({"featured", "research", "getting_started", "playground", "community"})
 
-MUTATION_TYPES: Final[frozenset[str]] = frozenset(
-    {
-        "point",
-        "structural",
-        "hyperparameter",
-        "crossover",
-    },
-)
+MUTATION_TYPES: Final[frozenset[str]] = frozenset({"point", "structural", "hyperparameter", "crossover"})
 
-MISSION_PHASES: Final[tuple[str, ...]] = (
-    "discovery",
-    "research",
-    "prototype",
-    "evolution",
-    "submission",
-)
+MISSION_PHASES: Final[tuple[str, ...]] = ("discovery", "research", "prototype", "evolution", "submission")

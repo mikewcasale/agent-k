@@ -18,29 +18,15 @@ from pydantic_ai.providers.openrouter import OpenRouterProvider
 if TYPE_CHECKING:
     from pydantic_ai.models import Model
 
-__all__ = (
-    "get_model",
-    "create_devstral_model",
-    "create_openrouter_model",
-    "is_devstral_model",
-    "DEVSTRAL_MODEL_ID",
-    "DEVSTRAL_BASE_URL",
-    "ModelType",
-)
+__all__ = ("get_model", "create_devstral_model", "create_openrouter_model", "is_devstral_model", "DEVSTRAL_MODEL_ID", "DEVSTRAL_BASE_URL", "ModelType")
 
 DEVSTRAL_MODEL_ID: Final[str] = "mistralai/devstral-small-2-2512"
-DEVSTRAL_BASE_URL: Final[str] = os.getenv(
-    "DEVSTRAL_BASE_URL",
-    "http://192.168.105.1:1234/v1",
-)
+DEVSTRAL_BASE_URL: Final[str] = os.getenv("DEVSTRAL_BASE_URL", "http://192.168.105.1:1234/v1")
 
 ModelType: TypeAlias = str
 
 
-def create_devstral_model(
-    model_id: str = DEVSTRAL_MODEL_ID,
-    base_url: str | None = None,
-) -> OpenAIChatModel:
+def create_devstral_model(model_id: str = DEVSTRAL_MODEL_ID, base_url: str | None = None) -> OpenAIChatModel:
     """Create a Devstral model instance for local LM Studio server.
 
     This creates an OpenAI-compatible model that connects to a local
@@ -87,10 +73,7 @@ def create_openrouter_model(model_id: str) -> OpenAIChatModel:
     Note:
         Requires OPENROUTER_API_KEY environment variable to be set.
     """
-    return OpenAIChatModel(
-        model_id,
-        provider=OpenRouterProvider(),
-    )
+    return OpenAIChatModel(model_id, provider=OpenRouterProvider())
 
 
 def get_model(model_spec: str) -> Model | str:

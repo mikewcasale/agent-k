@@ -38,12 +38,7 @@ else:
         pass
 
 
-__all__ = (
-    "AgentKMemoryTool",
-    "create_memory_backend",
-    "prepare_memory_tool",
-    "register_memory_tool",
-)
+__all__ = ("AgentKMemoryTool", "create_memory_backend", "prepare_memory_tool", "register_memory_tool")
 
 _DEFAULT_MEMORY_DIR = Path(os.getenv("AGENT_K_MEMORY_DIR", ".agent_k_memory"))
 
@@ -203,10 +198,7 @@ async def prepare_memory_tool(ctx: RunContext[Any]) -> MemoryTool | None:
     return None if ctx.model.system != "anthropic" else MemoryTool()
 
 
-def register_memory_tool(
-    agent: Agent[Any, Any],
-    memory_backend: AgentKMemoryTool,
-) -> None:
+def register_memory_tool(agent: Agent[Any, Any], memory_backend: AgentKMemoryTool) -> None:
     """Register the Anthropic MemoryTool handler on an agent.
 
     Args:
@@ -219,10 +211,7 @@ def register_memory_tool(
         return memory_backend.call(command)
 
 
-async def _prepare_memory_definition(
-    ctx: RunContext[Any],
-    tool_def: ToolDefinition,
-) -> ToolDefinition | None:
+async def _prepare_memory_definition(ctx: RunContext[Any], tool_def: ToolDefinition) -> ToolDefinition | None:
     return None if ctx.model.system != "anthropic" else tool_def
 
 

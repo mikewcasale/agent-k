@@ -26,15 +26,7 @@ from agent_k.agents.base import universal_tool_preparation
 from agent_k.agents.prompts import SCIENTIST_SYSTEM_PROMPT
 from agent_k.core.constants import DEFAULT_MODEL
 from agent_k.infra.providers import get_model
-from agent_k.toolsets import (
-    AgentKMemoryTool,
-    create_memory_backend,
-    create_production_toolset,
-    kaggle_toolset,
-    prepare_memory_tool,
-    prepare_web_search,
-    register_memory_tool,
-)
+from agent_k.toolsets import AgentKMemoryTool, create_memory_backend, create_production_toolset, kaggle_toolset, prepare_memory_tool, prepare_web_search, register_memory_tool
 
 if TYPE_CHECKING:
     import httpx
@@ -42,17 +34,7 @@ if TYPE_CHECKING:
     from agent_k.core.models import Competition, LeaderboardEntry
     from agent_k.core.protocols import PlatformAdapter
 
-__all__ = (
-    "LeaderboardAnalysis",
-    "ResearchFinding",
-    "ResearchReport",
-    "ScientistAgent",
-    "ScientistDeps",
-    "ScientistSettings",
-    "SCIENTIST_SYSTEM_PROMPT",
-    "SCHEMA_VERSION",
-    "scientist_agent",
-)
+__all__ = ("LeaderboardAnalysis", "ResearchFinding", "ResearchReport", "ScientistAgent", "ScientistDeps", "ScientistSettings", "SCIENTIST_SYSTEM_PROMPT", "SCHEMA_VERSION", "scientist_agent")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _KAGGLE_KERNELS_ENDPOINT: Final[str] = "https://www.kaggle.com/api/v1/kernels/list"
@@ -73,57 +55,21 @@ _MISSING_VALUE_TOKENS: Final[frozenset[str]] = frozenset({"", "na", "nan", "null
 class ScientistSettings(BaseSettings):
     """Configuration for the Scientist agent."""
 
-    model_config = SettingsConfigDict(
-        env_prefix="SCIENTIST_",
-        env_file=".env",
-        extra="ignore",
-        validate_default=True,
-    )
+    model_config = SettingsConfigDict(env_prefix="SCIENTIST_", env_file=".env", extra="ignore", validate_default=True)
 
-    model: str = Field(
-        default=DEFAULT_MODEL,
-        description="Model identifier for research tasks",
-    )
-    temperature: float = Field(
-        default=0.3,
-        ge=0.0,
-        le=2.0,
-        description="Sampling temperature for research prompts",
-    )
-    max_tokens: int = Field(
-        default=4096,
-        ge=1,
-        description="Maximum tokens for responses",
-    )
+    model: str = Field(default=DEFAULT_MODEL, description="Model identifier for research tasks")
+    temperature: float = Field(default=0.3, ge=0.0, le=2.0, description="Sampling temperature for research prompts")
+    max_tokens: int = Field(default=4096, ge=1, description="Maximum tokens for responses")
 
-    tool_retries: int = Field(
-        default=2,
-        ge=0,
-        description="Tool retry attempts",
-    )
-    output_retries: int = Field(
-        default=1,
-        ge=0,
-        description="Output validation retry attempts",
-    )
-    max_paper_results: int = Field(
-        default=10,
-        ge=1,
-        description="Maximum papers to retrieve",
-    )
-    max_notebook_results: int = Field(
-        default=10,
-        ge=1,
-        description="Maximum notebooks to retrieve",
-    )
+    tool_retries: int = Field(default=2, ge=0, description="Tool retry attempts")
+    output_retries: int = Field(default=1, ge=0, description="Output validation retry attempts")
+    max_paper_results: int = Field(default=10, ge=1, description="Maximum papers to retrieve")
+    max_notebook_results: int = Field(default=10, ge=1, description="Maximum notebooks to retrieve")
 
     @property
     def model_settings(self) -> ModelSettings:
         """Build ModelSettings for the configured model."""
-        return ModelSettings(
-            temperature=self.temperature,
-            max_tokens=self.max_tokens,
-        )
+        return ModelSettings(temperature=self.temperature, max_tokens=self.max_tokens)
 
 
 @dataclass
@@ -138,20 +84,13 @@ class ScientistDeps:
 
     async def refresh_leaderboard(self) -> None:
         """Refresh leaderboard from the platform."""
-        self.leaderboard = await self.platform_adapter.get_leaderboard(
-            self.competition.id,
-            limit=100,
-        )
+        self.leaderboard = await self.platform_adapter.get_leaderboard(self.competition.id, limit=100)
 
 
 class ResearchFinding(BaseModel):
     """Individual research finding."""
 
-    model_config = ConfigDict(
-        frozen=True,
-        str_strip_whitespace=True,
-        validate_default=True,
-    )
+    model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
 
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
     category: str = Field(description="Category of finding")
@@ -164,11 +103,7 @@ class ResearchFinding(BaseModel):
 class LeaderboardAnalysis(BaseModel):
     """Analysis of competition leaderboard."""
 
-    model_config = ConfigDict(
-        frozen=True,
-        str_strip_whitespace=True,
-        validate_default=True,
-    )
+    model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
 
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
     top_score: float = Field(description="Best leaderboard score")
@@ -181,38 +116,16 @@ class LeaderboardAnalysis(BaseModel):
 class ResearchReport(BaseModel):
     """Complete research report for a competition."""
 
-    model_config = ConfigDict(
-        frozen=True,
-        str_strip_whitespace=True,
-        validate_default=True,
-    )
+    model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
 
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
     competition_id: str = Field(description="Competition identifier")
-    domain_findings: list[ResearchFinding] = Field(
-        default_factory=list,
-        description="Domain-specific research findings",
-    )
-    technique_findings: list[ResearchFinding] = Field(
-        default_factory=list,
-        description="Technique-focused research findings",
-    )
-    leaderboard_analysis: LeaderboardAnalysis | None = Field(
-        default=None,
-        description="Leaderboard analysis summary",
-    )
-    recommended_approaches: list[str] = Field(
-        default_factory=list,
-        description="Recommended modeling approaches",
-    )
-    estimated_baseline_score: float | None = Field(
-        default=None,
-        description="Estimated baseline score",
-    )
-    key_challenges: list[str] = Field(
-        default_factory=list,
-        description="Primary competition challenges",
-    )
+    domain_findings: list[ResearchFinding] = Field(default_factory=list, description="Domain-specific research findings")
+    technique_findings: list[ResearchFinding] = Field(default_factory=list, description="Technique-focused research findings")
+    leaderboard_analysis: LeaderboardAnalysis | None = Field(default=None, description="Leaderboard analysis summary")
+    recommended_approaches: list[str] = Field(default_factory=list, description="Recommended modeling approaches")
+    estimated_baseline_score: float | None = Field(default=None, description="Estimated baseline score")
+    key_challenges: list[str] = Field(default_factory=list, description="Primary competition challenges")
 
 
 class ScientistAgent:
@@ -246,11 +159,7 @@ class ScientistAgent:
     # Tool Methods
     # =========================================================================
 
-    async def analyze_leaderboard(
-        self,
-        ctx: RunContext[ScientistDeps],
-        refresh: bool = True,
-    ) -> dict[str, Any]:
+    async def analyze_leaderboard(self, ctx: RunContext[ScientistDeps], refresh: bool = True) -> dict[str, Any]:
         """Analyze the current competition leaderboard."""
         with logfire.span("scientist.analyze_leaderboard"):
             if refresh:
@@ -267,25 +176,13 @@ class ScientistAgent:
                 "median_score": sorted(scores)[len(scores) // 2],
                 "score_range": max(scores) - min(scores),
                 "top_10_scores": [e.score for e in leaderboard[:10]],
-                "top_teams": [
-                    {"rank": e.rank, "team": e.team_name, "score": e.score}
-                    for e in leaderboard[:10]
-                ],
+                "top_teams": [{"rank": e.rank, "team": e.team_name, "score": e.score} for e in leaderboard[:10]],
             }
 
-    async def get_kaggle_notebooks(
-        self,
-        ctx: RunContext[ScientistDeps],
-        sort_by: str = "voteCount",
-        max_results: int = 10,
-    ) -> list[dict[str, Any]]:
+    async def get_kaggle_notebooks(self, ctx: RunContext[ScientistDeps], sort_by: str = "voteCount", max_results: int = 10) -> list[dict[str, Any]]:
         """Get top notebooks for the competition."""
         with logfire.span("scientist.get_notebooks"):
-            notebooks = await self._fetch_kaggle_notebooks(
-                ctx,
-                sort_by=sort_by,
-                max_results=max_results,
-            )
+            notebooks = await self._fetch_kaggle_notebooks(ctx, sort_by=sort_by, max_results=max_results)
             if notebooks:
                 return notebooks
 
@@ -293,51 +190,32 @@ class ScientistAgent:
             return [
                 {
                     "title": f"{ctx.deps.competition.title} solution by {entry.team_name}",
-                    "votes": max(
-                        1, (len(ctx.deps.leaderboard) - entry.rank + 1) * 5
-                    ),
+                    "votes": max(1, (len(ctx.deps.leaderboard) - entry.rank + 1) * 5),
                     "author": entry.team_name,
-                    "techniques": self._infer_techniques_from_text(
-                        " ".join(ctx.deps.competition.tags)
-                    ),
+                    "techniques": self._infer_techniques_from_text(" ".join(ctx.deps.competition.tags)),
                 }
                 for entry in ctx.deps.leaderboard[:max_results]
             ]
 
-    async def analyze_data_characteristics(
-        self,
-        ctx: RunContext[ScientistDeps],
-    ) -> dict[str, Any]:
+    async def analyze_data_characteristics(self, ctx: RunContext[ScientistDeps]) -> dict[str, Any]:
         """Analyze competition data characteristics."""
         with logfire.span("scientist.analyze_data"):
             try:
                 with tempfile.TemporaryDirectory() as tmp_dir:
-                    files = await ctx.deps.platform_adapter.download_data(
-                        ctx.deps.competition.id,
-                        tmp_dir,
-                    )
+                    files = await ctx.deps.platform_adapter.download_data(ctx.deps.competition.id, tmp_dir)
                     return self._summarize_dataset(files)
             except Exception as exc:
                 logfire.warning("data_analysis_failed", error=str(exc))
                 return self._fallback_dataset_summary(ctx.deps.competition)
 
-    async def compute_baseline_estimate(
-        self,
-        ctx: RunContext[ScientistDeps],
-        leaderboard_scores: list[float],
-        competition_difficulty: str,
-    ) -> float:
+    async def compute_baseline_estimate(self, ctx: RunContext[ScientistDeps], leaderboard_scores: list[float], competition_difficulty: str) -> float:
         """Estimate achievable baseline score."""
         _ = ctx
         if not leaderboard_scores:
             return 0.0
 
         median = sorted(leaderboard_scores)[len(leaderboard_scores) // 2]
-        difficulty_multiplier = {
-            "easy": 0.95,
-            "medium": 0.85,
-            "hard": 0.70,
-        }.get(competition_difficulty, 0.80)
+        difficulty_multiplier = {"easy": 0.95, "medium": 0.85, "hard": 0.70}.get(competition_difficulty, 0.80)
 
         return median * difficulty_multiplier
 
@@ -363,11 +241,7 @@ class ScientistAgent:
             retries=self._settings.tool_retries,
             output_retries=self._settings.output_retries,
             builtin_tools=builtin_tools,
-            toolsets=[
-                create_production_toolset(
-                    [self._toolset, cast("FunctionToolset[ScientistDeps]", kaggle_toolset)]
-                ),
-            ],
+            toolsets=[create_production_toolset([self._toolset, cast("FunctionToolset[ScientistDeps]", kaggle_toolset)])],
             prepare_tools=universal_tool_preparation,
             instrument=True,
         )
@@ -390,11 +264,7 @@ class ScientistAgent:
         self._toolset.tool(self.analyze_data_characteristics)
         self._toolset.tool(self.compute_baseline_estimate)
 
-    async def _validate_research_completeness(
-        self,
-        ctx: RunContext[ScientistDeps],
-        output: ResearchReport,
-    ) -> ResearchReport:
+    async def _validate_research_completeness(self, ctx: RunContext[ScientistDeps], output: ResearchReport) -> ResearchReport:
         """Validate research report completeness."""
         if ctx.partial_output:
             return output
@@ -420,28 +290,14 @@ class ScientistAgent:
             f"- Tags: {tags}"
         )
 
-    async def _fetch_kaggle_notebooks(
-        self,
-        ctx: RunContext[ScientistDeps],
-        *,
-        sort_by: str,
-        max_results: int,
-    ) -> list[dict[str, Any]]:
-        params: dict[str, str | int] = {
-            "competition": ctx.deps.competition.id,
-            "sortBy": sort_by,
-            "pageSize": max_results,
-        }
+    async def _fetch_kaggle_notebooks(self, ctx: RunContext[ScientistDeps], *, sort_by: str, max_results: int) -> list[dict[str, Any]]:
+        params: dict[str, str | int] = {"competition": ctx.deps.competition.id, "sortBy": sort_by, "pageSize": max_results}
 
         auth = self._extract_kaggle_auth(ctx.deps.platform_adapter)
         if not auth:
             return []
 
-        response = await ctx.deps.http_client.get(
-            _KAGGLE_KERNELS_ENDPOINT,
-            params=params,
-            auth=auth,
-        )
+        response = await ctx.deps.http_client.get(_KAGGLE_KERNELS_ENDPOINT, params=params, auth=auth)
 
         if response.status_code != 200:
             return []
@@ -454,9 +310,7 @@ class ScientistAgent:
                     "title": title,
                     "votes": item.get("voteCount", 0),
                     "author": item.get("author", ""),
-                    "techniques": self._infer_techniques_from_text(
-                        f"{title} {item.get('scriptVersionTitle', '')}"
-                    ),
+                    "techniques": self._infer_techniques_from_text(f"{title} {item.get('scriptVersionTitle', '')}"),
                     "url": item.get("url", ""),
                 }
             )
@@ -480,20 +334,14 @@ class ScientistAgent:
         return techniques
 
     def _summarize_dataset(self, files: list[str]) -> dict[str, Any]:
-        summary: dict[str, Any] = {
-            "files": [],
-            "total_size_mb": 0.0,
-        }
+        summary: dict[str, Any] = {"files": [], "total_size_mb": 0.0}
 
         for file_path in files:
             path = Path(file_path)
             if not path.exists():
                 continue
 
-            file_info: dict[str, Any] = {
-                "name": path.name,
-                "size_mb": round(path.stat().st_size / (1024 * 1024), 2),
-            }
+            file_info: dict[str, Any] = {"name": path.name, "size_mb": round(path.stat().st_size / (1024 * 1024), 2)}
 
             summary["total_size_mb"] += file_info["size_mb"]
 
@@ -524,19 +372,10 @@ class ScientistAgent:
 
         missing_summary = {col: count for col, count in missing_counts.items() if count > 0}
 
-        return {
-            "row_count": len(rows) - 1,
-            "column_count": len(header),
-            "columns": header,
-            "missing_values": missing_summary,
-        }
+        return {"row_count": len(rows) - 1, "column_count": len(header), "columns": header, "missing_values": missing_summary}
 
     def _fallback_dataset_summary(self, competition: Competition) -> dict[str, Any]:
-        return {
-            "files": [],
-            "total_size_mb": 0.0,
-            "notes": f"Dataset summary unavailable for {competition.title}",
-        }
+        return {"files": [], "total_size_mb": 0.0, "notes": f"Dataset summary unavailable for {competition.title}"}
 
 
 # Module-level singleton for backward compatibility

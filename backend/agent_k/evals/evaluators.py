@@ -40,11 +40,7 @@ class FitnessImprovement(Evaluator[str, dict[str, Any]]):
         """Check fitness improvement."""
         fitness = ctx.output.get("best_fitness", 0.0)
         improvement = fitness - self.baseline_fitness
-        return {
-            "fitness_improved": improvement > 0,
-            "improvement_amount": improvement,
-            "final_fitness": fitness,
-        }
+        return {"fitness_improved": improvement > 0, "improvement_amount": improvement, "final_fitness": fitness}
 
 
 @dataclass
@@ -54,7 +50,4 @@ class CompetitionSelected(Evaluator[str, dict[str, Any]]):
     def evaluate(self, ctx: EvaluatorContext[str, dict[str, Any]]) -> dict[str, Any]:
         """Check competition selection output."""
         competition = ctx.output.get("competition")
-        return {
-            "has_competition": competition is not None,
-            "competition_type": (competition or {}).get("type"),
-        }
+        return {"has_competition": competition is not None, "competition_type": (competition or {}).get("type")}

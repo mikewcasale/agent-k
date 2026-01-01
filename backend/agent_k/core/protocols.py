@@ -53,13 +53,7 @@ class PlatformAdapter(Protocol):
         ...
 
     @abstractmethod
-    def search_competitions(
-        self,
-        categories: list[str] | None = None,
-        keywords: list[str] | None = None,
-        min_prize: int | None = None,
-        active_only: bool = True,
-    ) -> AsyncIterator[Competition]:
+    def search_competitions(self, categories: list[str] | None = None, keywords: list[str] | None = None, min_prize: int | None = None, active_only: bool = True) -> AsyncIterator[Competition]:
         """Search for competitions matching criteria.
 
         Args:
@@ -89,12 +83,7 @@ class PlatformAdapter(Protocol):
         ...
 
     @abstractmethod
-    async def get_leaderboard(
-        self,
-        competition_id: str,
-        *,
-        limit: int = 100,
-    ) -> list[LeaderboardEntry]:
+    async def get_leaderboard(self, competition_id: str, *, limit: int = 100) -> list[LeaderboardEntry]:
         """Get competition leaderboard.
 
         Args:
@@ -107,12 +96,7 @@ class PlatformAdapter(Protocol):
         ...
 
     @abstractmethod
-    async def submit(
-        self,
-        competition_id: str,
-        file_path: str,
-        message: str = "",
-    ) -> Submission:
+    async def submit(self, competition_id: str, file_path: str, message: str = "") -> Submission:
         """Submit solution to competition.
 
         Args:
@@ -130,11 +114,7 @@ class PlatformAdapter(Protocol):
         ...
 
     @abstractmethod
-    async def get_submission_status(
-        self,
-        competition_id: str,
-        submission_id: str,
-    ) -> Submission:
+    async def get_submission_status(self, competition_id: str, submission_id: str) -> Submission:
         """Get status of a submission.
 
         Args:
@@ -147,11 +127,7 @@ class PlatformAdapter(Protocol):
         ...
 
     @abstractmethod
-    async def download_data(
-        self,
-        competition_id: str,
-        destination: str,
-    ) -> list[str]:
+    async def download_data(self, competition_id: str, destination: str) -> list[str]:
         """Download competition data files.
 
         Args:

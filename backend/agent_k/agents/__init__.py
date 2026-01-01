@@ -17,15 +17,9 @@ if TYPE_CHECKING:
     from agent_k.agents.evolver import evolver_agent as evolver_agent
     from agent_k.agents.lobbyist import LobbyistAgent as LobbyistAgent
     from agent_k.agents.lobbyist import lobbyist_agent as lobbyist_agent
-    from agent_k.agents.lycurgus import (
-        LycurgusOrchestrator as LycurgusOrchestrator,
-    )
-    from agent_k.agents.lycurgus import (
-        LycurgusSettings as LycurgusSettings,
-    )
-    from agent_k.agents.lycurgus import (
-        MissionStatus as MissionStatus,
-    )
+    from agent_k.agents.lycurgus import LycurgusOrchestrator as LycurgusOrchestrator
+    from agent_k.agents.lycurgus import LycurgusSettings as LycurgusSettings
+    from agent_k.agents.lycurgus import MissionStatus as MissionStatus
     from agent_k.agents.scientist import ScientistAgent as ScientistAgent
     from agent_k.agents.scientist import scientist_agent as scientist_agent
 

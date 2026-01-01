@@ -25,31 +25,11 @@ from pydantic import BaseModel, ConfigDict, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Local imports (core first, then alphabetical)
-from agent_k.core.exceptions import (
-    AdapterError,
-    CompetitionNotFoundError,
-    DeadlinePassedError,
-    EvolutionError,
-    SubmissionError,
-)
-from agent_k.core.models import (
-    Competition,
-    CompetitionType,
-    EvaluationMetric,
-    LeaderboardEntry,
-    Submission,
-)
+from agent_k.core.exceptions import AdapterError, CompetitionNotFoundError, DeadlinePassedError, EvolutionError, SubmissionError
+from agent_k.core.models import Competition, CompetitionType, EvaluationMetric, LeaderboardEntry, Submission
 from agent_k.core.protocols import PlatformAdapter
 
-__all__ = (
-    "OpenEvolveAdapter",
-    "OpenEvolveEvolutionConfig",
-    "OpenEvolveJobState",
-    "OpenEvolveJobStatus",
-    "OpenEvolveSettings",
-    "OpenEvolveSolution",
-    "SCHEMA_VERSION",
-)
+__all__ = ("OpenEvolveAdapter", "OpenEvolveEvolutionConfig", "OpenEvolveJobState", "OpenEvolveJobStatus", "OpenEvolveSettings", "OpenEvolveSolution", "SCHEMA_VERSION")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _DEFAULT_PRIZE_POOL: Final[int] = 50_000
@@ -63,42 +43,14 @@ class OpenEvolveSettings(BaseSettings):
     Environment variables are prefixed with OPENEVOLVE_.
     """
 
-    model_config = SettingsConfigDict(
-        env_prefix="OPENEVOLVE_",
-        env_file=".env",
-        extra="ignore",
-        validate_default=True,
-    )
+    model_config = SettingsConfigDict(env_prefix="OPENEVOLVE_", env_file=".env", extra="ignore", validate_default=True)
 
-    api_url: str = Field(
-        default="http://localhost:8080",
-        description="Base URL for OpenEvolve API",
-    )
-    timeout: int = Field(
-        default=30,
-        ge=1,
-        description="HTTP timeout in seconds",
-    )
-    max_retries: int = Field(
-        default=3,
-        ge=0,
-        description="Maximum retry attempts for failed requests",
-    )
-    poll_interval: float = Field(
-        default=5.0,
-        ge=0.1,
-        description="Seconds between status polls",
-    )
-    simulated_latency: float = Field(
-        default=0.0,
-        ge=0.0,
-        description="Delay before marking jobs complete in in-memory mode",
-    )
-    job_ttl_seconds: int = Field(
-        default=86_400,
-        ge=0,
-        description="Retention for completed jobs in memory",
-    )
+    api_url: str = Field(default="http://localhost:8080", description="Base URL for OpenEvolve API")
+    timeout: int = Field(default=30, ge=1, description="HTTP timeout in seconds")
+    max_retries: int = Field(default=3, ge=0, description="Maximum retry attempts for failed requests")
+    poll_interval: float = Field(default=5.0, ge=0.1, description="Seconds between status polls")
+    simulated_latency: float = Field(default=0.0, ge=0.0, description="Delay before marking jobs complete in in-memory mode")
+    job_ttl_seconds: int = Field(default=86_400, ge=0, description="Retention for completed jobs in memory")
 
 
 class OpenEvolveJobState(str, Enum):
@@ -179,21 +131,9 @@ class OpenEvolveAdapter(PlatformAdapter):
     api_url: str | None = None
     _platform_name: str = "openevolve"
     catalog: list[Competition] = field(default_factory=list)
-    _submissions: dict[str, dict[str, Submission]] = field(
-        default_factory=lambda: defaultdict(dict),
-        init=False,
-        repr=False,
-    )
-    _submission_payloads: dict[str, str] = field(
-        default_factory=dict,
-        init=False,
-        repr=False,
-    )
-    _evolution_jobs: dict[str, _OpenEvolveJob] = field(
-        default_factory=dict,
-        init=False,
-        repr=False,
-    )
+    _submissions: dict[str, dict[str, Submission]] = field(default_factory=lambda: defaultdict(dict), init=False, repr=False)
+    _submission_payloads: dict[str, str] = field(default_factory=dict, init=False, repr=False)
+    _evolution_jobs: dict[str, _OpenEvolveJob] = field(default_factory=dict, init=False, repr=False)
 
     def __post_init__(self) -> None:
         if self.api_url:
@@ -210,13 +150,7 @@ class OpenEvolveAdapter(PlatformAdapter):
         """Authenticate the adapter (no-op for in-memory implementation)."""
         return True
 
-    async def search_competitions(
-        self,
-        categories: list[str] | None = None,
-        keywords: list[str] | None = None,
-        min_prize: int | None = None,
-        active_only: bool = True,
-    ) -> AsyncIterator[Competition]:
+    async def search_competitions(self, categories: list[str] | None = None, keywords: list[str] | None = None, min_prize: int | None = None, active_only: bool = True) -> AsyncIterator[Competition]:
         """Search the in-memory competition catalog."""
         keyword_terms = [term.lower() for term in (keywords or [])]
         category_terms = {_normalize_category(value) for value in (categories or [])}
@@ -239,12 +173,7 @@ class OpenEvolveAdapter(PlatformAdapter):
                 return competition
         raise CompetitionNotFoundError(competition_id)
 
-    async def get_leaderboard(
-        self,
-        competition_id: str,
-        *,
-        limit: int = 100,
-    ) -> list[LeaderboardEntry]:
+    async def get_leaderboard(self, competition_id: str, *, limit: int = 100) -> list[LeaderboardEntry]:
         """Return leaderboard entries for a competition."""
         competition = await self.get_competition(competition_id)
         submissions = list(self._submissions.get(competition_id, {}).values())
@@ -253,12 +182,7 @@ class OpenEvolveAdapter(PlatformAdapter):
             return leaderboard_entries
         return _build_baseline_leaderboard(competition, limit=limit)
 
-    async def submit(
-        self,
-        competition_id: str,
-        file_path: str,
-        message: str = "",
-    ) -> Submission:
+    async def submit(self, competition_id: str, file_path: str, message: str = "") -> Submission:
         """Submit a file payload to the in-memory competition."""
         competition = await self.get_competition(competition_id)
         if not competition.is_active:
@@ -267,35 +191,20 @@ class OpenEvolveAdapter(PlatformAdapter):
         payload = _load_submission_payload(file_path)
         submission_id = _submission_id(competition_id, payload, message)
 
-        submission = Submission(
-            id=submission_id,
-            competition_id=competition_id,
-            file_name=_submission_filename(file_path, submission_id),
-            status="pending",
-        )
+        submission = Submission(id=submission_id, competition_id=competition_id, file_name=_submission_filename(file_path, submission_id), status="pending")
         self._submissions[competition_id][submission_id] = submission
         self._submission_payloads[submission_id] = payload
 
-        logfire.info(
-            "openevolve_submission_received",
-            competition_id=competition_id,
-            submission_id=submission_id,
-        )
+        logfire.info("openevolve_submission_received", competition_id=competition_id, submission_id=submission_id)
 
         return submission
 
-    async def get_submission_status(
-        self,
-        competition_id: str,
-        submission_id: str,
-    ) -> Submission:
+    async def get_submission_status(self, competition_id: str, submission_id: str) -> Submission:
         """Get the latest status for a submission."""
         submissions = self._submissions.get(competition_id, {})
         submission = submissions.get(submission_id)
         if not submission:
-            raise SubmissionError(
-                competition_id, "Submission not found", submission_id=submission_id
-            )
+            raise SubmissionError(competition_id, "Submission not found", submission_id=submission_id)
 
         if submission.status == "complete":
             return submission
@@ -303,22 +212,11 @@ class OpenEvolveAdapter(PlatformAdapter):
         payload = self._submission_payloads.get(submission_id, "")
         score = _score_payload(payload, competition_id)
 
-        updated = Submission(
-            id=submission.id,
-            competition_id=submission.competition_id,
-            file_name=submission.file_name,
-            submitted_at=submission.submitted_at,
-            public_score=score,
-            status="complete",
-        )
+        updated = Submission(id=submission.id, competition_id=submission.competition_id, file_name=submission.file_name, submitted_at=submission.submitted_at, public_score=score, status="complete")
         submissions[submission_id] = updated
         return updated
 
-    async def download_data(
-        self,
-        competition_id: str,
-        destination: str,
-    ) -> list[str]:
+    async def download_data(self, competition_id: str, destination: str) -> list[str]:
         """Generate local data files for the competition."""
         competition = await self.get_competition(competition_id)
         dest_path = Path(destination)
@@ -332,20 +230,11 @@ class OpenEvolveAdapter(PlatformAdapter):
         _write_tabular_dataset(test_path, include_target=False)
         _write_submission_template(submission_path)
 
-        logfire.info(
-            "openevolve_data_prepared",
-            competition_id=competition.id,
-            destination=str(dest_path),
-        )
+        logfire.info("openevolve_data_prepared", competition_id=competition.id, destination=str(dest_path))
 
         return [str(train_path), str(test_path), str(submission_path)]
 
-    async def submit_evolution(
-        self,
-        prototype: str,
-        fitness_function: FitnessFunction | None = None,
-        config: EvolutionConfigInput = None,
-    ) -> str:
+    async def submit_evolution(self, prototype: str, fitness_function: FitnessFunction | None = None, config: EvolutionConfigInput = None) -> str:
         """Submit an evolution job for a prototype solution."""
         if not prototype:
             raise EvolutionError("Prototype solution cannot be empty")
@@ -355,20 +244,10 @@ class OpenEvolveAdapter(PlatformAdapter):
         ready_at = created_at + timedelta(seconds=self.config.simulated_latency)
         job_id = _evolution_job_id()
 
-        job = _OpenEvolveJob(
-            job_id=job_id,
-            prototype=prototype,
-            config=evolution_config,
-            created_at=created_at,
-            updated_at=created_at,
-            ready_at=ready_at,
-            state=OpenEvolveJobState.RUNNING,
-        )
+        job = _OpenEvolveJob(job_id=job_id, prototype=prototype, config=evolution_config, created_at=created_at, updated_at=created_at, ready_at=ready_at, state=OpenEvolveJobState.RUNNING)
 
         try:
-            job.best_score = await _evaluate_fitness(
-                prototype, fitness_function, evolution_config, job_id
-            )
+            job.best_score = await _evaluate_fitness(prototype, fitness_function, evolution_config, job_id)
             job.best_solution = prototype
         except Exception as exc:  # noqa: BLE001 - provide status feedback instead
             job.state = OpenEvolveJobState.FAILED
@@ -383,11 +262,7 @@ class OpenEvolveAdapter(PlatformAdapter):
         self._prune_jobs()
         self._evolution_jobs[job_id] = job
 
-        logfire.info(
-            "openevolve_evolution_submitted",
-            job_id=job_id,
-            state=job.state.value,
-        )
+        logfire.info("openevolve_evolution_submitted", job_id=job_id, state=job.state.value)
 
         return job_id
 
@@ -421,19 +296,10 @@ class OpenEvolveAdapter(PlatformAdapter):
         now = datetime.now(UTC)
         _refresh_job(job, now)
 
-        if (
-            job.state != OpenEvolveJobState.COMPLETE
-            or not job.best_solution
-            or job.best_score is None
-        ):
+        if job.state != OpenEvolveJobState.COMPLETE or not job.best_solution or job.best_score is None:
             raise EvolutionError(f"OpenEvolve job {job_id} is not complete")
 
-        return OpenEvolveSolution(
-            job_id=job.job_id,
-            solution_code=job.best_solution,
-            fitness=job.best_score,
-            created_at=job.updated_at,
-        )
+        return OpenEvolveSolution(job_id=job.job_id, solution_code=job.best_solution, fitness=job.best_score, created_at=job.updated_at)
 
     def _prune_jobs(self) -> None:
         ttl_seconds = self.config.job_ttl_seconds
@@ -441,12 +307,7 @@ class OpenEvolveAdapter(PlatformAdapter):
             return
 
         cutoff = datetime.now(UTC) - timedelta(seconds=ttl_seconds)
-        expired = [
-            job_id
-            for job_id, job in self._evolution_jobs.items()
-            if job.updated_at < cutoff
-            and job.state in {OpenEvolveJobState.COMPLETE, OpenEvolveJobState.FAILED}
-        ]
+        expired = [job_id for job_id, job in self._evolution_jobs.items() if job.updated_at < cutoff and job.state in {OpenEvolveJobState.COMPLETE, OpenEvolveJobState.FAILED}]
         for job_id in expired:
             self._evolution_jobs.pop(job_id, None)
 
@@ -519,12 +380,7 @@ def _coerce_evolution_config(config: EvolutionConfigInput) -> OpenEvolveEvolutio
     raise TypeError("Unsupported OpenEvolve config type")
 
 
-async def _evaluate_fitness(
-    prototype: str,
-    fitness_function: FitnessFunction | None,
-    config: OpenEvolveEvolutionConfig,
-    seed: str,
-) -> float:
+async def _evaluate_fitness(prototype: str, fitness_function: FitnessFunction | None, config: OpenEvolveEvolutionConfig, seed: str) -> float:
     if fitness_function is None:
         salt = str(config.seed) if config.seed is not None else seed
         return _score_evolution(prototype, salt)
@@ -584,12 +440,7 @@ def _score_evolution(payload: str, seed: str) -> float:
     return round(0.5 + raw_score * 0.5, 6)
 
 
-def _build_leaderboard(
-    submissions: list[Submission],
-    competition: Competition,
-    *,
-    limit: int,
-) -> list[LeaderboardEntry]:
+def _build_leaderboard(submissions: list[Submission], competition: Competition, *, limit: int) -> list[LeaderboardEntry]:
     scored = [s for s in submissions if s.public_score is not None]
     if not scored:
         return []
@@ -598,41 +449,19 @@ def _build_leaderboard(
     scored_sorted = sorted(scored, key=lambda s: s.public_score or 0.0, reverse=reverse)
     entries: list[LeaderboardEntry] = []
     entries.extend(
-        LeaderboardEntry(
-            rank=idx,
-            team_name=f"open-evolve-team-{idx}",
-            score=submission.public_score or 0.0,
-            entries=1,
-            last_submission=submission.submitted_at,
-        )
+        LeaderboardEntry(rank=idx, team_name=f"open-evolve-team-{idx}", score=submission.public_score or 0.0, entries=1, last_submission=submission.submitted_at)
         for idx, submission in enumerate(scored_sorted[:limit], start=1)
     )
     return entries
 
 
-def _build_baseline_leaderboard(
-    competition: Competition,
-    *,
-    limit: int,
-) -> list[LeaderboardEntry]:
+def _build_baseline_leaderboard(competition: Competition, *, limit: int) -> list[LeaderboardEntry]:
     entries: list[LeaderboardEntry] = []
     max_rank = min(limit, _LEADERBOARD_SIZE)
     step = 0.4 / _LEADERBOARD_SIZE
     for idx in range(1, max_rank + 1):
-        score = (
-            0.05 + (idx - 1) * step
-            if competition.metric_direction == "minimize"
-            else 0.95 - (idx - 1) * step
-        )
-        entries.append(
-            LeaderboardEntry(
-                rank=idx,
-                team_name=f"baseline-team-{idx}",
-                score=round(score, 6),
-                entries=1,
-                last_submission=datetime.now(UTC),
-            )
-        )
+        score = 0.05 + (idx - 1) * step if competition.metric_direction == "minimize" else 0.95 - (idx - 1) * step
+        entries.append(LeaderboardEntry(rank=idx, team_name=f"baseline-team-{idx}", score=round(score, 6), entries=1, last_submission=datetime.now(UTC)))
     return entries
 
 
@@ -643,12 +472,7 @@ def _write_tabular_dataset(path: Path, *, include_target: bool) -> None:
 
     rows = []
     for idx in range(_DEFAULT_SUBMISSION_ROWS):
-        row = {
-            "id": idx,
-            "feature_1": round((idx % 10) * 0.1, 4),
-            "feature_2": round((idx % 7) * 0.15, 4),
-            "feature_3": round((idx % 5) * 0.2, 4),
-        }
+        row = {"id": idx, "feature_1": round((idx % 10) * 0.1, 4), "feature_2": round((idx % 7) * 0.15, 4), "feature_3": round((idx % 5) * 0.2, 4)}
         if include_target:
             row["target"] = 1 if idx % 2 == 0 else 0
         rows.append(row)

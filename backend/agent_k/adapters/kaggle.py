@@ -23,30 +23,14 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Local imports (core first, then alphabetical)
-from agent_k.core.exceptions import (
-    AuthenticationError,
-    CompetitionNotFoundError,
-    PlatformConnectionError,
-    RateLimitError,
-    SubmissionError,
-)
-from agent_k.core.models import (
-    Competition,
-    CompetitionType,
-    EvaluationMetric,
-    LeaderboardEntry,
-    Submission,
-)
+from agent_k.core.exceptions import AuthenticationError, CompetitionNotFoundError, PlatformConnectionError, RateLimitError, SubmissionError
+from agent_k.core.models import Competition, CompetitionType, EvaluationMetric, LeaderboardEntry, Submission
 from agent_k.core.protocols import PlatformAdapter
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
 
-__all__ = (
-    "KaggleAdapter",
-    "KaggleSettings",
-    "SCHEMA_VERSION",
-)
+__all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 
@@ -57,34 +41,14 @@ class KaggleSettings(BaseSettings):
     Environment variables are prefixed with KAGGLE_.
     """
 
-    model_config = SettingsConfigDict(
-        env_prefix="KAGGLE_",
-        env_file=".env",
-        extra="ignore",
-        validate_default=True,
-    )
+    model_config = SettingsConfigDict(env_prefix="KAGGLE_", env_file=".env", extra="ignore", validate_default=True)
 
     username: str = Field(..., description="Kaggle API username")
     api_key: str = Field(..., description="Kaggle API key")
-    base_url: str = Field(
-        default="https://www.kaggle.com/api/v1",
-        description="Base URL for Kaggle API",
-    )
-    timeout: int = Field(
-        default=30,
-        ge=1,
-        description="HTTP timeout in seconds",
-    )
-    max_retries: int = Field(
-        default=3,
-        ge=0,
-        description="Maximum retry attempts for failed requests",
-    )
-    rate_limit_delay: float = Field(
-        default=1.0,
-        ge=0.0,
-        description="Delay between rate-limited requests (seconds)",
-    )
+    base_url: str = Field(default="https://www.kaggle.com/api/v1", description="Base URL for Kaggle API")
+    timeout: int = Field(default=30, ge=1, description="HTTP timeout in seconds")
+    max_retries: int = Field(default=3, ge=0, description="Maximum retry attempts for failed requests")
+    rate_limit_delay: float = Field(default=1.0, ge=0.0, description="Delay between rate-limited requests (seconds)")
 
 
 @dataclass
@@ -111,23 +75,14 @@ class KaggleAdapter(PlatformAdapter):
     _rate_limit_semaphore: asyncio.Semaphore = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
-        self._client = httpx.AsyncClient(
-            base_url=self.config.base_url,
-            timeout=self.config.timeout,
-            auth=(self.config.username, self.config.api_key),
-        )
+        self._client = httpx.AsyncClient(base_url=self.config.base_url, timeout=self.config.timeout, auth=(self.config.username, self.config.api_key))
         self._rate_limit_semaphore = asyncio.Semaphore(5)
 
     async def __aenter__(self) -> KaggleAdapter:
         await self.authenticate()
         return self
 
-    async def __aexit__(
-        self,
-        exc_type: type[BaseException] | None,
-        exc_val: BaseException | None,
-        exc_tb: Any,
-    ) -> None:
+    async def __aexit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: Any) -> None:
         await self._client.aclose()
 
     @property
@@ -145,13 +100,7 @@ class KaggleAdapter(PlatformAdapter):
             except httpx.HTTPError as exc:
                 raise AuthenticationError("kaggle", f"Authentication failed: {exc}") from exc
 
-    async def search_competitions(
-        self,
-        categories: list[str] | None = None,
-        keywords: list[str] | None = None,
-        min_prize: int | None = None,
-        active_only: bool = True,
-    ) -> AsyncIterator[Competition]:
+    async def search_competitions(self, categories: list[str] | None = None, keywords: list[str] | None = None, min_prize: int | None = None, active_only: bool = True) -> AsyncIterator[Competition]:
         """Search Kaggle competitions."""
         with logfire.span("kaggle.search_competitions", categories=categories):
             page = 1
@@ -202,11 +151,7 @@ class KaggleAdapter(PlatformAdapter):
 
             response.raise_for_status()
             # Note: Kaggle API requires additional call for full details
-            list_response = await self._request(
-                "GET",
-                "/competitions/list",
-                params={"search": competition_id},
-            )
+            list_response = await self._request("GET", "/competitions/list", params={"search": competition_id})
 
             for item in list_response.json():
                 if item.get("ref") == competition_id:
@@ -214,18 +159,10 @@ class KaggleAdapter(PlatformAdapter):
 
             raise CompetitionNotFoundError(competition_id)
 
-    async def get_leaderboard(
-        self,
-        competition_id: str,
-        *,
-        limit: int = 100,
-    ) -> list[LeaderboardEntry]:
+    async def get_leaderboard(self, competition_id: str, *, limit: int = 100) -> list[LeaderboardEntry]:
         """Get competition leaderboard."""
         with logfire.span("kaggle.get_leaderboard", competition_id=competition_id):
-            response = await self._request(
-                "GET",
-                f"/competitions/{competition_id}/leaderboard/download",
-            )
+            response = await self._request("GET", f"/competitions/{competition_id}/leaderboard/download")
             response.raise_for_status()
 
             entries: list[LeaderboardEntry] = []
@@ -246,22 +183,11 @@ class KaggleAdapter(PlatformAdapter):
                         score = float(row[2])
                     except ValueError:
                         score = 0.0
-                entries.append(
-                    LeaderboardEntry(
-                        rank=i,
-                        team_name=team_name,
-                        score=score,
-                    )
-                )
+                entries.append(LeaderboardEntry(rank=i, team_name=team_name, score=score))
 
             return entries
 
-    async def submit(
-        self,
-        competition_id: str,
-        file_path: str,
-        message: str = "",
-    ) -> Submission:
+    async def submit(self, competition_id: str, file_path: str, message: str = "") -> Submission:
         """Submit solution to Kaggle competition."""
         with logfire.span("kaggle.submit", competition_id=competition_id):
             path = Path(file_path)
@@ -272,35 +198,18 @@ class KaggleAdapter(PlatformAdapter):
                 files = {"file": (path.name, f, "text/csv")}
                 data = {"message": message}
 
-                response = await self._request(
-                    "POST",
-                    f"/competitions/submissions/url/{competition_id}",
-                    data=data,
-                    files=files,
-                )
+                response = await self._request("POST", f"/competitions/submissions/url/{competition_id}", data=data, files=files)
 
             if response.status_code != 200:
                 raise SubmissionError(competition_id, f"Submission failed: {response.text}")
 
             result = response.json()
-            return Submission(
-                id=result.get("ref", "unknown"),
-                competition_id=competition_id,
-                file_name=path.name,
-                status="pending",
-            )
+            return Submission(id=result.get("ref", "unknown"), competition_id=competition_id, file_name=path.name, status="pending")
 
-    async def get_submission_status(
-        self,
-        competition_id: str,
-        submission_id: str,
-    ) -> Submission:
+    async def get_submission_status(self, competition_id: str, submission_id: str) -> Submission:
         """Get submission status from Kaggle."""
         with logfire.span("kaggle.get_submission_status", submission_id=submission_id):
-            response = await self._request(
-                "GET",
-                f"/competitions/submissions/list/{competition_id}",
-            )
+            response = await self._request("GET", f"/competitions/submissions/list/{competition_id}")
             response.raise_for_status()
 
             for item in response.json():
@@ -313,27 +222,16 @@ class KaggleAdapter(PlatformAdapter):
                         public_score=item.get("publicScore"),
                     )
 
-            raise SubmissionError(
-                competition_id,
-                f"Submission not found: {submission_id}",
-                submission_id=submission_id,
-            )
+            raise SubmissionError(competition_id, f"Submission not found: {submission_id}", submission_id=submission_id)
 
-    async def download_data(
-        self,
-        competition_id: str,
-        destination: str,
-    ) -> list[str]:
+    async def download_data(self, competition_id: str, destination: str) -> list[str]:
         """Download competition data files."""
         with logfire.span("kaggle.download_data", competition_id=competition_id):
             dest_path = Path(destination)
             dest_path.mkdir(parents=True, exist_ok=True)
 
             # List available files
-            response = await self._request(
-                "GET",
-                f"/competitions/data/list/{competition_id}",
-            )
+            response = await self._request("GET", f"/competitions/data/list/{competition_id}")
             response.raise_for_status()
 
             downloaded: list[str] = []
@@ -355,12 +253,7 @@ class KaggleAdapter(PlatformAdapter):
     # =========================================================================
     # Private Methods
     # =========================================================================
-    async def _request(
-        self,
-        method: str,
-        path: str,
-        **kwargs: Any,
-    ) -> httpx.Response:
+    async def _request(self, method: str, path: str, **kwargs: Any) -> httpx.Response:
         """Make rate-limited request to Kaggle API."""
         async with self._rate_limit_semaphore:
             for attempt in range(self.config.max_retries):
@@ -369,11 +262,7 @@ class KaggleAdapter(PlatformAdapter):
 
                     if response.status_code == 429:
                         retry_after = int(response.headers.get("Retry-After", 60))
-                        raise RateLimitError(
-                            "kaggle",
-                            "Rate limit exceeded",
-                            retry_after=retry_after,
-                        )
+                        raise RateLimitError("kaggle", "Rate limit exceeded", retry_after=retry_after)
 
                     return response
 
@@ -396,13 +285,7 @@ class KaggleAdapter(PlatformAdapter):
         }
 
         # Map Kaggle metric to our enum
-        metric_map = {
-            "accuracy": EvaluationMetric.ACCURACY,
-            "auc": EvaluationMetric.AUC,
-            "logloss": EvaluationMetric.LOG_LOSS,
-            "rmse": EvaluationMetric.RMSE,
-            "mae": EvaluationMetric.MAE,
-        }
+        metric_map = {"accuracy": EvaluationMetric.ACCURACY, "auc": EvaluationMetric.AUC, "logloss": EvaluationMetric.LOG_LOSS, "rmse": EvaluationMetric.RMSE, "mae": EvaluationMetric.MAE}
 
         # Parse tags - they may be strings or dicts with 'name' key
         raw_tags = data.get("tags", [])
@@ -442,17 +325,9 @@ class KaggleAdapter(PlatformAdapter):
             id=comp_id,
             title=data.get("title", ""),
             description=data.get("description"),
-            competition_type=category_map.get(
-                data.get("category", ""),
-                CompetitionType.COMMUNITY,
-            ),
-            metric=metric_map.get(
-                data.get("evaluationMetric", "accuracy").lower(),
-                EvaluationMetric.ACCURACY,
-            ),
-            deadline=datetime.fromisoformat(
-                data.get("deadline", "2099-12-31T23:59:59+00:00").replace("Z", "+00:00")
-            ),
+            competition_type=category_map.get(data.get("category", ""), CompetitionType.COMMUNITY),
+            metric=metric_map.get(data.get("evaluationMetric", "accuracy").lower(), EvaluationMetric.ACCURACY),
+            deadline=datetime.fromisoformat(data.get("deadline", "2099-12-31T23:59:59+00:00").replace("Z", "+00:00")),
             prize_pool=prize_pool,
             max_team_size=data.get("maxTeamSize", 1),
             max_daily_submissions=data.get("maxDailySubmissions", 5),

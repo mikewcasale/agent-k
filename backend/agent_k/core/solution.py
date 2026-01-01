@@ -88,13 +88,12 @@ async def execute_solution(
 
 def parse_baseline_score(output: str) -> float | None:
     """Parse baseline score from solution output."""
-    match = BASELINE_SCORE_PATTERN.search(output)
-    if not match:
-        return None
-    try:
-        return float(match.group(1))
-    except ValueError:
-        return None
+    if match := BASELINE_SCORE_PATTERN.search(output):
+        try:
+            return float(match.group(1))
+        except ValueError:
+            pass
+    return None
 
 
 async def _execute_solution_local(
@@ -235,8 +234,7 @@ def _extract_code_execution_result(messages: list[Any]) -> dict[str, Any] | None
 
 
 def _parse_code_execution_result(content: dict[str, Any], runtime_ms: int) -> ExecutionResult:
-    error_code = content.get('error_code')
-    if error_code:
+    if error_code := content.get('error_code'):
         return ExecutionResult(
             returncode=1,
             stdout='',

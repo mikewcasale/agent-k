@@ -260,9 +260,7 @@ class LobbyistAgent:
 
     async def _add_search_context(self, ctx: RunContext[LobbyistDeps]) -> str:
         """Add cached search results to context."""
-        if ctx.deps.search_cache:
-            return f'Previously found competitions: {list(ctx.deps.search_cache.keys())}'
-        return ''
+        return f'Previously found competitions: {list(ctx.deps.search_cache.keys())}' if ctx.deps.search_cache else ''
 
 
 # Module-level singleton for backward compatibility

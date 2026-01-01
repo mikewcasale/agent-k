@@ -129,16 +129,12 @@ def _coerce_user_location(value: Any) -> WebSearchUserLocation | None:
     country = _as_str(getattr(value, 'country', None))
     region = _as_str(getattr(value, 'region', None))
     timezone = _as_str(getattr(value, 'timezone', None))
-    if not any([city, country, region, timezone]):
+    if not (city or country or region or timezone):
         return None
 
-    data: dict[str, str] = {}
-    if city:
-        data['city'] = city
-    if country:
-        data['country'] = country
-    if region:
-        data['region'] = region
-    if timezone:
-        data['timezone'] = timezone
+    data = {
+        key: val
+        for key, val in {'city': city, 'country': country, 'region': region, 'timezone': timezone}.items()
+        if val
+    }
     return cast('WebSearchUserLocation', data) if data else None

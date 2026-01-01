@@ -334,28 +334,25 @@ class ScientistAgent:
         if response.status_code != 200:
             return []
 
-        notebooks = []
-        for item in response.json():
-            title = item.get('title', '')
-            notebooks.append(
-                {
-                    'title': title,
-                    'votes': item.get('voteCount', 0),
-                    'author': item.get('author', ''),
-                    'techniques': self._infer_techniques_from_text(f'{title} {item.get("scriptVersionTitle", "")}'),
-                    'url': item.get('url', ''),
-                }
-            )
-
-        return notebooks
+        return [
+            {
+                'title': item.get('title', ''),
+                'votes': item.get('voteCount', 0),
+                'author': item.get('author', ''),
+                'techniques': self._infer_techniques_from_text(
+                    f'{item.get("title", "")} {item.get("scriptVersionTitle", "")}'
+                ),
+                'url': item.get('url', ''),
+            }
+            for item in response.json()
+        ]
 
     def _extract_kaggle_auth(self, adapter: PlatformAdapter) -> tuple[str, str] | None:
         if not hasattr(adapter, 'config'):
             return None
         config = adapter.config
-        username = getattr(config, 'username', None)
-        api_key = getattr(config, 'api_key', None)
-        return None if not username or not api_key else (username, api_key)
+        username, api_key = getattr(config, 'username', None), getattr(config, 'api_key', None)
+        return (username, api_key) if username and api_key else None
 
     def _infer_techniques_from_text(self, text: str) -> list[str]:
         lower_text = text.lower()

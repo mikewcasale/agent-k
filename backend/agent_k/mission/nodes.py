@@ -166,10 +166,7 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
 
     def _elapsed_ms(self, start: datetime | None) -> int:
         """Calculate elapsed milliseconds."""
-        if not start:
-            return 0
-        delta = datetime.now(UTC) - start
-        return int(delta.total_seconds() * 1000)
+        return int((datetime.now(UTC) - start).total_seconds() * 1000) if start else 0
 
     def _get_scientist_agent(self) -> Any:
         """Get scientist agent for next phase."""
@@ -263,10 +260,7 @@ class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 )
 
     def _elapsed_ms(self, start: datetime | None) -> int:
-        if not start:
-            return 0
-        delta = datetime.now(UTC) - start
-        return int(delta.total_seconds() * 1000)
+        return int((datetime.now(UTC) - start).total_seconds() * 1000) if start else 0
 
 
 # =============================================================================
@@ -637,10 +631,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         )
 
     def _elapsed_ms(self, start: datetime | None) -> int:
-        if not start:
-            return 0
-        delta = datetime.now(UTC) - start
-        return int(delta.total_seconds() * 1000)
+        return int((datetime.now(UTC) - start).total_seconds() * 1000) if start else 0
 
     def _get_evolver_agent(self) -> Any:
         return evolver_agent
@@ -802,10 +793,7 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
         return 0.0
 
     def _elapsed_ms(self, start: datetime | None) -> int:
-        if not start:
-            return 0
-        delta = datetime.now(UTC) - start
-        return int(delta.total_seconds() * 1000)
+        return int((datetime.now(UTC) - start).total_seconds() * 1000) if start else 0
 
 
 # =============================================================================
@@ -992,10 +980,7 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 )
 
     def _elapsed_ms(self, start: datetime | None) -> int:
-        if not start:
-            return 0
-        delta = datetime.now(UTC) - start
-        return int(delta.total_seconds() * 1000)
+        return int((datetime.now(UTC) - start).total_seconds() * 1000) if start else 0
 
 
 def _require_context(context: GraphContext) -> tuple[EventEmitter, httpx.AsyncClient, PlatformAdapter]:
@@ -1119,13 +1104,13 @@ def _compute_baseline_score(*, train_path: Path, target_columns: list[str], metr
     if not target_columns:
         return 0.0
 
-    scores: list[float] = []
+    total_score = 0.0
     for column in target_columns:
         numeric_values, raw_values, mapping = _load_target_values(train_path, column)
         _, prediction = _prediction_value(metric, numeric_values, raw_values, mapping)
-        scores.append(_evaluate_metric(metric, numeric_values, prediction))
+        total_score += _evaluate_metric(metric, numeric_values, prediction)
 
-    return sum(scores) / len(scores) if scores else 0.0
+    return total_score / len(target_columns)
 
 
 def _normalize_label(label: Any) -> str:
@@ -1292,10 +1277,10 @@ def _build_leaderboard_analysis(
     target_rank = max(1, math.ceil(target_percentile * total))
     target_score = ranked[target_rank - 1]
 
-    distribution = []
-    for percentile in (0.0, 0.25, 0.5, 0.75, 1.0):
-        index = min(total - 1, int(percentile * (total - 1)))
-        distribution.append({'percentile': percentile, 'score': sorted_scores[index]})
+    distribution = [
+        {'percentile': percentile, 'score': sorted_scores[min(total - 1, int(percentile * (total - 1)))]}
+        for percentile in (0.0, 0.25, 0.5, 0.75, 1.0)
+    ]
 
     return LeaderboardAnalysis(
         top_score=max(scores),
@@ -1331,11 +1316,7 @@ def _serialize_findings(items: list[Any]) -> list[dict[str, Any]]:
 
 def _looks_like_paper(finding: dict[str, Any]) -> bool:
     sources = finding.get('sources', []) or []
-    for source in sources:
-        lower = str(source).lower()
-        if 'arxiv' in lower or 'paper' in lower:
-            return True
-    return False
+    return any('arxiv' in str(source).lower() or 'paper' in str(source).lower() for source in sources)
 
 
 def _build_research_findings(report: Any, analysis: LeaderboardAnalysis | None) -> ResearchFindings:

@@ -543,13 +543,6 @@ class EvolverAgent:
     async def _evaluate_solution(
         self, ctx: RunContext[EvolverDeps], solution_code: str, *, validation_split: float
     ) -> dict[str, Any]:
-        error: str | None = None
-        score: float | None = None
-        stderr: str | None = None
-        returncode = 0
-        timed_out = False
-        runtime_ms = 0
-
         with tempfile.TemporaryDirectory(dir=str(ctx.deps.data_dir)) as run_dir:
             run_path = Path(run_dir)
             stage_competition_data(ctx.deps.train_path, ctx.deps.test_path, ctx.deps.sample_path, run_path)
@@ -561,19 +554,17 @@ class EvolverAgent:
                 use_builtin_code_execution=True,
                 model_spec=self._settings.model,
             )
-            runtime_ms = execution.runtime_ms
-            timed_out = execution.timed_out
-            returncode = execution.returncode
-            stderr = execution.stderr.strip() if execution.stderr else None
-            score = parse_baseline_score(execution.stdout)
 
-            if timed_out:
-                error = 'Execution timed out'
-            elif returncode != 0:
-                error = f'Execution failed (exit {returncode})'
-            elif score is None:
-                error = 'Baseline score not found in output'
-
+        score = parse_baseline_score(execution.stdout)
+        error = (
+            'Execution timed out'
+            if execution.timed_out
+            else f'Execution failed (exit {execution.returncode})'
+            if execution.returncode != 0
+            else 'Baseline score not found in output'
+            if score is None
+            else None
+        )
         cv_score = score if score is not None else 0.0
         fitness = self._fitness_from_score(cv_score, ctx.deps.competition.metric_direction) if error is None else 0.0
 
@@ -581,18 +572,17 @@ class EvolverAgent:
             'fitness': round(fitness, 6),
             'cv_score': round(cv_score, 6),
             'valid': error is None,
-            'runtime_ms': runtime_ms,
-            'timed_out': timed_out,
-            'returncode': returncode,
+            'runtime_ms': execution.runtime_ms,
+            'timed_out': execution.timed_out,
+            'returncode': execution.returncode,
             'error': error,
-            'stderr': stderr,
+            'stderr': execution.stderr.strip() if execution.stderr else None,
         }
 
     async def _submit_solution(
         self, ctx: RunContext[EvolverDeps], solution_code: str, *, message: str
     ) -> dict[str, Any]:
         error: str | None = None
-        runtime_ms = 0
         submission_id: str | None = None
         status: str = 'failed'
 
@@ -607,28 +597,28 @@ class EvolverAgent:
                 use_builtin_code_execution=True,
                 model_spec=self._settings.model,
             )
-            runtime_ms = execution.runtime_ms
-            if execution.timed_out:
-                error = 'Execution timed out'
-            elif execution.returncode != 0:
-                error = f'Execution failed (exit {execution.returncode})'
-
             submission_path = run_path / 'submission.csv'
-            if error is None and not submission_path.exists():
-                error = 'submission.csv not found after execution'
+            error = (
+                'Execution timed out'
+                if execution.timed_out
+                else f'Execution failed (exit {execution.returncode})'
+                if execution.returncode != 0
+                else 'submission.csv not found after execution'
+                if not submission_path.exists()
+                else None
+            )
 
             if error is None:
                 submission = await ctx.deps.platform_adapter.submit(
                     ctx.deps.competition.id, str(submission_path), message=message
                 )
-                submission_id = submission.id
-                status = submission.status
+                submission_id, status = submission.id, submission.status
 
         payload: dict[str, Any] = {
             'submission_id': submission_id,
             'status': status,
             'generation': len(ctx.deps.generation_history),
-            'runtime_ms': runtime_ms,
+            'runtime_ms': execution.runtime_ms,
         }
         if error:
             payload['error'] = error

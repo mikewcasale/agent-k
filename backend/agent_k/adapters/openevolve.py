@@ -458,8 +458,6 @@ def _refresh_job(job: _OpenEvolveJob, now: datetime) -> None:
 def _job_progress(job: _OpenEvolveJob, now: datetime) -> float:
     if job.state in {OpenEvolveJobState.COMPLETE, OpenEvolveJobState.FAILED}:
         return 1.0
-    if job.ready_at <= job.created_at:
-        return 1.0
     total = (job.ready_at - job.created_at).total_seconds()
     if total <= 0:
         return 1.0
@@ -479,9 +477,7 @@ def _submission_filename(file_path: str, submission_id: str) -> str:
 
 def _load_submission_payload(file_path: str) -> str:
     path = Path(file_path)
-    if path.exists():
-        return path.read_text(encoding='utf-8', errors='ignore')
-    return file_path
+    return path.read_text(encoding='utf-8', errors='ignore') if path.exists() else file_path
 
 
 def _score_payload(payload: str, competition_id: str) -> float:
@@ -503,8 +499,7 @@ def _build_leaderboard(
 
     reverse = competition.metric_direction == 'maximize'
     scored_sorted = sorted(scored, key=lambda s: s.public_score or 0.0, reverse=reverse)
-    entries: list[LeaderboardEntry] = []
-    entries.extend(
+    return [
         LeaderboardEntry(
             rank=idx,
             team_name=f'open-evolve-team-{idx}',
@@ -513,8 +508,7 @@ def _build_leaderboard(
             last_submission=submission.submitted_at,
         )
         for idx, submission in enumerate(scored_sorted[:limit], start=1)
-    )
-    return entries
+    ]
 
 
 def _build_baseline_leaderboard(competition: Competition, *, limit: int) -> list[LeaderboardEntry]:

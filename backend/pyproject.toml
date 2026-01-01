@@ -106,7 +106,7 @@ convention = "google"
 "typing.assert_never".msg = "Use typing_extensions.assert_never instead."
 
 [tool.ruff.format]
-docstring-code-format = false
+docstring-code-format = true
 quote-style = "single"
 skip-magic-trailing-comma = true
 

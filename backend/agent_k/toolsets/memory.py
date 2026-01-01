@@ -65,10 +65,10 @@ class AgentKMemoryTool(_MemoryBase):  # pragma: no cover - optional dependency
                 return f'Error: {command.path} not found.'
 
             if path.is_dir():
-                entries = []
-                for child in sorted(path.iterdir(), key=lambda p: p.name):
-                    suffix = '/' if child.is_dir() else ''
-                    entries.append(f'{child.name}{suffix}')
+                entries = [
+                    f'{child.name}{"/" if child.is_dir() else ""}'
+                    for child in sorted(path.iterdir(), key=lambda p: p.name)
+                ]
                 return '\n'.join(entries) if entries else '(empty directory)'
 
             text = self._read_text(path)

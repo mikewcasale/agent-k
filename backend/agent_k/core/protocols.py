@@ -27,9 +27,7 @@ class PlatformAdapter(Protocol):
 
     Example Implementation:
         >>> class KaggleAdapter:
-        ...     async def search_competitions(
-        ...         self, categories: list[str], **kwargs
-        ...     ) -> AsyncIterator[Competition]:
+        ...     async def search_competitions(self, categories: list[str], **kwargs) -> AsyncIterator[Competition]:
         ...         async for comp in self._api.list_competitions():
         ...             yield Competition.model_validate(comp)
     """

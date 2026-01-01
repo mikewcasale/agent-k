@@ -66,12 +66,9 @@ class KaggleAdapter(PlatformAdapter):
     rate limiting, and error recovery.
 
     Example:
-        >>> config = KaggleSettings(
-        ...     username="my_username",
-        ...     api_key="my_api_key",
-        ... )
+        >>> config = KaggleSettings(username='my_username', api_key='my_api_key')
         >>> async with KaggleAdapter(config) as adapter:
-        ...     async for comp in adapter.search_competitions(["featured"]):
+        ...     async for comp in adapter.search_competitions(['featured']):
         ...         print(comp.title)
     """
 
@@ -181,8 +178,7 @@ class KaggleAdapter(PlatformAdapter):
 
             entries: list[LeaderboardEntry] = []
             reader = csv.reader(io.StringIO(response.text))
-            header = next(reader, None)
-            if header is None:
+            if next(reader, None) is None:
                 return entries
 
             for i, row in enumerate(reader, start=1):

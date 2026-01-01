@@ -175,6 +175,18 @@ export interface EvolutionState {
 // Competition and Research State
 // =============================================================================
 
+export type CompetitionSelectionMode = "search" | "direct";
+
+export type CompetitionPaidStatus = "any" | "paid" | "free";
+
+export interface CompetitionSearchCriteria {
+  paidStatus: CompetitionPaidStatus;
+  domains: string[];
+  competitionTypes: string[];
+  minPrize: number | null;
+  minDaysRemaining: number;
+}
+
 export interface CompetitionInfo {
   id: string;
   title: string;

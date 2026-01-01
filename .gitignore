@@ -73,7 +73,7 @@ web_modules/
 .yarn-integrity
 
 # dotenv environment variable files
-.env
+# .env
 .env.development.local
 .env.test.local
 .env.production.local
@@ -161,3 +161,6 @@ docs/observability.md
 docs/evolution.md
 docs/python-ai-style-guide-compressed.md
 docs/python-ai-style-guide.md
+/backend/.agent_k_memory
+test_plan.md
+backend/.env

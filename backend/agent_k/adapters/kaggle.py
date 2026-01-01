@@ -11,6 +11,8 @@ import asyncio
 import csv
 import io
 import re
+import zipfile
+from urllib.parse import quote
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -39,6 +41,9 @@ if TYPE_CHECKING:
 __all__ = ('KaggleAdapter', 'KaggleSettings', 'SCHEMA_VERSION')
 
 SCHEMA_VERSION: Final[str] = '1.0.0'
+_COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r'kaggle\.com/competitions/([a-zA-Z0-9-]+)'
+)
 
 
 class KaggleSettings(BaseSettings):
@@ -164,10 +169,22 @@ class KaggleAdapter(PlatformAdapter):
             list_response = await self._request('GET', '/competitions/list', params={'search': competition_id})
 
             for item in list_response.json():
-                if item.get('ref') == competition_id:
-                    return self._parse_competition(item)
+                try:
+                    competition = self._parse_competition(item)
+                except Exception as exc:
+                    logfire.warning('failed_to_parse_competition', error=str(exc))
+                    continue
+                if competition.id == competition_id:
+                    return competition
 
             raise CompetitionNotFoundError(competition_id)
+
+    async def get_competition_by_url(self, url: str) -> Competition:
+        """Get competition details from a Kaggle competition URL."""
+        match = _COMPETITION_URL_PATTERN.search(url)
+        if not match:
+            raise CompetitionNotFoundError(url)
+        return await self.get_competition(match.group(1))
 
     async def get_leaderboard(self, competition_id: str, *, limit: int = 100) -> list[LeaderboardEntry]:
         """Get competition leaderboard."""
@@ -176,7 +193,20 @@ class KaggleAdapter(PlatformAdapter):
             response.raise_for_status()
 
             entries: list[LeaderboardEntry] = []
-            reader = csv.reader(io.StringIO(response.text))
+            content = response.content
+            if response.headers.get('content-type', '').startswith('application/zip') or content[:2] == b'PK':
+                with zipfile.ZipFile(io.BytesIO(content)) as archive:
+                    csv_name = next(
+                        (name for name in archive.namelist() if name.lower().endswith('.csv')),
+                        None,
+                    )
+                    if not csv_name:
+                        return entries
+                    csv_text = archive.read(csv_name).decode('utf-8', errors='ignore')
+            else:
+                csv_text = response.text
+
+            reader = csv.reader(io.StringIO(csv_text))
             if next(reader, None) is None:
                 return entries
 
@@ -247,19 +277,31 @@ class KaggleAdapter(PlatformAdapter):
             response = await self._request('GET', f'/competitions/data/list/{competition_id}')
             response.raise_for_status()
 
-            downloaded: list[str] = []
-            for file_info in response.json():
-                file_name = file_info.get('name', '')
-                file_url = file_info.get('url', '')
+            payload = response.json()
+            files = payload.get('files', []) if isinstance(payload, dict) else payload
 
-                if file_url:
-                    file_path = dest_path / file_name
-                    async with self._client.stream('GET', file_url) as file_response:
-                        file_response.raise_for_status()
-                        with file_path.open('wb') as handle:
-                            async for chunk in file_response.aiter_bytes():
-                                handle.write(chunk)
-                    downloaded.append(str(file_path))
+            downloaded: list[str] = []
+            for file_info in files:
+                if isinstance(file_info, str):
+                    file_name = file_info
+                    file_url = ''
+                else:
+                    file_name = file_info.get('name') or file_info.get('nameNullable') or ''
+                    file_url = file_info.get('url', '')
+
+                if not file_name:
+                    continue
+
+                if not file_url:
+                    file_url = f'/competitions/data/download/{competition_id}/{quote(file_name)}'
+
+                file_path = dest_path / file_name
+                async with self._client.stream('GET', file_url, follow_redirects=True) as file_response:
+                    file_response.raise_for_status()
+                    with file_path.open('wb') as handle:
+                        async for chunk in file_response.aiter_bytes():
+                            handle.write(chunk)
+                downloaded.append(str(file_path))
 
             return downloaded
 

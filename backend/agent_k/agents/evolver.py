@@ -8,6 +8,7 @@ from __future__ import annotations as _annotations
 
 # Standard library (alphabetical)
 import hashlib
+import json
 import random
 import re
 import tempfile
@@ -18,7 +19,15 @@ from typing import TYPE_CHECKING, Any, Final, Self, cast
 # Third-party (alphabetical)
 import logfire
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from pydantic_ai import Agent, ModelRetry, ModelSettings, RunContext, ToolOutput, ToolReturn
+from pydantic_ai import (
+    Agent,
+    DeferredToolRequests,
+    ModelRetry,
+    ModelSettings,
+    RunContext,
+    ToolOutput,
+    ToolReturn,
+)
 from pydantic_ai.builtin_tools import MCPServerTool
 from pydantic_ai.toolsets import FunctionToolset
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -101,6 +110,9 @@ class EvolverSettings(BaseSettings):
     convergence_threshold: int = Field(default=5, ge=1, description='Generations without improvement before stopping')
     enable_thinking: bool = Field(default=True, description='Enable extended reasoning mode for supported models')
     thinking_budget_tokens: int = Field(default=4096, ge=0, description='Token budget for model thinking mode')
+    enable_kaggle_mcp: bool = Field(default=False, description='Enable Kaggle MCP tool access')
+    kaggle_mcp_url: str = Field(default=DEFAULT_KAGGLE_MCP_URL, description='Kaggle MCP endpoint')
+    enable_submission_tool: bool = Field(default=False, description='Allow submissions during evolution')
 
     @model_validator(mode='after')
     def validate_evolution_params(self) -> Self:
@@ -117,10 +129,12 @@ class EvolverSettings(BaseSettings):
         settings: ModelSettings = {'temperature': self.temperature, 'max_tokens': self.max_tokens}
 
         if self.enable_thinking and 'anthropic' in self.model:
-            return cast(
-                'ModelSettings',
-                {**settings, 'anthropic_thinking': {'type': 'enabled', 'budget_tokens': self.thinking_budget_tokens}},
+            logfire.info(
+                'evolver_thinking_disabled',
+                model=self.model,
+                reason='anthropic_output_tools_incompatible',
             )
+            return settings
 
         return settings
 
@@ -172,9 +186,10 @@ class EvolutionFailure(BaseModel):
     recoverable: bool = Field(default=True, description='Whether the failure is likely recoverable')
 
 
-EVOLUTION_OUTPUT_TYPE: Final[list[ToolOutput[EvolutionResult] | ToolOutput[EvolutionFailure]]] = [
+EVOLUTION_OUTPUT_TYPE: Final[list[Any]] = [
     ToolOutput[EvolutionResult](EvolutionResult, name='return_success'),
     ToolOutput[EvolutionFailure](EvolutionFailure, name='return_failure'),
+    DeferredToolRequests,
 ]
 
 
@@ -344,7 +359,7 @@ class EvolverAgent(MemoryMixin):
 
     async def check_convergence(
         self, ctx: RunContext[EvolverDeps], threshold_generations: int = 5, improvement_threshold: float = 0.001
-    ) -> dict[str, Any]:
+    ) -> ToolReturn:
         """Check if evolution has converged.
 
         Args:
@@ -357,26 +372,30 @@ class EvolverAgent(MemoryMixin):
         """
         history = ctx.deps.generation_history
         if len(history) < threshold_generations:
-            return {'converged': False, 'reason': 'Not enough generations'}
+            result = {'converged': False, 'reason': 'Not enough generations'}
+            return ToolReturn(return_value=result, content=json.dumps(result))
 
         recent_fitness = [g['best_fitness'] for g in history[-threshold_generations:]]
         best = max(recent_fitness)
         improvement = best - min(recent_fitness)
         if improvement < improvement_threshold:
-            return {
+            result = {
                 'converged': True,
                 'reason': f'No improvement for {threshold_generations} generations',
                 'best_fitness': best,
             }
+            return ToolReturn(return_value=result, content=json.dumps(result))
 
         if ctx.deps.target_score > 0 and best >= ctx.deps.target_score:
-            return {'converged': True, 'reason': 'Target score achieved', 'best_fitness': best}
+            result = {'converged': True, 'reason': 'Target score achieved', 'best_fitness': best}
+            return ToolReturn(return_value=result, content=json.dumps(result))
 
-        return {'converged': False, 'reason': 'Evolution in progress', 'recent_improvement': improvement}
+        result = {'converged': False, 'reason': 'Evolution in progress', 'recent_improvement': improvement}
+        return ToolReturn(return_value=result, content=json.dumps(result))
 
     async def submit_to_kaggle(
         self, ctx: RunContext[EvolverDeps], solution_code: str, message: str = 'AGENT-K submission'
-    ) -> dict[str, Any]:
+    ) -> ToolReturn:
         """Submit solution to Kaggle via the platform adapter.
 
         Args:
@@ -406,7 +425,8 @@ class EvolverAgent(MemoryMixin):
                     tool_call_id=tool_call_id,
                     error=result.get('error', 'Submission failed'),
                 )
-                return result
+                summary = f'Submission failed: {result.get("error", "Unknown error")}'
+                return ToolReturn(return_value=result, content=summary)
 
             await ctx.deps.event_emitter.emit_tool_result(
                 task_id='evolution_submit',
@@ -415,15 +435,18 @@ class EvolverAgent(MemoryMixin):
                 duration_ms=result.get('runtime_ms', 0),
             )
 
-            return result
+            summary = f'Submission status: {result.get("status", "unknown")}'
+            return ToolReturn(return_value=result, content=summary)
 
     def _create_agent(self) -> Agent[EvolverDeps, EvolutionResult | EvolutionFailure]:
         """Create the underlying pydantic-ai agent."""
-        kaggle_mcp = MCPServerTool(id='kaggle', url=DEFAULT_KAGGLE_MCP_URL)
-        builtin_tools: list[Any] = [kaggle_mcp, prepare_code_execution_tool]
+        builtin_tools: list[Any] = [prepare_code_execution_tool]
+        if self._settings.enable_kaggle_mcp:
+            builtin_tools.insert(0, MCPServerTool(id='kaggle', url=self._settings.kaggle_mcp_url))
         if self._memory_backend is not None:
             builtin_tools.append(prepare_memory_tool)
 
+        require_approval = ['submit_to_kaggle'] if self._settings.enable_submission_tool else None
         agent: Agent[EvolverDeps, EvolutionResult | EvolutionFailure] = Agent(
             model=get_model(self._settings.model),
             deps_type=EvolverDeps,
@@ -437,7 +460,7 @@ class EvolverAgent(MemoryMixin):
             toolsets=[
                 create_production_toolset(
                     [self._toolset, cast('FunctionToolset[EvolverDeps]', code_toolset)],
-                    require_approval_for=['submit_to_kaggle'],
+                    require_approval_for=require_approval,
                 )
             ],
             prepare_tools=universal_tool_preparation,
@@ -454,7 +477,8 @@ class EvolverAgent(MemoryMixin):
         self._toolset.tool(self.evaluate_fitness)
         self._toolset.tool(self.record_generation)
         self._toolset.tool(self.check_convergence)
-        self._toolset.tool(requires_approval=True)(self.submit_to_kaggle)
+        if self._settings.enable_submission_tool:
+            self._toolset.tool(requires_approval=True)(self.submit_to_kaggle)
 
     async def _validate_evolution_result(
         self, ctx: RunContext[EvolverDeps], result: EvolutionResult | EvolutionFailure

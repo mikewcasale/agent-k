@@ -274,4 +274,4 @@ def _is_sensitive_env_key(key: str) -> bool:
 
 
 def _supports_code_execution(model_spec: str) -> bool:
-    return model_spec.startswith(('anthropic:', 'openai:', 'google:'))
+    return model_spec.startswith('openai:')

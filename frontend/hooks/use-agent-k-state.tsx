@@ -13,6 +13,7 @@ import type {
   AgentKPatchOp,
   AgentKState,
   AgentKUIState,
+  CompetitionInfo,
   ErrorEvent,
   GenerationMetrics,
   LeaderboardSubmission,
@@ -29,6 +30,7 @@ const UI_STATE_STORAGE_KEY = "agentk-ui-state";
 type AgentKAction =
   // State management
   | { type: "SET_STATE"; payload: MissionState }
+  | { type: "SET_COMPETITION"; payload: { competition: CompetitionInfo; missionId?: string } }
   | { type: "APPLY_PATCH"; payload: AgentKPatchOp[] }
   | { type: "RESET_STATE" }
 
@@ -120,6 +122,19 @@ function agentKReducer(state: AgentKState, action: AgentKAction): AgentKState {
   switch (action.type) {
     case "SET_STATE":
       return { ...state, mission: action.payload };
+
+    case "SET_COMPETITION": {
+      const mission = cloneMissionState(state.mission);
+      mission.competition = action.payload.competition;
+      mission.competitionId = action.payload.competition.id;
+      if (action.payload.missionId) {
+        mission.missionId = action.payload.missionId;
+      }
+      if (mission.status === "idle") {
+        mission.status = "planning";
+      }
+      return { ...state, mission };
+    }
 
     case "APPLY_PATCH":
       return { ...state, mission: applyPatches(state.mission, action.payload) };

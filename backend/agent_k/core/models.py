@@ -33,6 +33,7 @@ from .types import (
 __all__ = (
     # Enums
     'CompetitionType',
+    'SubjectDomain',
     'EvaluationMetric',
     # Competition models
     'Competition',
@@ -76,6 +77,20 @@ class CompetitionType(StrEnum):
     GETTING_STARTED = 'getting_started'
     PLAYGROUND = 'playground'
     COMMUNITY = 'community'
+
+
+class SubjectDomain(StrEnum):
+    """Subject domains for competition classification."""
+
+    FINANCE = 'finance'
+    MEDICAL = 'medical'
+    WEATHER = 'weather'
+    COMPUTER_VISION = 'computer_vision'
+    NLP = 'nlp'
+    TABULAR = 'tabular'
+    TIME_SERIES = 'time_series'
+    AUDIO = 'audio'
+    GEOSPATIAL = 'geospatial'
 
 
 class EvaluationMetric(StrEnum):

@@ -81,6 +81,16 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
             state.phase_started_at = datetime.now(UTC)
 
             try:
+                if state.competition_id:
+                    competition = await platform_adapter.get_competition(state.competition_id)
+                    state.selected_competition = competition
+                    state.discovered_competitions = [competition]
+                    state.phases_completed.append('discovery')
+                    await emitter.emit_phase_complete(
+                        phase='discovery', success=True, duration_ms=self._elapsed_ms(state.phase_started_at)
+                    )
+                    return ResearchNode(scientist_agent=self._get_scientist_agent())
+
                 # Build prompt from criteria
                 prompt = self._build_discovery_prompt(state.criteria)
 

@@ -27,10 +27,10 @@ from pydantic_ai import Agent
 
 # Local imports (core first, then alphabetical)
 from agent_k.core.constants import DEFAULT_MODEL
-from agent_k.core.exceptions import AgentKError, classify_error
-from agent_k.core.models import CompetitionType, MissionCriteria
+from agent_k.core.exceptions import AgentKError, AuthenticationError, CompetitionNotFoundError, classify_error
+from agent_k.core.models import Competition, CompetitionType, MissionCriteria
+from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
 from agent_k.infra.providers import get_model
-from agent_k.mission.state import GraphContext, MissionState
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
@@ -42,6 +42,8 @@ __all__ = (
     'IntentClassifier',
     'MissionCriteriaParser',
     'MissionRequest',
+    'CompetitionSearchRequest',
+    'CompetitionFetchRequest',
     'MissionIntentResult',
     'TaskEmissionContext',
     'app',
@@ -57,6 +59,18 @@ APP_VERSION: Final[str] = '0.1.0'
 DEFAULT_HOST: Final[str] = '0.0.0.0'
 DEFAULT_PORT: Final[int] = 9000
 APP_MODULE: Final[str] = 'agent_k.ui.ag_ui:app'
+MAX_COMPETITION_RESULTS: Final[int] = 25
+_DOMAIN_KEYWORDS: Final[dict[str, tuple[str, ...]]] = {
+    'finance': ('finance', 'financial', 'trading', 'stock', 'market'),
+    'medical': ('medical', 'health', 'healthcare', 'clinical', 'diagnosis'),
+    'weather': ('weather', 'climate', 'forecast'),
+    'computer_vision': ('computer vision', 'vision', 'image', 'cv'),
+    'nlp': ('nlp', 'text', 'language', 'transformer'),
+    'tabular': ('tabular', 'structured', 'csv', 'table'),
+    'time_series': ('time series', 'timeseries', 'temporal', 'forecast'),
+    'audio': ('audio', 'speech', 'sound', 'acoustic'),
+    'geospatial': ('geospatial', 'geo', 'spatial', 'gis', 'satellite'),
+}
 
 _MISSION_KEYWORDS: Final[tuple[str, ...]] = (
     'find',
@@ -176,6 +190,26 @@ class MissionRequest(BaseModel):
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     criteria: MissionCriteria = Field(..., description='Mission selection criteria')
     user_prompt: str | None = Field(default=None, description='Optional user context for the mission')
+    competition_id: str | None = Field(default=None, description='Optional competition id override')
+    competition_url: str | None = Field(default=None, description='Optional competition URL override')
+
+
+class CompetitionSearchRequest(BaseModel):
+    """Request payload for competition search."""
+
+    model_config = ConfigDict(frozen=True)
+    paid_only: bool = Field(default=False, description='Only return competitions with prize pools')
+    domains: list[str] = Field(default_factory=list, description='Subject domains to match')
+    competition_types: list[CompetitionType] = Field(default_factory=list, description='Competition types')
+    min_prize: int | None = Field(default=None, ge=0, description='Minimum prize pool in USD')
+    min_days_remaining: int = Field(default=7, ge=1, description='Minimum days remaining before deadline')
+
+
+class CompetitionFetchRequest(BaseModel):
+    """Request payload for fetching competition details by URL."""
+
+    model_config = ConfigDict(frozen=True)
+    url: str = Field(..., min_length=10, description='Kaggle competition URL')
 
 
 class AgentKEvent(BaseModel):
@@ -768,20 +802,126 @@ def create_app() -> FastAPI:
     @app.post('/api/mission/start')
     async def start_mission(request: MissionRequest) -> dict[str, str]:
         """Start a new mission and return mission ID."""
+        from agent_k.agents.lycurgus import LycurgusOrchestrator
+
         mission_id = str(uuid.uuid4())
+        competition_id = request.competition_id
 
-        # Create event emitter
+        if competition_id is None and request.competition_url:
+            try:
+                competition = await _fetch_competition(request.competition_url)
+                competition_id = competition.id
+            except AuthenticationError as exc:
+                logfire.warning('mission_start_auth_failed', error=str(exc))
+                return {'error': str(exc)}
+            except CompetitionNotFoundError as exc:
+                logfire.warning('mission_start_competition_not_found', error=str(exc))
+                return {'error': str(exc)}
+            except Exception as exc:
+                logfire.error('mission_start_failed', error=str(exc))
+                return {'error': 'Mission start failed'}
+
         emitter = EventEmitter()
+        orchestrator = LycurgusOrchestrator(event_emitter=emitter)
 
-        # Initialize mission state
-        state = MissionState(mission_id=mission_id, criteria=request.criteria)
+        missions[mission_id] = {
+            'emitter': emitter,
+            'orchestrator': orchestrator,
+            'result': None,
+            'competition_id': competition_id,
+        }
 
-        # Store mission
-        missions[mission_id] = {'state': state, 'emitter': emitter, 'context': GraphContext(event_emitter=emitter)}
+        async def run_mission() -> None:
+            error_id = f'mission_{mission_id}'
+            attempt = 0
+            max_attempts = 2
+
+            try:
+                while True:
+                    try:
+                        result = await orchestrator.execute_mission(
+                            competition_id,
+                            mission_id=mission_id,
+                            criteria=request.criteria,
+                            event_emitter=emitter,
+                        )
+                        missions[mission_id]['result'] = result
+                        await emitter.emit(
+                            'mission-complete',
+                            {
+                                'success': result.success,
+                                'final_rank': result.final_rank,
+                                'final_score': result.final_score,
+                            },
+                        )
+                        if attempt > 0:
+                            await emitter.emit_recovery_complete(
+                                error_id=error_id, success=True, resolution='mission_completed'
+                            )
+                        break
+                    except Exception as exc:
+                        category, strategy = classify_error(exc)
+                        recoverable = isinstance(exc, AgentKError) and exc.recoverable
+                        await emitter.emit_error(
+                            error_id=error_id,
+                            category=category,
+                            error_type=type(exc).__name__,
+                            message=str(exc),
+                            context='mission_execution',
+                            recovery_strategy=strategy,
+                        )
+                        logfire.error(
+                            'mission_execution_failed',
+                            error=str(exc),
+                            mission_id=mission_id,
+                            recoverable=recoverable,
+                        )
+                        if not recoverable or attempt >= max_attempts - 1:
+                            if attempt > 0:
+                                await emitter.emit_recovery_complete(
+                                    error_id=error_id, success=False, resolution='exhausted'
+                                )
+                            break
+                        attempt += 1
+                        await emitter.emit_recovery_attempt(error_id=error_id, strategy=strategy, attempt=attempt)
+                        logfire.warning('mission_recovery_attempt', mission_id=mission_id, attempt=attempt)
+            finally:
+                emitter.close()
+
+        missions[mission_id]['task'] = asyncio.create_task(run_mission())
 
         logfire.info('mission_started', mission_id=mission_id)
 
         return {'missionId': mission_id}
+
+    @app.post('/api/competitions/search')
+    async def search_competitions(request: CompetitionSearchRequest) -> dict[str, Any]:
+        """Search for competitions that match the requested criteria."""
+        try:
+            competitions = await _search_competitions(request)
+            return {'competitions': competitions, 'count': len(competitions)}
+        except AuthenticationError as exc:
+            logfire.warning('competition_search_auth_failed', error=str(exc))
+            return {'error': str(exc)}
+        except Exception as exc:
+            logfire.error('competition_search_failed', error=str(exc))
+            return {'error': 'Competition search failed'}
+
+    @app.post('/api/competitions/fetch')
+    async def fetch_competition(request: CompetitionFetchRequest) -> dict[str, Any]:
+        """Fetch a competition by its Kaggle URL."""
+        try:
+            competition = await _fetch_competition(request.url)
+            return {'competition': _serialize_competition(competition)}
+        except AuthenticationError as exc:
+            logfire.warning('competition_fetch_auth_failed', error=str(exc))
+            return {'error': str(exc)}
+        except CompetitionNotFoundError as exc:
+            logfire.warning('competition_fetch_not_found', error=str(exc))
+            return {'error': str(exc)}
+        except Exception as exc:
+            logfire.error('competition_fetch_failed', error=str(exc))
+            return {'error': 'Competition fetch failed'}
 
     @app.get('/api/mission/{mission_id}/stream')
     async def stream_mission(mission_id: str, request: Request) -> StreamingResponse:
@@ -809,13 +949,34 @@ def create_app() -> FastAPI:
         if mission_id not in missions:
             return {'error': 'Mission not found'}
 
-        state = missions[mission_id]['state']
+        entry = missions[mission_id]
+        orchestrator = entry.get('orchestrator')
+        state = orchestrator.state if orchestrator else None
+        result = entry.get('result')
+
+        if state is not None:
+            status = 'executing'
+            progress = state.overall_progress
+            current_phase = state.current_phase
+            competition_id = state.competition_id
+        elif result is not None:
+            status = 'completed' if result.success else 'failed'
+            progress = 100.0
+            current_phase = None
+            competition_id = result.competition_id
+        else:
+            status = 'planning'
+            progress = 0.0
+            current_phase = None
+            competition_id = entry.get('competition_id')
+
         return {
             'missionId': mission_id,
-            'status': state.status,
-            'currentPhase': state.current_phase,
-            'progress': state.overall_progress,
-            'competitionId': state.competition_id,
+            'status': status,
+            'currentPhase': current_phase,
+            'progress': progress,
+            'competitionId': competition_id,
+            'errorMessage': result.error_message if result is not None else None,
         }
 
     @app.post('/api/mission/{mission_id}/abort')
@@ -824,7 +985,20 @@ def create_app() -> FastAPI:
         if mission_id not in missions:
             return {'error': 'Mission not found'}
 
-        emitter = missions[mission_id]['emitter']
+        entry = missions[mission_id]
+        emitter = entry['emitter']
+        orchestrator = entry.get('orchestrator')
+        task = entry.get('task')
+
+        if orchestrator and orchestrator.is_active:
+            try:
+                await orchestrator.abort_mission('aborted_via_api')
+            except Exception as exc:
+                logfire.warning('mission_abort_failed', mission_id=mission_id, error=str(exc))
+
+        if task and not task.done():
+            task.cancel()
+
         emitter.close()
 
         logfire.info('mission_aborted', mission_id=mission_id)
@@ -837,6 +1011,115 @@ def create_app() -> FastAPI:
         return await chat_handler.handle(request)
 
     return app
+
+
+# =============================================================================
+# Competition Search Helpers
+# =============================================================================
+def _build_kaggle_adapter() -> KaggleAdapter:
+    username = os.getenv('KAGGLE_USERNAME')
+    api_key = os.getenv('KAGGLE_KEY')
+    if not username or not api_key:
+        raise AuthenticationError('kaggle', 'Missing KAGGLE_USERNAME/KAGGLE_KEY')
+    return KaggleAdapter(KaggleSettings(username=username, api_key=api_key))
+
+
+def _normalize_domain(domain: str) -> str:
+    return domain.strip().lower().replace(' ', '_').replace('-', '_')
+
+
+def _matches_domains(competition: Competition, domains: list[str]) -> bool:
+    if not domains:
+        return True
+    tags = {tag.lower() for tag in competition.tags}
+    description = competition.description or ''
+    haystack = f'{competition.title} {description}'.lower()
+    for domain in domains:
+        key = _normalize_domain(domain)
+        keywords = _DOMAIN_KEYWORDS.get(key, (key,))
+        for keyword in keywords:
+            if keyword in tags or keyword in haystack:
+                return True
+    return False
+
+
+def _serialize_competition(competition: Competition) -> dict[str, Any]:
+    return {
+        'id': competition.id,
+        'title': competition.title,
+        'description': competition.description,
+        'competitionType': competition.competition_type.value,
+        'metric': competition.metric.value,
+        'metricDirection': competition.metric_direction,
+        'deadline': competition.deadline.isoformat(),
+        'prizePool': competition.prize_pool,
+        'maxTeamSize': competition.max_team_size,
+        'maxDailySubmissions': competition.max_daily_submissions,
+        'tags': sorted(competition.tags),
+        'url': competition.url,
+    }
+
+
+async def _search_competitions(request: CompetitionSearchRequest) -> list[dict[str, Any]]:
+    adapter = _build_kaggle_adapter()
+    competitions: list[Competition] = []
+    seen: set[str] = set()
+    categories = [competition_type.value for competition_type in request.competition_types]
+    keywords = [domain.replace('_', ' ') for domain in request.domains]
+    min_prize = request.min_prize
+    if request.paid_only and (min_prize is None or min_prize == 0):
+        min_prize = 1
+
+    async with adapter:
+        if not categories:
+            async for competition in adapter.search_competitions(
+                categories=None,
+                keywords=keywords or None,
+                min_prize=min_prize,
+                active_only=True,
+            ):
+                if competition.id in seen:
+                    continue
+                if competition.days_remaining < request.min_days_remaining:
+                    continue
+                if request.paid_only and (competition.prize_pool or 0) <= 0:
+                    continue
+                if not _matches_domains(competition, request.domains):
+                    continue
+                seen.add(competition.id)
+                competitions.append(competition)
+                if len(competitions) >= MAX_COMPETITION_RESULTS:
+                    break
+        else:
+            for category in categories:
+                async for competition in adapter.search_competitions(
+                    categories=[category],
+                    keywords=keywords or None,
+                    min_prize=min_prize,
+                    active_only=True,
+                ):
+                    if competition.id in seen:
+                        continue
+                    if competition.days_remaining < request.min_days_remaining:
+                        continue
+                    if request.paid_only and (competition.prize_pool or 0) <= 0:
+                        continue
+                    if not _matches_domains(competition, request.domains):
+                        continue
+                    seen.add(competition.id)
+                    competitions.append(competition)
+                    if len(competitions) >= MAX_COMPETITION_RESULTS:
+                        break
+                if len(competitions) >= MAX_COMPETITION_RESULTS:
+                    break
+
+    return [_serialize_competition(competition) for competition in competitions]
+
+
+async def _fetch_competition(url: str) -> Competition:
+    adapter = _build_kaggle_adapter()
+    async with adapter:
+        return await adapter.get_competition_by_url(url)
 
 
 # =============================================================================

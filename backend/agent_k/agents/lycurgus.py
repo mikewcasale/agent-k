@@ -302,6 +302,7 @@ class LycurgusOrchestrator:
         self,
         competition_id: str | None,
         *,
+        mission_id: str | None = None,
         criteria: MissionCriteria | None = None,
         event_emitter: EventEmitter | None = None,
         http_client: httpx.AsyncClient | None = None,
@@ -317,6 +318,7 @@ class LycurgusOrchestrator:
 
         Args:
             competition_id: Target competition identifier (optional for discovery).
+            mission_id: Optional mission identifier (generated if omitted).
             criteria: Optional criteria constraining the mission.
             event_emitter: Event emitter for streaming events.
             http_client: Shared HTTP client for research tools.
@@ -342,7 +344,7 @@ class LycurgusOrchestrator:
                 self._platform_adapter = platform_adapter
                 self._owns_platform_adapter = False
 
-            mission_id = str(uuid.uuid4())
+            mission_id = mission_id or str(uuid.uuid4())
             self._state = MissionState(
                 mission_id=mission_id, competition_id=competition_id, criteria=criteria or MissionCriteria()
             )

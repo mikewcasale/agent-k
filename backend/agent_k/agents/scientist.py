@@ -291,19 +291,19 @@ class ScientistAgent:
                 return notebooks
 
             await ctx.deps.refresh_leaderboard()
-            fallback = []
-            for entry in ctx.deps.leaderboard[:max_results]:
-                fallback.append(
-                    {
-                        "title": f"{ctx.deps.competition.title} solution by {entry.team_name}",
-                        "votes": max(1, (len(ctx.deps.leaderboard) - entry.rank + 1) * 5),
-                        "author": entry.team_name,
-                        "techniques": self._infer_techniques_from_text(
-                            " ".join(ctx.deps.competition.tags)
-                        ),
-                    }
-                )
-            return fallback
+            return [
+                {
+                    "title": f"{ctx.deps.competition.title} solution by {entry.team_name}",
+                    "votes": max(
+                        1, (len(ctx.deps.leaderboard) - entry.rank + 1) * 5
+                    ),
+                    "author": entry.team_name,
+                    "techniques": self._infer_techniques_from_text(
+                        " ".join(ctx.deps.competition.tags)
+                    ),
+                }
+                for entry in ctx.deps.leaderboard[:max_results]
+            ]
 
     async def analyze_data_characteristics(
         self,
@@ -470,9 +470,7 @@ class ScientistAgent:
         config = adapter.config
         username = getattr(config, "username", None)
         api_key = getattr(config, "api_key", None)
-        if not username or not api_key:
-            return None
-        return (username, api_key)
+        return None if not username or not api_key else (username, api_key)
 
     def _infer_techniques_from_text(self, text: str) -> list[str]:
         lower_text = text.lower()

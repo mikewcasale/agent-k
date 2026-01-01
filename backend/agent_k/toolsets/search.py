@@ -29,7 +29,6 @@ __all__ = (
 )
 
 
-
 def build_kaggle_search_query(query: str) -> str:
     """Build a Kaggle-scoped web search query."""
     return f"site:kaggle.com {query}".strip()

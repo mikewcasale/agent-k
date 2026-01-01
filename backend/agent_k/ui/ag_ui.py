@@ -931,9 +931,7 @@ def _extract_latest_user_message(messages: list[dict[str, Any]]) -> str | None:
         if part.get("type") == "text"
     ]
     message_text = " ".join(text_parts).strip()
-    if not message_text:
-        return None
-    return message_text
+    return message_text or None
 
 
 def _default_chat_response() -> str:
@@ -1213,10 +1211,7 @@ def _heuristic_parse(text_lower: str) -> MissionCriteria | None:
     if percentile_match:
         criteria_dict["target_leaderboard_percentile"] = int(percentile_match.group(1)) / 100
 
-    if criteria_dict:
-        return MissionCriteria(**criteria_dict)
-
-    return MissionCriteria()
+    return MissionCriteria(**criteria_dict) if criteria_dict else MissionCriteria()
 
 
 if __name__ == "__main__":

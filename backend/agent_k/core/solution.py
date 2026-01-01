@@ -252,18 +252,19 @@ def _build_code_execution_script(
 
     if env:
         lines.append("import os")
-        for key, value in env.items():
-            lines.append(f"os.environ[{key!r}] = {value!r}")
-
+        lines.extend(f"os.environ[{key!r}] = {value!r}" for key, value in env.items())
     if inline_files:
         lines.append("FILES = {")
         for name in sorted(inline_files):
             payload = inline_files[name]
             lines.append(f"    {name!r}: {payload!r},")
-        lines.append("}")
-        lines.append("for name, payload in FILES.items():")
-        lines.append("    Path(name).write_bytes(base64.b64decode(payload))")
-
+        lines.extend(
+            (
+                "}",
+                "for name, payload in FILES.items():",
+                "    Path(name).write_bytes(base64.b64decode(payload))",
+            )
+        )
     lines.append(code)
     return "\n".join(lines)
 

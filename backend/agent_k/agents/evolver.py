@@ -94,6 +94,7 @@ class EvolverSettings(BaseSettings):
         validate_default=True,
     )
 
+    # Model settings
     model: str = Field(
         default=DEFAULT_MODEL,
         description="Model identifier for evolution tasks",
@@ -114,7 +115,6 @@ class EvolverSettings(BaseSettings):
         ge=1,
         description="Timeout for executing a candidate solution (seconds)",
     )
-
     tool_retries: int = Field(
         default=3,
         ge=0,
@@ -126,6 +126,7 @@ class EvolverSettings(BaseSettings):
         description="Output validation retry attempts",
     )
 
+    # Evolution settings
     population_size: int = Field(
         default=EVOLUTION_POPULATION_SIZE,
         ge=1,
@@ -142,6 +143,7 @@ class EvolverSettings(BaseSettings):
         description="Generations without improvement before stopping",
     )
 
+    # Thinking mode settings
     enable_thinking: bool = Field(
         default=True,
         description="Enable extended reasoning mode for supported models",
@@ -332,19 +334,17 @@ class EvolverAgent:
 
             params = mutation_params or {}
 
-            if mutation_type == "point":
-                mutated = self._apply_point_mutation(solution_code, params)
-            elif mutation_type == "structural":
-                mutated = self._apply_structural_mutation(solution_code, params)
-            elif mutation_type == "hyperparameter":
-                mutated = self._apply_hyperparameter_mutation(solution_code, params)
-            elif mutation_type == "crossover":
+            if mutation_type == "crossover":
                 other_solution = params.get("other_solution", "")
-                mutated = self._apply_crossover(solution_code, other_solution, params)
+                return self._apply_crossover(solution_code, other_solution, params)
+            elif mutation_type == "hyperparameter":
+                return self._apply_hyperparameter_mutation(solution_code, params)
+            elif mutation_type == "point":
+                return self._apply_point_mutation(solution_code, params)
+            elif mutation_type == "structural":
+                return self._apply_structural_mutation(solution_code, params)
             else:
-                mutated = solution_code
-
-            return mutated
+                return solution_code
 
     async def evaluate_fitness(
         self,
@@ -829,17 +829,19 @@ class EvolverAgent:
             direction = -1 if rng.random() < 0.5 else 1
             mutated = value * (1 + direction * magnitude)
             changes += 1
-            if raw.isdigit():
-                return str(max(1, int(round(mutated))))
-            return f"{mutated:.6g}"
+            return str(max(1, int(round(mutated)))) if raw.isdigit() else f"{mutated:.6g}"
 
         return _NUMBER_PATTERN.sub(replacer, code)
 
     def _swap_model_family(self, code: str) -> str:
-        for source, target in _MODEL_SWAPS.items():
-            if source in code:
-                return code.replace(source, target)
-        return code
+        return next(
+            (
+                code.replace(source, target)
+                for source, target in _MODEL_SWAPS.items()
+                if source in code
+            ),
+            code,
+        )
 
     def _inject_fillna(self, code: str) -> str:
         if "fillna(" in code:
@@ -851,8 +853,8 @@ class EvolverAgent:
         match = pattern.search(code)
         if not match:
             return code
-        indent = match.group("indent")
-        var = match.group("var")
+        indent = match["indent"]
+        var = match["var"]
         insert = f"\n{indent}{var} = {var}.fillna(0)"
         return code[: match.end()] + insert + code[match.end() :]
 
@@ -956,9 +958,7 @@ class EvolverAgent:
         body = "\n".join(primary_body).strip()
         if extra_defs:
             body = f"{body}\n\n" + "\n\n".join(extra_defs)
-        if merged_imports:
-            return "\n".join(merged_imports) + "\n\n" + body
-        return body
+        return "\n".join(merged_imports) + "\n\n" + body if merged_imports else body
 
 
 # Module-level singleton for backward compatibility

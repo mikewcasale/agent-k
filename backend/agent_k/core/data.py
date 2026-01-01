@@ -53,10 +53,8 @@ def infer_competition_schema(
     target_columns = sample_header[1:]
 
     train_target_columns = [
-        column for column in train_header if column not in test_header and column != id_column
-    ]
-    if not train_target_columns:
-        train_target_columns = list(target_columns)
+            column for column in train_header if column not in test_header and column != id_column
+        ] or list(target_columns)
 
     return CompetitionSchema(
         id_column=id_column,

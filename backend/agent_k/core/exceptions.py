@@ -396,7 +396,5 @@ def classify_error(exc: Exception) -> tuple[ErrorCategory, RecoveryStrategy]:
     if isinstance(exc, CompetitionNotFoundError):
         return "fatal", "abort"
     if isinstance(exc, AgentKError):
-        if exc.recoverable:
-            return "recoverable", "retry"
-        return "fatal", "abort"
+        return ("recoverable", "retry") if exc.recoverable else ("fatal", "abort")
     return "transient", "retry"

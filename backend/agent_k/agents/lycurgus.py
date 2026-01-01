@@ -300,9 +300,7 @@ class LycurgusOrchestrator:
     @property
     def current_phase(self) -> str | None:
         """Current phase of the active mission."""
-        if self._state is None:
-            return None
-        return self._state.current_phase
+        return None if self._state is None else self._state.current_phase
 
     @property
     def config(self) -> LycurgusSettings:

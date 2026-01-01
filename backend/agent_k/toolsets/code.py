@@ -32,7 +32,6 @@ __all__ = (
 code_toolset: FunctionToolset[Any] = FunctionToolset(id="code")
 
 
-
 def create_code_execution_tool() -> CodeExecutionTool:
     """Create a CodeExecutionTool instance."""
     return CodeExecutionTool()

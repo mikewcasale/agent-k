@@ -132,8 +132,7 @@ class AgentKMemoryTool(_MemoryBase):  # pragma: no cover - optional dependency
             text = self._read_text(path)
             lines = text.splitlines()
             index = max(command.insert_line - 1, 0)
-            if index > len(lines):
-                index = len(lines)
+            index = min(index, len(lines))
             lines.insert(index, command.insert_text)
             updated = "\n".join(lines)
             if text.endswith("\n"):
@@ -188,8 +187,6 @@ class AgentKMemoryTool(_MemoryBase):  # pragma: no cover - optional dependency
         path.write_text(text, encoding="utf-8")
 
 
-
-
 def create_memory_backend(storage_path: Path | None = None) -> AgentKMemoryTool:
     """Create an Anthropic-compatible memory backend.
 
@@ -204,9 +201,7 @@ def create_memory_backend(storage_path: Path | None = None) -> AgentKMemoryTool:
 
 async def prepare_memory_tool(ctx: RunContext[Any]) -> MemoryTool | None:
     """Dynamically enable MemoryTool only for supported providers."""
-    if ctx.model.system != "anthropic":
-        return None
-    return MemoryTool()
+    return None if ctx.model.system != "anthropic" else MemoryTool()
 
 
 def register_memory_tool(
@@ -229,9 +224,7 @@ async def _prepare_memory_definition(
     ctx: RunContext[Any],
     tool_def: ToolDefinition,
 ) -> ToolDefinition | None:
-    if ctx.model.system != "anthropic":
-        return None
-    return tool_def
+    return None if ctx.model.system != "anthropic" else tool_def
 
 
 def _normalize_view_range(view_range: list[int], total_lines: int) -> tuple[int, int]:
@@ -243,11 +236,7 @@ def _normalize_view_range(view_range: list[int], total_lines: int) -> tuple[int,
     else:
         start, end = view_range[0], view_range[1]
 
-    if start < 1:
-        start = 1
-    if end < start:
-        end = start
-    if end > total_lines:
-        end = total_lines
-
+    start = max(start, 1)
+    end = max(end, start)
+    end = min(end, total_lines)
     return (start, end)

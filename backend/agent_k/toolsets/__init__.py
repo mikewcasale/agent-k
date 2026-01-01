@@ -66,7 +66,6 @@ TOOLSET_REGISTRY: dict[str, FunctionToolset[Any]] = {
 }
 
 
-
 def compose_toolsets(names: list[str], *, prefix: bool = True) -> AbstractToolset:
     """Compose multiple toolsets into one.
 

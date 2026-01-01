@@ -1252,11 +1252,11 @@ def _evaluate_metric(
         return 0.0
 
     if metric == EvaluationMetric.ACCURACY:
-        correct = sum(1 for value in values if value == prediction)
+        correct = values.count(prediction)
         return correct / len(values)
 
     if metric == EvaluationMetric.F1:
-        positives = sum(1 for value in values if value == 1)
+        positives = values.count(1)
         negatives = len(values) - positives
         if prediction == 1:
             tp = positives
@@ -1278,12 +1278,11 @@ def _evaluate_metric(
         return 0.5
 
     if metric == EvaluationMetric.LOG_LOSS:
-        prob = min(max(float(prediction), 1e-6), 1 - 1e-6)
-        loss = -sum(
-            value * math.log(prob) + (1 - value) * math.log(1 - prob) for value in values
+        prob = min(max(prediction, 1e-6), 1 - 1e-6)
+        return -sum(
+            value * math.log(prob) + (1 - value) * math.log(1 - prob)
+            for value in values
         ) / len(values)
-        return loss
-
     if metric == EvaluationMetric.RMSE:
         mse = sum((value - prediction) ** 2 for value in values) / len(values)
         return math.sqrt(mse)
@@ -1564,9 +1563,7 @@ def _build_research_findings(
     findings = domain + techniques
 
     papers = [finding for finding in findings if _looks_like_paper(finding)]
-    approaches = [finding for finding in findings if finding not in papers]
-    if not approaches:
-        approaches = findings
+    approaches = [finding for finding in findings if finding not in papers] or findings
 
     strategies = list(getattr(report, "recommended_approaches", []) or [])
     if not strategies and approaches:

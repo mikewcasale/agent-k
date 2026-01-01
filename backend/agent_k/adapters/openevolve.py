@@ -565,9 +565,7 @@ def _submission_id(competition_id: str, payload: str, message: str) -> str:
 
 def _submission_filename(file_path: str, submission_id: str) -> str:
     path = Path(file_path)
-    if path.exists():
-        return path.name
-    return f"inline_{submission_id}.csv"
+    return path.name if path.exists() else f"inline_{submission_id}.csv"
 
 
 def _load_submission_payload(file_path: str) -> str:
@@ -600,16 +598,16 @@ def _build_leaderboard(
     reverse = competition.metric_direction == "maximize"
     scored_sorted = sorted(scored, key=lambda s: s.public_score or 0.0, reverse=reverse)
     entries: list[LeaderboardEntry] = []
-    for idx, submission in enumerate(scored_sorted[:limit], start=1):
-        entries.append(
-            LeaderboardEntry(
-                rank=idx,
-                team_name=f"open-evolve-team-{idx}",
-                score=submission.public_score or 0.0,
-                entries=1,
-                last_submission=submission.submitted_at,
-            )
+    entries.extend(
+        LeaderboardEntry(
+            rank=idx,
+            team_name=f"open-evolve-team-{idx}",
+            score=submission.public_score or 0.0,
+            entries=1,
+            last_submission=submission.submitted_at,
         )
+        for idx, submission in enumerate(scored_sorted[:limit], start=1)
+    )
     return entries
 
 

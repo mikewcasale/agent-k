@@ -7,7 +7,6 @@ Licensed under the MIT License.
 from __future__ import annotations as _annotations
 
 import math
-from unittest.mock import MagicMock
 
 import pytest
 
@@ -30,22 +29,18 @@ class TestDiscoveryNode:
     """Tests for the DiscoveryNode."""
 
     def test_node_creation(self) -> None:
-        """Node should be creatable with mock agent."""
-        mock_agent = MagicMock()
-        node = DiscoveryNode(lobbyist_agent=mock_agent)
+        """Node should be creatable."""
+        node = DiscoveryNode()
         assert node is not None
-        assert node.lobbyist_agent is mock_agent
 
 
 class TestResearchNode:
     """Tests for the ResearchNode."""
 
     def test_node_creation(self) -> None:
-        """Node should be creatable with mock agent."""
-        mock_agent = MagicMock()
-        node = ResearchNode(scientist_agent=mock_agent)
+        """Node should be creatable."""
+        node = ResearchNode()
         assert node is not None
-        assert node.scientist_agent is mock_agent
 
 
 class TestPrototypeNode:
@@ -61,11 +56,9 @@ class TestEvolutionNode:
     """Tests for the EvolutionNode."""
 
     def test_node_creation(self) -> None:
-        """Node should be creatable with mock agent."""
-        mock_agent = MagicMock()
-        node = EvolutionNode(evolver_agent=mock_agent)
+        """Node should be creatable."""
+        node = EvolutionNode()
         assert node is not None
-        assert node.evolver_agent is mock_agent
 
 
 class TestSubmissionNode:

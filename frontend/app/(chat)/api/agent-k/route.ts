@@ -102,4 +102,3 @@ export async function POST(request: Request) {
     return new ChatSDKError("offline:chat").toResponse();
   }
 }
-

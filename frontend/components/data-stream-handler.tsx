@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
-import { initialArtifactData, useArtifact } from "@/hooks/use-artifact";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useAgentKState } from "@/hooks/use-agent-k-state";
-import type { AgentKEvent, AgentKEventType } from "@/lib/types/events";
+import { initialArtifactData, useArtifact } from "@/hooks/use-artifact";
 import type { MissionState } from "@/lib/types/agent-k";
+import type { AgentKEvent, AgentKEventType } from "@/lib/types/events";
 import { artifactDefinitions } from "./artifact";
 import { useDataStream } from "./data-stream-provider";
 
@@ -33,6 +33,7 @@ const AGENT_K_EVENT_TYPES: Set<AgentKEventType> = new Set([
   "error-occurred",
   "recovery-attempt",
   "recovery-complete",
+  "mission-complete",
 ]);
 
 export function DataStreamHandler() {
@@ -43,9 +44,178 @@ export function DataStreamHandler() {
   const thinkingBuffer = useRef<Map<string, string>>(new Map());
 
   const isAgentKEvent = useMemo(
-    () => (part: { type: string }): part is AgentKEvent =>
-      AGENT_K_EVENT_TYPES.has(part.type as AgentKEventType),
+    () =>
+      (part: { type: string }): part is AgentKEvent =>
+        AGENT_K_EVENT_TYPES.has(part.type as AgentKEventType),
     []
+  );
+
+  const handleEvent = useCallback(
+    (event: AgentKEvent) => {
+      const timestamp = (event as any).timestamp ?? new Date().toISOString();
+      switch (event.type) {
+        case "state-snapshot":
+          dispatch({ type: "SET_STATE", payload: event.data as MissionState });
+          break;
+
+        case "state-delta":
+          dispatch({
+            type: "APPLY_PATCH",
+            payload: Array.isArray((event as any).data)
+              ? (event as any).data
+              : ((event as any).data?.patches ?? []),
+          });
+          break;
+
+        case "phase-start":
+          dispatch({
+            type: "PHASE_START",
+            payload: { ...(event.data as any), timestamp },
+          });
+          break;
+
+        case "phase-complete":
+          dispatch({
+            type: "PHASE_COMPLETE",
+            payload: { ...(event.data as any), timestamp },
+          });
+          break;
+
+        case "phase-error": {
+          const data = event.data as any;
+          dispatch({
+            type: "PHASE_COMPLETE",
+            payload: {
+              phase: data.phase,
+              success: false,
+              durationMs: 0,
+              timestamp,
+            },
+          });
+          break;
+        }
+
+        case "task-start":
+          dispatch({
+            type: "TASK_START",
+            payload: { ...(event.data as any), timestamp },
+          });
+          break;
+
+        case "task-progress":
+          dispatch({ type: "TASK_PROGRESS", payload: event.data as any });
+          break;
+
+        case "task-complete":
+          dispatch({
+            type: "TASK_COMPLETE",
+            payload: { ...(event.data as any), timestamp },
+          });
+          break;
+
+        case "tool-start": {
+          const data = event.data as any;
+          dispatch({
+            type: "TOOL_START",
+            payload: {
+              taskId: data.taskId,
+              toolCall: {
+                id: data.toolCallId,
+                type: data.toolType,
+                operation: data.operation,
+                params: data.params,
+                startedAt: timestamp,
+                thinking: "",
+              },
+            },
+          });
+          break;
+        }
+
+        case "tool-thinking": {
+          const data = event.data as any;
+          const { taskId, toolCallId, chunk } = data;
+          const key = `${taskId}:${toolCallId}`;
+          const current = thinkingBuffer.current.get(key) || "";
+          thinkingBuffer.current.set(key, current + chunk);
+          appendToolThinking(
+            taskId,
+            toolCallId,
+            thinkingBuffer.current.get(key) ?? ""
+          );
+          break;
+        }
+
+        case "tool-result": {
+          const data = event.data as any;
+          const resultKey = `${data.taskId}:${data.toolCallId}`;
+          thinkingBuffer.current.delete(resultKey);
+          dispatch({
+            type: "TOOL_RESULT",
+            payload: { ...data, timestamp },
+          });
+          break;
+        }
+
+        case "tool-error": {
+          const data = event.data as any;
+          const errorKey = `${data.taskId}:${data.toolCallId}`;
+          thinkingBuffer.current.delete(errorKey);
+          dispatch({
+            type: "TOOL_ERROR",
+            payload: { ...data, timestamp },
+          });
+          break;
+        }
+
+        case "generation-complete":
+          dispatch({ type: "GENERATION_COMPLETE", payload: event.data as any });
+          break;
+
+        case "submission-result":
+          dispatch({ type: "SUBMISSION_RESULT", payload: event.data as any });
+          break;
+
+        case "convergence-detected":
+          dispatch({
+            type: "CONVERGENCE_DETECTED",
+            payload: event.data as any,
+          });
+          break;
+
+        case "memory-store":
+        case "memory-retrieve":
+          dispatch({
+            type: "MEMORY_OPERATION",
+            payload: { ...(event.data as any), operation: event.type },
+          });
+          break;
+
+        case "checkpoint-created":
+          dispatch({
+            type: "CHECKPOINT_CREATED",
+            payload: { ...(event.data as any), timestamp },
+          });
+          break;
+
+        case "error-occurred":
+          dispatch({ type: "ERROR_OCCURRED", payload: event.data as any });
+          break;
+
+        case "recovery-complete":
+          dispatch({ type: "RECOVERY_COMPLETE", payload: event.data as any });
+          break;
+
+        case "mission-complete":
+          dispatch({ type: "MISSION_COMPLETE", payload: event.data as any });
+          break;
+
+        default:
+          // eslint-disable-next-line no-console
+          console.warn("Unknown Agent K event:", event.type);
+      }
+    },
+    [dispatch, appendToolThinking]
   );
 
   useEffect(() => {
@@ -121,141 +291,16 @@ export function DataStreamHandler() {
         }
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    appendToolThinking,
     artifact,
     dataStream,
-    dispatch,
     isAgentKEvent,
     setArtifact,
     setDataStream,
     setMetadata,
+    handleEvent,
   ]);
-
-  function handleEvent(event: AgentKEvent) {
-    const timestamp = (event as any).timestamp ?? new Date().toISOString();
-    switch (event.type) {
-      case "state-snapshot":
-        dispatch({ type: "SET_STATE", payload: event.data as MissionState });
-        break;
-
-      case "state-delta":
-        dispatch({
-          type: "APPLY_PATCH",
-          payload: Array.isArray((event as any).data)
-            ? (event as any).data
-            : ((event as any).data?.patches ?? []),
-        });
-        break;
-
-      case "phase-start":
-        dispatch({ type: "PHASE_START", payload: { ...(event.data as any), timestamp } });
-        break;
-
-      case "phase-complete":
-        dispatch({ type: "PHASE_COMPLETE", payload: { ...(event.data as any), timestamp } });
-        break;
-
-      case "task-start":
-        dispatch({ type: "TASK_START", payload: { ...(event.data as any), timestamp } });
-        break;
-
-      case "task-progress":
-        dispatch({ type: "TASK_PROGRESS", payload: event.data as any });
-        break;
-
-      case "task-complete":
-        dispatch({ type: "TASK_COMPLETE", payload: { ...(event.data as any), timestamp } });
-        break;
-
-      case "tool-start": {
-        const data = event.data as any;
-        dispatch({
-          type: "TOOL_START",
-          payload: {
-            taskId: data.taskId,
-            toolCall: {
-              id: data.toolCallId,
-              type: data.toolType,
-              operation: data.operation,
-              params: data.params,
-              startedAt: timestamp,
-              thinking: "",
-            },
-          },
-        });
-        break;
-      }
-
-      case "tool-thinking": {
-        const data = event.data as any;
-        const { taskId, toolCallId, chunk } = data;
-        const key = `${taskId}:${toolCallId}`;
-        const current = thinkingBuffer.current.get(key) || "";
-        thinkingBuffer.current.set(key, current + chunk);
-        appendToolThinking(taskId, toolCallId, thinkingBuffer.current.get(key) ?? "");
-        break;
-      }
-
-      case "tool-result": {
-        const data = event.data as any;
-        const resultKey = `${data.taskId}:${data.toolCallId}`;
-        thinkingBuffer.current.delete(resultKey);
-        dispatch({
-          type: "TOOL_RESULT",
-          payload: { ...data, timestamp },
-        });
-        break;
-      }
-
-      case "tool-error": {
-        const data = event.data as any;
-        const errorKey = `${data.taskId}:${data.toolCallId}`;
-        thinkingBuffer.current.delete(errorKey);
-        dispatch({
-          type: "TOOL_ERROR",
-          payload: { ...data, timestamp },
-        });
-        break;
-      }
-
-      case "generation-complete":
-        dispatch({ type: "GENERATION_COMPLETE", payload: event.data as any });
-        break;
-
-      case "submission-result":
-        dispatch({ type: "SUBMISSION_RESULT", payload: event.data as any });
-        break;
-
-      case "convergence-detected":
-        dispatch({ type: "CONVERGENCE_DETECTED", payload: event.data as any });
-        break;
-
-      case "memory-store":
-      case "memory-retrieve":
-        dispatch({
-          type: "MEMORY_OPERATION",
-          payload: { ...(event.data as any), operation: event.type },
-        });
-        break;
-
-      case "checkpoint-created":
-        dispatch({ type: "CHECKPOINT_CREATED", payload: { ...(event.data as any), timestamp } });
-        break;
-
-      case "error-occurred":
-        dispatch({ type: "ERROR_OCCURRED", payload: event.data as any });
-        break;
-
-      case "recovery-complete":
-        dispatch({ type: "RECOVERY_COMPLETE", payload: event.data as any });
-        break;
-
-      default:
-        // eslint-disable-next-line no-console
-        console.warn("Unknown Agent K event:", event.type);
-    }
-  }
 
   return null;
 }

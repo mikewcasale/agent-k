@@ -15,8 +15,7 @@ export const chatModels: ChatModel[] = [
   {
     id: "chat-model-reasoning",
     name: "Claude Reasoning",
-    description:
-      "Uses extended thinking for complex reasoning tasks",
+    description: "Uses extended thinking for complex reasoning tasks",
   },
   {
     id: "anthropic-haiku",
@@ -26,11 +25,13 @@ export const chatModels: ChatModel[] = [
   {
     id: "devstral-local",
     name: "Devstral (Local)",
-    description: "Mistral's Devstral coding model running locally via LM Studio",
+    description:
+      "Mistral's Devstral coding model running locally via LM Studio",
   },
   {
     id: "openrouter-devstral",
     name: "Devstral (OpenRouter)",
-    description: "Mistral's Devstral via OpenRouter - tool-capable coding model",
+    description:
+      "Mistral's Devstral via OpenRouter - tool-capable coding model",
   },
 ];

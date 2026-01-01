@@ -246,11 +246,11 @@ function missionReducer(state: MissionState, action: Action): MissionState {
 function processEvent(state: MissionState, event: AgentEvent): MissionState {
   // Process different event types
   switch (event.type) {
-    case 'phase_start':
+    case 'phase-start':
       return updatePhase(state, event.data);
-    case 'evolution_progress':
+    case 'generation-complete':
       return updateEvolution(state, event.data);
-    case 'tool_call':
+    case 'tool-start':
       return addToolCall(state, event.data);
     // ...
   }
@@ -354,4 +354,3 @@ frontend/components/agent-k/
 - [AG-UI Protocol](ag-ui.md) — Event types and API
 - [Quick Start](../quick-start.md) — Try the dashboard
 - [Examples](../examples/multi-agent-demo.md) — Full walkthrough
-

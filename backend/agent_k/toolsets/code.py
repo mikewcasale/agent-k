@@ -34,7 +34,7 @@ def create_code_execution_tool() -> CodeExecutionTool:
 
 async def prepare_code_execution_tool(ctx: RunContext[Any]) -> CodeExecutionTool | None:
     """Enable CodeExecutionTool only for supported providers."""
-    if ctx.model.system not in {'anthropic', 'openai', 'google'}:
+    if ctx.model.system != 'openai':
         return None
     if OpenAIChatModel is not None and isinstance(ctx.model, OpenAIChatModel):
         return None

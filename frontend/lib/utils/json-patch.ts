@@ -14,12 +14,16 @@ function cloneMissionState(state: MissionState): MissionState {
 }
 
 function getPhase(phases: PhasePlan[], index: number): PhasePlan | undefined {
-  if (Number.isNaN(index) || index < 0) return undefined;
+  if (Number.isNaN(index) || index < 0) {
+    return;
+  }
   return phases[index];
 }
 
 function getTask(tasks: PlannedTask[], index: number): PlannedTask | undefined {
-  if (Number.isNaN(index) || index < 0) return undefined;
+  if (Number.isNaN(index) || index < 0) {
+    return;
+  }
   return tasks[index];
 }
 
@@ -32,13 +36,17 @@ export function applyPatches(
   for (const op of operations) {
     const pathParts = op.path.split("/").filter(Boolean);
 
-    if (!pathParts.length) continue;
+    if (!pathParts.length) {
+      continue;
+    }
 
     // Phase-level operations
     if (pathParts[0] === "phases") {
       const phaseIndex = Number.parseInt(pathParts[1], 10);
       const phase = getPhase(next.phases, phaseIndex);
-      if (!phase) continue;
+      if (!phase) {
+        continue;
+      }
 
       // Replace operations on phase
       if (op.op === "replace" && pathParts.length === 3) {
@@ -56,9 +64,16 @@ export function applyPatches(
       if (pathParts[2] === "tasks") {
         const taskIndex = Number.parseInt(pathParts[3], 10);
         const task = getTask(phase.tasks, taskIndex);
-        if (!task) continue;
+        if (!task) {
+          continue;
+        }
 
-        if (op.op === "replace" && pathParts.length === 5 && pathParts[4] === "status" && typeof op.value === "string") {
+        if (
+          op.op === "replace" &&
+          pathParts.length === 5 &&
+          pathParts[4] === "status" &&
+          typeof op.value === "string"
+        ) {
           task.status = op.value as PlannedTask["status"];
           continue;
         }
@@ -71,8 +86,12 @@ export function applyPatches(
           }
 
           const callIndex = Number.parseInt(pathParts[5], 10);
-          const toolCall = getTask(phase.tasks, taskIndex)?.toolCalls?.[callIndex];
-          if (!toolCall) continue;
+          const toolCall = getTask(phase.tasks, taskIndex)?.toolCalls?.[
+            callIndex
+          ];
+          if (!toolCall) {
+            continue;
+          }
 
           if (op.op === "replace" && pathParts.length === 7) {
             if (pathParts[6] === "result") {
@@ -107,7 +126,11 @@ export function applyPatches(
         continue;
       }
 
-      if (op.op === "replace" && op.path === "/evolution/currentGeneration" && typeof op.value === "number") {
+      if (
+        op.op === "replace" &&
+        op.path === "/evolution/currentGeneration" &&
+        typeof op.value === "number"
+      ) {
         next.evolution.currentGeneration = op.value;
         continue;
       }
@@ -117,7 +140,10 @@ export function applyPatches(
         continue;
       }
 
-      if (op.op === "add" && op.path === "/evolution/leaderboardSubmissions/-") {
+      if (
+        op.op === "add" &&
+        op.path === "/evolution/leaderboardSubmissions/-"
+      ) {
         next.evolution.leaderboardSubmissions = [
           ...(next.evolution.leaderboardSubmissions ?? []),
           op.value as any,
@@ -146,10 +172,13 @@ export function applyPatches(
       }
 
       const errorIndex = Number.parseInt(pathParts[1], 10);
-      if (op.op === "replace" && pathParts[2] === "resolved" && typeof op.value === "boolean") {
-        if (next.errors[errorIndex]) {
-          next.errors[errorIndex].resolved = op.value;
-        }
+      if (
+        op.op === "replace" &&
+        pathParts[2] === "resolved" &&
+        typeof op.value === "boolean" &&
+        next.errors[errorIndex]
+      ) {
+        next.errors[errorIndex].resolved = op.value;
       }
     }
   }

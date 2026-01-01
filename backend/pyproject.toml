@@ -18,6 +18,8 @@ dependencies = [
     "fastapi>=0.115.0",
     "uvicorn>=0.32.0",
     "numpy>=1.26.0",
+    "pandas>=2.2.0",
+    "scikit-learn>=1.4.0",
 ]
 
 [project.optional-dependencies]
@@ -45,10 +47,10 @@ agent-k = "agent_k.__main__:main"
 packages = ["agent_k"]
 
 # =============================================================================
-# uv Configuration
+# Dependency Groups (PEP 735)
 # =============================================================================
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "ruff>=0.8.0",
     "mypy>=1.13.0",
     "pytest>=8.3.0",
@@ -60,6 +62,9 @@ dev-dependencies = [
     "pydantic-evals>=0.2.0",
 ]
 
+# =============================================================================
+# uv Configuration
+# =============================================================================
 [tool.uv.sources]
 # Add any git/local sources here if needed
 

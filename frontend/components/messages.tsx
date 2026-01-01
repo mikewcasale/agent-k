@@ -5,10 +5,10 @@ import { memo } from "react";
 import { useMessages } from "@/hooks/use-messages";
 import type { Vote } from "@/lib/db/schema";
 import type { ChatMessage } from "@/lib/types";
+import { MissionDashboard } from "./agent-k/mission-dashboard";
 import { useDataStream } from "./data-stream-provider";
 import { Greeting } from "./greeting";
 import { PreviewMessage, ThinkingMessage } from "./message";
-import { MissionDashboard } from "./agent-k/mission-dashboard";
 
 type MessagesProps = {
   chatId: string;

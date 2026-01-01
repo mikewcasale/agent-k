@@ -1,6 +1,5 @@
 "use client";
 
-import type React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
@@ -13,6 +12,7 @@ import {
   Search,
   TerminalSquare,
 } from "lucide-react";
+import type React from "react";
 import { useState } from "react";
 import { CodeBlock } from "@/components/elements/code-block";
 import { useAgentKState } from "@/hooks/use-agent-k-state";
@@ -29,11 +29,15 @@ const toolIcons: Record<ToolType, React.ElementType> = {
 };
 
 const toolColors: Record<ToolType, string> = {
-  web_search: "bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-200",
+  web_search:
+    "bg-violet-100 text-violet-600 dark:bg-violet-900/40 dark:text-violet-200",
   kaggle_mcp: "bg-sky-100 text-sky-600 dark:bg-sky-900/40 dark:text-sky-200",
-  code_executor: "bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-200",
-  memory: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-200",
-  browser: "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-200",
+  code_executor:
+    "bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-200",
+  memory:
+    "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-200",
+  browser:
+    "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-200",
 };
 
 const toolNames: Record<ToolType, string> = {
@@ -44,12 +48,12 @@ const toolNames: Record<ToolType, string> = {
   browser: "Browser",
 };
 
-interface ToolCallCardProps {
+type ToolCallCardProps = {
   toolCall: ToolCall;
   taskId: string;
-}
+};
 
-export function ToolCallCard({ toolCall, taskId }: ToolCallCardProps) {
+export function ToolCallCard({ toolCall }: ToolCallCardProps) {
   const { state, toggleToolCall } = useAgentKState();
   const [showThinking, setShowThinking] = useState(state.ui.showThinkingBlocks);
 
@@ -61,12 +65,13 @@ export function ToolCallCard({ toolCall, taskId }: ToolCallCardProps) {
 
   return (
     <motion.div
-      layout
       className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
+      layout
     >
       <button
         className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
         onClick={() => toggleToolCall(toolCall.id)}
+        type="button"
       >
         <div
           className={cn(
@@ -79,7 +84,7 @@ export function ToolCallCard({ toolCall, taskId }: ToolCallCardProps) {
 
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-100">
+            <span className="font-semibold text-xs text-zinc-800 dark:text-zinc-100">
               {toolNames[toolCall.type]}
             </span>
             <span className="text-xs text-zinc-500">{toolCall.operation}</span>
@@ -117,12 +122,12 @@ export function ToolCallCard({ toolCall, taskId }: ToolCallCardProps) {
       <AnimatePresence>
         {isExpanded && (
           <motion.div
-            initial={{ height: 0 }}
             animate={{ height: "auto" }}
-            exit={{ height: 0 }}
             className="overflow-hidden"
+            exit={{ height: 0 }}
+            initial={{ height: 0 }}
           >
-            <div className="space-y-3 border-t border-zinc-200 p-3 text-xs dark:border-zinc-800">
+            <div className="space-y-3 border-zinc-200 border-t p-3 text-xs dark:border-zinc-800">
               {toolCall.thinking && (
                 <div>
                   <button
@@ -131,6 +136,7 @@ export function ToolCallCard({ toolCall, taskId }: ToolCallCardProps) {
                       e.stopPropagation();
                       setShowThinking((prev) => !prev);
                     }}
+                    type="button"
                   >
                     <ChevronDown
                       className={cn(
@@ -144,20 +150,20 @@ export function ToolCallCard({ toolCall, taskId }: ToolCallCardProps) {
                   <AnimatePresence>
                     {showThinking && (
                       <motion.div
-                        initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
                         className={cn(
                           "rounded border-l-2 pl-3",
                           isRunning
                             ? "border-blue-400 bg-blue-50/60 dark:border-blue-500 dark:bg-blue-950/40"
                             : "border-zinc-300 bg-zinc-50 dark:border-zinc-600 dark:bg-zinc-800/60"
                         )}
+                        exit={{ height: 0, opacity: 0 }}
+                        initial={{ height: 0, opacity: 0 }}
                       >
                         <p className="whitespace-pre-wrap py-2 font-mono text-[11px] text-zinc-700 dark:text-zinc-300">
                           {toolCall.thinking}
                           {isRunning && (
-                            <span className="ml-1 inline-block h-4 w-1 bg-blue-500 animate-pulse" />
+                            <span className="ml-1 inline-block h-4 w-1 animate-pulse bg-blue-500" />
                           )}
                         </p>
                       </motion.div>
@@ -168,14 +174,21 @@ export function ToolCallCard({ toolCall, taskId }: ToolCallCardProps) {
 
               {toolCall.type === "code_executor" && "code" in toolCall && (
                 <div className="space-y-1">
-                  <p className="text-[11px] uppercase tracking-wide text-zinc-500">Code</p>
-                  <CodeBlock code={(toolCall as any).code ?? ""} language="python" />
+                  <p className="text-[11px] text-zinc-500 uppercase tracking-wide">
+                    Code
+                  </p>
+                  <CodeBlock
+                    code={(toolCall as any).code ?? ""}
+                    language="python"
+                  />
                 </div>
               )}
 
               {toolCall.result != null ? (
                 <div className="space-y-1">
-                  <p className="text-[11px] uppercase tracking-wide text-zinc-500">Result</p>
+                  <p className="text-[11px] text-zinc-500 uppercase tracking-wide">
+                    Result
+                  </p>
                   <div className="max-h-48 overflow-auto rounded-md bg-zinc-100 p-2 font-mono text-[11px] text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
                     {typeof toolCall.result === "string"
                       ? toolCall.result

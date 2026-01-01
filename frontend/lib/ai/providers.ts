@@ -14,7 +14,9 @@ const devstralProvider = createOpenAICompatible({
 });
 
 // Create the devstral model
-const devstralModel = devstralProvider.chatModel("mistralai/devstral-small-2-2512");
+const devstralModel = devstralProvider.chatModel(
+  "mistralai/devstral-small-2-2512"
+);
 
 export const myProvider = isTestEnvironment
   ? (() => {

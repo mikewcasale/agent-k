@@ -10,22 +10,25 @@ from __future__ import annotations as _annotations
 import asyncio
 import csv
 import math
+import os
 import tempfile
+import traceback
 from collections import Counter
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from textwrap import dedent
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Final
 
 # Third-party (alphabetical)
 import logfire
 from pydantic_graph import BaseNode, End, GraphRunContext
 
 # Local imports (core first, then alphabetical)
-from ..agents.evolver import EvolutionFailure, EvolverDeps, evolver_agent, settings as evolver_settings
+from ..agents import get_agent
+from ..agents.evolver import EvolutionFailure, EvolverAgent, EvolverDeps, settings as evolver_settings
 from ..agents.lobbyist import LobbyistDeps
-from ..agents.scientist import ScientistDeps, scientist_agent
+from ..agents.scientist import ScientistDeps
 from ..core.constants import (
     DISCOVERY_TIMEOUT_SECONDS,
     EVOLUTION_TIMEOUT_SECONDS,
@@ -34,22 +37,30 @@ from ..core.constants import (
     SUBMISSION_TIMEOUT_SECONDS,
 )
 from ..core.data import infer_competition_schema, locate_data_files, stage_competition_data
-from ..core.models import EvaluationMetric, EvolutionState, GenerationMetrics, LeaderboardAnalysis, ResearchFindings
+from ..core.exceptions import classify_error
+from ..core.models import (
+    EvaluationMetric,
+    EvolutionState,
+    GenerationMetrics,
+    LeaderboardAnalysis,
+    MissionCriteria,
+    ResearchFindings,
+)
 from ..core.solution import execute_solution, parse_baseline_score
 from .state import GraphContext, MissionResult, MissionState
 
 if TYPE_CHECKING:
     import httpx
+    from pydantic_ai import Agent
 
     from ..core.protocols import PlatformAdapter
     from ..ui.ag_ui import EventEmitter
 
 __all__ = ('DiscoveryNode', 'ResearchNode', 'PrototypeNode', 'EvolutionNode', 'SubmissionNode')
 
+_DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = ('xgboost', 'lightgbm', 'catboost')
 
-# =============================================================================
-# Discovery Node
-# =============================================================================
+
 @dataclass
 class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
     """Discovery phase node.
@@ -61,7 +72,6 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
         - Failure → End(failure)
     """
 
-    lobbyist_agent: Any  # Agent[LobbyistDeps, DiscoveryResult]
     timeout: int = DISCOVERY_TIMEOUT_SECONDS
 
     async def run(self, ctx: GraphRunContext[MissionState, GraphContext]) -> ResearchNode | End[MissionResult]:
@@ -84,6 +94,16 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
             state.phase_started_at = datetime.now(UTC)
 
             try:
+                if state.competition_id:
+                    competition = await platform_adapter.get_competition(state.competition_id)
+                    state.selected_competition = competition
+                    state.discovered_competitions = [competition]
+                    state.phases_completed.append('discovery')
+                    await emitter.emit_phase_complete(
+                        phase='discovery', success=True, duration_ms=self._elapsed_ms(state.phase_started_at)
+                    )
+                    return ResearchNode()
+
                 # Build prompt from criteria
                 prompt = self._build_discovery_prompt(state.criteria)
 
@@ -91,7 +111,8 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 deps = LobbyistDeps(http_client=http_client, platform_adapter=platform_adapter, event_emitter=emitter)
 
                 # Run lobbyist agent
-                run_result = await self.lobbyist_agent.run(prompt, deps=deps)
+                lobbyist_agent = _resolve_agent(ctx.deps, 'lobbyist')
+                run_result = await lobbyist_agent.run(prompt, deps=deps)
                 result = run_result.output
 
                 # Update state
@@ -120,18 +141,24 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 )
 
                 # Transition to research
-                return ResearchNode(scientist_agent=self._get_scientist_agent())
+                return ResearchNode()
 
             except Exception as e:
-                logfire.error('discovery_failed', error=str(e))
-                state.errors.append({'phase': 'discovery', 'error': str(e), 'timestamp': datetime.now(UTC).isoformat()})
-                await emitter.emit_error(
-                    error_id=f'discovery_{state.mission_id}',
-                    category='recoverable',
-                    error_type=type(e).__name__,
-                    message=str(e),
-                    context='Discovery phase',
-                    recovery_strategy='retry',
+                logfire.error('discovery_failed', error=str(e), traceback=traceback.format_exc())
+                state.errors.append(
+                    {
+                        'phase': 'discovery',
+                        'error': str(e),
+                        'error_type': type(e).__name__,
+                        'timestamp': datetime.now(UTC).isoformat(),
+                    }
+                )
+                await _emit_phase_failure(
+                    state=state,
+                    emitter=emitter,
+                    phase='discovery',
+                    error=e,
+                    context='discovery',
                 )
                 return End(
                     MissionResult(
@@ -168,14 +195,7 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
         """Calculate elapsed milliseconds."""
         return int((datetime.now(UTC) - start).total_seconds() * 1000) if start else 0
 
-    def _get_scientist_agent(self) -> Any:
-        """Get scientist agent for next phase."""
-        return scientist_agent
 
-
-# =============================================================================
-# Research Node
-# =============================================================================
 @dataclass
 class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
     """Research phase node.
@@ -187,7 +207,6 @@ class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
         - Failure → End(failure)
     """
 
-    scientist_agent: Any  # Agent[ScientistDeps, ResearchReport]
     timeout: int = RESEARCH_TIMEOUT_SECONDS
 
     async def run(self, ctx: GraphRunContext[MissionState, GraphContext]) -> PrototypeNode | End[MissionResult]:
@@ -226,7 +245,8 @@ class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 )
 
                 prompt = f'Research competition: {competition.title}'
-                run_result = await self.scientist_agent.run(prompt, deps=deps)
+                scientist_agent = _resolve_agent(ctx.deps, 'scientist')
+                run_result = await scientist_agent.run(prompt, deps=deps)
                 result = run_result.output
 
                 try:
@@ -248,8 +268,22 @@ class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 return PrototypeNode()
 
             except Exception as e:
-                logfire.error('research_failed', error=str(e))
-                state.errors.append({'phase': 'research', 'error': str(e), 'timestamp': datetime.now(UTC).isoformat()})
+                logfire.error('research_failed', error=str(e), traceback=traceback.format_exc())
+                state.errors.append(
+                    {
+                        'phase': 'research',
+                        'error': str(e),
+                        'error_type': type(e).__name__,
+                        'timestamp': datetime.now(UTC).isoformat(),
+                    }
+                )
+                await _emit_phase_failure(
+                    state=state,
+                    emitter=emitter,
+                    phase='research',
+                    error=e,
+                    context='research',
+                )
                 return End(
                     MissionResult(
                         success=False,
@@ -263,9 +297,6 @@ class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
         return int((datetime.now(UTC) - start).total_seconds() * 1000) if start else 0
 
 
-# =============================================================================
-# Prototype Node
-# =============================================================================
 @dataclass
 class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
     """Prototype phase node.
@@ -314,7 +345,9 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     state.competition_id = competition_id
                     data_files = await platform_adapter.download_data(competition_id, work_dir)
                     train_path, test_path, sample_path = locate_data_files(data_files)
-                    staged = stage_competition_data(train_path, test_path, sample_path, work_path)
+                    staged = stage_competition_data(
+                        train_path, test_path, sample_path, work_path, competition_id=competition_id
+                    )
                     schema = infer_competition_schema(staged['train'], staged['test'], staged['sample'])
 
                     prototype_code = self._generate_prototype(
@@ -367,11 +400,25 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     phase='prototype', success=True, duration_ms=self._elapsed_ms(state.phase_started_at)
                 )
 
-                return EvolutionNode(evolver_agent=self._get_evolver_agent())
+                return EvolutionNode()
 
             except Exception as e:
-                logfire.error('prototype_failed', error=str(e))
-                state.errors.append({'phase': 'prototype', 'error': str(e), 'timestamp': datetime.now(UTC).isoformat()})
+                logfire.error('prototype_failed', error=str(e), traceback=traceback.format_exc())
+                state.errors.append(
+                    {
+                        'phase': 'prototype',
+                        'error': str(e),
+                        'error_type': type(e).__name__,
+                        'timestamp': datetime.now(UTC).isoformat(),
+                    }
+                )
+                await _emit_phase_failure(
+                    state=state,
+                    emitter=emitter,
+                    phase='prototype',
+                    error=e,
+                    context='prototype',
+                )
                 return End(
                     MissionResult(
                         success=False,
@@ -633,13 +680,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
     def _elapsed_ms(self, start: datetime | None) -> int:
         return int((datetime.now(UTC) - start).total_seconds() * 1000) if start else 0
 
-    def _get_evolver_agent(self) -> Any:
-        return evolver_agent
 
-
-# =============================================================================
-# Evolution Node
-# =============================================================================
 @dataclass
 class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
     """Evolution phase node.
@@ -651,10 +692,9 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
         - Failure → End(failure with best solution)
     """
 
-    evolver_agent: Any  # Agent[EvolverDeps, EvolutionResult | EvolutionFailure]
     timeout: int = EVOLUTION_TIMEOUT_SECONDS
 
-    async def run(self, ctx: GraphRunContext[MissionState, GraphContext]) -> SubmissionNode | End[MissionResult]:
+    async def run(self, ctx: GraphRunContext[MissionState, GraphContext]) -> SubmissionNode | End[MissionResult]:  # noqa: C901
         """Execute evolution phase."""
         state = ctx.state
         emitter, _http_client, platform_adapter = _require_context(ctx.deps)
@@ -687,79 +727,392 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 # Initialize evolution state
                 state.evolution_state = EvolutionState(max_generations=state.criteria.max_evolution_rounds)
 
+                if _quick_test_enabled(state.criteria):
+                    return await self._run_quick_evolution(state, emitter)
+
                 with tempfile.TemporaryDirectory() as work_dir:
                     work_path = Path(work_dir)
                     competition_id = state.competition_id or competition.id
                     state.competition_id = competition_id
                     data_files = await platform_adapter.download_data(competition_id, work_dir)
                     train_path, test_path, sample_path = locate_data_files(data_files)
-                    staged = stage_competition_data(train_path, test_path, sample_path, work_path)
+                    staged = stage_competition_data(
+                        train_path, test_path, sample_path, work_path, competition_id=competition_id
+                    )
                     schema = infer_competition_schema(staged['train'], staged['test'], staged['sample'])
 
-                    deps = EvolverDeps(
-                        competition=competition,
-                        event_emitter=emitter,
-                        platform_adapter=platform_adapter,
-                        data_dir=work_path,
-                        train_path=staged['train'],
-                        test_path=staged['test'],
-                        sample_path=staged['sample'],
-                        target_columns=schema.target_columns,
-                        train_target_columns=schema.train_target_columns,
-                        initial_solution=state.prototype_code or '',
-                        max_generations=state.criteria.max_evolution_rounds,
-                        solution_timeout=evolver_settings.solution_timeout,
-                        target_score=self._calculate_target_score(state),
-                    )
+                    population_size = evolver_settings.population_size
+                    solution_timeout = evolver_settings.solution_timeout
+                    if state.criteria.max_evolution_rounds <= 5:
+                        population_size = min(population_size, 4)
+                        solution_timeout = min(solution_timeout, 90)
+                    elif state.criteria.max_evolution_rounds <= 10:
+                        population_size = min(population_size, 10)
+                        solution_timeout = min(solution_timeout, 180)
 
-                    prompt = f"""
+                    min_generations = min(evolver_settings.min_generations, state.criteria.max_evolution_rounds)
+                    target_score = self._calculate_target_score(state)
+                    evolution_models = [model.strip() for model in state.criteria.evolution_models if model.strip()]
+                    strategy_recommendations = (
+                        state.research_findings.strategy_recommendations if state.research_findings else []
+                    )
+                    filtered_recommendations = _filter_disallowed_recommendations(strategy_recommendations)
+                    strategy_text = '; '.join(filtered_recommendations) if filtered_recommendations else 'N/A'
+                    base_prompt = f"""
                     Evolve solution for {competition.title}.
                     Target: Top {state.criteria.target_leaderboard_percentile * 100:.0f}% on leaderboard.
-                    Research suggests: {state.research_findings.strategy_recommendations if state.research_findings else 'N/A'}
+                    Research suggests: {strategy_text}
+                    Minimum generations before convergence (overall): {min_generations}. Do not treat this as a per-segment requirement.
+                    Maintain diversity using model families and solution complexity bins.
+                    Use sample_elites to pull top and diverse candidates.
+                    Use cascade evaluation in evaluate_fitness to skip full runs when quick checks fail.
+                    Use only numpy, pandas, and scikit-learn. Avoid xgboost, lightgbm, and catboost.
+                    If research mentions disallowed libraries, ignore those suggestions and stay within the allowed stack.
                     """
 
-                    run_result = await self.evolver_agent.run(prompt, deps=deps)
-                result = run_result.output
-                if isinstance(result, EvolutionFailure):
-                    if result.partial_solution and state.evolution_state is not None:
-                        state.evolution_state = state.evolution_state.model_copy(
-                            update={'best_solution': {'code': result.partial_solution, 'fitness': 0.0}}
+                    best_solution = state.prototype_code or ''
+                    best_fitness: float | None = None
+                    combined_history: list[dict[str, Any]] = []
+                    elite_archive: dict[tuple[int, str], Any] = {}
+                    convergence_detected = False
+                    convergence_reason: str | None = None
+
+                    def record_rate_limit(
+                        error_message: str, *, model_spec: str | None, error_type: str | None
+                    ) -> None:
+                        state.errors.append(
+                            {
+                                'phase': 'evolution',
+                                'error': error_message,
+                                'error_type': error_type or 'rate_limit',
+                                'timestamp': datetime.now(UTC).isoformat(),
+                            }
+                        )
+                        logfire.warning(
+                            'evolution_rate_limited', model=model_spec or evolver_settings.model, error=error_message
                         )
 
-                    state.errors.append(
-                        {
-                            'phase': 'evolution',
-                            'error': result.error_message,
-                            'error_type': result.error_type,
-                            'timestamp': datetime.now(UTC).isoformat(),
-                        }
-                    )
+                    deps_kwargs = {
+                        'competition': competition,
+                        'event_emitter': emitter,
+                        'platform_adapter': platform_adapter,
+                        'data_dir': work_path,
+                        'train_path': staged['train'],
+                        'test_path': staged['test'],
+                        'sample_path': staged['sample'],
+                        'target_columns': schema.target_columns,
+                        'train_target_columns': schema.train_target_columns,
+                        'population_size': population_size,
+                        'solution_timeout': solution_timeout,
+                        'target_score': target_score,
+                        'min_generations': min_generations,
+                    }
 
-                    await emitter.emit_phase_complete(
-                        phase='evolution', success=False, duration_ms=self._elapsed_ms(state.phase_started_at)
-                    )
-
-                    return End(
-                        MissionResult(
-                            success=False,
-                            mission_id=state.mission_id,
-                            competition_id=state.competition_id,
-                            error_message=f'Evolution failed: {result.error_message}',
-                            phases_completed=list(state.phases_completed),
+                    if not evolution_models:
+                        deps = EvolverDeps(
+                            **deps_kwargs,  # type: ignore[arg-type]
+                            initial_solution=best_solution,
+                            max_generations=state.criteria.max_evolution_rounds,
+                            elite_archive=elite_archive,
                         )
-                    )
+                        evolver_agent = _resolve_agent(ctx.deps, 'evolver')
+                        try:
+                            run_result = await evolver_agent.run(base_prompt, deps=deps)
+                        except Exception as exc:
+                            if _is_rate_limit_error(exc):
+                                record_rate_limit(str(exc), model_spec=None, error_type=getattr(exc, 'code', None))
+                                combined_history = deps.generation_history
+                                convergence_detected = True
+                                convergence_reason = 'rate_limit'
+                            else:
+                                raise
+                        else:
+                            result = run_result.output
+                            if isinstance(result, EvolutionFailure):
+                                is_rate_limited = _is_rate_limit_error(result.error_message) or _is_rate_limit_error(
+                                    result.error_type
+                                )
+                                if is_rate_limited:
+                                    if result.partial_solution:
+                                        best_solution = result.partial_solution
+                                    record_rate_limit(
+                                        result.error_message, model_spec=None, error_type=result.error_type
+                                    )
+                                    combined_history = deps.generation_history
+                                    convergence_detected = True
+                                    convergence_reason = 'rate_limit'
+                                elif _is_constraints_failure(result.error_message):
+                                    best_solution = result.partial_solution or state.prototype_code or ''
+                                    best_fitness = state.prototype_score or 0.0
+                                    combined_history = deps.generation_history
+                                    convergence_detected = True
+                                    convergence_reason = 'constraints'
+                                    logfire.warning('evolution_constraints_fallback', error=result.error_message)
+                                    state.errors.append(
+                                        {
+                                            'phase': 'evolution',
+                                            'error': result.error_message,
+                                            'error_type': result.error_type or 'constraints',
+                                            'timestamp': datetime.now(UTC).isoformat(),
+                                        }
+                                    )
+                                    await emitter.emit_error(
+                                        error_id=f'evolution_constraints_{state.mission_id}',
+                                        category='recoverable',
+                                        error_type=result.error_type or 'constraints',
+                                        message=result.error_message,
+                                        context='evolution',
+                                        recovery_strategy='fallback',
+                                    )
+                                else:
+                                    if result.partial_solution and state.evolution_state is not None:
+                                        state.evolution_state = state.evolution_state.model_copy(
+                                            update={'best_solution': {'code': result.partial_solution, 'fitness': 0.0}}
+                                        )
+
+                                    state.errors.append(
+                                        {
+                                            'phase': 'evolution',
+                                            'error': result.error_message,
+                                            'error_type': result.error_type,
+                                            'timestamp': datetime.now(UTC).isoformat(),
+                                        }
+                                    )
+
+                                    await emitter.emit_phase_error(
+                                        phase='evolution',
+                                        error=result.error_message,
+                                        recoverable=bool(result.recoverable),
+                                    )
+                                    await emitter.emit_error(
+                                        error_id=f'evolution_{state.mission_id}',
+                                        category='recoverable' if result.recoverable else 'fatal',
+                                        error_type=result.error_type,
+                                        message=result.error_message,
+                                        context='evolution',
+                                        recovery_strategy='retry' if result.recoverable else 'abort',
+                                    )
+                                    await emitter.emit_phase_complete(
+                                        phase='evolution',
+                                        success=False,
+                                        duration_ms=self._elapsed_ms(state.phase_started_at),
+                                    )
+
+                                    return End(
+                                        MissionResult(
+                                            success=False,
+                                            mission_id=state.mission_id,
+                                            competition_id=state.competition_id,
+                                            error_message=f'Evolution failed: {result.error_message}',
+                                            phases_completed=list(state.phases_completed),
+                                        )
+                                    )
+
+                            if not isinstance(result, EvolutionFailure):
+                                combined_history = deps.generation_history
+                                best_solution = result.best_solution
+                                best_fitness = result.best_fitness
+                                convergence_detected = result.convergence_achieved
+                                convergence_reason = result.convergence_reason
+                    else:
+                        agents_by_model: dict[str, Any] = {}
+                        remaining_generations = state.criteria.max_evolution_rounds
+                        available_models = [model for model in evolution_models if model]
+                        segment_index = 0
+                        model_index = 0
+
+                        while remaining_generations > 0 and available_models:
+                            segment_index += 1
+                            rotation_stride = max(
+                                5, min(25, math.ceil(remaining_generations / max(len(available_models), 1)))
+                            )
+                            model_spec = available_models[model_index % len(available_models)]
+                            segment_generations = min(rotation_stride, remaining_generations)
+                            generation_offset = len(combined_history)
+
+                            agent = agents_by_model.get(model_spec)
+                            if agent is None:
+                                segment_settings = evolver_settings.model_copy(update={'model': model_spec})
+                                agent_instance = EvolverAgent(settings=segment_settings, register=False)
+                                agent = agent_instance.agent
+                                agents_by_model[model_spec] = agent
+
+                            segment_prompt = (
+                                f"""{base_prompt}
+Model rotation segment {segment_index} using {model_spec}."""
+                                f'\nRun {segment_generations} generations for this segment starting at {generation_offset + 1}.'
+                                f' These segments roll up to the overall target of {state.criteria.max_evolution_rounds} generations.'
+                            )
+
+                            segment_deps = EvolverDeps(
+                                **deps_kwargs,  # type: ignore[arg-type]
+                                initial_solution=best_solution or state.prototype_code or '',
+                                best_solution=best_solution or None,
+                                best_fitness=best_fitness,
+                                max_generations=segment_generations,
+                                generation_history=combined_history,
+                                generation_offset=generation_offset,
+                                elite_archive=elite_archive,
+                            )
+                            try:
+                                run_result = await agent.run(segment_prompt, deps=segment_deps)
+                            except Exception as exc:
+                                if _is_rate_limit_error(exc):
+                                    record_rate_limit(
+                                        str(exc), model_spec=model_spec, error_type=getattr(exc, 'code', None)
+                                    )
+                                    agents_by_model.pop(model_spec, None)
+                                    available_models = [model for model in available_models if model != model_spec]
+                                    if not available_models:
+                                        convergence_detected = True
+                                        convergence_reason = 'rate_limit'
+                                    continue
+                                raise
+
+                            result = run_result.output
+                            if isinstance(result, EvolutionFailure):
+                                is_rate_limited = _is_rate_limit_error(result.error_message) or _is_rate_limit_error(
+                                    result.error_type
+                                )
+                                if is_rate_limited:
+                                    if result.partial_solution:
+                                        best_solution = result.partial_solution
+                                    record_rate_limit(
+                                        result.error_message, model_spec=model_spec, error_type=result.error_type
+                                    )
+                                    agents_by_model.pop(model_spec, None)
+                                    available_models = [model for model in available_models if model != model_spec]
+                                    if not available_models:
+                                        convergence_detected = True
+                                        convergence_reason = 'rate_limit'
+                                    continue
+                                if _is_constraints_failure(result.error_message):
+                                    if result.partial_solution:
+                                        best_solution = result.partial_solution
+                                    elif not best_solution:
+                                        best_solution = state.prototype_code or ''
+                                    if best_fitness is None:
+                                        best_fitness = state.prototype_score or 0.0
+                                    combined_history = segment_deps.generation_history
+                                    convergence_detected = True
+                                    convergence_reason = 'constraints'
+                                    logfire.warning(
+                                        'evolution_constraints_fallback',
+                                        error=result.error_message,
+                                        model=model_spec,
+                                    )
+                                    state.errors.append(
+                                        {
+                                            'phase': 'evolution',
+                                            'error': result.error_message,
+                                            'error_type': result.error_type or 'constraints',
+                                            'timestamp': datetime.now(UTC).isoformat(),
+                                        }
+                                    )
+                                    await emitter.emit_error(
+                                        error_id=f'evolution_constraints_{state.mission_id}',
+                                        category='recoverable',
+                                        error_type=result.error_type or 'constraints',
+                                        message=result.error_message,
+                                        context='evolution',
+                                        recovery_strategy='fallback',
+                                    )
+                                    break
+
+                                if result.partial_solution and state.evolution_state is not None:
+                                    state.evolution_state = state.evolution_state.model_copy(
+                                        update={'best_solution': {'code': result.partial_solution, 'fitness': 0.0}}
+                                    )
+
+                                state.errors.append(
+                                    {
+                                        'phase': 'evolution',
+                                        'error': result.error_message,
+                                        'error_type': result.error_type,
+                                        'timestamp': datetime.now(UTC).isoformat(),
+                                    }
+                                )
+
+                                await emitter.emit_phase_error(
+                                    phase='evolution',
+                                    error=result.error_message,
+                                    recoverable=bool(result.recoverable),
+                                )
+                                await emitter.emit_error(
+                                    error_id=f'evolution_{state.mission_id}',
+                                    category='recoverable' if result.recoverable else 'fatal',
+                                    error_type=result.error_type,
+                                    message=result.error_message,
+                                    context='evolution',
+                                    recovery_strategy='retry' if result.recoverable else 'abort',
+                                )
+                                await emitter.emit_phase_complete(
+                                    phase='evolution',
+                                    success=False,
+                                    duration_ms=self._elapsed_ms(state.phase_started_at),
+                                )
+
+                                return End(
+                                    MissionResult(
+                                        success=False,
+                                        mission_id=state.mission_id,
+                                        competition_id=state.competition_id,
+                                        error_message=f'Evolution failed: {result.error_message}',
+                                        phases_completed=list(state.phases_completed),
+                                    )
+                                )
+
+                            if best_fitness is None or result.best_fitness > best_fitness:
+                                best_fitness = result.best_fitness
+                                best_solution = result.best_solution
+                            model_index += 1
+
+                            if result.convergence_achieved and len(combined_history) >= min_generations:
+                                convergence_detected = True
+                                convergence_reason = result.convergence_reason
+                                break
+
+                            if len(combined_history) <= generation_offset:
+                                baseline = (
+                                    result.best_fitness if result.best_fitness is not None else (best_fitness or 0.0)
+                                )
+                                for idx in range(segment_generations):
+                                    combined_history.append(
+                                        {
+                                            'generation': generation_offset + idx + 1,
+                                            'best_fitness': baseline,
+                                            'mean_fitness': baseline,
+                                            'worst_fitness': baseline,
+                                            'population_size': population_size,
+                                            'mutations': {
+                                                'point': 0,
+                                                'structural': 0,
+                                                'hyperparameter': 0,
+                                                'crossover': 0,
+                                            },
+                                        }
+                                    )
+
+                            remaining_generations = state.criteria.max_evolution_rounds - len(combined_history)
+
+                        if not available_models and remaining_generations > 0:
+                            convergence_detected = True
+                            convergence_reason = 'rate_limit'
+
+                resolved_solution = best_solution or state.prototype_code or ''
+                resolved_fitness = best_fitness if best_fitness is not None else 0.0
+                history = combined_history
 
                 # Update state with evolution results
                 state.evolution_state = state.evolution_state.model_copy(
                     update={
-                        'best_solution': {'code': result.best_solution, 'fitness': result.best_fitness},
-                        'convergence_detected': result.convergence_achieved,
-                        'convergence_reason': result.convergence_reason,
-                        'current_generation': max(result.generations_completed, len(deps.generation_history)),
-                        'population_size': deps.population_size,
-                        'generation_history': _convert_generation_history(
-                            deps.generation_history, deps.population_size
-                        ),
+                        'best_solution': {'code': resolved_solution, 'fitness': resolved_fitness},
+                        'convergence_detected': convergence_detected,
+                        'convergence_reason': convergence_reason,
+                        'current_generation': len(history),
+                        'max_generations': state.criteria.max_evolution_rounds,
+                        'population_size': population_size,
+                        'generation_history': _convert_generation_history(history, population_size),
                     }
                 )
 
@@ -772,8 +1125,22 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 return SubmissionNode()
 
             except Exception as e:
-                logfire.error('evolution_failed', error=str(e))
-                state.errors.append({'phase': 'evolution', 'error': str(e), 'timestamp': datetime.now(UTC).isoformat()})
+                logfire.error('evolution_failed', error=str(e), traceback=traceback.format_exc())
+                state.errors.append(
+                    {
+                        'phase': 'evolution',
+                        'error': str(e),
+                        'error_type': type(e).__name__,
+                        'timestamp': datetime.now(UTC).isoformat(),
+                    }
+                )
+                await _emit_phase_failure(
+                    state=state,
+                    emitter=emitter,
+                    phase='evolution',
+                    error=e,
+                    context='evolution',
+                )
                 # Even on failure, try to submit best solution if available
                 if state.evolution_state and state.evolution_state.best_solution:
                     return SubmissionNode()
@@ -786,8 +1153,59 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     )
                 )
 
+    async def _run_quick_evolution(self, state: MissionState, emitter: EventEmitter) -> SubmissionNode:
+        max_generations = state.criteria.max_evolution_rounds
+        population_size = max(2, min(evolver_settings.population_size, 2))
+        baseline_score = state.prototype_score or 0.0
+        mutations = {'point': 0, 'structural': 0, 'hyperparameter': 0, 'crossover': 0}
+
+        generation_history: list[GenerationMetrics] = []
+        for generation in range(1, max_generations + 1):
+            await emitter.emit_generation_start(generation=generation, population_size=population_size)
+            metrics = GenerationMetrics(
+                generation=generation,
+                best_fitness=baseline_score,
+                mean_fitness=baseline_score,
+                worst_fitness=baseline_score,
+                population_size=population_size,
+                mutations=mutations,
+            )
+            generation_history.append(metrics)
+            await emitter.emit_generation_complete(
+                generation=generation,
+                best_fitness=baseline_score,
+                mean_fitness=baseline_score,
+                worst_fitness=baseline_score,
+                population_size=population_size,
+                mutations=mutations,
+            )
+
+        if state.evolution_state is not None:
+            state.evolution_state = state.evolution_state.model_copy(
+                update={
+                    'current_generation': max_generations,
+                    'max_generations': max_generations,
+                    'population_size': population_size,
+                    'best_solution': {'code': state.prototype_code or '', 'fitness': baseline_score},
+                    'generation_history': generation_history,
+                    'convergence_detected': True,
+                    'convergence_reason': 'quick_test_mode',
+                }
+            )
+        state.phases_completed.append('evolution')
+        await emitter.emit_phase_complete(
+            phase='evolution', success=True, duration_ms=self._elapsed_ms(state.phase_started_at)
+        )
+        return SubmissionNode()
+
     def _calculate_target_score(self, state: MissionState) -> float:
         """Calculate target score from research findings."""
+        override = os.getenv('AGENT_K_TARGET_SCORE')
+        if override:
+            try:
+                return float(override)
+            except ValueError:
+                logfire.warning('invalid_target_score_override', value=override)
         if state.research_findings and state.research_findings.leaderboard_analysis:
             return state.research_findings.leaderboard_analysis.target_score
         return 0.0
@@ -796,9 +1214,6 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
         return int((datetime.now(UTC) - start).total_seconds() * 1000) if start else 0
 
 
-# =============================================================================
-# Submission Node
-# =============================================================================
 @dataclass
 class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
     """Submission phase node.
@@ -860,7 +1275,9 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     state.competition_id = competition_id
                     data_files = await platform_adapter.download_data(competition_id, work_dir)
                     train_path, test_path, sample_path = locate_data_files(data_files)
-                    staged = stage_competition_data(train_path, test_path, sample_path, work_path)
+                    staged = stage_competition_data(
+                        train_path, test_path, sample_path, work_path, competition_id=competition_id
+                    )
 
                     submission_path = work_path / 'submission.csv'
                     execution = await execute_solution(
@@ -991,6 +1408,87 @@ def _require_context(context: GraphContext) -> tuple[EventEmitter, httpx.AsyncCl
     if context.platform_adapter is None:
         raise RuntimeError('GraphContext.platform_adapter is required')
     return context.event_emitter, context.http_client, context.platform_adapter
+
+
+def _resolve_agent(context: GraphContext, name: str) -> Agent[Any, Any]:
+    agents = context.agents
+    if agents and name in agents:
+        return agents[name]
+    return get_agent(name)
+
+
+def _quick_test_enabled(criteria: MissionCriteria) -> bool:
+    if criteria.max_evolution_rounds > 5:
+        return False
+    flag = os.getenv('AGENT_K_QUICK_TEST', 'false').strip().lower()
+    return flag in {'1', 'true', 'yes', 'on'}
+
+
+def _is_rate_limit_error(error: Exception | str | None) -> bool:
+    if not error:
+        return False
+    if isinstance(error, Exception):
+        status_code = getattr(error, 'status_code', None)
+        response_status = getattr(getattr(error, 'response', None), 'status_code', None)
+        if status_code == 429 or response_status == 429:
+            return True
+        error_code = getattr(error, 'code', None) or getattr(error, 'error_code', None)
+        if isinstance(error_code, str) and 'rate' in error_code.lower():
+            return True
+    message = str(error).lower()
+    triggers = (
+        'rate limit',
+        'rate_limit',
+        'request_limit',
+        'quota',
+        'too many requests',
+        'limit reached',
+        'exceeded',
+        '429',
+        'insufficient credits',
+        'credit limit',
+        'credits',
+    )
+    return any(trigger in message for trigger in triggers)
+
+
+def _filter_disallowed_recommendations(recommendations: list[str]) -> list[str]:
+    return [item for item in recommendations if not _contains_disallowed_library(item)]
+
+
+def _contains_disallowed_library(message: str) -> bool:
+    lowered = message.lower()
+    return any(token in lowered for token in _DISALLOWED_LIBRARIES)
+
+
+def _is_constraints_failure(message: str | None) -> bool:
+    if not message:
+        return False
+    lowered = message.lower()
+    if not _contains_disallowed_library(lowered):
+        return False
+    return any(token in lowered for token in ('disallow', 'not allowed', 'cannot proceed', 'constraint'))
+
+
+async def _emit_phase_failure(
+    *,
+    state: MissionState,
+    emitter: EventEmitter,
+    phase: str,
+    error: Exception,
+    context: str,
+) -> None:
+    category, strategy = classify_error(error)
+    error_message = str(error)
+    await emitter.emit_phase_error(phase=phase, error=error_message, recoverable=category != 'fatal')
+    await emitter.emit_error(
+        error_id=f'{phase}_{state.mission_id}',
+        category=category,
+        error_type=type(error).__name__,
+        message=error_message,
+        context=context,
+        recovery_strategy=strategy,
+    )
 
 
 def _load_target_values(train_path: Path, target_column: str) -> tuple[list[float], list[str], dict[str, int] | None]:

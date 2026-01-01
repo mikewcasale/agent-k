@@ -1,52 +1,77 @@
 # Multi-Agent Demo
 
-This example demonstrates AGENT-K's multi-agent system with the LOBBYIST (discovery) and SCIENTIST (research) agents working together.
-
-## Overview
-
-The `multi_agent_playbook.py` script runs through two phases:
-
-1. **Discovery**: LOBBYIST searches for Kaggle competitions
-2. **Research**: SCIENTIST analyzes the selected competition
+This demo runs the LOBBYIST (discovery) and SCIENTIST (research) agents in sequence.
 
 ## Running the Demo
 
 ```bash
 cd backend
+uv run python - <<'PY'
+import asyncio
+import os
+from contextlib import AsyncExitStack
 
-# With Claude Haiku (Anthropic)
-uv run python examples/multi_agent_playbook.py --model anthropic:claude-3-haiku-20240307
+import httpx
 
-# With GPT-4o (OpenAI)
-uv run python examples/multi_agent_playbook.py --model openai:gpt-4o
+from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
+from agent_k.adapters.openevolve import OpenEvolveAdapter
+from agent_k.agents.lobbyist import LobbyistDeps, lobbyist_agent
+from agent_k.agents.scientist import ScientistDeps, scientist_agent
+from agent_k.ui.ag_ui import EventEmitter
+
+
+async def run_agents(adapter, http_client):
+    emitter = EventEmitter()
+    lobbyist_deps = LobbyistDeps(
+        http_client=http_client,
+        platform_adapter=adapter,
+        event_emitter=emitter,
+    )
+
+    discovery = await lobbyist_agent.run(
+        "Find featured competitions with 14+ days remaining",
+        deps=lobbyist_deps,
+    )
+
+    competition = discovery.output.competitions[0]
+    scientist_deps = ScientistDeps(
+        http_client=http_client,
+        platform_adapter=adapter,
+        competition=competition,
+    )
+
+    research = await scientist_agent.run(
+        f"Research competition: {competition.title}",
+        deps=scientist_deps,
+    )
+
+    print(research.output.recommended_approaches)
+
+
+async def main():
+    async with httpx.AsyncClient() as http:
+        async with AsyncExitStack() as stack:
+            if os.getenv("KAGGLE_USERNAME") and os.getenv("KAGGLE_KEY"):
+                adapter = await stack.enter_async_context(
+                    KaggleAdapter(
+                        KaggleSettings(
+                            username=os.environ["KAGGLE_USERNAME"],
+                            api_key=os.environ["KAGGLE_KEY"],
+                        )
+                    )
+                )
+            else:
+                adapter = OpenEvolveAdapter()
+                await adapter.authenticate()
+
+            await run_agents(adapter, http)
+
+
+asyncio.run(main())
+PY
 ```
 
-## Key Built-in Tools
+## Notes
 
-The demo uses built-in tools when supported by the provider:
-
-- `WebSearchTool` for web search (`web_search`)
-- `MemoryTool` for cross-agent memory (Anthropic only)
-
-Kaggle access is still provided via the `kaggle_toolset` FunctionToolset.
-
-## Memory Backend (Anthropic Only)
-
-The demo registers a file-backed memory backend:
-
-```python
-from agent_k.toolsets import create_memory_backend, prepare_memory_tool, register_memory_tool
-
-memory_backend = create_memory_backend()
-agent = Agent(
-    'anthropic:claude-3-haiku-20240307',
-    builtin_tools=[prepare_memory_tool],
-)
-register_memory_tool(agent, memory_backend)
-```
-
-## Prompts
-
-The prompts instruct agents to use the built-in `web_search` tool and (when available) the `memory` tool for sharing notes.
-
-For the full code, see `backend/examples/multi_agent_playbook.py`.
+- If Kaggle credentials are missing, the demo uses OpenEvolve's in-memory catalog.
+- The orchestrator runs the full five-phase lifecycle; use it for end-to-end missions.

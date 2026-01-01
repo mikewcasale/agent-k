@@ -11,10 +11,12 @@ import asyncio
 import csv
 import io
 import re
+import zipfile
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
+from urllib.parse import quote
 
 # Third-party (alphabetical)
 import httpx
@@ -26,6 +28,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from agent_k.core.exceptions import (
     AuthenticationError,
     CompetitionNotFoundError,
+    CompetitionRulesNotAcceptedError,
     PlatformConnectionError,
     RateLimitError,
     SubmissionError,
@@ -39,6 +42,7 @@ if TYPE_CHECKING:
 __all__ = ('KaggleAdapter', 'KaggleSettings', 'SCHEMA_VERSION')
 
 SCHEMA_VERSION: Final[str] = '1.0.0'
+_COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r'kaggle\.com/competitions/([a-zA-Z0-9-]+)')
 
 
 class KaggleSettings(BaseSettings):
@@ -164,19 +168,42 @@ class KaggleAdapter(PlatformAdapter):
             list_response = await self._request('GET', '/competitions/list', params={'search': competition_id})
 
             for item in list_response.json():
-                if item.get('ref') == competition_id:
-                    return self._parse_competition(item)
+                try:
+                    competition = self._parse_competition(item)
+                except Exception as exc:
+                    logfire.warning('failed_to_parse_competition', error=str(exc))
+                    continue
+                if competition.id == competition_id:
+                    return competition
 
             raise CompetitionNotFoundError(competition_id)
+
+    async def get_competition_by_url(self, url: str) -> Competition:
+        """Get competition details from a Kaggle competition URL."""
+        match = _COMPETITION_URL_PATTERN.search(url)
+        if not match:
+            raise CompetitionNotFoundError(url)
+        return await self.get_competition(match.group(1))
 
     async def get_leaderboard(self, competition_id: str, *, limit: int = 100) -> list[LeaderboardEntry]:
         """Get competition leaderboard."""
         with logfire.span('kaggle.get_leaderboard', competition_id=competition_id):
             response = await self._request('GET', f'/competitions/{competition_id}/leaderboard/download')
+            self._raise_rules_not_accepted(response, competition_id)
             response.raise_for_status()
 
             entries: list[LeaderboardEntry] = []
-            reader = csv.reader(io.StringIO(response.text))
+            content = response.content
+            if response.headers.get('content-type', '').startswith('application/zip') or content[:2] == b'PK':
+                with zipfile.ZipFile(io.BytesIO(content)) as archive:
+                    csv_name = next((name for name in archive.namelist() if name.lower().endswith('.csv')), None)
+                    if not csv_name:
+                        return entries
+                    csv_text = archive.read(csv_name).decode('utf-8', errors='ignore')
+            else:
+                csv_text = response.text
+
+            reader = csv.reader(io.StringIO(csv_text))
             if next(reader, None) is None:
                 return entries
 
@@ -203,20 +230,47 @@ class KaggleAdapter(PlatformAdapter):
             if not path.exists():
                 raise SubmissionError(competition_id, f'Submission file not found: {file_path}')
 
-            with open(path, 'rb') as f:
-                files = {'file': (path.name, f, 'text/csv')}
-                data = {'message': message}
+            content_length = path.stat().st_size
+            last_modified = int(path.stat().st_mtime)
+            start_fields = {
+                'competitionName': (None, competition_id),
+                'contentLength': (None, str(content_length)),
+                'lastModifiedEpochSeconds': (None, str(last_modified)),
+                'fileName': (None, path.name),
+            }
+            start_response = await self._request('POST', '/competitions/submission-url', files=start_fields)
+            if start_response.status_code != 200:
+                raise SubmissionError(competition_id, f'Submission start failed: {start_response.text}')
 
-                response = await self._request(
-                    'POST', f'/competitions/submissions/url/{competition_id}', data=data, files=files
-                )
+            start_payload = start_response.json()
+            token = start_payload.get('token')
+            create_url = start_payload.get('createUrl') or start_payload.get('create_url')
+            if not token or not create_url:
+                raise SubmissionError(competition_id, f'Invalid submission upload response: {start_payload}')
 
-            if response.status_code != 200:
-                raise SubmissionError(competition_id, f'Submission failed: {response.text}')
+            payload = path.read_bytes()
+            async with httpx.AsyncClient(timeout=self.config.timeout) as upload_client:
+                upload_response = await upload_client.put(create_url, content=payload)
+            if upload_response.status_code not in {200, 201}:
+                raise SubmissionError(competition_id, f'Upload failed: {upload_response.text}')
 
-            result = response.json()
+            submit_fields = {
+                'competitionName': (None, competition_id),
+                'blobFileTokens': (None, token),
+                'submissionDescription': (None, message),
+            }
+            submit_response = await self._request(
+                'POST', f'/competitions/submissions/submit/{competition_id}', files=submit_fields
+            )
+            if submit_response.status_code != 200:
+                raise SubmissionError(competition_id, f'Submission failed: {submit_response.text}')
+
+            result = submit_response.json()
             return Submission(
-                id=result.get('ref', 'unknown'), competition_id=competition_id, file_name=path.name, status='pending'
+                id=str(result.get('ref', 'unknown')),
+                competition_id=competition_id,
+                file_name=path.name,
+                status='pending',
             )
 
     async def get_submission_status(self, competition_id: str, submission_id: str) -> Submission:
@@ -235,7 +289,9 @@ class KaggleAdapter(PlatformAdapter):
                         public_score=item.get('publicScore'),
                     )
 
-            raise SubmissionError(competition_id, f'Submission not found: {submission_id}', submission_id=submission_id)
+            return Submission(
+                id=submission_id, competition_id=competition_id, file_name='', status='pending', public_score=None
+            )
 
     async def download_data(self, competition_id: str, destination: str) -> list[str]:
         """Download competition data files."""
@@ -245,21 +301,35 @@ class KaggleAdapter(PlatformAdapter):
 
             # List available files
             response = await self._request('GET', f'/competitions/data/list/{competition_id}')
+            self._raise_rules_not_accepted(response, competition_id)
             response.raise_for_status()
 
-            downloaded: list[str] = []
-            for file_info in response.json():
-                file_name = file_info.get('name', '')
-                file_url = file_info.get('url', '')
+            payload = response.json()
+            files = payload.get('files', []) if isinstance(payload, dict) else payload
 
-                if file_url:
-                    file_path = dest_path / file_name
-                    async with self._client.stream('GET', file_url) as file_response:
-                        file_response.raise_for_status()
-                        with file_path.open('wb') as handle:
-                            async for chunk in file_response.aiter_bytes():
-                                handle.write(chunk)
-                    downloaded.append(str(file_path))
+            downloaded: list[str] = []
+            for file_info in files:
+                if isinstance(file_info, str):
+                    file_name = file_info
+                    file_url = ''
+                else:
+                    file_name = file_info.get('name') or file_info.get('nameNullable') or ''
+                    file_url = file_info.get('url', '')
+
+                if not file_name:
+                    continue
+
+                if not file_url:
+                    file_url = f'/competitions/data/download/{competition_id}/{quote(file_name)}'
+
+                file_path = dest_path / file_name
+                async with self._client.stream('GET', file_url, follow_redirects=True) as file_response:
+                    self._raise_rules_not_accepted(file_response, competition_id)
+                    file_response.raise_for_status()
+                    with file_path.open('wb') as handle:
+                        async for chunk in file_response.aiter_bytes():
+                            handle.write(chunk)
+                downloaded.append(str(file_path))
 
             return downloaded
 
@@ -285,6 +355,13 @@ class KaggleAdapter(PlatformAdapter):
                     await asyncio.sleep(self.config.rate_limit_delay * (attempt + 1))
 
             raise PlatformConnectionError('kaggle', 'Max retries exceeded')
+
+    def _raise_rules_not_accepted(self, response: httpx.Response, competition_id: str) -> None:
+        if response.status_code != 403:
+            return
+        text = response.text.lower()
+        if 'accept' in text and 'rules' in text:
+            raise CompetitionRulesNotAcceptedError(competition_id)
 
     def _parse_competition(self, data: dict[str, Any]) -> Competition:
         """Parse Kaggle API response into Competition model."""

@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../docs/logo.png" alt="AGENT-K" width="300">
+  <img src="../backend/docs/logo.png" alt="AGENT-K" width="300">
   <h1>AGENT-K Mission Console</h1>
   <h3>Multi-Agent Kaggle GrandMaster (🧐)</h3>
   <p><em>Real-time dashboard for monitoring autonomous Kaggle competition missions</em></p>

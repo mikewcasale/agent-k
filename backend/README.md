@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../docs/logo.png" alt="AGENT-K" width="300">
+  <img src="docs/logo.png" alt="AGENT-K" width="300">
   <h1>AGENT-K Backend</h1>
   <h3>Multi-Agent Kaggle GrandMaster (🧐)</h3>
   <p><em>Python multi-agent system for autonomous Kaggle competition participation</em></p>

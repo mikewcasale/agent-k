@@ -22,7 +22,7 @@ __all__ = ()
 
 
 def _write_csv(path: Path, header: list[str], rows: list[list[str]]) -> None:
-    with path.open("w", encoding="utf-8", newline="") as handle:
+    with path.open('w', encoding='utf-8', newline='') as handle:
         writer = csv.writer(handle)
         writer.writerow(header)
         writer.writerows(rows)
@@ -33,12 +33,7 @@ class TestPredictionValue:
 
     def test_prediction_value_regression_mean(self) -> None:
         """Regression metrics should return the mean value."""
-        prediction, numeric = _prediction_value(
-            EvaluationMetric.RMSE,
-            [1.0, 3.0],
-            ["1", "3"],
-            None,
-        )
+        prediction, numeric = _prediction_value(EvaluationMetric.RMSE, [1.0, 3.0], ['1', '3'], None)
 
         assert prediction == pytest.approx(2.0)
         assert numeric == pytest.approx(2.0)
@@ -46,23 +41,15 @@ class TestPredictionValue:
     def test_prediction_value_classification_mapping(self) -> None:
         """Classification metrics should use the majority label."""
         prediction, numeric = _prediction_value(
-            EvaluationMetric.ACCURACY,
-            [0.0, 1.0, 1.0],
-            ["cat", "dog", "dog"],
-            {"cat": 0, "dog": 1},
+            EvaluationMetric.ACCURACY, [0.0, 1.0, 1.0], ['cat', 'dog', 'dog'], {'cat': 0, 'dog': 1}
         )
 
-        assert prediction == "dog"
+        assert prediction == 'dog'
         assert numeric == pytest.approx(1.0)
 
     def test_prediction_value_proba_clamps(self) -> None:
         """Probability metrics should clamp predictions to (0, 1)."""
-        prediction, numeric = _prediction_value(
-            EvaluationMetric.AUC,
-            [2.0, 2.0],
-            ["2", "2"],
-            None,
-        )
+        prediction, numeric = _prediction_value(EvaluationMetric.AUC, [2.0, 2.0], ['2', '2'], None)
 
         assert prediction == pytest.approx(1 - 1e-3)
         assert numeric == pytest.approx(1 - 1e-3)
@@ -96,11 +83,7 @@ class TestEvaluateMetric:
         score = _evaluate_metric(EvaluationMetric.RMSLE, values, prediction=prediction)
 
         expected = math.sqrt(
-            (
-                (math.log1p(1.0) - math.log1p(prediction)) ** 2
-                + (math.log1p(3.0) - math.log1p(prediction)) ** 2
-            )
-            / 2
+            ((math.log1p(1.0) - math.log1p(prediction)) ** 2 + (math.log1p(3.0) - math.log1p(prediction)) ** 2) / 2
         )
         assert score == pytest.approx(expected)
 
@@ -110,17 +93,11 @@ class TestComputeBaselineScore:
 
     def test_compute_baseline_score_multiple_columns(self, tmp_path: Path) -> None:
         """Baseline score should average per-column metrics."""
-        train_path = tmp_path / "train.csv"
-        _write_csv(
-            train_path,
-            ["id", "target_a", "target_b"],
-            [["1", "0", "1"], ["2", "2", "1"]],
-        )
+        train_path = tmp_path / 'train.csv'
+        _write_csv(train_path, ['id', 'target_a', 'target_b'], [['1', '0', '1'], ['2', '2', '1']])
 
         score = _compute_baseline_score(
-            train_path=train_path,
-            target_columns=["target_a", "target_b"],
-            metric=EvaluationMetric.RMSE,
+            train_path=train_path, target_columns=['target_a', 'target_b'], metric=EvaluationMetric.RMSE
         )
 
         assert score == pytest.approx(0.5)

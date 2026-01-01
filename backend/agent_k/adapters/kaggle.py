@@ -48,7 +48,6 @@ class KaggleSettings(BaseSettings):
     """
 
     model_config = SettingsConfigDict(env_prefix='KAGGLE_', env_file='.env', extra='ignore', validate_default=True)
-
     username: str = Field(..., description='Kaggle API username')
     api_key: str = Field(..., description='Kaggle API key')
     base_url: str = Field(default='https://www.kaggle.com/api/v1', description='Base URL for Kaggle API')

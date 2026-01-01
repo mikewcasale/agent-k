@@ -22,9 +22,9 @@ class TestScientistAgentSingleton:
 
     def test_agent_is_registered(self) -> None:
         """Agent should be registered in the registry."""
-        assert get_agent("scientist") is scientist_agent
+        assert get_agent('scientist') is scientist_agent
 
     def test_agent_metadata(self) -> None:
         """Agent should be configured with a name."""
         assert isinstance(scientist_agent, Agent)
-        assert scientist_agent.name == "scientist"
+        assert scientist_agent.name == 'scientist'

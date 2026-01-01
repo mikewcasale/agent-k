@@ -58,7 +58,6 @@ class OpenEvolveSettings(BaseSettings):
     """
 
     model_config = SettingsConfigDict(env_prefix='OPENEVOLVE_', env_file='.env', extra='ignore', validate_default=True)
-
     api_url: str = Field(default='http://localhost:8080', description='Base URL for OpenEvolve API')
     timeout: int = Field(default=30, ge=1, description='HTTP timeout in seconds')
     max_retries: int = Field(default=3, ge=0, description='Maximum retry attempts for failed requests')
@@ -82,7 +81,6 @@ class OpenEvolveEvolutionConfig(BaseModel):
     """Evolution configuration for OpenEvolve jobs."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION)
     population_size: int = Field(default=50, ge=1)
     max_generations: int = Field(default=50, ge=1)
@@ -95,7 +93,6 @@ class OpenEvolveJobStatus(BaseModel):
     """Status snapshot for an OpenEvolve evolution job."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION)
     job_id: str = Field(..., min_length=1)
     state: OpenEvolveJobState = Field(..., description='Current lifecycle state')
@@ -111,7 +108,6 @@ class OpenEvolveSolution(BaseModel):
     """Best solution produced by an OpenEvolve job."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION)
     job_id: str = Field(..., min_length=1)
     solution_code: str = Field(..., min_length=1)

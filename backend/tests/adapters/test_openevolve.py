@@ -10,11 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from agent_k.adapters.openevolve import (
-    OpenEvolveAdapter,
-    OpenEvolveJobState,
-    OpenEvolveSettings,
-)
+from agent_k.adapters.openevolve import OpenEvolveAdapter, OpenEvolveJobState, OpenEvolveSettings
 
 __all__ = ()
 
@@ -29,7 +25,7 @@ class TestOpenEvolveAdapter:
         adapter = OpenEvolveAdapter()
 
         assert adapter is not None
-        assert adapter.platform_name == "openevolve"
+        assert adapter.platform_name == 'openevolve'
 
     async def test_authenticate_returns_true(self) -> None:
         """Authenticate should return True (stub)."""
@@ -49,7 +45,7 @@ class TestOpenEvolveAdapter:
         """Leaderboard should return baseline entries when empty."""
         adapter = OpenEvolveAdapter()
 
-        result = await adapter.get_leaderboard("oe-tabular-classification", limit=5)
+        result = await adapter.get_leaderboard('oe-tabular-classification', limit=5)
         assert len(result) == 5
         assert result[0].rank == 1
 
@@ -57,21 +53,21 @@ class TestOpenEvolveAdapter:
         """Submission status should complete with a score."""
         adapter = OpenEvolveAdapter()
 
-        file_path = tmp_path / "submission.csv"
-        file_path.write_text("id,target\\n0,0.5\\n", encoding="utf-8")
+        file_path = tmp_path / 'submission.csv'
+        file_path.write_text('id,target\\n0,0.5\\n', encoding='utf-8')
 
-        submission = await adapter.submit("oe-tabular-classification", str(file_path))
-        assert submission.status == "pending"
+        submission = await adapter.submit('oe-tabular-classification', str(file_path))
+        assert submission.status == 'pending'
 
-        status = await adapter.get_submission_status("oe-tabular-classification", submission.id)
-        assert status.status == "complete"
+        status = await adapter.get_submission_status('oe-tabular-classification', submission.id)
+        assert status.status == 'complete'
         assert status.public_score is not None
 
     async def test_download_data_writes_files(self, tmp_path: Path) -> None:
         """Download should write train/test/submission files."""
         adapter = OpenEvolveAdapter()
 
-        files = await adapter.download_data("oe-tabular-classification", str(tmp_path))
+        files = await adapter.download_data('oe-tabular-classification', str(tmp_path))
         assert len(files) == 3
         for file_path in files:
             assert Path(file_path).exists()
@@ -82,9 +78,7 @@ class TestOpenEvolveAdapter:
         adapter = OpenEvolveAdapter(config=settings)
 
         job_id = await adapter.submit_evolution(
-            prototype='print("hello")',
-            fitness_function=lambda _: 0.9,
-            config={"population_size": 5},
+            prototype='print("hello")', fitness_function=lambda _: 0.9, config={'population_size': 5}
         )
 
         status = await adapter.get_status(job_id)

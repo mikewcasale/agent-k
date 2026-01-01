@@ -28,11 +28,11 @@ class TestDevstralConstants:
 
     def test_devstral_model_id(self) -> None:
         """Devstral model ID should be set."""
-        assert DEVSTRAL_MODEL_ID == "mistralai/devstral-small-2-2512"
+        assert DEVSTRAL_MODEL_ID == 'mistralai/devstral-small-2-2512'
 
     def test_devstral_base_url_default(self) -> None:
         """Default base URL should be LM Studio."""
-        assert "1234" in DEVSTRAL_BASE_URL  # LM Studio default port
+        assert '1234' in DEVSTRAL_BASE_URL  # LM Studio default port
 
 
 class TestCreateDevstralModel:
@@ -46,13 +46,13 @@ class TestCreateDevstralModel:
 
     def test_custom_base_url(self) -> None:
         """Should accept custom base URL."""
-        model = create_devstral_model(base_url="http://localhost:5000/v1")
+        model = create_devstral_model(base_url='http://localhost:5000/v1')
 
         assert isinstance(model, OpenAIChatModel)
 
     def test_custom_model_id(self) -> None:
         """Should accept custom model ID."""
-        model = create_devstral_model(model_id="custom-model")
+        model = create_devstral_model(model_id='custom-model')
 
         assert isinstance(model, OpenAIChatModel)
 
@@ -62,10 +62,10 @@ class TestCreateOpenRouterModel:
 
     def test_creates_openai_model(self) -> None:
         """Should create an OpenAIChatModel."""
-        if not os.getenv("OPENROUTER_API_KEY"):
-            pytest.skip("OPENROUTER_API_KEY not set")
+        if not os.getenv('OPENROUTER_API_KEY'):
+            pytest.skip('OPENROUTER_API_KEY not set')
 
-        model = create_openrouter_model("mistralai/devstral-small-2505")
+        model = create_openrouter_model('mistralai/devstral-small-2505')
 
         assert isinstance(model, OpenAIChatModel)
 
@@ -75,40 +75,40 @@ class TestGetModel:
 
     def test_anthropic_model(self) -> None:
         """Anthropic model spec should return string."""
-        result = get_model("anthropic:claude-3-haiku-20240307")
+        result = get_model('anthropic:claude-3-haiku-20240307')
 
-        assert result == "anthropic:claude-3-haiku-20240307"
+        assert result == 'anthropic:claude-3-haiku-20240307'
 
     def test_openai_model(self) -> None:
         """OpenAI model spec should return string."""
-        result = get_model("openai:gpt-4o")
+        result = get_model('openai:gpt-4o')
 
-        assert result == "openai:gpt-4o"
+        assert result == 'openai:gpt-4o'
 
     def test_devstral_local(self) -> None:
         """Devstral local should return OpenAIChatModel."""
-        result = get_model("devstral:local")
+        result = get_model('devstral:local')
 
         assert isinstance(result, OpenAIChatModel)
 
     def test_devstral_custom_url(self) -> None:
         """Devstral with custom URL should return OpenAIChatModel."""
-        result = get_model("devstral:http://localhost:8080/v1")
+        result = get_model('devstral:http://localhost:8080/v1')
 
         assert isinstance(result, OpenAIChatModel)
 
     def test_devstral_custom_model_id(self) -> None:
         """Devstral with custom model ID should return OpenAIChatModel."""
-        result = get_model("devstral:custom-model-id")
+        result = get_model('devstral:custom-model-id')
 
         assert isinstance(result, OpenAIChatModel)
 
     def test_openrouter_model(self) -> None:
         """OpenRouter model spec should return OpenAIChatModel."""
-        if not os.getenv("OPENROUTER_API_KEY"):
-            pytest.skip("OPENROUTER_API_KEY not set")
+        if not os.getenv('OPENROUTER_API_KEY'):
+            pytest.skip('OPENROUTER_API_KEY not set')
 
-        result = get_model("openrouter:mistralai/devstral-small-2505")
+        result = get_model('openrouter:mistralai/devstral-small-2505')
 
         assert isinstance(result, OpenAIChatModel)
 
@@ -118,20 +118,20 @@ class TestIsDevstralModel:
 
     def test_devstral_local(self) -> None:
         """devstral:local should be identified as Devstral."""
-        assert is_devstral_model("devstral:local") is True
+        assert is_devstral_model('devstral:local') is True
 
     def test_devstral_custom_url(self) -> None:
         """devstral with custom URL should be identified as Devstral."""
-        assert is_devstral_model("devstral:http://localhost:8080/v1") is True
+        assert is_devstral_model('devstral:http://localhost:8080/v1') is True
 
     def test_anthropic_not_devstral(self) -> None:
         """Anthropic models should not be identified as Devstral."""
-        assert is_devstral_model("anthropic:claude-3-haiku-20240307") is False
+        assert is_devstral_model('anthropic:claude-3-haiku-20240307') is False
 
     def test_openai_not_devstral(self) -> None:
         """OpenAI models should not be identified as Devstral."""
-        assert is_devstral_model("openai:gpt-4o") is False
+        assert is_devstral_model('openai:gpt-4o') is False
 
     def test_openrouter_not_devstral(self) -> None:
         """OpenRouter models should not be identified as Devstral."""
-        assert is_devstral_model("openrouter:mistralai/devstral-small-2505") is False
+        assert is_devstral_model('openrouter:mistralai/devstral-small-2505') is False

@@ -23,22 +23,16 @@ class TestKaggleSettings:
 
     def test_config_creation(self) -> None:
         """Config should be created with credentials."""
-        config = KaggleSettings(
-            username="test_user",
-            api_key="test_key",
-        )
+        config = KaggleSettings(username='test_user', api_key='test_key')
 
-        assert config.username == "test_user"
-        assert config.api_key == "test_key"
+        assert config.username == 'test_user'
+        assert config.api_key == 'test_key'
 
     def test_config_defaults(self) -> None:
         """Config should have sensible defaults."""
-        config = KaggleSettings(
-            username="user",
-            api_key="key",
-        )
+        config = KaggleSettings(username='user', api_key='key')
 
-        assert config.base_url == "https://www.kaggle.com/api/v1"
+        assert config.base_url == 'https://www.kaggle.com/api/v1'
 
 
 class TestKaggleAdapter:
@@ -46,7 +40,7 @@ class TestKaggleAdapter:
 
     def test_adapter_creation(self) -> None:
         """Adapter should be created with config."""
-        config = KaggleSettings(username="user", api_key="key")
+        config = KaggleSettings(username='user', api_key='key')
         adapter = KaggleAdapter(config)
 
         assert adapter is not None
@@ -58,18 +52,18 @@ class TestKaggleAdapter:
             200,
             json=[
                 {
-                    "ref": "titanic",
-                    "title": "Titanic",
-                    "category": "gettingStarted",
-                    "reward": "$0",
-                    "deadline": "2030-01-01T00:00:00Z",
+                    'ref': 'titanic',
+                    'title': 'Titanic',
+                    'category': 'gettingStarted',
+                    'reward': '$0',
+                    'deadline': '2030-01-01T00:00:00Z',
                 }
             ],
         )
 
     async def test_search_competitions_basic(self) -> None:
         """Search competitions should return results."""
-        config = KaggleSettings(username="user", api_key="key")
+        config = KaggleSettings(username='user', api_key='key')
         adapter = KaggleAdapter(config)
 
         # The adapter requires actual HTTP calls or mocking
@@ -78,7 +72,7 @@ class TestKaggleAdapter:
 
     async def test_get_leaderboard_basic(self) -> None:
         """Get leaderboard should return entries."""
-        config = KaggleSettings(username="user", api_key="key")
+        config = KaggleSettings(username='user', api_key='key')
         adapter = KaggleAdapter(config)
 
         assert adapter is not None
@@ -89,8 +83,8 @@ class TestKaggleAdapterFromEnv:
 
     def test_from_env_missing_credentials(self, env: Any) -> None:
         """Should raise error when credentials missing."""
-        env.remove("KAGGLE_USERNAME")
-        env.remove("KAGGLE_KEY")
+        env.remove('KAGGLE_USERNAME')
+        env.remove('KAGGLE_KEY')
 
         # The from_env method should handle missing credentials
         # Test depends on implementation

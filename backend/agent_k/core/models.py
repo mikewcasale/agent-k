@@ -108,7 +108,6 @@ class Competition(BaseModel):
     """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     id: CompetitionId = Field(
         ...,
@@ -157,7 +156,6 @@ class LeaderboardEntry(BaseModel):
     """Entry in competition leaderboard."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     rank: int = Field(..., ge=1, description='Position on leaderboard')
     team_name: str = Field(..., min_length=1, description='Team name')
@@ -170,7 +168,6 @@ class Submission(BaseModel):
     """Competition submission entity."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     id: str = Field(..., description='Unique submission identifier')
     competition_id: CompetitionId = Field(..., description='Target competition')
@@ -189,7 +186,6 @@ class ToolCall(BaseModel):
     """Base model for tool invocation tracking."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     id: str = Field(..., description='Unique tool call identifier')
     type: ToolType = Field(..., description='Type of tool')
@@ -247,7 +243,6 @@ class PlannedTask(BaseModel):
     """A planned task within a phase."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     id: TaskId = Field(..., description='Unique task identifier')
     name: str = Field(..., description='Task display name')
@@ -271,7 +266,6 @@ class PhasePlan(BaseModel):
     """Plan for a mission phase."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     phase: MissionPhase = Field(..., description='Phase identifier')
     display_name: str = Field(..., description='Human-readable phase name')
@@ -290,7 +284,6 @@ class MissionPlan(BaseModel):
     """Complete mission plan with all phases."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     mission_id: MissionId = Field(..., description='Unique mission identifier')
     competition_id: CompetitionId | None = Field(default=None, description='Competition id')
@@ -306,7 +299,6 @@ class GenerationMetrics(BaseModel):
     """Metrics for a single evolution generation."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     generation: int = Field(..., ge=0, description='Generation index')
     best_fitness: FitnessScore = Field(..., description='Best fitness score')
@@ -326,7 +318,6 @@ class LeaderboardSubmission(BaseModel):
     """Record of a submission to the competition leaderboard."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     submission_id: str = Field(..., description='Submission identifier')
     generation: int = Field(..., description='Generation index')
@@ -342,7 +333,6 @@ class EvolutionState(BaseModel):
     """State of the evolution process."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     current_generation: int = Field(default=0, description='Current generation')
     max_generations: int = Field(default=100, description='Maximum generations')
@@ -363,7 +353,6 @@ class MemoryEntry(BaseModel):
     """Entry in the memory store."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     key: str = Field(..., description='Memory key')
     scope: MemoryScope = Field(default='session', description='Memory scope')
@@ -379,7 +368,6 @@ class Checkpoint(BaseModel):
     """Mission state checkpoint."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     name: str = Field(..., description='Checkpoint name')
     phase: MissionPhase = Field(..., description='Phase when checkpoint was created')
@@ -391,7 +379,6 @@ class MemoryState(BaseModel):
     """Overall memory state."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     entries: list[MemoryEntry] = Field(default_factory=list, description='Memory entries')
     checkpoints: list[Checkpoint] = Field(default_factory=list, description='State checkpoints')
@@ -405,7 +392,6 @@ class ErrorEvent(BaseModel):
     """Record of an error event."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     id: str = Field(..., description='Unique error identifier')
     timestamp: datetime = Field(default_factory=lambda: datetime.now(UTC), description='Error timestamp')
@@ -428,7 +414,6 @@ class LeaderboardAnalysis(BaseModel):
     """Analysis of competition leaderboard."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     top_score: float = Field(..., description='Top leaderboard score')
     median_score: float = Field(..., description='Median leaderboard score')
@@ -444,7 +429,6 @@ class ResearchFindings(BaseModel):
     """Complete research findings for a competition."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     leaderboard_analysis: LeaderboardAnalysis | None = Field(default=None, description='Leaderboard analysis')
     papers: list[dict[str, Any]] = Field(default_factory=list, description='Paper findings')
@@ -460,7 +444,6 @@ class MissionCriteria(BaseModel):
     """Criteria constraining mission execution."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     target_competition_types: frozenset[CompetitionType] = Field(
         default=frozenset({CompetitionType.FEATURED, CompetitionType.RESEARCH}), description='Target competition types'

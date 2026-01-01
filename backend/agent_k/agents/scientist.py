@@ -74,11 +74,9 @@ class ScientistSettings(BaseSettings):
     """Configuration for the Scientist agent."""
 
     model_config = SettingsConfigDict(env_prefix='SCIENTIST_', env_file='.env', extra='ignore', validate_default=True)
-
     model: str = Field(default=DEFAULT_MODEL, description='Model identifier for research tasks')
     temperature: float = Field(default=0.3, ge=0.0, le=2.0, description='Sampling temperature for research prompts')
     max_tokens: int = Field(default=4096, ge=1, description='Maximum tokens for responses')
-
     tool_retries: int = Field(default=2, ge=0, description='Tool retry attempts')
     output_retries: int = Field(default=1, ge=0, description='Output validation retry attempts')
     max_paper_results: int = Field(default=10, ge=1, description='Maximum papers to retrieve')
@@ -109,7 +107,6 @@ class ResearchFinding(BaseModel):
     """Individual research finding."""
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     category: str = Field(description='Category of finding')
     title: str = Field(description='Brief title')
@@ -122,7 +119,6 @@ class LeaderboardAnalysis(BaseModel):
     """Analysis of competition leaderboard."""
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     top_score: float = Field(description='Best leaderboard score')
     median_score: float = Field(description='Median leaderboard score')
@@ -135,7 +131,6 @@ class ResearchReport(BaseModel):
     """Complete research report for a competition."""
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     competition_id: str = Field(description='Competition identifier')
     domain_findings: list[ResearchFinding] = Field(

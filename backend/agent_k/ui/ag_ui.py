@@ -173,7 +173,6 @@ class MissionRequest(BaseModel):
     """Request to start a new mission."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     criteria: MissionCriteria = Field(..., description='Mission selection criteria')
     user_prompt: str | None = Field(default=None, description='Optional user context for the mission')
@@ -183,7 +182,6 @@ class AgentKEvent(BaseModel):
     """Event to be streamed to the frontend."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     type: EventType = Field(..., description='Event type identifier')
     timestamp: str = Field(..., description='ISO-8601 timestamp')
@@ -198,7 +196,6 @@ class MissionIntentOutput(BaseModel):
     """Structured output for intent detection."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     is_mission: bool = Field(default=False, description='Whether the user requested a mission')
     criteria: MissionCriteria | None = Field(default=None, description='Extracted mission criteria')

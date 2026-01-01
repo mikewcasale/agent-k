@@ -30,16 +30,13 @@ class TestMissionState:
 
         assert state.mission_id == mission_id
         assert state.competition_id is None
-        assert state.current_phase == "discovery"
+        assert state.current_phase == 'discovery'
 
     def test_creation_with_competition_id(self) -> None:
         """State should accept competition ID."""
-        state = MissionState(
-            mission_id=str(uuid4()),
-            competition_id="titanic",
-        )
+        state = MissionState(mission_id=str(uuid4()), competition_id='titanic')
 
-        assert state.competition_id == "titanic"
+        assert state.competition_id == 'titanic'
 
     def test_default_criteria(self) -> None:
         """State should have default criteria."""
@@ -50,14 +47,8 @@ class TestMissionState:
 
     def test_custom_criteria(self) -> None:
         """State should accept custom criteria."""
-        criteria = MissionCriteria(
-            target_leaderboard_percentile=0.05,
-            max_evolution_rounds=50,
-        )
-        state = MissionState(
-            mission_id=str(uuid4()),
-            criteria=criteria,
-        )
+        criteria = MissionCriteria(target_leaderboard_percentile=0.05, max_evolution_rounds=50)
+        state = MissionState(mission_id=str(uuid4()), criteria=criteria)
 
         assert state.criteria.target_leaderboard_percentile == 0.05
         assert state.criteria.max_evolution_rounds == 50

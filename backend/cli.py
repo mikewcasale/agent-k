@@ -10,14 +10,14 @@ from __future__ import annotations as _annotations
 
 from agent_k.ui.ag_ui import create_app
 
-__all__ = ("app", "health_check")
+__all__ = ('app', 'health_check')
 
 # Create the FastAPI app instance
 app = create_app()
 
 
 # Add health check endpoint for Render
-@app.get("/health")
+@app.get('/health')
 async def health_check() -> dict[str, str]:
     """Health check endpoint for Render."""
-    return {"status": "healthy"}
+    return {'status': 'healthy'}

@@ -159,7 +159,6 @@ class EvolutionResult(BaseModel):
     """Result of evolution process."""
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     best_solution: str = Field(description='Best solution code')
     best_fitness: float = Field(description='Fitness score of best solution')
@@ -173,7 +172,6 @@ class EvolutionFailure(BaseModel):
     """Failure result for evolution process."""
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     error_type: str = Field(description='Classification of failure')
     error_message: str = Field(description='Human-readable error')

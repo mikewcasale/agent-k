@@ -33,7 +33,6 @@ class MissionState(BaseModel):
     """State flowing through the mission graph."""
 
     model_config = ConfigDict(validate_assignment=True, arbitrary_types_allowed=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
 
     # Identity
@@ -82,7 +81,6 @@ class MissionResult(BaseModel):
     """Final result of mission execution."""
 
     model_config = ConfigDict(frozen=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     success: bool = Field(..., description='Whether mission completed successfully')
     mission_id: MissionId = Field(..., description='Mission identifier')

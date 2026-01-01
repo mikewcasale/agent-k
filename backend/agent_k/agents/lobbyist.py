@@ -57,11 +57,9 @@ class LobbyistSettings(BaseSettings):
     """Configuration for the Lobbyist agent."""
 
     model_config = SettingsConfigDict(env_prefix='LOBBYIST_', env_file='.env', extra='ignore', validate_default=True)
-
     model: str = Field(default=DEFAULT_MODEL, description='Model identifier for discovery tasks')
     temperature: float = Field(default=0.2, ge=0.0, le=2.0, description='Sampling temperature for discovery prompts')
     max_tokens: int = Field(default=2048, ge=1, description='Maximum tokens for responses')
-
     tool_retries: int = Field(default=2, ge=0, description='Tool retry attempts')
     output_retries: int = Field(default=1, ge=0, description='Output validation retry attempts')
     max_results: int = Field(default=50, ge=1, description='Maximum competitions to return')
@@ -86,7 +84,6 @@ class DiscoveryResult(BaseModel):
     """Result of competition discovery."""
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
-
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     competitions: list[Competition] = Field(
         default_factory=list, description='Discovered competitions matching criteria'

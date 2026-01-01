@@ -20,4 +20,4 @@ def test_toolset_is_function_toolset() -> None:
 
 def test_toolset_id() -> None:
     """Toolset should have the expected id."""
-    assert kaggle_toolset.id == "kaggle"
+    assert kaggle_toolset.id == 'kaggle'

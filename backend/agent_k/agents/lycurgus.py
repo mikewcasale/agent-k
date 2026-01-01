@@ -61,7 +61,6 @@ class LycurgusSettings(BaseSettings):
     """Settings for the Lycurgus orchestrator."""
 
     model_config = SettingsConfigDict(env_prefix='LYCURGUS_', env_file='.env', extra='ignore', validate_default=True)
-
     default_model: str = Field(default=DEFAULT_MODEL, description='Default model spec for mission orchestration')
     max_evolution_rounds: int = Field(default=100, ge=1, description='Maximum evolution rounds for missions')
 

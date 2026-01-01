@@ -16,7 +16,7 @@ import numpy as np
 # Local imports (core first, then alphabetical)
 from .embedder import embed_query
 
-__all__ = ("RAGRetriever", "RetrievalResult")
+__all__ = ('RAGRetriever', 'RetrievalResult')
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,11 +31,13 @@ class RetrievalResult:
 class RAGRetriever:
     """Simple RAG retriever with cosine similarity."""
 
-    def __init__(self, documents: list[str], embeddings: list[list[float]], metadata: list[dict[str, Any]] | None = None) -> None:
+    def __init__(
+        self, documents: list[str], embeddings: list[list[float]], metadata: list[dict[str, Any]] | None = None
+    ) -> None:
         if len(documents) != len(embeddings):
-            raise ValueError("documents and embeddings length mismatch")
+            raise ValueError('documents and embeddings length mismatch')
         if metadata is not None and len(metadata) != len(documents):
-            raise ValueError("metadata length must match documents")
+            raise ValueError('metadata length must match documents')
         self._documents = documents
         self._embeddings = np.array(embeddings, dtype=float)
         if not documents:
@@ -44,10 +46,10 @@ class RAGRetriever:
             self._metadata = metadata or []
             return
         if self._embeddings.ndim != 2 or self._embeddings.shape[0] != len(documents):
-            raise ValueError("embeddings must be a 2D array aligned with documents")
+            raise ValueError('embeddings must be a 2D array aligned with documents')
         norms = np.linalg.norm(self._embeddings, axis=1)
         if np.any(norms == 0):
-            raise ValueError("embeddings contain zero-norm vectors")
+            raise ValueError('embeddings contain zero-norm vectors')
         self._norms = norms
         self._metadata = metadata or [{} for _ in documents]
 
@@ -67,9 +69,9 @@ class RAGRetriever:
         query_embedding = await embed_query(query)
         query_vec = np.array(query_embedding, dtype=float)
         if query_vec.ndim != 1:
-            raise ValueError("query embedding must be a 1D vector")
+            raise ValueError('query embedding must be a 1D vector')
         if query_vec.shape[0] != self._embeddings.shape[1]:
-            raise ValueError("query embedding dimension mismatch")
+            raise ValueError('query embedding dimension mismatch')
 
         query_norm = np.linalg.norm(query_vec)
         if query_norm == 0:
@@ -80,4 +82,7 @@ class RAGRetriever:
         top_k = min(top_k, len(self._documents))
         top_indices = np.argsort(similarities)[-top_k:][::-1]
 
-        return [RetrievalResult(content=self._documents[i], score=float(similarities[i]), metadata=self._metadata[i]) for i in top_indices]
+        return [
+            RetrievalResult(content=self._documents[i], score=float(similarities[i]), metadata=self._metadata[i])
+            for i in top_indices
+        ]

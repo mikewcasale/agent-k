@@ -12,15 +12,15 @@ from .instrumentation import Metrics, configure_instrumentation, get_logger, tra
 from .providers import DEVSTRAL_BASE_URL, DEVSTRAL_MODEL_ID, create_devstral_model, get_model, is_devstral_model
 
 __all__ = (
-    "Settings",
-    "load_settings",
-    "configure_instrumentation",
-    "get_logger",
-    "traced",
-    "Metrics",
-    "DEVSTRAL_BASE_URL",
-    "DEVSTRAL_MODEL_ID",
-    "create_devstral_model",
-    "get_model",
-    "is_devstral_model",
+    'Settings',
+    'load_settings',
+    'configure_instrumentation',
+    'get_logger',
+    'traced',
+    'Metrics',
+    'DEVSTRAL_BASE_URL',
+    'DEVSTRAL_MODEL_ID',
+    'create_devstral_model',
+    'get_model',
+    'is_devstral_model',
 )

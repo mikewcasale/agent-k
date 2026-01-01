@@ -16,7 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 # Local imports (core first, then alphabetical)
 from agent_k.core.models import Competition, EvolutionState, MemoryState, MissionCriteria, PhasePlan, ResearchFindings
-from agent_k.core.types import CompetitionId, MissionId, MissionPhase, TaskId  # noqa: TC001
+from agent_k.core.types import CompetitionId, MissionId, MissionPhase, TaskId
 
 if TYPE_CHECKING:
     import httpx
@@ -24,9 +24,9 @@ if TYPE_CHECKING:
     from agent_k.core.protocols import PlatformAdapter
     from agent_k.ui.ag_ui import EventEmitter
 
-__all__ = ("MissionResult", "MissionState", "GraphContext", "SCHEMA_VERSION")
+__all__ = ('MissionResult', 'MissionState', 'GraphContext', 'SCHEMA_VERSION')
 
-SCHEMA_VERSION: Final[str] = "1.0.0"
+SCHEMA_VERSION: Final[str] = '1.0.0'
 
 
 class MissionState(BaseModel):
@@ -34,44 +34,48 @@ class MissionState(BaseModel):
 
     model_config = ConfigDict(validate_assignment=True, arbitrary_types_allowed=True)
 
-    schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
+    schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
 
     # Identity
-    mission_id: MissionId = Field(description="Unique mission identifier")
-    competition_id: CompetitionId | None = Field(default=None, description="Selected competition id")
+    mission_id: MissionId = Field(description='Unique mission identifier')
+    competition_id: CompetitionId | None = Field(default=None, description='Selected competition id')
 
     # Configuration
-    criteria: MissionCriteria = Field(default_factory=MissionCriteria, description="Mission selection criteria")
+    criteria: MissionCriteria = Field(default_factory=MissionCriteria, description='Mission selection criteria')
 
     # Phase tracking
-    current_phase: MissionPhase = Field(default="discovery", description="Current mission phase")
-    phases_completed: list[MissionPhase] = Field(default_factory=list, description="Completed phases")
+    current_phase: MissionPhase = Field(default='discovery', description='Current mission phase')
+    phases_completed: list[MissionPhase] = Field(default_factory=list, description='Completed phases')
 
     # Phase results
-    discovered_competitions: list[Competition] = Field(default_factory=list, description="Competitions found during discovery")
-    selected_competition: Competition | None = Field(default=None, description="Competition selected for execution")
-    research_findings: ResearchFindings | None = Field(default=None, description="Research findings from scientist phase")
-    prototype_code: str | None = Field(default=None, description="Prototype solution code")
-    prototype_score: float | None = Field(default=None, description="Prototype evaluation score")
-    evolution_state: EvolutionState | None = Field(default=None, description="Evolution phase state")
-    final_submission_id: str | None = Field(default=None, description="Final submission identifier")
-    final_score: float | None = Field(default=None, description="Final leaderboard score")
-    final_rank: int | None = Field(default=None, description="Final leaderboard rank")
+    discovered_competitions: list[Competition] = Field(
+        default_factory=list, description='Competitions found during discovery'
+    )
+    selected_competition: Competition | None = Field(default=None, description='Competition selected for execution')
+    research_findings: ResearchFindings | None = Field(
+        default=None, description='Research findings from scientist phase'
+    )
+    prototype_code: str | None = Field(default=None, description='Prototype solution code')
+    prototype_score: float | None = Field(default=None, description='Prototype evaluation score')
+    evolution_state: EvolutionState | None = Field(default=None, description='Evolution phase state')
+    final_submission_id: str | None = Field(default=None, description='Final submission identifier')
+    final_score: float | None = Field(default=None, description='Final leaderboard score')
+    final_rank: int | None = Field(default=None, description='Final leaderboard rank')
 
     # Error tracking
-    errors: list[dict[str, Any]] = Field(default_factory=list, description="Collected error details")
+    errors: list[dict[str, Any]] = Field(default_factory=list, description='Collected error details')
 
     # Timing
-    started_at: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Mission start time")
-    phase_started_at: datetime | None = Field(default=None, description="Current phase start time")
+    started_at: datetime = Field(default_factory=lambda: datetime.now(UTC), description='Mission start time')
+    phase_started_at: datetime | None = Field(default=None, description='Current phase start time')
 
     # Memory
-    memory: MemoryState = Field(default_factory=MemoryState, description="Mission memory state")
+    memory: MemoryState = Field(default_factory=MemoryState, description='Mission memory state')
 
     # Planning (for frontend)
-    phases: list[PhasePlan] = Field(default_factory=list, description="Phase plans for UI display")
-    current_task_id: TaskId | None = Field(default=None, description="Current task identifier")
-    overall_progress: float = Field(default=0.0, ge=0.0, le=100.0, description="Overall mission progress (percentage)")
+    phases: list[PhasePlan] = Field(default_factory=list, description='Phase plans for UI display')
+    current_task_id: TaskId | None = Field(default=None, description='Current task identifier')
+    overall_progress: float = Field(default=0.0, ge=0.0, le=100.0, description='Overall mission progress (percentage)')
 
 
 class MissionResult(BaseModel):
@@ -79,17 +83,17 @@ class MissionResult(BaseModel):
 
     model_config = ConfigDict(frozen=True)
 
-    schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
-    success: bool = Field(..., description="Whether mission completed successfully")
-    mission_id: MissionId = Field(..., description="Mission identifier")
-    competition_id: CompetitionId | None = Field(default=None, description="Competition identifier")
-    final_rank: int | None = Field(default=None, description="Final leaderboard rank")
-    final_score: float | None = Field(default=None, description="Final leaderboard score")
-    total_submissions: int = Field(default=0, description="Number of submissions made")
-    evolution_generations: int = Field(default=0, description="Evolution generations completed")
-    duration_ms: int = Field(default=0, description="Mission duration in milliseconds")
-    phases_completed: list[MissionPhase] = Field(default_factory=list, description="Phases completed during mission")
-    error_message: str | None = Field(default=None, description="Error message when mission fails")
+    schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
+    success: bool = Field(..., description='Whether mission completed successfully')
+    mission_id: MissionId = Field(..., description='Mission identifier')
+    competition_id: CompetitionId | None = Field(default=None, description='Competition identifier')
+    final_rank: int | None = Field(default=None, description='Final leaderboard rank')
+    final_score: float | None = Field(default=None, description='Final leaderboard score')
+    total_submissions: int = Field(default=0, description='Number of submissions made')
+    evolution_generations: int = Field(default=0, description='Evolution generations completed')
+    duration_ms: int = Field(default=0, description='Mission duration in milliseconds')
+    phases_completed: list[MissionPhase] = Field(default_factory=list, description='Phases completed during mission')
+    error_message: str | None = Field(default=None, description='Error message when mission fails')
 
 
 @dataclass(slots=True)

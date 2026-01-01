@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from agent_k.adapters.kaggle import KaggleAdapter
     from agent_k.ui.ag_ui import EventEmitter
 
-__all__ = ("BaseDeps", "KaggleDeps")
+__all__ = ('BaseDeps', 'KaggleDeps')
 
 
 @dataclass(kw_only=True)

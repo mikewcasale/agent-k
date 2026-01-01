@@ -64,25 +64,50 @@ dev-dependencies = [
 # Add any git/local sources here if needed
 
 [tool.ruff]
-line-length = 200
+line-length = 120
 target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B", "SIM", "TCH"]
+preview = true
+extend-select = [
+    "Q",        # flake8-quotes
+    "RUF100",   # unused noqa
+    "RUF018",   # assignment in assert
+    "C90",      # mccabe complexity
+    "UP",       # pyupgrade
+    "I",        # isort
+    "D",        # pydocstyle
+    "TID251",   # banned imports
+    "PLW1514",  # unspecified encoding
+]
+flake8-quotes = { inline-quotes = "single", multiline-quotes = "double" }
+mccabe = { max-complexity = 15 }
 ignore = [
-    "E501",    # Line too long (handled by formatter)
+    "D100",    # missing module docstring
+    "D102",    # missing public method docstring
+    "D104",    # missing public package docstring
+    "D105",    # missing magic method docstring
+    "D107",    # missing __init__ docstring
     "UP040",   # TypeAlias annotation - griffe doesn't support PEP 695 type statement
     "UP046",   # Generic class with Generic subclass - griffe doesn't support PEP 695
     "UP047",   # Generic function with type parameters - griffe doesn't support PEP 695
-    "TC003",   # Move import into type-checking block - not always desirable
 ]
 
 [tool.ruff.lint.isort]
+combine-as-imports = true
 known-first-party = ["agent_k"]
 split-on-trailing-comma = false
 
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"typing.TypedDict".msg = "Use typing_extensions.TypedDict instead."
+"typing.assert_never".msg = "Use typing_extensions.assert_never instead."
+
 [tool.ruff.format]
-quote-style = "double"
+docstring-code-format = false
+quote-style = "single"
 skip-magic-trailing-comma = true
 
 [tool.mypy]

@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
     from .models import Competition, LeaderboardEntry, Submission
 
-__all__ = ("PlatformAdapter",)
+__all__ = ('PlatformAdapter',)
 
 
 @runtime_checkable
@@ -53,7 +53,13 @@ class PlatformAdapter(Protocol):
         ...
 
     @abstractmethod
-    def search_competitions(self, categories: list[str] | None = None, keywords: list[str] | None = None, min_prize: int | None = None, active_only: bool = True) -> AsyncIterator[Competition]:
+    def search_competitions(
+        self,
+        categories: list[str] | None = None,
+        keywords: list[str] | None = None,
+        min_prize: int | None = None,
+        active_only: bool = True,
+    ) -> AsyncIterator[Competition]:
         """Search for competitions matching criteria.
 
         Args:
@@ -96,7 +102,7 @@ class PlatformAdapter(Protocol):
         ...
 
     @abstractmethod
-    async def submit(self, competition_id: str, file_path: str, message: str = "") -> Submission:
+    async def submit(self, competition_id: str, file_path: str, message: str = '') -> Submission:
         """Submit solution to competition.
 
         Args:

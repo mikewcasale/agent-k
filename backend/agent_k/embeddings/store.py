@@ -11,7 +11,7 @@ from dataclasses import dataclass, field
 from math import sqrt
 from typing import Any, Protocol
 
-__all__ = ("InMemoryVectorStore", "VectorRecord", "VectorStore")
+__all__ = ('InMemoryVectorStore', 'VectorRecord', 'VectorStore')
 
 
 @dataclass(frozen=True, slots=True)
@@ -57,7 +57,7 @@ class InMemoryVectorStore:
 
 def _cosine_similarity(left: list[float], right: list[float]) -> float:
     if len(left) != len(right):
-        raise ValueError("Vectors must have the same dimension")
+        raise ValueError('Vectors must have the same dimension')
     dot = sum(left_val * right_val for left_val, right_val in zip(left, right, strict=False))
     left_norm = sqrt(sum(left_val * left_val for left_val in left))
     right_norm = sqrt(sum(right_val * right_val for right_val in right))

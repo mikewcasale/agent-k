@@ -9,13 +9,13 @@ from __future__ import annotations as _annotations
 # Local imports (core first, then alphabetical)
 from . import __version__
 
-__all__ = ("main",)
+__all__ = ('main',)
 
 
 def main() -> None:
     """Simple CLI entry that reports the package version."""
-    print(f"AGENT-K version {__version__}")
+    print(f'AGENT-K version {__version__}')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

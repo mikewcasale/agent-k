@@ -18,9 +18,9 @@ from pydantic_graph.persistence.file import FileStatePersistence
 # Local imports (core first, then alphabetical)
 from .state import MissionResult, MissionState
 
-__all__ = ("MissionPersistence", "create_persistence", "CHECKPOINT_DIR")
+__all__ = ('MissionPersistence', 'create_persistence', 'CHECKPOINT_DIR')
 
-CHECKPOINT_DIR: Final[Path] = Path("~/.agent_k/checkpoints").expanduser()
+CHECKPOINT_DIR: Final[Path] = Path('~/.agent_k/checkpoints').expanduser()
 
 
 class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
@@ -32,18 +32,18 @@ class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
         self.mission_dir = checkpoint_dir / mission_id
         self.mission_dir.mkdir(parents=True, exist_ok=True)
 
-        super().__init__(self.mission_dir / "state.json")
+        super().__init__(self.mission_dir / 'state.json')
 
     async def save(self, state: MissionState) -> None:
         """Save state with timestamp and clean up old checkpoints."""
-        with logfire.span("mission.persistence.save", mission_id=self.mission_id):
-            timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
-            checkpoint_path = self.mission_dir / f"checkpoint_{timestamp}.json"
-            checkpoint_path.write_text(state.model_dump_json(indent=2), encoding="utf-8")
+        with logfire.span('mission.persistence.save', mission_id=self.mission_id):
+            timestamp = datetime.now(UTC).strftime('%Y%m%d_%H%M%S')
+            checkpoint_path = self.mission_dir / f'checkpoint_{timestamp}.json'
+            checkpoint_path.write_text(state.model_dump_json(indent=2), encoding='utf-8')
             await self._cleanup_old_checkpoints()
 
     async def _cleanup_old_checkpoints(self) -> None:
-        checkpoints = sorted(self.mission_dir.glob("checkpoint_*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+        checkpoints = sorted(self.mission_dir.glob('checkpoint_*.json'), key=lambda p: p.stat().st_mtime, reverse=True)
         for old_checkpoint in checkpoints[self.max_checkpoints :]:
             old_checkpoint.unlink()
 

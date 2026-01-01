@@ -23,11 +23,16 @@ import logfire
 from pydantic_graph import BaseNode, End, GraphRunContext
 
 # Local imports (core first, then alphabetical)
-from ..agents.evolver import EvolutionFailure, EvolverDeps, evolver_agent
-from ..agents.evolver import settings as evolver_settings
+from ..agents.evolver import EvolutionFailure, EvolverDeps, evolver_agent, settings as evolver_settings
 from ..agents.lobbyist import LobbyistDeps
 from ..agents.scientist import ScientistDeps, scientist_agent
-from ..core.constants import DISCOVERY_TIMEOUT_SECONDS, EVOLUTION_TIMEOUT_SECONDS, PROTOTYPE_TIMEOUT_SECONDS, RESEARCH_TIMEOUT_SECONDS, SUBMISSION_TIMEOUT_SECONDS
+from ..core.constants import (
+    DISCOVERY_TIMEOUT_SECONDS,
+    EVOLUTION_TIMEOUT_SECONDS,
+    PROTOTYPE_TIMEOUT_SECONDS,
+    RESEARCH_TIMEOUT_SECONDS,
+    SUBMISSION_TIMEOUT_SECONDS,
+)
 from ..core.data import infer_competition_schema, locate_data_files, stage_competition_data
 from ..core.models import EvaluationMetric, EvolutionState, GenerationMetrics, LeaderboardAnalysis, ResearchFindings
 from ..core.solution import execute_solution, parse_baseline_score
@@ -39,7 +44,7 @@ if TYPE_CHECKING:
     from ..core.protocols import PlatformAdapter
     from ..ui.ag_ui import EventEmitter
 
-__all__ = ("DiscoveryNode", "ResearchNode", "PrototypeNode", "EvolutionNode", "SubmissionNode")
+__all__ = ('DiscoveryNode', 'ResearchNode', 'PrototypeNode', 'EvolutionNode', 'SubmissionNode')
 
 
 # =============================================================================
@@ -64,11 +69,18 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
         state = ctx.state
         emitter, http_client, platform_adapter = _require_context(ctx.deps)
 
-        with logfire.span("graph.discovery", mission_id=state.mission_id):
+        with logfire.span('graph.discovery', mission_id=state.mission_id):
             # Emit phase start
-            await emitter.emit_phase_start(phase="discovery", objectives=["Find competitions matching criteria", "Validate competition accessibility", "Rank by fit score"])
+            await emitter.emit_phase_start(
+                phase='discovery',
+                objectives=[
+                    'Find competitions matching criteria',
+                    'Validate competition accessibility',
+                    'Rank by fit score',
+                ],
+            )
 
-            state.current_phase = "discovery"
+            state.current_phase = 'discovery'
             state.phase_started_at = datetime.now(UTC)
 
             try:
@@ -86,48 +98,71 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 state.discovered_competitions = result.competitions
 
                 if not result.competitions:
-                    await emitter.emit_phase_complete(phase="discovery", success=False, duration_ms=self._elapsed_ms(state.phase_started_at))
-                    return End(MissionResult(success=False, mission_id=state.mission_id, error_message="No competitions found matching criteria", phases_completed=list(state.phases_completed)))
+                    await emitter.emit_phase_complete(
+                        phase='discovery', success=False, duration_ms=self._elapsed_ms(state.phase_started_at)
+                    )
+                    return End(
+                        MissionResult(
+                            success=False,
+                            mission_id=state.mission_id,
+                            error_message='No competitions found matching criteria',
+                            phases_completed=list(state.phases_completed),
+                        )
+                    )
 
                 # Select best competition
                 state.selected_competition = result.competitions[0]
                 state.competition_id = state.selected_competition.id
-                state.phases_completed.append("discovery")
+                state.phases_completed.append('discovery')
 
-                await emitter.emit_phase_complete(phase="discovery", success=True, duration_ms=self._elapsed_ms(state.phase_started_at))
+                await emitter.emit_phase_complete(
+                    phase='discovery', success=True, duration_ms=self._elapsed_ms(state.phase_started_at)
+                )
 
                 # Transition to research
                 return ResearchNode(scientist_agent=self._get_scientist_agent())
 
             except Exception as e:
-                logfire.error("discovery_failed", error=str(e))
-                state.errors.append({"phase": "discovery", "error": str(e), "timestamp": datetime.now(UTC).isoformat()})
+                logfire.error('discovery_failed', error=str(e))
+                state.errors.append({'phase': 'discovery', 'error': str(e), 'timestamp': datetime.now(UTC).isoformat()})
                 await emitter.emit_error(
-                    error_id=f"discovery_{state.mission_id}", category="recoverable", error_type=type(e).__name__, message=str(e), context="Discovery phase", recovery_strategy="retry"
+                    error_id=f'discovery_{state.mission_id}',
+                    category='recoverable',
+                    error_type=type(e).__name__,
+                    message=str(e),
+                    context='Discovery phase',
+                    recovery_strategy='retry',
                 )
-                return End(MissionResult(success=False, mission_id=state.mission_id, error_message=f"Discovery failed: {e}", phases_completed=list(state.phases_completed)))
+                return End(
+                    MissionResult(
+                        success=False,
+                        mission_id=state.mission_id,
+                        error_message=f'Discovery failed: {e}',
+                        phases_completed=list(state.phases_completed),
+                    )
+                )
 
     def _build_discovery_prompt(self, criteria: Any) -> str:
         """Build discovery prompt from criteria."""
-        parts = ["Find Kaggle competitions with the following criteria:"]
+        parts = ['Find Kaggle competitions with the following criteria:']
 
         if criteria.target_competition_types:
-            types = ", ".join(t.value for t in criteria.target_competition_types)
-            parts.append(f"- Types: {types}")
+            types = ', '.join(t.value for t in criteria.target_competition_types)
+            parts.append(f'- Types: {types}')
 
         if criteria.min_prize_pool:
-            parts.append(f"- Minimum prize: ${criteria.min_prize_pool:,}")
+            parts.append(f'- Minimum prize: ${criteria.min_prize_pool:,}')
 
         if criteria.min_days_remaining:
-            parts.append(f"- At least {criteria.min_days_remaining} days remaining")
+            parts.append(f'- At least {criteria.min_days_remaining} days remaining')
 
         if criteria.target_domains:
-            domains = ", ".join(criteria.target_domains)
-            parts.append(f"- Domains: {domains}")
+            domains = ', '.join(criteria.target_domains)
+            parts.append(f'- Domains: {domains}')
 
-        parts.append(f"- Target top {criteria.target_leaderboard_percentile * 100:.0f}% on leaderboard")
+        parts.append(f'- Target top {criteria.target_leaderboard_percentile * 100:.0f}% on leaderboard')
 
-        return "\n".join(parts)
+        return '\n'.join(parts)
 
     def _elapsed_ms(self, start: datetime | None) -> int:
         """Calculate elapsed milliseconds."""
@@ -164,43 +199,68 @@ class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
         emitter, http_client, platform_adapter = _require_context(ctx.deps)
         competition = state.selected_competition
         if competition is None:
-            return End(MissionResult(success=False, mission_id=state.mission_id, error_message="No competition selected for research", phases_completed=list(state.phases_completed)))
-
-        with logfire.span("graph.research", competition_id=state.competition_id):
-            await emitter.emit_phase_start(
-                phase="research",
-                objectives=["Analyze leaderboard and score distribution", "Review relevant papers and techniques", "Perform exploratory data analysis", "Synthesize strategy recommendations"],
+            return End(
+                MissionResult(
+                    success=False,
+                    mission_id=state.mission_id,
+                    error_message='No competition selected for research',
+                    phases_completed=list(state.phases_completed),
+                )
             )
 
-            state.current_phase = "research"
+        with logfire.span('graph.research', competition_id=state.competition_id):
+            await emitter.emit_phase_start(
+                phase='research',
+                objectives=[
+                    'Analyze leaderboard and score distribution',
+                    'Review relevant papers and techniques',
+                    'Perform exploratory data analysis',
+                    'Synthesize strategy recommendations',
+                ],
+            )
+
+            state.current_phase = 'research'
             state.phase_started_at = datetime.now(UTC)
 
             try:
                 # Research implementation
-                deps = ScientistDeps(http_client=http_client, platform_adapter=platform_adapter, competition=competition)
+                deps = ScientistDeps(
+                    http_client=http_client, platform_adapter=platform_adapter, competition=competition
+                )
 
-                prompt = f"Research competition: {competition.title}"
+                prompt = f'Research competition: {competition.title}'
                 run_result = await self.scientist_agent.run(prompt, deps=deps)
                 result = run_result.output
 
                 try:
                     leaderboard = await platform_adapter.get_leaderboard(competition.id, limit=100)
-                    analysis = _build_leaderboard_analysis(leaderboard, state.criteria.target_leaderboard_percentile, competition.metric_direction)
+                    analysis = _build_leaderboard_analysis(
+                        leaderboard, state.criteria.target_leaderboard_percentile, competition.metric_direction
+                    )
                 except Exception as exc:
-                    logfire.warning("leaderboard_analysis_failed", error=str(exc))
+                    logfire.warning('leaderboard_analysis_failed', error=str(exc))
                     analysis = None
 
                 state.research_findings = _build_research_findings(result, analysis)
-                state.phases_completed.append("research")
+                state.phases_completed.append('research')
 
-                await emitter.emit_phase_complete(phase="research", success=True, duration_ms=self._elapsed_ms(state.phase_started_at))
+                await emitter.emit_phase_complete(
+                    phase='research', success=True, duration_ms=self._elapsed_ms(state.phase_started_at)
+                )
 
                 return PrototypeNode()
 
             except Exception as e:
-                logfire.error("research_failed", error=str(e))
-                state.errors.append({"phase": "research", "error": str(e), "timestamp": datetime.now(UTC).isoformat()})
-                return End(MissionResult(success=False, mission_id=state.mission_id, error_message=f"Research failed: {e}", phases_completed=list(state.phases_completed)))
+                logfire.error('research_failed', error=str(e))
+                state.errors.append({'phase': 'research', 'error': str(e), 'timestamp': datetime.now(UTC).isoformat()})
+                return End(
+                    MissionResult(
+                        success=False,
+                        mission_id=state.mission_id,
+                        error_message=f'Research failed: {e}',
+                        phases_completed=list(state.phases_completed),
+                    )
+                )
 
     def _elapsed_ms(self, start: datetime | None) -> int:
         if not start:
@@ -231,12 +291,26 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         emitter, _http_client, platform_adapter = _require_context(ctx.deps)
         competition = state.selected_competition
         if competition is None:
-            return End(MissionResult(success=False, mission_id=state.mission_id, error_message="No competition selected for prototype phase", phases_completed=list(state.phases_completed)))
+            return End(
+                MissionResult(
+                    success=False,
+                    mission_id=state.mission_id,
+                    error_message='No competition selected for prototype phase',
+                    phases_completed=list(state.phases_completed),
+                )
+            )
 
-        with logfire.span("graph.prototype", competition_id=state.competition_id):
-            await emitter.emit_phase_start(phase="prototype", objectives=["Generate baseline solution code", "Validate solution structure", "Establish baseline score"])
+        with logfire.span('graph.prototype', competition_id=state.competition_id):
+            await emitter.emit_phase_start(
+                phase='prototype',
+                objectives=[
+                    'Generate baseline solution code',
+                    'Validate solution structure',
+                    'Establish baseline score',
+                ],
+            )
 
-            state.current_phase = "prototype"
+            state.current_phase = 'prototype'
             state.phase_started_at = datetime.now(UTC)
 
             try:
@@ -247,72 +321,118 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     data_files = await platform_adapter.download_data(competition_id, work_dir)
                     train_path, test_path, sample_path = locate_data_files(data_files)
                     staged = stage_competition_data(train_path, test_path, sample_path, work_path)
-                    schema = infer_competition_schema(staged["train"], staged["test"], staged["sample"])
+                    schema = infer_competition_schema(staged['train'], staged['test'], staged['sample'])
 
                     prototype_code = self._generate_prototype(
-                        competition, state.research_findings, target_columns=schema.target_columns, train_target_columns=schema.train_target_columns, id_column=schema.id_column
+                        competition,
+                        state.research_findings,
+                        target_columns=schema.target_columns,
+                        train_target_columns=schema.train_target_columns,
+                        id_column=schema.id_column,
                     )
 
-                    execution = await execute_solution(prototype_code, work_path, timeout_seconds=self.timeout, use_builtin_code_execution=True, model_spec=evolver_settings.model)
+                    execution = await execute_solution(
+                        prototype_code,
+                        work_path,
+                        timeout_seconds=self.timeout,
+                        use_builtin_code_execution=True,
+                        model_spec=evolver_settings.model,
+                    )
 
-                    submission_path = work_path / "submission.csv"
+                    submission_path = work_path / 'submission.csv'
                     baseline_score = parse_baseline_score(execution.stdout)
                     if not submission_path.exists() or execution.returncode != 0 or execution.timed_out:
                         fallback_code = _generate_fallback_prototype(
-                            target_columns=schema.target_columns, train_target_columns=schema.train_target_columns, id_column=schema.id_column, metric=competition.metric
+                            target_columns=schema.target_columns,
+                            train_target_columns=schema.train_target_columns,
+                            id_column=schema.id_column,
+                            metric=competition.metric,
                         )
-                        _write_fallback_submission(train_path=staged["train"], test_path=staged["test"], sample_path=staged["sample"], metric=competition.metric, output_path=submission_path)
+                        _write_fallback_submission(
+                            train_path=staged['train'],
+                            test_path=staged['test'],
+                            sample_path=staged['sample'],
+                            metric=competition.metric,
+                            output_path=submission_path,
+                        )
                         prototype_code = fallback_code
 
                     if baseline_score is None:
-                        baseline_score = _compute_baseline_score(train_path=staged["train"], target_columns=schema.train_target_columns, metric=competition.metric)
+                        baseline_score = _compute_baseline_score(
+                            train_path=staged['train'],
+                            target_columns=schema.train_target_columns,
+                            metric=competition.metric,
+                        )
 
                     state.prototype_code = prototype_code
                     state.prototype_score = baseline_score
 
-                state.phases_completed.append("prototype")
+                state.phases_completed.append('prototype')
 
-                await emitter.emit_phase_complete(phase="prototype", success=True, duration_ms=self._elapsed_ms(state.phase_started_at))
+                await emitter.emit_phase_complete(
+                    phase='prototype', success=True, duration_ms=self._elapsed_ms(state.phase_started_at)
+                )
 
                 return EvolutionNode(evolver_agent=self._get_evolver_agent())
 
             except Exception as e:
-                logfire.error("prototype_failed", error=str(e))
-                state.errors.append({"phase": "prototype", "error": str(e), "timestamp": datetime.now(UTC).isoformat()})
-                return End(MissionResult(success=False, mission_id=state.mission_id, error_message=f"Prototype failed: {e}", phases_completed=list(state.phases_completed)))
+                logfire.error('prototype_failed', error=str(e))
+                state.errors.append({'phase': 'prototype', 'error': str(e), 'timestamp': datetime.now(UTC).isoformat()})
+                return End(
+                    MissionResult(
+                        success=False,
+                        mission_id=state.mission_id,
+                        error_message=f'Prototype failed: {e}',
+                        phases_completed=list(state.phases_completed),
+                    )
+                )
 
-    def _generate_prototype(self, competition: Any, research: Any, *, target_columns: list[str], train_target_columns: list[str], id_column: str) -> str:
+    def _generate_prototype(
+        self,
+        competition: Any,
+        research: Any,
+        *,
+        target_columns: list[str],
+        train_target_columns: list[str],
+        id_column: str,
+    ) -> str:
         """Generate prototype solution code."""
-        metric = getattr(competition, "metric", None)
+        metric = getattr(competition, 'metric', None)
         metric_key = metric if isinstance(metric, EvaluationMetric) else EvaluationMetric.ACCURACY
         metric_value = metric_key.value
         target_columns_repr = repr(target_columns)
         train_target_columns_repr = repr(train_target_columns)
         strategy_items: list[str] = []
-        for attr in ("strategy_recommendations", "recommended_approaches"):
+        for attr in ('strategy_recommendations', 'recommended_approaches'):
             value = getattr(research, attr, None)
             if isinstance(value, list):
                 strategy_items.extend(str(item) for item in value if item)
             elif isinstance(value, str) and value:
                 strategy_items.append(value)
-        strategy_text = " ".join(strategy_items)
+        strategy_text = ' '.join(strategy_items)
         strategy_lower = strategy_text.lower()
 
-        is_classification = metric_key in {EvaluationMetric.ACCURACY, EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS, EvaluationMetric.F1}
+        is_classification = metric_key in {
+            EvaluationMetric.ACCURACY,
+            EvaluationMetric.AUC,
+            EvaluationMetric.LOG_LOSS,
+            EvaluationMetric.F1,
+        }
         uses_proba = metric_key in {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
 
-        if "linear" in strategy_lower:
-            model_class = "LogisticRegression" if is_classification else "LinearRegression"
-            model_import = "from sklearn.linear_model import LogisticRegression, LinearRegression"
-        elif "gradient" in strategy_lower or "boost" in strategy_lower:
-            model_class = "GradientBoostingClassifier" if is_classification else "GradientBoostingRegressor"
-            model_import = "from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor"
+        if 'linear' in strategy_lower:
+            model_class = 'LogisticRegression' if is_classification else 'LinearRegression'
+            model_import = 'from sklearn.linear_model import LogisticRegression, LinearRegression'
+        elif 'gradient' in strategy_lower or 'boost' in strategy_lower:
+            model_class = 'GradientBoostingClassifier' if is_classification else 'GradientBoostingRegressor'
+            model_import = 'from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor'
         else:
-            model_class = "RandomForestClassifier" if is_classification else "RandomForestRegressor"
-            model_import = "from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor"
+            model_class = 'RandomForestClassifier' if is_classification else 'RandomForestRegressor'
+            model_import = 'from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor'
 
         return (
-            dedent(f"""
+            dedent(
+                f"""
         import os
         import numpy as np
         import pandas as pd
@@ -511,8 +631,9 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 for idx, column in enumerate(TARGET_COLUMNS):
                     submission[column] = test_preds[:, idx]
         submission.to_csv("submission.csv", index=False)
-        """).strip()
-            + "\n"
+        """
+            ).strip()
+            + '\n'
         )
 
     def _elapsed_ms(self, start: datetime | None) -> int:
@@ -548,14 +669,27 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
         emitter, _http_client, platform_adapter = _require_context(ctx.deps)
         competition = state.selected_competition
         if competition is None:
-            return End(MissionResult(success=False, mission_id=state.mission_id, error_message="No competition selected for evolution phase", phases_completed=list(state.phases_completed)))
-
-        with logfire.span("graph.evolution", competition_id=state.competition_id):
-            await emitter.emit_phase_start(
-                phase="evolution", objectives=["Initialize population from prototype", "Evolve solutions over generations", "Track fitness improvements", "Achieve target score or convergence"]
+            return End(
+                MissionResult(
+                    success=False,
+                    mission_id=state.mission_id,
+                    error_message='No competition selected for evolution phase',
+                    phases_completed=list(state.phases_completed),
+                )
             )
 
-            state.current_phase = "evolution"
+        with logfire.span('graph.evolution', competition_id=state.competition_id):
+            await emitter.emit_phase_start(
+                phase='evolution',
+                objectives=[
+                    'Initialize population from prototype',
+                    'Evolve solutions over generations',
+                    'Track fitness improvements',
+                    'Achieve target score or convergence',
+                ],
+            )
+
+            state.current_phase = 'evolution'
             state.phase_started_at = datetime.now(UTC)
 
             try:
@@ -569,19 +703,19 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     data_files = await platform_adapter.download_data(competition_id, work_dir)
                     train_path, test_path, sample_path = locate_data_files(data_files)
                     staged = stage_competition_data(train_path, test_path, sample_path, work_path)
-                    schema = infer_competition_schema(staged["train"], staged["test"], staged["sample"])
+                    schema = infer_competition_schema(staged['train'], staged['test'], staged['sample'])
 
                     deps = EvolverDeps(
                         competition=competition,
                         event_emitter=emitter,
                         platform_adapter=platform_adapter,
                         data_dir=work_path,
-                        train_path=staged["train"],
-                        test_path=staged["test"],
-                        sample_path=staged["sample"],
+                        train_path=staged['train'],
+                        test_path=staged['test'],
+                        sample_path=staged['sample'],
                         target_columns=schema.target_columns,
                         train_target_columns=schema.train_target_columns,
-                        initial_solution=state.prototype_code or "",
+                        initial_solution=state.prototype_code or '',
                         max_generations=state.criteria.max_evolution_rounds,
                         solution_timeout=evolver_settings.solution_timeout,
                         target_score=self._calculate_target_score(state),
@@ -590,25 +724,36 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     prompt = f"""
                     Evolve solution for {competition.title}.
                     Target: Top {state.criteria.target_leaderboard_percentile * 100:.0f}% on leaderboard.
-                    Research suggests: {state.research_findings.strategy_recommendations if state.research_findings else "N/A"}
+                    Research suggests: {state.research_findings.strategy_recommendations if state.research_findings else 'N/A'}
                     """
 
                     run_result = await self.evolver_agent.run(prompt, deps=deps)
                 result = run_result.output
                 if isinstance(result, EvolutionFailure):
                     if result.partial_solution and state.evolution_state is not None:
-                        state.evolution_state = state.evolution_state.model_copy(update={"best_solution": {"code": result.partial_solution, "fitness": 0.0}})
+                        state.evolution_state = state.evolution_state.model_copy(
+                            update={'best_solution': {'code': result.partial_solution, 'fitness': 0.0}}
+                        )
 
-                    state.errors.append({"phase": "evolution", "error": result.error_message, "error_type": result.error_type, "timestamp": datetime.now(UTC).isoformat()})
+                    state.errors.append(
+                        {
+                            'phase': 'evolution',
+                            'error': result.error_message,
+                            'error_type': result.error_type,
+                            'timestamp': datetime.now(UTC).isoformat(),
+                        }
+                    )
 
-                    await emitter.emit_phase_complete(phase="evolution", success=False, duration_ms=self._elapsed_ms(state.phase_started_at))
+                    await emitter.emit_phase_complete(
+                        phase='evolution', success=False, duration_ms=self._elapsed_ms(state.phase_started_at)
+                    )
 
                     return End(
                         MissionResult(
                             success=False,
                             mission_id=state.mission_id,
                             competition_id=state.competition_id,
-                            error_message=f"Evolution failed: {result.error_message}",
+                            error_message=f'Evolution failed: {result.error_message}',
                             phases_completed=list(state.phases_completed),
                         )
                     )
@@ -616,28 +761,39 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 # Update state with evolution results
                 state.evolution_state = state.evolution_state.model_copy(
                     update={
-                        "best_solution": {"code": result.best_solution, "fitness": result.best_fitness},
-                        "convergence_detected": result.convergence_achieved,
-                        "convergence_reason": result.convergence_reason,
-                        "current_generation": max(result.generations_completed, len(deps.generation_history)),
-                        "population_size": deps.population_size,
-                        "generation_history": _convert_generation_history(deps.generation_history, deps.population_size),
+                        'best_solution': {'code': result.best_solution, 'fitness': result.best_fitness},
+                        'convergence_detected': result.convergence_achieved,
+                        'convergence_reason': result.convergence_reason,
+                        'current_generation': max(result.generations_completed, len(deps.generation_history)),
+                        'population_size': deps.population_size,
+                        'generation_history': _convert_generation_history(
+                            deps.generation_history, deps.population_size
+                        ),
                     }
                 )
 
-                state.phases_completed.append("evolution")
+                state.phases_completed.append('evolution')
 
-                await emitter.emit_phase_complete(phase="evolution", success=True, duration_ms=self._elapsed_ms(state.phase_started_at))
+                await emitter.emit_phase_complete(
+                    phase='evolution', success=True, duration_ms=self._elapsed_ms(state.phase_started_at)
+                )
 
                 return SubmissionNode()
 
             except Exception as e:
-                logfire.error("evolution_failed", error=str(e))
-                state.errors.append({"phase": "evolution", "error": str(e), "timestamp": datetime.now(UTC).isoformat()})
+                logfire.error('evolution_failed', error=str(e))
+                state.errors.append({'phase': 'evolution', 'error': str(e), 'timestamp': datetime.now(UTC).isoformat()})
                 # Even on failure, try to submit best solution if available
                 if state.evolution_state and state.evolution_state.best_solution:
                     return SubmissionNode()
-                return End(MissionResult(success=False, mission_id=state.mission_id, error_message=f"Evolution failed: {e}", phases_completed=list(state.phases_completed)))
+                return End(
+                    MissionResult(
+                        success=False,
+                        mission_id=state.mission_id,
+                        error_message=f'Evolution failed: {e}',
+                        phases_completed=list(state.phases_completed),
+                    )
+                )
 
     def _calculate_target_score(self, state: MissionState) -> float:
         """Calculate target score from research findings."""
@@ -674,24 +830,41 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
         emitter, _http_client, platform_adapter = _require_context(ctx.deps)
         competition = state.selected_competition
         if competition is None:
-            return End(MissionResult(success=False, mission_id=state.mission_id, error_message="No competition selected for submission", phases_completed=list(state.phases_completed)))
+            return End(
+                MissionResult(
+                    success=False,
+                    mission_id=state.mission_id,
+                    error_message='No competition selected for submission',
+                    phases_completed=list(state.phases_completed),
+                )
+            )
 
-        with logfire.span("graph.submission", competition_id=state.competition_id):
-            await emitter.emit_phase_start(phase="submission", objectives=["Generate final predictions", "Submit to Kaggle", "Retrieve final score and rank"])
+        with logfire.span('graph.submission', competition_id=state.competition_id):
+            await emitter.emit_phase_start(
+                phase='submission',
+                objectives=['Generate final predictions', 'Submit to Kaggle', 'Retrieve final score and rank'],
+            )
 
-            state.current_phase = "submission"
+            state.current_phase = 'submission'
             state.phase_started_at = datetime.now(UTC)
 
             try:
                 # Get best solution
-                best_code = ""
+                best_code = ''
                 if state.evolution_state and state.evolution_state.best_solution:
-                    best_code = state.evolution_state.best_solution.get("code", "")
+                    best_code = state.evolution_state.best_solution.get('code', '')
                 elif state.prototype_code:
                     best_code = state.prototype_code
 
                 if not best_code:
-                    return End(MissionResult(success=False, mission_id=state.mission_id, error_message="No solution available for submission", phases_completed=list(state.phases_completed)))
+                    return End(
+                        MissionResult(
+                            success=False,
+                            mission_id=state.mission_id,
+                            error_message='No solution available for submission',
+                            phases_completed=list(state.phases_completed),
+                        )
+                    )
 
                 with tempfile.TemporaryDirectory() as work_dir:
                     work_path = Path(work_dir)
@@ -701,22 +874,49 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     train_path, test_path, sample_path = locate_data_files(data_files)
                     staged = stage_competition_data(train_path, test_path, sample_path, work_path)
 
-                    submission_path = work_path / "submission.csv"
-                    execution = await execute_solution(best_code, work_path, timeout_seconds=self.timeout, use_builtin_code_execution=True, model_spec=evolver_settings.model)
+                    submission_path = work_path / 'submission.csv'
+                    execution = await execute_solution(
+                        best_code,
+                        work_path,
+                        timeout_seconds=self.timeout,
+                        use_builtin_code_execution=True,
+                        model_spec=evolver_settings.model,
+                    )
 
                     if not submission_path.exists() or execution.returncode != 0 or execution.timed_out:
                         fallback_code = state.prototype_code
                         if fallback_code and fallback_code != best_code:
-                            execution = await execute_solution(fallback_code, work_path, timeout_seconds=self.timeout, use_builtin_code_execution=True, model_spec=evolver_settings.model)
+                            execution = await execute_solution(
+                                fallback_code,
+                                work_path,
+                                timeout_seconds=self.timeout,
+                                use_builtin_code_execution=True,
+                                model_spec=evolver_settings.model,
+                            )
 
                         if not submission_path.exists() or execution.returncode != 0 or execution.timed_out:
-                            _write_fallback_submission(train_path=staged["train"], test_path=staged["test"], sample_path=staged["sample"], metric=competition.metric, output_path=submission_path)
+                            _write_fallback_submission(
+                                train_path=staged['train'],
+                                test_path=staged['test'],
+                                sample_path=staged['sample'],
+                                metric=competition.metric,
+                                output_path=submission_path,
+                            )
 
                     if not submission_path.exists():
-                        return End(MissionResult(success=False, mission_id=state.mission_id, error_message="Failed to generate submission file", phases_completed=list(state.phases_completed)))
+                        return End(
+                            MissionResult(
+                                success=False,
+                                mission_id=state.mission_id,
+                                error_message='Failed to generate submission file',
+                                phases_completed=list(state.phases_completed),
+                            )
+                        )
 
                     # Submit via platform adapter
-                    submission = await platform_adapter.submit(competition_id, str(submission_path), message=f"AGENT-K mission {state.mission_id}")
+                    submission = await platform_adapter.submit(
+                        competition_id, str(submission_path), message=f'AGENT-K mission {state.mission_id}'
+                    )
 
                 state.final_submission_id = submission.id
 
@@ -735,19 +935,25 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         state.final_rank = entry.rank
                         break
 
-                state.phases_completed.append("submission")
+                state.phases_completed.append('submission')
 
                 # Emit submission result
                 await emitter.emit_submission_result(
                     submission_id=submission.id,
-                    generation=len(state.evolution_state.generation_history) if state.evolution_state else 0,
-                    cv_score=state.evolution_state.best_solution.get("fitness", 0) if state.evolution_state and state.evolution_state.best_solution else 0,
+                    generation=(len(state.evolution_state.generation_history) if state.evolution_state else 0),
+                    cv_score=(
+                        state.evolution_state.best_solution.get('fitness', 0)
+                        if state.evolution_state and state.evolution_state.best_solution
+                        else 0
+                    ),
                     public_score=state.final_score,
                     rank=state.final_rank,
                     total_teams=len(leaderboard),
                 )
 
-                await emitter.emit_phase_complete(phase="submission", success=True, duration_ms=self._elapsed_ms(state.phase_started_at))
+                await emitter.emit_phase_complete(
+                    phase='submission', success=True, duration_ms=self._elapsed_ms(state.phase_started_at)
+                )
 
                 # Calculate total duration
                 total_duration_ms = int((datetime.now(UTC) - state.started_at).total_seconds() * 1000)
@@ -759,19 +965,29 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         competition_id=state.competition_id,
                         final_rank=state.final_rank,
                         final_score=state.final_score,
-                        total_submissions=len(state.evolution_state.leaderboard_submissions) if state.evolution_state else 1,
-                        evolution_generations=len(state.evolution_state.generation_history) if state.evolution_state else 0,
+                        total_submissions=(
+                            len(state.evolution_state.leaderboard_submissions) if state.evolution_state else 1
+                        ),
+                        evolution_generations=(
+                            len(state.evolution_state.generation_history) if state.evolution_state else 0
+                        ),
                         duration_ms=total_duration_ms,
                         phases_completed=list(state.phases_completed),
                     )
                 )
 
             except Exception as e:
-                logfire.error("submission_failed", error=str(e))
-                state.errors.append({"phase": "submission", "error": str(e), "timestamp": datetime.now(UTC).isoformat()})
+                logfire.error('submission_failed', error=str(e))
+                state.errors.append(
+                    {'phase': 'submission', 'error': str(e), 'timestamp': datetime.now(UTC).isoformat()}
+                )
                 return End(
                     MissionResult(
-                        success=False, mission_id=state.mission_id, competition_id=state.competition_id, error_message=f"Submission failed: {e}", phases_completed=list(state.phases_completed)
+                        success=False,
+                        mission_id=state.mission_id,
+                        competition_id=state.competition_id,
+                        error_message=f'Submission failed: {e}',
+                        phases_completed=list(state.phases_completed),
                     )
                 )
 
@@ -784,16 +1000,16 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
 
 def _require_context(context: GraphContext) -> tuple[EventEmitter, httpx.AsyncClient, PlatformAdapter]:
     if context.event_emitter is None:
-        raise RuntimeError("GraphContext.event_emitter is required")
+        raise RuntimeError('GraphContext.event_emitter is required')
     if context.http_client is None:
-        raise RuntimeError("GraphContext.http_client is required")
+        raise RuntimeError('GraphContext.http_client is required')
     if context.platform_adapter is None:
-        raise RuntimeError("GraphContext.platform_adapter is required")
+        raise RuntimeError('GraphContext.platform_adapter is required')
     return context.event_emitter, context.http_client, context.platform_adapter
 
 
 def _load_target_values(train_path: Path, target_column: str) -> tuple[list[float], list[str], dict[str, int] | None]:
-    with train_path.open("r", encoding="utf-8", errors="ignore", newline="") as handle:
+    with train_path.open('r', encoding='utf-8', errors='ignore', newline='') as handle:
         reader = csv.DictReader(handle)
         if not reader.fieldnames:
             return [], [], None
@@ -804,7 +1020,7 @@ def _load_target_values(train_path: Path, target_column: str) -> tuple[list[floa
         numeric = True
 
         for row in reader:
-            raw = row.get(resolved_column, "") or ""
+            raw = row.get(resolved_column, '') or ''
             raw_values.append(raw)
             try:
                 numeric_values.append(float(raw))
@@ -819,13 +1035,20 @@ def _load_target_values(train_path: Path, target_column: str) -> tuple[list[floa
         return numeric_values, raw_values, mapping
 
 
-def _prediction_value(metric: EvaluationMetric, numeric_values: list[float], raw_values: list[str], mapping: dict[str, int] | None) -> tuple[Any, float]:
+def _prediction_value(
+    metric: EvaluationMetric, numeric_values: list[float], raw_values: list[str], mapping: dict[str, int] | None
+) -> tuple[Any, float]:
     if not numeric_values:
         return 0.0, 0.0
 
     mean_value = sum(numeric_values) / len(numeric_values)
     proba_metrics = {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
-    classification_metrics = {EvaluationMetric.ACCURACY, EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS, EvaluationMetric.F1}
+    classification_metrics = {
+        EvaluationMetric.ACCURACY,
+        EvaluationMetric.AUC,
+        EvaluationMetric.LOG_LOSS,
+        EvaluationMetric.F1,
+    }
 
     if metric in proba_metrics:
         pred_numeric = min(max(mean_value, 1e-3), 1 - 1e-3)
@@ -906,10 +1129,12 @@ def _compute_baseline_score(*, train_path: Path, target_columns: list[str], metr
 
 
 def _normalize_label(label: Any) -> str:
-    return str(label).lower().replace("class_", "").replace("class ", "")
+    return str(label).lower().replace('class_', '').replace('class ', '')
 
 
-def _write_fallback_submission(*, train_path: Path, test_path: Path, sample_path: Path, metric: EvaluationMetric, output_path: Path) -> None:
+def _write_fallback_submission(
+    *, train_path: Path, test_path: Path, sample_path: Path, metric: EvaluationMetric, output_path: Path
+) -> None:
     schema = infer_competition_schema(train_path, test_path, sample_path)
     target_columns = schema.target_columns
     train_target_columns = schema.train_target_columns
@@ -929,9 +1154,9 @@ def _write_fallback_submission(*, train_path: Path, test_path: Path, sample_path
             if total > 0:
                 class_probabilities = {_normalize_label(label): count / total for label, count in counts.items()}
 
-    with test_path.open("r", encoding="utf-8", errors="ignore", newline="") as handle:
+    with test_path.open('r', encoding='utf-8', errors='ignore', newline='') as handle:
         reader = csv.DictReader(handle)
-        with output_path.open("w", encoding="utf-8", newline="") as output_handle:
+        with output_path.open('w', encoding='utf-8', newline='') as output_handle:
             writer = csv.DictWriter(output_handle, fieldnames=[schema.id_column] + target_columns)
             writer.writeheader()
             for idx, row in enumerate(reader):
@@ -947,16 +1172,21 @@ def _write_fallback_submission(*, train_path: Path, test_path: Path, sample_path
                         entry[target] = present.get(target, fallback)
                 else:
                     for target in target_columns:
-                        entry[target] = per_column_predictions.get(target, next(iter(per_column_predictions.values()), 0.0))
+                        entry[target] = per_column_predictions.get(
+                            target, next(iter(per_column_predictions.values()), 0.0)
+                        )
                 writer.writerow(entry)
 
 
-def _generate_fallback_prototype(*, target_columns: list[str], train_target_columns: list[str], id_column: str, metric: EvaluationMetric) -> str:
+def _generate_fallback_prototype(
+    *, target_columns: list[str], train_target_columns: list[str], id_column: str, metric: EvaluationMetric
+) -> str:
     metric_value = metric.value
     target_columns_repr = repr(target_columns)
     train_target_columns_repr = repr(train_target_columns)
     return (
-        dedent(f"""
+        dedent(
+            f"""
     import csv
     import math
     from collections import Counter
@@ -1043,26 +1273,29 @@ def _generate_fallback_prototype(*, target_columns: list[str], train_target_colu
                 writer.writerow(entry)
     
     print("Baseline {metric_value} score: 0.0")
-    """).strip()
-        + "\n"
+    """
+        ).strip()
+        + '\n'
     )
 
 
-def _build_leaderboard_analysis(entries: list[Any], target_percentile: float, metric_direction: str) -> LeaderboardAnalysis | None:
-    scores = [entry.score for entry in entries if getattr(entry, "score", None) is not None]
+def _build_leaderboard_analysis(
+    entries: list[Any], target_percentile: float, metric_direction: str
+) -> LeaderboardAnalysis | None:
+    scores = [entry.score for entry in entries if getattr(entry, 'score', None) is not None]
     if not scores:
         return None
 
     sorted_scores = sorted(scores)
     total = len(sorted_scores)
-    ranked = sorted_scores[::-1] if metric_direction == "maximize" else sorted_scores
+    ranked = sorted_scores[::-1] if metric_direction == 'maximize' else sorted_scores
     target_rank = max(1, math.ceil(target_percentile * total))
     target_score = ranked[target_rank - 1]
 
     distribution = []
     for percentile in (0.0, 0.25, 0.5, 0.75, 1.0):
         index = min(total - 1, int(percentile * (total - 1)))
-        distribution.append({"percentile": percentile, "score": sorted_scores[index]})
+        distribution.append({'percentile': percentile, 'score': sorted_scores[index]})
 
     return LeaderboardAnalysis(
         top_score=max(scores),
@@ -1079,43 +1312,47 @@ def _build_leaderboard_analysis(entries: list[Any], target_percentile: float, me
 def _serialize_findings(items: list[Any]) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
     for item in items:
-        if hasattr(item, "model_dump"):
+        if hasattr(item, 'model_dump'):
             results.append(item.model_dump())
         elif isinstance(item, dict):
             results.append(dict(item))
         else:
             results.append(
                 {
-                    "title": getattr(item, "title", str(item)),
-                    "summary": getattr(item, "summary", ""),
-                    "category": getattr(item, "category", "unknown"),
-                    "relevance_score": getattr(item, "relevance_score", 0.0),
-                    "sources": getattr(item, "sources", []),
+                    'title': getattr(item, 'title', str(item)),
+                    'summary': getattr(item, 'summary', ''),
+                    'category': getattr(item, 'category', 'unknown'),
+                    'relevance_score': getattr(item, 'relevance_score', 0.0),
+                    'sources': getattr(item, 'sources', []),
                 }
             )
     return results
 
 
 def _looks_like_paper(finding: dict[str, Any]) -> bool:
-    sources = finding.get("sources", []) or []
+    sources = finding.get('sources', []) or []
     for source in sources:
         lower = str(source).lower()
-        if "arxiv" in lower or "paper" in lower:
+        if 'arxiv' in lower or 'paper' in lower:
             return True
     return False
 
 
 def _build_research_findings(report: Any, analysis: LeaderboardAnalysis | None) -> ResearchFindings:
-    domain = _serialize_findings(getattr(report, "domain_findings", []))
-    techniques = _serialize_findings(getattr(report, "technique_findings", []))
+    domain = _serialize_findings(getattr(report, 'domain_findings', []))
+    techniques = _serialize_findings(getattr(report, 'technique_findings', []))
     findings = domain + techniques
 
     papers = [finding for finding in findings if _looks_like_paper(finding)]
     approaches = [finding for finding in findings if finding not in papers] or findings
 
-    strategies = list(getattr(report, "recommended_approaches", []) or [])
+    strategies = list(getattr(report, 'recommended_approaches', []) or [])
     if not strategies and approaches:
-        strategies = [approach.get("title") or approach.get("summary", "") for approach in approaches if approach.get("title") or approach.get("summary")]
+        strategies = [
+            approach.get('title') or approach.get('summary', '')
+            for approach in approaches
+            if approach.get('title') or approach.get('summary')
+        ]
 
     if analysis is not None:
         analysis = LeaderboardAnalysis(
@@ -1125,11 +1362,17 @@ def _build_research_findings(report: Any, analysis: LeaderboardAnalysis | None) 
             target_percentile=analysis.target_percentile,
             total_teams=analysis.total_teams,
             score_distribution=analysis.score_distribution,
-            common_approaches=list(getattr(report, "recommended_approaches", []) or []),
-            improvement_opportunities=list(getattr(report, "key_challenges", []) or []),
+            common_approaches=list(getattr(report, 'recommended_approaches', []) or []),
+            improvement_opportunities=list(getattr(report, 'key_challenges', []) or []),
         )
 
-    return ResearchFindings(leaderboard_analysis=analysis, papers=papers, approaches=approaches, eda_results=None, strategy_recommendations=strategies)
+    return ResearchFindings(
+        leaderboard_analysis=analysis,
+        papers=papers,
+        approaches=approaches,
+        eda_results=None,
+        strategy_recommendations=strategies,
+    )
 
 
 def _convert_generation_history(history: list[Any], population_size: int) -> list[GenerationMetrics]:
@@ -1144,12 +1387,12 @@ def _convert_generation_history(history: list[Any], population_size: int) -> lis
 
         metrics.append(
             GenerationMetrics(
-                generation=int(entry.get("generation", idx)),
-                best_fitness=float(entry.get("best_fitness", 0.0)),
-                mean_fitness=float(entry.get("mean_fitness", 0.0)),
-                worst_fitness=float(entry.get("worst_fitness", 0.0)),
-                population_size=int(entry.get("population_size", population_size)),
-                mutations=dict(entry.get("mutations", {})),
+                generation=int(entry.get('generation', idx)),
+                best_fitness=float(entry.get('best_fitness', 0.0)),
+                mean_fitness=float(entry.get('mean_fitness', 0.0)),
+                worst_fitness=float(entry.get('worst_fitness', 0.0)),
+                population_size=int(entry.get('population_size', population_size)),
+                mutations=dict(entry.get('mutations', {})),
             )
         )
     return metrics

@@ -11,9 +11,9 @@ from functools import lru_cache
 from importlib import import_module
 from typing import Final, Protocol, cast, runtime_checkable
 
-__all__ = ("DEFAULT_MODEL", "embed_documents", "embed_query", "get_embedder")
+__all__ = ('DEFAULT_MODEL', 'embed_documents', 'embed_query', 'get_embedder')
 
-DEFAULT_MODEL: Final[str] = "openai:text-embedding-3-small"
+DEFAULT_MODEL: Final[str] = 'openai:text-embedding-3-small'
 
 
 @runtime_checkable
@@ -84,8 +84,8 @@ async def embed_query(query: str, model: str = DEFAULT_MODEL) -> list[float]:
 
 def _resolve_embedder_class() -> type[Embedder]:
     """Resolve the Embedder implementation from pydantic_ai."""
-    module = import_module("pydantic_ai")
-    embedder_cls = getattr(module, "Embedder", None)
+    module = import_module('pydantic_ai')
+    embedder_cls = getattr(module, 'Embedder', None)
     if embedder_cls is None:  # pragma: no cover - optional dependency
-        raise RuntimeError("pydantic_ai Embedder is not available")
-    return cast("type[Embedder]", embedder_cls)
+        raise RuntimeError('pydantic_ai Embedder is not available')
+    return cast('type[Embedder]', embedder_cls)

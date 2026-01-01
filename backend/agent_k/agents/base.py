@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     import httpx
     from pydantic_ai import Agent, RunContext, ToolDefinition
 
-__all__ = ("BaseAgentMixin", "AgentDeps", "prepare_output_tools_strict", "universal_tool_preparation")
+__all__ = ('BaseAgentMixin', 'AgentDeps', 'prepare_output_tools_strict', 'universal_tool_preparation')
 
 
 @dataclass
@@ -33,7 +33,7 @@ class AgentDeps:
     memory_store: dict[str, Any] = field(default_factory=dict)
 
 
-class BaseAgentMixin(ABC, Generic[AgentDepsT, OutputT]):  # noqa: UP046
+class BaseAgentMixin(ABC, Generic[AgentDepsT, OutputT]):
     """Base mixin providing common agent functionality.
 
     Per spec Section 3.2, class structure follows visibility-based ordering.
@@ -42,7 +42,7 @@ class BaseAgentMixin(ABC, Generic[AgentDepsT, OutputT]):  # noqa: UP046
     # =========================================================================
     # Class Variables
     # =========================================================================
-    _default_model: str = "anthropic:claude-sonnet-4-5"
+    _default_model: str = 'anthropic:claude-sonnet-4-5'
 
     # =========================================================================
     # Public Methods
@@ -59,7 +59,7 @@ class BaseAgentMixin(ABC, Generic[AgentDepsT, OutputT]):  # noqa: UP046
         Returns:
             Agent output of type OutputT.
         """
-        raise NotImplementedError("BaseAgentMixin.run must be implemented by subclasses.")
+        raise NotImplementedError('BaseAgentMixin.run must be implemented by subclasses.')
 
     # =========================================================================
     # Protected Methods
@@ -74,17 +74,19 @@ class BaseAgentMixin(ABC, Generic[AgentDepsT, OutputT]):  # noqa: UP046
         return self.__class__.__name__
 
 
-async def universal_tool_preparation(ctx: RunContext[AgentDepsT], tool_defs: list[ToolDefinition]) -> list[ToolDefinition]:
+async def universal_tool_preparation(
+    ctx: RunContext[AgentDepsT], tool_defs: list[ToolDefinition]
+) -> list[ToolDefinition]:
     """Apply universal tool configuration across agents."""
     result: list[ToolDefinition] = []
 
     for tool_def in tool_defs:
-        if ctx.model.system == "openai":
+        if ctx.model.system == 'openai':
             tool_def = replace(tool_def, strict=True)
 
-        if "submit" in tool_def.name or "evaluate" in tool_def.name:
+        if 'submit' in tool_def.name or 'evaluate' in tool_def.name:
             metadata = dict(tool_def.metadata or {})
-            metadata["timeout"] = 120.0
+            metadata['timeout'] = 120.0
             tool_def = replace(tool_def, metadata=metadata)
 
         result.append(tool_def)
@@ -92,8 +94,10 @@ async def universal_tool_preparation(ctx: RunContext[AgentDepsT], tool_defs: lis
     return result
 
 
-async def prepare_output_tools_strict(ctx: RunContext[AgentDepsT], tool_defs: list[ToolDefinition]) -> list[ToolDefinition]:
+async def prepare_output_tools_strict(
+    ctx: RunContext[AgentDepsT], tool_defs: list[ToolDefinition]
+) -> list[ToolDefinition]:
     """Enable strict mode on output tools for OpenAI models."""
-    if ctx.model.system == "openai":
+    if ctx.model.system == 'openai':
         return [replace(td, strict=True) for td in tool_defs]
     return tool_defs

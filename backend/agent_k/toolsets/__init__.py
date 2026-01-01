@@ -11,39 +11,46 @@ from dataclasses import replace
 from typing import Any, TypeVar
 
 # Third-party (alphabetical)
-from pydantic_ai import RunContext, ToolDefinition  # noqa: TC002
+from pydantic_ai import RunContext, ToolDefinition
 from pydantic_ai.toolsets import AbstractToolset, CombinedToolset, FunctionToolset
 
 # Local imports (core first, then alphabetical)
 from .code import code_toolset, create_code_execution_tool, prepare_code_execution_tool
 from .kaggle import kaggle_toolset
 from .memory import AgentKMemoryTool, create_memory_backend, prepare_memory_tool, register_memory_tool
-from .search import build_kaggle_search_query, build_scholarly_query, create_web_fetch_tool, create_web_search_tool, prepare_web_fetch, prepare_web_search
+from .search import (
+    build_kaggle_search_query,
+    build_scholarly_query,
+    create_web_fetch_tool,
+    create_web_search_tool,
+    prepare_web_fetch,
+    prepare_web_search,
+)
 
-DepsT = TypeVar("DepsT")
+DepsT = TypeVar('DepsT')
 """Type variable for toolset dependencies."""
 
 __all__ = (
-    "AgentKMemoryTool",
-    "build_kaggle_search_query",
-    "build_scholarly_query",
-    "code_toolset",
-    "compose_toolsets",
-    "create_code_execution_tool",
-    "create_memory_backend",
-    "create_production_toolset",
-    "create_web_fetch_tool",
-    "create_web_search_tool",
-    "kaggle_toolset",
-    "prepare_code_execution_tool",
-    "prepare_memory_tool",
-    "prepare_web_fetch",
-    "prepare_web_search",
-    "register_memory_tool",
-    "TOOLSET_REGISTRY",
+    'AgentKMemoryTool',
+    'build_kaggle_search_query',
+    'build_scholarly_query',
+    'code_toolset',
+    'compose_toolsets',
+    'create_code_execution_tool',
+    'create_memory_backend',
+    'create_production_toolset',
+    'create_web_fetch_tool',
+    'create_web_search_tool',
+    'kaggle_toolset',
+    'prepare_code_execution_tool',
+    'prepare_memory_tool',
+    'prepare_web_fetch',
+    'prepare_web_search',
+    'register_memory_tool',
+    'TOOLSET_REGISTRY',
 )
 
-TOOLSET_REGISTRY: dict[str, FunctionToolset[Any]] = {"kaggle": kaggle_toolset, "code": code_toolset}
+TOOLSET_REGISTRY: dict[str, FunctionToolset[Any]] = {'kaggle': kaggle_toolset, 'code': code_toolset}
 
 
 def compose_toolsets(names: list[str], *, prefix: bool = True) -> AbstractToolset:
@@ -59,16 +66,18 @@ def compose_toolsets(names: list[str], *, prefix: bool = True) -> AbstractToolse
     toolsets: list[AbstractToolset] = []
     for name in names:
         if name not in TOOLSET_REGISTRY:
-            raise KeyError(f"Unknown toolset: {name}. Available: {list(TOOLSET_REGISTRY)}")
+            raise KeyError(f'Unknown toolset: {name}. Available: {list(TOOLSET_REGISTRY)}')
         toolset: AbstractToolset = TOOLSET_REGISTRY[name]
         if prefix:
-            toolset = toolset.prefixed(f"{name}_")
+            toolset = toolset.prefixed(f'{name}_')
         toolsets.append(toolset)
 
     return CombinedToolset(toolsets)
 
 
-def create_production_toolset(toolsets: list[FunctionToolset[DepsT]], *, require_approval_for: list[str] | None = None, prefix: str | None = None) -> AbstractToolset[DepsT]:
+def create_production_toolset(
+    toolsets: list[FunctionToolset[DepsT]], *, require_approval_for: list[str] | None = None, prefix: str | None = None
+) -> AbstractToolset[DepsT]:
     """Create production-ready toolset with wrappers.
 
     Applies:
@@ -79,13 +88,13 @@ def create_production_toolset(toolsets: list[FunctionToolset[DepsT]], *, require
     combined: AbstractToolset[DepsT] = CombinedToolset(toolsets)
 
     if prefix:
-        combined = combined.prefixed(f"{prefix}_")
+        combined = combined.prefixed(f'{prefix}_')
 
     if require_approval_for:
         combined = combined.approval_required(lambda _ctx, tool_def, _args: tool_def.name in require_approval_for)
 
     async def prepare_for_model(ctx: RunContext[DepsT], tool_defs: list[ToolDefinition]) -> list[ToolDefinition]:
-        if ctx.model.system == "openai":
+        if ctx.model.system == 'openai':
             return [replace(td, strict=True) for td in tool_defs]
         return tool_defs
 

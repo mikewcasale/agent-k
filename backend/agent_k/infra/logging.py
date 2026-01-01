@@ -9,9 +9,9 @@ from __future__ import annotations as _annotations
 # Third-party (alphabetical)
 import logfire
 
-__all__ = ("get_logger",)
+__all__ = ('get_logger',)
 
 
 def get_logger(component: str) -> logfire.Logfire:
     """Return a component-specific logger."""
-    return logfire.with_settings(tags=[f"component:{component}"])
+    return logfire.with_settings(tags=[f'component:{component}'])

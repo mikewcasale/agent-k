@@ -10,14 +10,14 @@ from __future__ import annotations as _annotations
 import os
 from dataclasses import dataclass
 
-__all__ = ("Settings", "load_settings")
+__all__ = ('Settings', 'load_settings')
 
 
 @dataclass
 class Settings:
     """Runtime configuration settings."""
 
-    environment: str = os.getenv("ENVIRONMENT", "development")
+    environment: str = os.getenv('ENVIRONMENT', 'development')
 
 
 def load_settings() -> Settings:

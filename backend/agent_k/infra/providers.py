@@ -18,10 +18,18 @@ from pydantic_ai.providers.openrouter import OpenRouterProvider
 if TYPE_CHECKING:
     from pydantic_ai.models import Model
 
-__all__ = ("get_model", "create_devstral_model", "create_openrouter_model", "is_devstral_model", "DEVSTRAL_MODEL_ID", "DEVSTRAL_BASE_URL", "ModelType")
+__all__ = (
+    'get_model',
+    'create_devstral_model',
+    'create_openrouter_model',
+    'is_devstral_model',
+    'DEVSTRAL_MODEL_ID',
+    'DEVSTRAL_BASE_URL',
+    'ModelType',
+)
 
-DEVSTRAL_MODEL_ID: Final[str] = "mistralai/devstral-small-2-2512"
-DEVSTRAL_BASE_URL: Final[str] = os.getenv("DEVSTRAL_BASE_URL", "http://192.168.105.1:1234/v1")
+DEVSTRAL_MODEL_ID: Final[str] = 'mistralai/devstral-small-2-2512'
+DEVSTRAL_BASE_URL: Final[str] = os.getenv('DEVSTRAL_BASE_URL', 'http://192.168.105.1:1234/v1')
 
 ModelType: TypeAlias = str
 
@@ -49,7 +57,7 @@ def create_devstral_model(model_id: str = DEVSTRAL_MODEL_ID, base_url: str | Non
         model_id,
         provider=OpenAIProvider(
             base_url=url,
-            api_key="not-required",  # Local LM Studio doesn't require auth
+            api_key='not-required',  # Local LM Studio doesn't require auth
         ),
     )
 
@@ -100,23 +108,23 @@ def get_model(model_spec: str) -> Model | str:
         >>> get_model('openrouter:mistralai/devstral-small-2505')  # Returns OpenAIChatModel via OpenRouter
         OpenAIChatModel(...)
     """
-    if model_spec.startswith("devstral:"):
+    if model_spec.startswith('devstral:'):
         # Parse devstral model specification for local LM Studio
-        suffix = model_spec[len("devstral:") :]
+        suffix = model_spec[len('devstral:') :]
 
-        if suffix == "local":
+        if suffix == 'local':
             # Use default local LM Studio configuration
             return create_devstral_model()
-        elif suffix.startswith("http"):
+        elif suffix.startswith('http'):
             # Custom base URL provided
             return create_devstral_model(base_url=suffix)
         else:
             # Assume suffix is a model ID
             return create_devstral_model(model_id=suffix)
 
-    if model_spec.startswith("openrouter:"):
+    if model_spec.startswith('openrouter:'):
         # Parse OpenRouter model specification
-        model_id = model_spec[len("openrouter:") :]
+        model_id = model_spec[len('openrouter:') :]
         return create_openrouter_model(model_id)
 
     # Return string for standard pydantic-ai model resolution
@@ -133,4 +141,4 @@ def is_devstral_model(model_spec: str) -> bool:
     Returns:
         True if the model is a Devstral variant.
     """
-    return model_spec.startswith("devstral:")
+    return model_spec.startswith('devstral:')

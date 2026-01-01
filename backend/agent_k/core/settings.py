@@ -12,12 +12,12 @@ from typing import Final
 # Third-party (alphabetical)
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-__all__ = ("AgentKSettings", "SCHEMA_VERSION")
+__all__ = ('AgentKSettings', 'SCHEMA_VERSION')
 
-SCHEMA_VERSION: Final[str] = "1.0.0"
+SCHEMA_VERSION: Final[str] = '1.0.0'
 
 
 class AgentKSettings(BaseSettings):
     """Base settings with shared environment defaults."""
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore", validate_default=True)
+    model_config = SettingsConfigDict(env_file='.env', extra='ignore', validate_default=True)

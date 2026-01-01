@@ -13,8 +13,8 @@ services:
   - type: web
     name: agent-k-docs
     branch: main
-    plan: static
     region: oregon
+    runtime: static
     buildCommand: |
       cd backend &&
       pip install --upgrade pip &&
@@ -69,9 +69,9 @@ services:
     plan: starter
     region: oregon
     runtime: node
-    customDomains:
-      - name: agents-k.com
-      - name: www.agents-k.com
+    domains:
+      - agents-k.com
+      - www.agents-k.com
     buildCommand: |
       cd frontend &&
       npm install -g pnpm &&
@@ -90,6 +90,8 @@ services:
           property: connectionString
       - key: NEXT_PUBLIC_API_URL
         value: "https://agent-k-api.onrender.com"
+      - key: PYTHON_BACKEND_URL
+        value: "https://agent-k-api.onrender.com/agentic_generative_ui/"
       # === AUTH.JS REQUIRED VARIABLES ===
       - key: AUTH_SECRET
         generateValue: true

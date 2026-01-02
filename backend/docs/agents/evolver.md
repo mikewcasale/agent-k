@@ -26,6 +26,7 @@ The EVOLVER agent optimizes solutions through evolutionary code search. It evolv
 | `evaluate_fitness` | Execute code and compute fitness |
 | `record_generation` | Log generation metrics |
 | `check_convergence` | Determine if evolution should stop |
+| `sample_elites` | Fetch top + diverse elite candidates |
 | `submit_to_kaggle` | Submit best solution (approval required) |
 
 ## Basic Usage
@@ -78,6 +79,8 @@ Key configuration fields from `EvolverSettings`:
 - `max_generations` - maximum number of generations
 - `convergence_threshold` - generations without improvement before stopping
 - `enable_thinking` - enable Anthropic thinking mode
+- `cascade_evaluation` - run quick evaluation stages before full evaluation
+- `elite_sample_top` / `elite_sample_diverse` - default elite sampler sizes
 
 ## Output Models
 
@@ -103,3 +106,4 @@ class EvolutionFailure(BaseModel):
 
 - Code execution uses a provider tool when available; otherwise local execution is used.
 - `submit_to_kaggle` requires tool approval when used with Pydantic-AI.
+- The evolver maintains an elite archive keyed by model family + complexity; use `sample_elites` to pull top/diverse seeds.

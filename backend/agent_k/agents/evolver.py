@@ -59,29 +59,130 @@ __all__ = (
     'settings',
 )
 
-SCHEMA_VERSION: Final[str] = '1.0.0'
-_NUMBER_PATTERN: Final[re.Pattern[str]] = re.compile(r'(?<![\w.])(-?\d+\.?\d*)(?![\w.])')
+SCHEMA_VERSION: Final[str] = "1.0.0"
+_NUMBER_PATTERN: Final[re.Pattern[str]] = re.compile(r"(?<![\w.])(-?\d+\.?\d*)(?![\w.])")
 _FILLNA_PATTERN: Final[re.Pattern[str]] = re.compile(
-    r'^(?P<indent>\s*)(?P<var>\w+)\s*=\s*pd\.read_csv\(.*\)$', re.MULTILINE
+    r"^(?P<indent>\s*)(?P<var>\w+)\s*=\s*pd\.read_csv\(.*\)$", re.MULTILINE
 )
 _DEF_PATTERN: Final[re.Pattern[str]] = re.compile(
-    r'^(def (?!__)\w+).*?(?=^(?:def |class )|\Z)', re.MULTILINE | re.DOTALL
+    r"^(def (?!__)\w+).*?(?=^(?:def |class )|\Z)", re.MULTILINE | re.DOTALL
+)
+_NUMERIC_PIPELINE_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"(numeric_transformer\s*=\s*Pipeline\(steps=\[\s*)(?P<steps>.*?)(\s*\]\))",
+    re.DOTALL,
 )
 _HYPERPARAM_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
-    'n_estimators': re.compile(r'(n_estimators\s*=\s*)(\d+)', re.IGNORECASE),
-    'learning_rate': re.compile(r'(learning_rate\s*=\s*)([\d\.]+)', re.IGNORECASE),
-    'max_depth': re.compile(r'(max_depth\s*=\s*)(\d+)', re.IGNORECASE),
-    'min_samples_leaf': re.compile(r'(min_samples_leaf\s*=\s*)(\d+)', re.IGNORECASE),
-    'subsample': re.compile(r'(subsample\s*=\s*)([\d\.]+)', re.IGNORECASE),
+    "n_estimators": re.compile(r"(n_estimators\s*=\s*)(\d+)", re.IGNORECASE),
+    "learning_rate": re.compile(r"(learning_rate\s*=\s*)([\d\.]+)", re.IGNORECASE),
+    "max_depth": re.compile(r"(max_depth\s*=\s*)(\d+)", re.IGNORECASE),
+    "min_samples_leaf": re.compile(r"(min_samples_leaf\s*=\s*)(\d+)", re.IGNORECASE),
+    "min_samples_split": re.compile(r"(min_samples_split\s*=\s*)(\d+)", re.IGNORECASE),
+    "max_features": re.compile(r"(max_features\s*=\s*)([\d\.]+)", re.IGNORECASE),
+    "subsample": re.compile(r"(subsample\s*=\s*)([\d\.]+)", re.IGNORECASE),
+    "n_neighbors": re.compile(r"(n_neighbors\s*=\s*)(\d+)", re.IGNORECASE),
+    "C": re.compile(r"(\bC\s*=\s*)([\d\.]+)", re.IGNORECASE),
+    "alpha": re.compile(r"(alpha\s*=\s*)([\d\.]+)", re.IGNORECASE),
+    "l1_ratio": re.compile(r"(l1_ratio\s*=\s*)([\d\.]+)", re.IGNORECASE),
+    "max_iter": re.compile(r"(max_iter\s*=\s*)(\d+)", re.IGNORECASE),
+}
+_HYPERPARAM_BOUNDS: Final[dict[str, tuple[float, float]]] = {
+    "learning_rate": (0.001, 1.0),
+    "subsample": (0.1, 1.0),
+    "max_features": (0.1, 1.0),
+    "C": (0.01, 100.0),
+    "alpha": (0.0001, 10.0),
+    "l1_ratio": (0.0, 1.0),
+}
+_HYPERPARAM_INTEGER_KEYS: Final[set[str]] = {
+    "n_estimators",
+    "max_depth",
+    "min_samples_leaf",
+    "min_samples_split",
+    "n_neighbors",
+    "max_iter",
 }
 _MODEL_SWAPS: Final[dict[str, str]] = {
-    'RandomForestClassifier': 'GradientBoostingClassifier',
-    'RandomForestRegressor': 'GradientBoostingRegressor',
-    'GradientBoostingClassifier': 'RandomForestClassifier',
-    'GradientBoostingRegressor': 'RandomForestRegressor',
-    'LogisticRegression': 'LinearSVC',
-    'LinearRegression': 'Ridge',
+    "RandomForestClassifier": "GradientBoostingClassifier",
+    "RandomForestRegressor": "GradientBoostingRegressor",
+    "GradientBoostingClassifier": "RandomForestClassifier",
+    "GradientBoostingRegressor": "RandomForestRegressor",
+    "ExtraTreesClassifier": "RandomForestClassifier",
+    "ExtraTreesRegressor": "RandomForestRegressor",
+    "HistGradientBoostingClassifier": "GradientBoostingClassifier",
+    "HistGradientBoostingRegressor": "GradientBoostingRegressor",
+    "LogisticRegression": "LinearSVC",
+    "LinearRegression": "Ridge",
 }
+_MODEL_IMPORTS: Final[dict[str, str]] = {
+    "RandomForestClassifier": "sklearn.ensemble",
+    "RandomForestRegressor": "sklearn.ensemble",
+    "GradientBoostingClassifier": "sklearn.ensemble",
+    "GradientBoostingRegressor": "sklearn.ensemble",
+    "ExtraTreesClassifier": "sklearn.ensemble",
+    "ExtraTreesRegressor": "sklearn.ensemble",
+    "HistGradientBoostingClassifier": "sklearn.ensemble",
+    "HistGradientBoostingRegressor": "sklearn.ensemble",
+    "LogisticRegression": "sklearn.linear_model",
+    "LinearRegression": "sklearn.linear_model",
+    "LinearSVC": "sklearn.svm",
+    "Ridge": "sklearn.linear_model",
+}
+_MODEL_FAMILY_PATTERNS: Final[tuple[tuple[str, re.Pattern[str]], ...]] = (
+    ("random_forest", re.compile(r"\b(RandomForestClassifier|RandomForestRegressor)\b")),
+    ("extra_trees", re.compile(r"\b(ExtraTreesClassifier|ExtraTreesRegressor)\b")),
+    ("gradient_boosting", re.compile(r"\b(GradientBoostingClassifier|GradientBoostingRegressor)\b")),
+    (
+        "hist_gradient_boosting",
+        re.compile(r"\b(HistGradientBoostingClassifier|HistGradientBoostingRegressor)\b"),
+    ),
+    (
+        "linear",
+        re.compile(
+            r"\b(LogisticRegression|LinearRegression|Ridge|Lasso|ElasticNet|SGDClassifier|SGDRegressor)\b"
+        ),
+    ),
+    ("svm", re.compile(r"\b(LinearSVC|LinearSVR|SVC|SVR)\b")),
+    ("knn", re.compile(r"\b(KNeighborsClassifier|KNeighborsRegressor)\b")),
+    ("naive_bayes", re.compile(r"\b(GaussianNB|MultinomialNB|BernoulliNB)\b")),
+    ("tree", re.compile(r"\b(DecisionTreeClassifier|DecisionTreeRegressor)\b")),
+    (
+        "ensemble",
+        re.compile(r"\b(BaggingClassifier|BaggingRegressor|AdaBoostClassifier|AdaBoostRegressor)\b"),
+    ),
+    ("stacking", re.compile(r"\b(StackingClassifier|StackingRegressor)\b")),
+)
+_COMPLEXITY_BINS: Final[tuple[int, ...]] = (120, 200, 320, 480, 640)
+
+
+@dataclass(frozen=True, slots=True)
+class EvolutionArchiveEntry:
+    """Tracked candidate for MAP-Elites-style sampling."""
+
+    code: str
+    fitness: float
+    cv_score: float
+    complexity: int
+    complexity_bin: int
+    model_family: str
+    signature: str
+
+    def to_payload(self, *, max_chars: int) -> dict[str, Any]:
+        """Serialize entry for tool outputs."""
+        truncated = False
+        code = self.code
+        if max_chars > 0 and len(code) > max_chars:
+            code = code[:max_chars].rstrip() + "\n# ... truncated"
+            truncated = True
+        return {
+            "fitness": self.fitness,
+            "cv_score": self.cv_score,
+            "complexity": self.complexity,
+            "complexity_bin": self.complexity_bin,
+            "model_family": self.model_family,
+            "signature": self.signature,
+            "code": code,
+            "truncated": truncated,
+        }
 
 
 class EvolverSettings(BaseSettings):
@@ -107,6 +208,39 @@ class EvolverSettings(BaseSettings):
     enable_kaggle_mcp: bool = Field(default=False, description='Enable Kaggle MCP tool access')
     kaggle_mcp_url: str = Field(default=DEFAULT_KAGGLE_MCP_URL, description='Kaggle MCP endpoint')
     enable_submission_tool: bool = Field(default=False, description='Allow submissions during evolution')
+    cascade_evaluation: bool = Field(
+        default=True,
+        description="Enable cascade evaluation for candidate filtering",
+    )
+    cascade_stage1_rows: int = Field(
+        default=300,
+        ge=0,
+        description="Max rows for quick evaluation stage",
+    )
+    cascade_stage1_timeout: int = Field(
+        default=45,
+        ge=1,
+        description="Timeout for quick evaluation stage",
+    )
+    cascade_relative_threshold: float = Field(
+        default=0.85,
+        ge=0.0,
+        le=1.0,
+        description="Fraction of best fitness required to run full evaluation",
+    )
+    cascade_floor_threshold: float = Field(
+        default=0.05,
+        ge=0.0,
+        le=1.0,
+        description="Minimum quick fitness required to run full evaluation",
+    )
+    elite_sample_top: int = Field(default=3, ge=0, description="Default top elites to sample")
+    elite_sample_diverse: int = Field(default=2, ge=0, description="Default diverse elites to sample")
+    elite_code_max_chars: int = Field(
+        default=8000,
+        ge=256,
+        description="Max chars per elite code snippet",
+    )
 
     @model_validator(mode='after')
     def validate_evolution_params(self) -> Self:
@@ -154,6 +288,7 @@ class EvolverDeps:
     best_solution: str | None = None
     best_fitness: float | None = None
     generation_history: list[dict[str, Any]] = field(default_factory=list)
+    elite_archive: dict[tuple[int, str], EvolutionArchiveEntry] = field(default_factory=dict)
 
 
 class EvolutionResult(BaseModel):
@@ -280,29 +415,52 @@ class EvolverAgent(MemoryMixin):
                 operation='evaluate_fitness',
             )
 
-            result = await self._evaluate_solution(ctx, solution_code, validation_split=validation_split)
-            if result['valid']:
-                if ctx.deps.best_fitness is None or result['fitness'] > ctx.deps.best_fitness:
-                    ctx.deps.best_fitness = result['fitness']
+            result = await self._run_evaluation(ctx, solution_code, validation_split=validation_split)
+            eligible_for_archive = result["valid"] and result.get("stage") != "stage1"
+
+            if eligible_for_archive:
+                if ctx.deps.best_fitness is None or result["fitness"] > ctx.deps.best_fitness:
+                    ctx.deps.best_fitness = result["fitness"]
                     ctx.deps.best_solution = solution_code
 
-                await ctx.deps.event_emitter.emit(
-                    'fitness-update',
+            if result["valid"]:
+                archive_entry = self._build_archive_entry(
+                    solution_code,
+                    result["fitness"],
+                    result["cv_score"],
+                )
+                if eligible_for_archive:
+                    self._update_elite_archive(ctx.deps, archive_entry)
+                result.update(
                     {
-                        'fitness': result['fitness'],
-                        'cv_score': result['cv_score'],
-                        'validation_split': validation_split,
+                        "complexity": archive_entry.complexity,
+                        "complexity_bin": archive_entry.complexity_bin,
+                        "model_family": archive_entry.model_family,
+                        "archive_size": len(ctx.deps.elite_archive),
+                    }
+                )
+
+                await ctx.deps.event_emitter.emit(
+                    "fitness-update",
+                    {
+                        "fitness": result["fitness"],
+                        "cv_score": result["cv_score"],
+                        "validation_split": validation_split,
+                        "stage": result.get("stage", "full"),
                     },
                 )
             else:
                 await ctx.deps.event_emitter.emit_tool_error(
-                    task_id='evolution_evaluate',
+                    task_id="evolution_evaluate",
                     tool_call_id=tool_call_id,
-                    error=result.get('error') or 'Invalid solution',
+                    error=result.get("error") or "Invalid solution",
                 )
 
             await ctx.deps.event_emitter.emit_tool_result(
-                task_id='evolution_evaluate', tool_call_id=tool_call_id, result=result, duration_ms=result['runtime_ms']
+                task_id="evolution_evaluate",
+                tool_call_id=tool_call_id,
+                result=result,
+                duration_ms=result["runtime_ms"],
             )
 
             summary = f'Fitness {result["fitness"]:.4f}, CV {result["cv_score"]:.4f}, valid={result["valid"]}'
@@ -399,6 +557,20 @@ class EvolverAgent(MemoryMixin):
         result = {'converged': False, 'reason': 'Evolution in progress', 'recent_improvement': improvement}
         return ToolReturn(return_value=result, content=json.dumps(result))
 
+    async def sample_elites(
+        self,
+        ctx: RunContext[EvolverDeps],
+        num_top: int | None = None,
+        num_diverse: int | None = None,
+    ) -> ToolReturn:
+        """Sample elite solutions for prompt construction."""
+        top = self._settings.elite_sample_top if num_top is None else max(0, num_top)
+        diverse = self._settings.elite_sample_diverse if num_diverse is None else max(0, num_diverse)
+        entries = self._select_elite_samples(ctx.deps, top=top, diverse=diverse)
+        payload = [entry.to_payload(max_chars=self._settings.elite_code_max_chars) for entry in entries]
+        summary = f"Sampled {len(payload)} elites from {len(ctx.deps.elite_archive)} archive cells."
+        return ToolReturn(return_value=payload, content=summary)
+
     async def submit_to_kaggle(
         self, ctx: RunContext[EvolverDeps], solution_code: str, message: str = 'AGENT-K submission'
     ) -> ToolReturn:
@@ -483,6 +655,7 @@ class EvolverAgent(MemoryMixin):
         self._toolset.tool(self.evaluate_fitness)
         self._toolset.tool(self.record_generation)
         self._toolset.tool(self.check_convergence)
+        self._toolset.tool(self.sample_elites)
         if self._settings.enable_submission_tool:
             self._toolset.tool(requires_approval=True)(self.submit_to_kaggle)
 
@@ -533,6 +706,16 @@ class EvolverAgent(MemoryMixin):
             )
         if deps.best_solution:
             sections.append(f'BEST SOLUTION AVAILABLE: {len(deps.best_solution)} chars')
+        if deps.elite_archive:
+            families = sorted({entry.model_family for entry in deps.elite_archive.values()})
+            family_preview = ", ".join(families[:6])
+            suffix = "..." if len(families) > 6 else ""
+            sections.append(
+                "ELITE ARCHIVE:\n"
+                f"- Cells: {len(deps.elite_archive)}\n"
+                f"- Families: {family_preview}{suffix}\n"
+                "- Use sample_elites to retrieve top + diverse candidates."
+            )
 
         return '\n\n'.join(sections)
 
@@ -542,8 +725,123 @@ class EvolverAgent(MemoryMixin):
     def _fitness_from_score(self, score: float, direction: str) -> float:
         return 1.0 / (1.0 + max(score, 0.0)) if direction == 'minimize' else max(score, 0.0)
 
-    async def _evaluate_solution(
+    def _solution_complexity(self, code: str) -> int:
+        return sum(1 for line in code.splitlines() if line.strip())
+
+    def _complexity_bin(self, complexity: int) -> int:
+        for idx, threshold in enumerate(_COMPLEXITY_BINS):
+            if complexity <= threshold:
+                return idx
+        return len(_COMPLEXITY_BINS)
+
+    def _model_family(self, code: str) -> str:
+        for family, pattern in _MODEL_FAMILY_PATTERNS:
+            if pattern.search(code):
+                return family
+        return "unknown"
+
+    def _build_archive_entry(self, code: str, fitness: float, cv_score: float) -> EvolutionArchiveEntry:
+        complexity = self._solution_complexity(code)
+        return EvolutionArchiveEntry(
+            code=code,
+            fitness=fitness,
+            cv_score=cv_score,
+            complexity=complexity,
+            complexity_bin=self._complexity_bin(complexity),
+            model_family=self._model_family(code),
+            signature=hashlib.sha256(code.encode()).hexdigest()[:12],
+        )
+
+    def _update_elite_archive(self, deps: EvolverDeps, entry: EvolutionArchiveEntry) -> None:
+        key = (entry.complexity_bin, entry.model_family)
+        existing = deps.elite_archive.get(key)
+        if existing is None or entry.fitness > existing.fitness:
+            deps.elite_archive[key] = entry
+
+    def _select_elite_samples(
+        self, deps: EvolverDeps, *, top: int, diverse: int
+    ) -> list[EvolutionArchiveEntry]:
+        entries = list(deps.elite_archive.values())
+        if not entries:
+            return []
+        sorted_entries = sorted(entries, key=lambda entry: entry.fitness, reverse=True)
+        selected: list[EvolutionArchiveEntry] = []
+        for entry in sorted_entries[:top]:
+            selected.append(entry)
+
+        used_signatures = {entry.signature for entry in selected}
+        used_families = {entry.model_family for entry in selected}
+        used_bins = {entry.complexity_bin for entry in selected}
+
+        target_size = top + diverse
+        if diverse > 0:
+            for entry in sorted_entries:
+                if entry.signature in used_signatures:
+                    continue
+                if entry.model_family not in used_families or entry.complexity_bin not in used_bins:
+                    selected.append(entry)
+                    used_signatures.add(entry.signature)
+                    used_families.add(entry.model_family)
+                    used_bins.add(entry.complexity_bin)
+                if len(selected) >= target_size:
+                    break
+
+        if len(selected) < target_size:
+            for entry in sorted_entries:
+                if entry.signature in used_signatures:
+                    continue
+                selected.append(entry)
+                if len(selected) >= target_size:
+                    break
+
+        return selected
+
+    async def _run_evaluation(
         self, ctx: RunContext[EvolverDeps], solution_code: str, *, validation_split: float
+    ) -> dict[str, Any]:
+        if not self._settings.cascade_evaluation or self._settings.cascade_stage1_rows <= 0:
+            result = await self._evaluate_solution(ctx, solution_code, validation_split=validation_split)
+            result["stage"] = "full"
+            return result
+
+        quick_timeout = min(self._settings.cascade_stage1_timeout, ctx.deps.solution_timeout)
+        quick_result = await self._evaluate_solution(
+            ctx,
+            solution_code,
+            validation_split=validation_split,
+            max_rows=self._settings.cascade_stage1_rows,
+            timeout_seconds=quick_timeout,
+        )
+        quick_result["stage"] = "stage1"
+        if not quick_result["valid"]:
+            return quick_result
+
+        threshold = None
+        if ctx.deps.best_fitness is not None:
+            threshold = max(
+                ctx.deps.best_fitness * self._settings.cascade_relative_threshold,
+                self._settings.cascade_floor_threshold,
+            )
+        if threshold is not None and quick_result["fitness"] < threshold:
+            quick_result["stage_threshold"] = threshold
+            return quick_result
+
+        full_result = await self._evaluate_solution(ctx, solution_code, validation_split=validation_split)
+        full_result["stage"] = "full"
+        full_result["stage1_fitness"] = quick_result["fitness"]
+        full_result["stage1_cv_score"] = quick_result["cv_score"]
+        full_result["stage1_runtime_ms"] = quick_result["runtime_ms"]
+        full_result["runtime_ms"] += quick_result["runtime_ms"]
+        return full_result
+
+    async def _evaluate_solution(
+        self,
+        ctx: RunContext[EvolverDeps],
+        solution_code: str,
+        *,
+        validation_split: float,
+        max_rows: int | None = None,
+        timeout_seconds: int | None = None,
     ) -> dict[str, Any]:
         with tempfile.TemporaryDirectory(dir=str(ctx.deps.data_dir)) as run_dir:
             run_path = Path(run_dir)
@@ -554,14 +852,18 @@ class EvolverAgent(MemoryMixin):
                 run_path,
                 competition_id=ctx.deps.competition.id,
             )
-            if ctx.deps.max_generations <= 5:
-                _truncate_csv(run_path / 'train.csv', max_rows=800)
-                _truncate_csv(run_path / 'test.csv', max_rows=800)
-                _truncate_csv(run_path / 'sample_submission.csv', max_rows=800)
+            if max_rows is not None and max_rows > 0:
+                _truncate_csv(run_path / "train.csv", max_rows=max_rows)
+                _truncate_csv(run_path / "test.csv", max_rows=max_rows)
+                _truncate_csv(run_path / "sample_submission.csv", max_rows=max_rows)
+            elif ctx.deps.max_generations <= 5:
+                _truncate_csv(run_path / "train.csv", max_rows=800)
+                _truncate_csv(run_path / "test.csv", max_rows=800)
+                _truncate_csv(run_path / "sample_submission.csv", max_rows=800)
             execution = await execute_solution(
                 solution_code,
                 run_path,
-                timeout_seconds=ctx.deps.solution_timeout,
+                timeout_seconds=timeout_seconds or ctx.deps.solution_timeout,
                 env=self._build_execution_env(validation_split),
                 use_builtin_code_execution=True,
                 model_spec=self._settings.model,
@@ -580,14 +882,14 @@ class EvolverAgent(MemoryMixin):
         cv_score = score if score is not None else 0.0
         fitness = self._fitness_from_score(cv_score, ctx.deps.competition.metric_direction) if error is None else 0.0
         return {
-            'fitness': round(fitness, 6),
-            'cv_score': round(cv_score, 6),
-            'valid': error is None,
-            'runtime_ms': execution.runtime_ms,
-            'timed_out': execution.timed_out,
-            'returncode': execution.returncode,
-            'error': error,
-            'stderr': execution.stderr.strip() if execution.stderr else None,
+            "fitness": round(fitness, 6),
+            "cv_score": round(cv_score, 6),
+            "valid": error is None,
+            "runtime_ms": execution.runtime_ms,
+            "timed_out": execution.timed_out,
+            "returncode": execution.returncode,
+            "error": error,
+            "stderr": execution.stderr.strip() if execution.stderr else None,
         }
 
     async def _submit_solution(
@@ -667,8 +969,57 @@ class EvolverAgent(MemoryMixin):
 
         return _NUMBER_PATTERN.sub(replacer, code)
 
+    def _ensure_import(self, code: str, module: str, symbol: str) -> str:
+        imports, body = self._split_imports(code)
+        import_prefix = f"from {module} import"
+        for line in imports:
+            stripped = line.strip()
+            if stripped.startswith(import_prefix) and symbol in stripped:
+                return code
+
+        imports.append(f"{import_prefix} {symbol}")
+        merged_imports = self._merge_imports(imports, [])
+        if merged_imports:
+            return "\n".join([*merged_imports, "", *body])
+        return "\n".join(body)
+
     def _swap_model_family(self, code: str) -> str:
-        return next((code.replace(source, target) for source, target in _MODEL_SWAPS.items() if source in code), code)
+        ordered_swaps = sorted(_MODEL_SWAPS.items(), key=lambda item: len(item[0]), reverse=True)
+        for source, target in ordered_swaps:
+            pattern = re.compile(rf"\b{re.escape(source)}\b")
+            if not pattern.search(code):
+                continue
+            updated = pattern.sub(target, code)
+            module = _MODEL_IMPORTS.get(target)
+            if module:
+                updated = self._ensure_import(updated, module, target)
+            return updated
+        return code
+
+    def _inject_scaler(self, code: str) -> str:
+        if "StandardScaler" in code:
+            return code
+        match = _NUMERIC_PIPELINE_PATTERN.search(code)
+        if not match:
+            return code
+        steps_block = match.group("steps")
+        if "SimpleImputer" not in steps_block or "StandardScaler" in steps_block:
+            return code
+
+        lines = steps_block.splitlines()
+        inserted = False
+        for idx, line in enumerate(lines):
+            if "SimpleImputer" in line:
+                indent = re.match(r"\s*", line).group(0)
+                lines.insert(idx + 1, f'{indent}("scaler", StandardScaler()),')
+                inserted = True
+                break
+        if not inserted:
+            return code
+
+        updated_steps = "\n".join(lines)
+        updated = f"{code[:match.start('steps')]}{updated_steps}{code[match.end('steps'):]}"
+        return self._ensure_import(updated, "sklearn.preprocessing", "StandardScaler")
 
     def _inject_fillna(self, code: str) -> str:
         if 'fillna(' in code or not (match := _FILLNA_PATTERN.search(code)):
@@ -706,26 +1057,41 @@ class EvolverAgent(MemoryMixin):
         return self._mutate_numbers(code, rng, max_changes=max_changes, magnitude=magnitude)
 
     def _apply_structural_mutation(self, code: str, params: dict[str, Any]) -> str:
-        for mutate in (self._swap_model_family, self._inject_fillna):
+        for mutate in (self._swap_model_family, self._inject_scaler, self._inject_fillna):
             if (result := mutate(code)) != code:
                 return result
         return self._apply_point_mutation(code, params)
 
     def _apply_hyperparameter_mutation(self, code: str, params: dict[str, Any]) -> str:
-        rng = self._seeded_rng(code, params, 'hyperparameter')
-        magnitude = float(params.get('magnitude', 0.2))
-        integer_params = {'n_estimators', 'max_depth', 'min_samples_leaf'}
+        rng = self._seeded_rng(code, params, "hyperparameter")
+        magnitude = float(params.get("magnitude", 0.2))
+        requested = str(params.get("param", "")).strip()
+
+        candidates: list[tuple[str, re.Pattern[str], re.Match[str]]] = []
         for name, pattern in _HYPERPARAM_PATTERNS.items():
-            if not (match := pattern.search(code)):
+            if requested and name != requested:
                 continue
-            try:
-                value = float(match.group(2))
-            except ValueError:
-                continue
-            mutated = value * (1 + magnitude * rng.choice([-1, 1]))
-            mutated_text = str(max(1, int(round(mutated)))) if name in integer_params else f'{max(0.0001, mutated):.6g}'
-            return pattern.sub(f'{match.group(1)}{mutated_text}', code, count=1)
-        return self._apply_point_mutation(code, params)
+            if match := pattern.search(code):
+                candidates.append((name, pattern, match))
+
+        if not candidates:
+            return self._apply_point_mutation(code, params)
+
+        name, pattern, match = rng.choice(candidates)
+        try:
+            value = float(match.group(2))
+        except ValueError:
+            return self._apply_point_mutation(code, params)
+
+        mutated = value * (1 + magnitude * rng.choice([-1, 1]))
+        bounds = _HYPERPARAM_BOUNDS.get(name)
+        if bounds is not None:
+            mutated = min(max(mutated, bounds[0]), bounds[1])
+        if name in _HYPERPARAM_INTEGER_KEYS:
+            mutated_text = str(max(1, int(round(mutated))))
+        else:
+            mutated_text = f"{max(0.0001, mutated):.6g}"
+        return pattern.sub(f"{match.group(1)}{mutated_text}", code, count=1)
 
     def _apply_crossover(self, code: str, other: str, params: dict[str, Any]) -> str:
         if not other.strip():

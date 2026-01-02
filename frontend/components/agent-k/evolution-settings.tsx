@@ -47,6 +47,7 @@ export function EvolutionSettings({
               className="block w-full rounded-xl border border-border bg-background/50 px-4 py-3.5 font-mono text-foreground text-sm placeholder-muted-foreground transition-all focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               disabled={disabled}
               id="max-evolution-rounds-input"
+              max={MAX_EVOLUTION_ROUNDS}
               min={1}
               onChange={(event) => {
                 const value = Number.parseInt(event.target.value, 10);
@@ -60,7 +61,6 @@ export function EvolutionSettings({
               placeholder="100"
               step={1}
               type="number"
-              max={MAX_EVOLUTION_ROUNDS}
               value={criteria.maxEvolutionRounds}
             />
           </div>

@@ -257,6 +257,8 @@ class EvolverDeps:
     generation_offset: int = 0
     best_solution: str | None = None
     best_fitness: float | None = None
+    improvement_count: int = 0
+    min_improvements_required: int = 0
     generation_history: list[dict[str, Any]] = field(default_factory=list)
     elite_archive: dict[tuple[int, str], EvolutionArchiveEntry] = field(default_factory=dict)
 
@@ -387,11 +389,18 @@ class EvolverAgent(MemoryMixin):
 
             result = await self._run_evaluation(ctx, solution_code, validation_split=validation_split)
             eligible_for_archive = result['valid'] and result.get('stage') != 'stage1'
+            improvement = False
+            improvement_delta: float | None = None
 
             if eligible_for_archive:
                 if ctx.deps.best_fitness is None or result['fitness'] > ctx.deps.best_fitness:
+                    previous_best = ctx.deps.best_fitness
                     ctx.deps.best_fitness = result['fitness']
                     ctx.deps.best_solution = solution_code
+                    if previous_best is not None:
+                        ctx.deps.improvement_count += 1
+                        improvement = True
+                        improvement_delta = result['fitness'] - previous_best
 
             if result['valid']:
                 archive_entry = self._build_archive_entry(solution_code, result['fitness'], result['cv_score'])
@@ -403,6 +412,9 @@ class EvolverAgent(MemoryMixin):
                         'complexity_bin': archive_entry.complexity_bin,
                         'model_family': archive_entry.model_family,
                         'archive_size': len(ctx.deps.elite_archive),
+                        'improvement_count': ctx.deps.improvement_count,
+                        'improved': improvement,
+                        'improvement_delta': improvement_delta,
                     }
                 )
 
@@ -413,6 +425,8 @@ class EvolverAgent(MemoryMixin):
                         'cv_score': result['cv_score'],
                         'validation_split': validation_split,
                         'stage': result.get('stage', 'full'),
+                        'improvement_count': ctx.deps.improvement_count,
+                        'improved': improvement,
                     },
                 )
             else:
@@ -498,6 +512,17 @@ class EvolverAgent(MemoryMixin):
 
         if len(history) < threshold_generations:
             result = {'converged': False, 'reason': 'Not enough generations'}
+            return ToolReturn(return_value=result, content=json.dumps(result))
+
+        if ctx.deps.min_improvements_required and ctx.deps.improvement_count < ctx.deps.min_improvements_required:
+            result = {
+                'converged': False,
+                'reason': (
+                    'Minimum improvements not reached '
+                    f'({ctx.deps.improvement_count}/{ctx.deps.min_improvements_required})'
+                ),
+                'improvement_count': ctx.deps.improvement_count,
+            }
             return ToolReturn(return_value=result, content=json.dumps(result))
 
         recent_fitness = [g['best_fitness'] for g in history[-threshold_generations:]]
@@ -654,6 +679,8 @@ class EvolverAgent(MemoryMixin):
                 f'- Population Size: {deps.population_size}\n'
                 f'- Max Generations: {deps.max_generations}\n'
                 f'- Minimum Generations: {deps.min_generations}\n'
+                f'- Improvements: {deps.improvement_count}\n'
+                f'- Min Improvements Required: {deps.min_improvements_required}\n'
                 f'- Generation Offset: {deps.generation_offset}'
             ),
         ]

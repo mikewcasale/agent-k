@@ -352,6 +352,10 @@ class EvolutionState(BaseModel):
     current_generation: int = Field(default=0, description='Current generation')
     max_generations: int = Field(default=100, description='Maximum generations')
     population_size: int = Field(default=50, description='Population size')
+    improvement_count: int = Field(default=0, ge=0, description='Number of fitness improvements recorded')
+    min_improvements_required: int = Field(
+        default=0, ge=0, description='Minimum improvements required before submission'
+    )
     best_solution: dict[str, Any] | None = Field(default=None, description='Best solution payload')
     generation_history: list[GenerationMetrics] = Field(default_factory=list, description='History of generations')
     convergence_detected: bool = Field(default=False, description='Whether convergence detected')
@@ -469,6 +473,9 @@ class MissionCriteria(BaseModel):
     target_domains: frozenset[str] = Field(default_factory=frozenset, description='Target domains')
     exclude_domains: frozenset[str] = Field(default_factory=frozenset, description='Excluded domains')
     max_evolution_rounds: int = Field(default=100, ge=1, description='Max evolution rounds')
+    min_improvements_required: int = Field(
+        default=0, ge=0, description='Minimum number of fitness improvements required before submission'
+    )
     target_leaderboard_percentile: float = Field(
         default=0.10, ge=0.0, le=1.0, description='Target top N percentile on leaderboard'
     )

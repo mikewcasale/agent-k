@@ -69,8 +69,11 @@ export function MissionStream() {
         return;
       }
 
-      let payload: { type?: string; data?: unknown; timestamp?: string } | null =
-        null;
+      let payload: {
+        type?: string;
+        data?: unknown;
+        timestamp?: string;
+      } | null = null;
       try {
         payload = JSON.parse(event.data) as {
           type?: string;

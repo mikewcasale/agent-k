@@ -6,8 +6,9 @@ export const maxDuration = 60;
 
 export async function GET(
   _request: Request,
-  { params }: { params: { missionId: string } }
+  { params }: { params: Promise<{ missionId: string }> }
 ) {
+  const { missionId } = await params;
   const session = await auth();
 
   if (!session?.user) {
@@ -16,7 +17,7 @@ export async function GET(
 
   try {
     const backendUrl = new URL(
-      `/api/mission/${params.missionId}/stream`,
+      `/api/mission/${missionId}/stream`,
       PYTHON_BACKEND_URL
     );
     const backendResponse = await fetch(backendUrl, {

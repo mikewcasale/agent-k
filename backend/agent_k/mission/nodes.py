@@ -153,13 +153,7 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         'timestamp': datetime.now(UTC).isoformat(),
                     }
                 )
-                await _emit_phase_failure(
-                    state=state,
-                    emitter=emitter,
-                    phase='discovery',
-                    error=e,
-                    context='discovery',
-                )
+                await _emit_phase_failure(state=state, emitter=emitter, phase='discovery', error=e, context='discovery')
                 return End(
                     MissionResult(
                         success=False,
@@ -277,13 +271,7 @@ class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         'timestamp': datetime.now(UTC).isoformat(),
                     }
                 )
-                await _emit_phase_failure(
-                    state=state,
-                    emitter=emitter,
-                    phase='research',
-                    error=e,
-                    context='research',
-                )
+                await _emit_phase_failure(state=state, emitter=emitter, phase='research', error=e, context='research')
                 return End(
                     MissionResult(
                         success=False,
@@ -412,13 +400,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         'timestamp': datetime.now(UTC).isoformat(),
                     }
                 )
-                await _emit_phase_failure(
-                    state=state,
-                    emitter=emitter,
-                    phase='prototype',
-                    error=e,
-                    context='prototype',
-                )
+                await _emit_phase_failure(state=state, emitter=emitter, phase='prototype', error=e, context='prototype')
                 return End(
                     MissionResult(
                         success=False,
@@ -997,9 +979,7 @@ Model rotation segment {segment_index} using {model_spec}."""
                                     convergence_detected = True
                                     convergence_reason = 'constraints'
                                     logfire.warning(
-                                        'evolution_constraints_fallback',
-                                        error=result.error_message,
-                                        model=model_spec,
+                                        'evolution_constraints_fallback', error=result.error_message, model=model_spec
                                     )
                                     state.errors.append(
                                         {
@@ -1034,9 +1014,7 @@ Model rotation segment {segment_index} using {model_spec}."""
                                 )
 
                                 await emitter.emit_phase_error(
-                                    phase='evolution',
-                                    error=result.error_message,
-                                    recoverable=bool(result.recoverable),
+                                    phase='evolution', error=result.error_message, recoverable=bool(result.recoverable)
                                 )
                                 await emitter.emit_error(
                                     error_id=f'evolution_{state.mission_id}',
@@ -1134,13 +1112,7 @@ Model rotation segment {segment_index} using {model_spec}."""
                         'timestamp': datetime.now(UTC).isoformat(),
                     }
                 )
-                await _emit_phase_failure(
-                    state=state,
-                    emitter=emitter,
-                    phase='evolution',
-                    error=e,
-                    context='evolution',
-                )
+                await _emit_phase_failure(state=state, emitter=emitter, phase='evolution', error=e, context='evolution')
                 # Even on failure, try to submit best solution if available
                 if state.evolution_state and state.evolution_state.best_solution:
                     return SubmissionNode()
@@ -1471,12 +1443,7 @@ def _is_constraints_failure(message: str | None) -> bool:
 
 
 async def _emit_phase_failure(
-    *,
-    state: MissionState,
-    emitter: EventEmitter,
-    phase: str,
-    error: Exception,
-    context: str,
+    *, state: MissionState, emitter: EventEmitter, phase: str, error: Exception, context: str
 ) -> None:
     category, strategy = classify_error(error)
     error_message = str(error)

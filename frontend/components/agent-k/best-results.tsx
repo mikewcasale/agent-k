@@ -10,17 +10,17 @@ import {
   Trophy,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
 import {
   BEST_RESULTS_STORAGE_KEY,
+  type BestResultEntry,
   formatResultAge,
   loadBestResults,
   mergeBestResults,
   saveBestResults,
   sortBestResults,
-  type BestResultEntry,
 } from "@/lib/utils/best-results";
 import { buildCompetitionSubmissionsUrl } from "@/lib/utils/kaggle";
-import { cn } from "@/lib/utils";
 
 const MAX_RESULTS = 3;
 
@@ -39,7 +39,8 @@ const CATEGORY_STYLES: Array<{
     meta: {
       label: "Finance",
       icon: TrendingUp,
-      className: "bg-blue-500/10 text-blue-500 dark:bg-blue-500/20 dark:text-blue-300",
+      className:
+        "bg-blue-500/10 text-blue-500 dark:bg-blue-500/20 dark:text-blue-300",
     },
   },
   {
@@ -88,8 +89,7 @@ function resolveCategory(category?: string): CategoryMeta {
   return {
     label: formatCategoryLabel(category),
     icon: Trophy,
-    className:
-      "bg-zinc-100 text-zinc-500 dark:bg-white/10 dark:text-zinc-300",
+    className: "bg-zinc-100 text-zinc-500 dark:bg-white/10 dark:text-zinc-300",
   };
 }
 
@@ -115,7 +115,8 @@ function formatRankLabel(entry: BestResultEntry): string {
     }
 
     if (entry.percentile != null) {
-      const percent = entry.percentile > 1 ? entry.percentile : entry.percentile * 100;
+      const percent =
+        entry.percentile > 1 ? entry.percentile : entry.percentile * 100;
       return `Top ${Math.round(percent)}%`;
     }
 
@@ -127,7 +128,8 @@ function formatRankLabel(entry: BestResultEntry): string {
   }
 
   if (entry.percentile != null) {
-    const percent = entry.percentile > 1 ? entry.percentile : entry.percentile * 100;
+    const percent =
+      entry.percentile > 1 ? entry.percentile : entry.percentile * 100;
     return `Top ${Math.round(percent)}%`;
   }
 
@@ -175,7 +177,9 @@ export function BestResults() {
       }
     };
 
-    void hydrateBestResults();
+    hydrateBestResults().catch(() => {
+      // Ignore history fetch errors.
+    });
 
     const handleStorage = (event: StorageEvent) => {
       if (event.key === BEST_RESULTS_STORAGE_KEY) {
@@ -281,7 +285,7 @@ export function BestResults() {
                     <td className="px-4 py-3 text-center">
                       <span
                         className={cn(
-                          "inline-flex items-center gap-1 rounded border px-2 py-1 text-xs font-bold",
+                          "inline-flex items-center gap-1 rounded border px-2 py-1 font-bold text-xs",
                           getRankBadgeClass(entry)
                         )}
                       >

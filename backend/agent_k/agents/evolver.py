@@ -59,97 +59,88 @@ __all__ = (
     'settings',
 )
 
-SCHEMA_VERSION: Final[str] = "1.0.0"
-_NUMBER_PATTERN: Final[re.Pattern[str]] = re.compile(r"(?<![\w.])(-?\d+\.?\d*)(?![\w.])")
+SCHEMA_VERSION: Final[str] = '1.0.0'
+_NUMBER_PATTERN: Final[re.Pattern[str]] = re.compile(r'(?<![\w.])(-?\d+\.?\d*)(?![\w.])')
 _FILLNA_PATTERN: Final[re.Pattern[str]] = re.compile(
-    r"^(?P<indent>\s*)(?P<var>\w+)\s*=\s*pd\.read_csv\(.*\)$", re.MULTILINE
+    r'^(?P<indent>\s*)(?P<var>\w+)\s*=\s*pd\.read_csv\(.*\)$', re.MULTILINE
 )
 _DEF_PATTERN: Final[re.Pattern[str]] = re.compile(
-    r"^(def (?!__)\w+).*?(?=^(?:def |class )|\Z)", re.MULTILINE | re.DOTALL
+    r'^(def (?!__)\w+).*?(?=^(?:def |class )|\Z)', re.MULTILINE | re.DOTALL
 )
 _NUMERIC_PIPELINE_PATTERN: Final[re.Pattern[str]] = re.compile(
-    r"(numeric_transformer\s*=\s*Pipeline\(steps=\[\s*)(?P<steps>.*?)(\s*\]\))",
-    re.DOTALL,
+    r'(numeric_transformer\s*=\s*Pipeline\(steps=\[\s*)(?P<steps>.*?)(\s*\]\))', re.DOTALL
 )
 _HYPERPARAM_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
-    "n_estimators": re.compile(r"(n_estimators\s*=\s*)(\d+)", re.IGNORECASE),
-    "learning_rate": re.compile(r"(learning_rate\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "max_depth": re.compile(r"(max_depth\s*=\s*)(\d+)", re.IGNORECASE),
-    "min_samples_leaf": re.compile(r"(min_samples_leaf\s*=\s*)(\d+)", re.IGNORECASE),
-    "min_samples_split": re.compile(r"(min_samples_split\s*=\s*)(\d+)", re.IGNORECASE),
-    "max_features": re.compile(r"(max_features\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "subsample": re.compile(r"(subsample\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "n_neighbors": re.compile(r"(n_neighbors\s*=\s*)(\d+)", re.IGNORECASE),
-    "C": re.compile(r"(\bC\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "alpha": re.compile(r"(alpha\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "l1_ratio": re.compile(r"(l1_ratio\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "max_iter": re.compile(r"(max_iter\s*=\s*)(\d+)", re.IGNORECASE),
+    'n_estimators': re.compile(r'(n_estimators\s*=\s*)(\d+)', re.IGNORECASE),
+    'learning_rate': re.compile(r'(learning_rate\s*=\s*)([\d\.]+)', re.IGNORECASE),
+    'max_depth': re.compile(r'(max_depth\s*=\s*)(\d+)', re.IGNORECASE),
+    'min_samples_leaf': re.compile(r'(min_samples_leaf\s*=\s*)(\d+)', re.IGNORECASE),
+    'min_samples_split': re.compile(r'(min_samples_split\s*=\s*)(\d+)', re.IGNORECASE),
+    'max_features': re.compile(r'(max_features\s*=\s*)([\d\.]+)', re.IGNORECASE),
+    'subsample': re.compile(r'(subsample\s*=\s*)([\d\.]+)', re.IGNORECASE),
+    'n_neighbors': re.compile(r'(n_neighbors\s*=\s*)(\d+)', re.IGNORECASE),
+    'C': re.compile(r'(\bC\s*=\s*)([\d\.]+)', re.IGNORECASE),
+    'alpha': re.compile(r'(alpha\s*=\s*)([\d\.]+)', re.IGNORECASE),
+    'l1_ratio': re.compile(r'(l1_ratio\s*=\s*)([\d\.]+)', re.IGNORECASE),
+    'max_iter': re.compile(r'(max_iter\s*=\s*)(\d+)', re.IGNORECASE),
 }
 _HYPERPARAM_BOUNDS: Final[dict[str, tuple[float, float]]] = {
-    "learning_rate": (0.001, 1.0),
-    "subsample": (0.1, 1.0),
-    "max_features": (0.1, 1.0),
-    "C": (0.01, 100.0),
-    "alpha": (0.0001, 10.0),
-    "l1_ratio": (0.0, 1.0),
+    'learning_rate': (0.001, 1.0),
+    'subsample': (0.1, 1.0),
+    'max_features': (0.1, 1.0),
+    'C': (0.01, 100.0),
+    'alpha': (0.0001, 10.0),
+    'l1_ratio': (0.0, 1.0),
 }
 _HYPERPARAM_INTEGER_KEYS: Final[set[str]] = {
-    "n_estimators",
-    "max_depth",
-    "min_samples_leaf",
-    "min_samples_split",
-    "n_neighbors",
-    "max_iter",
+    'n_estimators',
+    'max_depth',
+    'min_samples_leaf',
+    'min_samples_split',
+    'n_neighbors',
+    'max_iter',
 }
 _MODEL_SWAPS: Final[dict[str, str]] = {
-    "RandomForestClassifier": "GradientBoostingClassifier",
-    "RandomForestRegressor": "GradientBoostingRegressor",
-    "GradientBoostingClassifier": "RandomForestClassifier",
-    "GradientBoostingRegressor": "RandomForestRegressor",
-    "ExtraTreesClassifier": "RandomForestClassifier",
-    "ExtraTreesRegressor": "RandomForestRegressor",
-    "HistGradientBoostingClassifier": "GradientBoostingClassifier",
-    "HistGradientBoostingRegressor": "GradientBoostingRegressor",
-    "LogisticRegression": "LinearSVC",
-    "LinearRegression": "Ridge",
+    'RandomForestClassifier': 'GradientBoostingClassifier',
+    'RandomForestRegressor': 'GradientBoostingRegressor',
+    'GradientBoostingClassifier': 'RandomForestClassifier',
+    'GradientBoostingRegressor': 'RandomForestRegressor',
+    'ExtraTreesClassifier': 'RandomForestClassifier',
+    'ExtraTreesRegressor': 'RandomForestRegressor',
+    'HistGradientBoostingClassifier': 'GradientBoostingClassifier',
+    'HistGradientBoostingRegressor': 'GradientBoostingRegressor',
+    'LogisticRegression': 'LinearSVC',
+    'LinearRegression': 'Ridge',
 }
 _MODEL_IMPORTS: Final[dict[str, str]] = {
-    "RandomForestClassifier": "sklearn.ensemble",
-    "RandomForestRegressor": "sklearn.ensemble",
-    "GradientBoostingClassifier": "sklearn.ensemble",
-    "GradientBoostingRegressor": "sklearn.ensemble",
-    "ExtraTreesClassifier": "sklearn.ensemble",
-    "ExtraTreesRegressor": "sklearn.ensemble",
-    "HistGradientBoostingClassifier": "sklearn.ensemble",
-    "HistGradientBoostingRegressor": "sklearn.ensemble",
-    "LogisticRegression": "sklearn.linear_model",
-    "LinearRegression": "sklearn.linear_model",
-    "LinearSVC": "sklearn.svm",
-    "Ridge": "sklearn.linear_model",
+    'RandomForestClassifier': 'sklearn.ensemble',
+    'RandomForestRegressor': 'sklearn.ensemble',
+    'GradientBoostingClassifier': 'sklearn.ensemble',
+    'GradientBoostingRegressor': 'sklearn.ensemble',
+    'ExtraTreesClassifier': 'sklearn.ensemble',
+    'ExtraTreesRegressor': 'sklearn.ensemble',
+    'HistGradientBoostingClassifier': 'sklearn.ensemble',
+    'HistGradientBoostingRegressor': 'sklearn.ensemble',
+    'LogisticRegression': 'sklearn.linear_model',
+    'LinearRegression': 'sklearn.linear_model',
+    'LinearSVC': 'sklearn.svm',
+    'Ridge': 'sklearn.linear_model',
 }
 _MODEL_FAMILY_PATTERNS: Final[tuple[tuple[str, re.Pattern[str]], ...]] = (
-    ("random_forest", re.compile(r"\b(RandomForestClassifier|RandomForestRegressor)\b")),
-    ("extra_trees", re.compile(r"\b(ExtraTreesClassifier|ExtraTreesRegressor)\b")),
-    ("gradient_boosting", re.compile(r"\b(GradientBoostingClassifier|GradientBoostingRegressor)\b")),
+    ('random_forest', re.compile(r'\b(RandomForestClassifier|RandomForestRegressor)\b')),
+    ('extra_trees', re.compile(r'\b(ExtraTreesClassifier|ExtraTreesRegressor)\b')),
+    ('gradient_boosting', re.compile(r'\b(GradientBoostingClassifier|GradientBoostingRegressor)\b')),
+    ('hist_gradient_boosting', re.compile(r'\b(HistGradientBoostingClassifier|HistGradientBoostingRegressor)\b')),
     (
-        "hist_gradient_boosting",
-        re.compile(r"\b(HistGradientBoostingClassifier|HistGradientBoostingRegressor)\b"),
+        'linear',
+        re.compile(r'\b(LogisticRegression|LinearRegression|Ridge|Lasso|ElasticNet|SGDClassifier|SGDRegressor)\b'),
     ),
-    (
-        "linear",
-        re.compile(
-            r"\b(LogisticRegression|LinearRegression|Ridge|Lasso|ElasticNet|SGDClassifier|SGDRegressor)\b"
-        ),
-    ),
-    ("svm", re.compile(r"\b(LinearSVC|LinearSVR|SVC|SVR)\b")),
-    ("knn", re.compile(r"\b(KNeighborsClassifier|KNeighborsRegressor)\b")),
-    ("naive_bayes", re.compile(r"\b(GaussianNB|MultinomialNB|BernoulliNB)\b")),
-    ("tree", re.compile(r"\b(DecisionTreeClassifier|DecisionTreeRegressor)\b")),
-    (
-        "ensemble",
-        re.compile(r"\b(BaggingClassifier|BaggingRegressor|AdaBoostClassifier|AdaBoostRegressor)\b"),
-    ),
-    ("stacking", re.compile(r"\b(StackingClassifier|StackingRegressor)\b")),
+    ('svm', re.compile(r'\b(LinearSVC|LinearSVR|SVC|SVR)\b')),
+    ('knn', re.compile(r'\b(KNeighborsClassifier|KNeighborsRegressor)\b')),
+    ('naive_bayes', re.compile(r'\b(GaussianNB|MultinomialNB|BernoulliNB)\b')),
+    ('tree', re.compile(r'\b(DecisionTreeClassifier|DecisionTreeRegressor)\b')),
+    ('ensemble', re.compile(r'\b(BaggingClassifier|BaggingRegressor|AdaBoostClassifier|AdaBoostRegressor)\b')),
+    ('stacking', re.compile(r'\b(StackingClassifier|StackingRegressor)\b')),
 )
 _COMPLEXITY_BINS: Final[tuple[int, ...]] = (120, 200, 320, 480, 640)
 
@@ -171,17 +162,17 @@ class EvolutionArchiveEntry:
         truncated = False
         code = self.code
         if max_chars > 0 and len(code) > max_chars:
-            code = code[:max_chars].rstrip() + "\n# ... truncated"
+            code = code[:max_chars].rstrip() + '\n# ... truncated'
             truncated = True
         return {
-            "fitness": self.fitness,
-            "cv_score": self.cv_score,
-            "complexity": self.complexity,
-            "complexity_bin": self.complexity_bin,
-            "model_family": self.model_family,
-            "signature": self.signature,
-            "code": code,
-            "truncated": truncated,
+            'fitness': self.fitness,
+            'cv_score': self.cv_score,
+            'complexity': self.complexity,
+            'complexity_bin': self.complexity_bin,
+            'model_family': self.model_family,
+            'signature': self.signature,
+            'code': code,
+            'truncated': truncated,
         }
 
 
@@ -208,39 +199,18 @@ class EvolverSettings(BaseSettings):
     enable_kaggle_mcp: bool = Field(default=False, description='Enable Kaggle MCP tool access')
     kaggle_mcp_url: str = Field(default=DEFAULT_KAGGLE_MCP_URL, description='Kaggle MCP endpoint')
     enable_submission_tool: bool = Field(default=False, description='Allow submissions during evolution')
-    cascade_evaluation: bool = Field(
-        default=True,
-        description="Enable cascade evaluation for candidate filtering",
-    )
-    cascade_stage1_rows: int = Field(
-        default=300,
-        ge=0,
-        description="Max rows for quick evaluation stage",
-    )
-    cascade_stage1_timeout: int = Field(
-        default=45,
-        ge=1,
-        description="Timeout for quick evaluation stage",
-    )
+    cascade_evaluation: bool = Field(default=True, description='Enable cascade evaluation for candidate filtering')
+    cascade_stage1_rows: int = Field(default=300, ge=0, description='Max rows for quick evaluation stage')
+    cascade_stage1_timeout: int = Field(default=45, ge=1, description='Timeout for quick evaluation stage')
     cascade_relative_threshold: float = Field(
-        default=0.85,
-        ge=0.0,
-        le=1.0,
-        description="Fraction of best fitness required to run full evaluation",
+        default=0.85, ge=0.0, le=1.0, description='Fraction of best fitness required to run full evaluation'
     )
     cascade_floor_threshold: float = Field(
-        default=0.05,
-        ge=0.0,
-        le=1.0,
-        description="Minimum quick fitness required to run full evaluation",
+        default=0.05, ge=0.0, le=1.0, description='Minimum quick fitness required to run full evaluation'
     )
-    elite_sample_top: int = Field(default=3, ge=0, description="Default top elites to sample")
-    elite_sample_diverse: int = Field(default=2, ge=0, description="Default diverse elites to sample")
-    elite_code_max_chars: int = Field(
-        default=8000,
-        ge=256,
-        description="Max chars per elite code snippet",
-    )
+    elite_sample_top: int = Field(default=3, ge=0, description='Default top elites to sample')
+    elite_sample_diverse: int = Field(default=2, ge=0, description='Default diverse elites to sample')
+    elite_code_max_chars: int = Field(default=8000, ge=256, description='Max chars per elite code snippet')
 
     @model_validator(mode='after')
     def validate_evolution_params(self) -> Self:
@@ -416,51 +386,44 @@ class EvolverAgent(MemoryMixin):
             )
 
             result = await self._run_evaluation(ctx, solution_code, validation_split=validation_split)
-            eligible_for_archive = result["valid"] and result.get("stage") != "stage1"
+            eligible_for_archive = result['valid'] and result.get('stage') != 'stage1'
 
             if eligible_for_archive:
-                if ctx.deps.best_fitness is None or result["fitness"] > ctx.deps.best_fitness:
-                    ctx.deps.best_fitness = result["fitness"]
+                if ctx.deps.best_fitness is None or result['fitness'] > ctx.deps.best_fitness:
+                    ctx.deps.best_fitness = result['fitness']
                     ctx.deps.best_solution = solution_code
 
-            if result["valid"]:
-                archive_entry = self._build_archive_entry(
-                    solution_code,
-                    result["fitness"],
-                    result["cv_score"],
-                )
+            if result['valid']:
+                archive_entry = self._build_archive_entry(solution_code, result['fitness'], result['cv_score'])
                 if eligible_for_archive:
                     self._update_elite_archive(ctx.deps, archive_entry)
                 result.update(
                     {
-                        "complexity": archive_entry.complexity,
-                        "complexity_bin": archive_entry.complexity_bin,
-                        "model_family": archive_entry.model_family,
-                        "archive_size": len(ctx.deps.elite_archive),
+                        'complexity': archive_entry.complexity,
+                        'complexity_bin': archive_entry.complexity_bin,
+                        'model_family': archive_entry.model_family,
+                        'archive_size': len(ctx.deps.elite_archive),
                     }
                 )
 
                 await ctx.deps.event_emitter.emit(
-                    "fitness-update",
+                    'fitness-update',
                     {
-                        "fitness": result["fitness"],
-                        "cv_score": result["cv_score"],
-                        "validation_split": validation_split,
-                        "stage": result.get("stage", "full"),
+                        'fitness': result['fitness'],
+                        'cv_score': result['cv_score'],
+                        'validation_split': validation_split,
+                        'stage': result.get('stage', 'full'),
                     },
                 )
             else:
                 await ctx.deps.event_emitter.emit_tool_error(
-                    task_id="evolution_evaluate",
+                    task_id='evolution_evaluate',
                     tool_call_id=tool_call_id,
-                    error=result.get("error") or "Invalid solution",
+                    error=result.get('error') or 'Invalid solution',
                 )
 
             await ctx.deps.event_emitter.emit_tool_result(
-                task_id="evolution_evaluate",
-                tool_call_id=tool_call_id,
-                result=result,
-                duration_ms=result["runtime_ms"],
+                task_id='evolution_evaluate', tool_call_id=tool_call_id, result=result, duration_ms=result['runtime_ms']
             )
 
             summary = f'Fitness {result["fitness"]:.4f}, CV {result["cv_score"]:.4f}, valid={result["valid"]}'
@@ -558,17 +521,14 @@ class EvolverAgent(MemoryMixin):
         return ToolReturn(return_value=result, content=json.dumps(result))
 
     async def sample_elites(
-        self,
-        ctx: RunContext[EvolverDeps],
-        num_top: int | None = None,
-        num_diverse: int | None = None,
+        self, ctx: RunContext[EvolverDeps], num_top: int | None = None, num_diverse: int | None = None
     ) -> ToolReturn:
         """Sample elite solutions for prompt construction."""
         top = self._settings.elite_sample_top if num_top is None else max(0, num_top)
         diverse = self._settings.elite_sample_diverse if num_diverse is None else max(0, num_diverse)
         entries = self._select_elite_samples(ctx.deps, top=top, diverse=diverse)
         payload = [entry.to_payload(max_chars=self._settings.elite_code_max_chars) for entry in entries]
-        summary = f"Sampled {len(payload)} elites from {len(ctx.deps.elite_archive)} archive cells."
+        summary = f'Sampled {len(payload)} elites from {len(ctx.deps.elite_archive)} archive cells.'
         return ToolReturn(return_value=payload, content=summary)
 
     async def submit_to_kaggle(
@@ -708,13 +668,13 @@ class EvolverAgent(MemoryMixin):
             sections.append(f'BEST SOLUTION AVAILABLE: {len(deps.best_solution)} chars')
         if deps.elite_archive:
             families = sorted({entry.model_family for entry in deps.elite_archive.values()})
-            family_preview = ", ".join(families[:6])
-            suffix = "..." if len(families) > 6 else ""
+            family_preview = ', '.join(families[:6])
+            suffix = '...' if len(families) > 6 else ''
             sections.append(
-                "ELITE ARCHIVE:\n"
-                f"- Cells: {len(deps.elite_archive)}\n"
-                f"- Families: {family_preview}{suffix}\n"
-                "- Use sample_elites to retrieve top + diverse candidates."
+                'ELITE ARCHIVE:\n'
+                f'- Cells: {len(deps.elite_archive)}\n'
+                f'- Families: {family_preview}{suffix}\n'
+                '- Use sample_elites to retrieve top + diverse candidates.'
             )
 
         return '\n\n'.join(sections)
@@ -738,7 +698,7 @@ class EvolverAgent(MemoryMixin):
         for family, pattern in _MODEL_FAMILY_PATTERNS:
             if pattern.search(code):
                 return family
-        return "unknown"
+        return 'unknown'
 
     def _build_archive_entry(self, code: str, fitness: float, cv_score: float) -> EvolutionArchiveEntry:
         complexity = self._solution_complexity(code)
@@ -758,9 +718,7 @@ class EvolverAgent(MemoryMixin):
         if existing is None or entry.fitness > existing.fitness:
             deps.elite_archive[key] = entry
 
-    def _select_elite_samples(
-        self, deps: EvolverDeps, *, top: int, diverse: int
-    ) -> list[EvolutionArchiveEntry]:
+    def _select_elite_samples(self, deps: EvolverDeps, *, top: int, diverse: int) -> list[EvolutionArchiveEntry]:
         entries = list(deps.elite_archive.values())
         if not entries:
             return []
@@ -801,7 +759,7 @@ class EvolverAgent(MemoryMixin):
     ) -> dict[str, Any]:
         if not self._settings.cascade_evaluation or self._settings.cascade_stage1_rows <= 0:
             result = await self._evaluate_solution(ctx, solution_code, validation_split=validation_split)
-            result["stage"] = "full"
+            result['stage'] = 'full'
             return result
 
         quick_timeout = min(self._settings.cascade_stage1_timeout, ctx.deps.solution_timeout)
@@ -812,8 +770,8 @@ class EvolverAgent(MemoryMixin):
             max_rows=self._settings.cascade_stage1_rows,
             timeout_seconds=quick_timeout,
         )
-        quick_result["stage"] = "stage1"
-        if not quick_result["valid"]:
+        quick_result['stage'] = 'stage1'
+        if not quick_result['valid']:
             return quick_result
 
         threshold = None
@@ -822,16 +780,16 @@ class EvolverAgent(MemoryMixin):
                 ctx.deps.best_fitness * self._settings.cascade_relative_threshold,
                 self._settings.cascade_floor_threshold,
             )
-        if threshold is not None and quick_result["fitness"] < threshold:
-            quick_result["stage_threshold"] = threshold
+        if threshold is not None and quick_result['fitness'] < threshold:
+            quick_result['stage_threshold'] = threshold
             return quick_result
 
         full_result = await self._evaluate_solution(ctx, solution_code, validation_split=validation_split)
-        full_result["stage"] = "full"
-        full_result["stage1_fitness"] = quick_result["fitness"]
-        full_result["stage1_cv_score"] = quick_result["cv_score"]
-        full_result["stage1_runtime_ms"] = quick_result["runtime_ms"]
-        full_result["runtime_ms"] += quick_result["runtime_ms"]
+        full_result['stage'] = 'full'
+        full_result['stage1_fitness'] = quick_result['fitness']
+        full_result['stage1_cv_score'] = quick_result['cv_score']
+        full_result['stage1_runtime_ms'] = quick_result['runtime_ms']
+        full_result['runtime_ms'] += quick_result['runtime_ms']
         return full_result
 
     async def _evaluate_solution(
@@ -853,13 +811,13 @@ class EvolverAgent(MemoryMixin):
                 competition_id=ctx.deps.competition.id,
             )
             if max_rows is not None and max_rows > 0:
-                _truncate_csv(run_path / "train.csv", max_rows=max_rows)
-                _truncate_csv(run_path / "test.csv", max_rows=max_rows)
-                _truncate_csv(run_path / "sample_submission.csv", max_rows=max_rows)
+                _truncate_csv(run_path / 'train.csv', max_rows=max_rows)
+                _truncate_csv(run_path / 'test.csv', max_rows=max_rows)
+                _truncate_csv(run_path / 'sample_submission.csv', max_rows=max_rows)
             elif ctx.deps.max_generations <= 5:
-                _truncate_csv(run_path / "train.csv", max_rows=800)
-                _truncate_csv(run_path / "test.csv", max_rows=800)
-                _truncate_csv(run_path / "sample_submission.csv", max_rows=800)
+                _truncate_csv(run_path / 'train.csv', max_rows=800)
+                _truncate_csv(run_path / 'test.csv', max_rows=800)
+                _truncate_csv(run_path / 'sample_submission.csv', max_rows=800)
             execution = await execute_solution(
                 solution_code,
                 run_path,
@@ -882,14 +840,14 @@ class EvolverAgent(MemoryMixin):
         cv_score = score if score is not None else 0.0
         fitness = self._fitness_from_score(cv_score, ctx.deps.competition.metric_direction) if error is None else 0.0
         return {
-            "fitness": round(fitness, 6),
-            "cv_score": round(cv_score, 6),
-            "valid": error is None,
-            "runtime_ms": execution.runtime_ms,
-            "timed_out": execution.timed_out,
-            "returncode": execution.returncode,
-            "error": error,
-            "stderr": execution.stderr.strip() if execution.stderr else None,
+            'fitness': round(fitness, 6),
+            'cv_score': round(cv_score, 6),
+            'valid': error is None,
+            'runtime_ms': execution.runtime_ms,
+            'timed_out': execution.timed_out,
+            'returncode': execution.returncode,
+            'error': error,
+            'stderr': execution.stderr.strip() if execution.stderr else None,
         }
 
     async def _submit_solution(
@@ -971,22 +929,22 @@ class EvolverAgent(MemoryMixin):
 
     def _ensure_import(self, code: str, module: str, symbol: str) -> str:
         imports, body = self._split_imports(code)
-        import_prefix = f"from {module} import"
+        import_prefix = f'from {module} import'
         for line in imports:
             stripped = line.strip()
             if stripped.startswith(import_prefix) and symbol in stripped:
                 return code
 
-        imports.append(f"{import_prefix} {symbol}")
+        imports.append(f'{import_prefix} {symbol}')
         merged_imports = self._merge_imports(imports, [])
         if merged_imports:
-            return "\n".join([*merged_imports, "", *body])
-        return "\n".join(body)
+            return '\n'.join([*merged_imports, '', *body])
+        return '\n'.join(body)
 
     def _swap_model_family(self, code: str) -> str:
         ordered_swaps = sorted(_MODEL_SWAPS.items(), key=lambda item: len(item[0]), reverse=True)
         for source, target in ordered_swaps:
-            pattern = re.compile(rf"\b{re.escape(source)}\b")
+            pattern = re.compile(rf'\b{re.escape(source)}\b')
             if not pattern.search(code):
                 continue
             updated = pattern.sub(target, code)
@@ -997,29 +955,32 @@ class EvolverAgent(MemoryMixin):
         return code
 
     def _inject_scaler(self, code: str) -> str:
-        if "StandardScaler" in code:
+        if 'StandardScaler' in code:
             return code
         match = _NUMERIC_PIPELINE_PATTERN.search(code)
         if not match:
             return code
-        steps_block = match.group("steps")
-        if "SimpleImputer" not in steps_block or "StandardScaler" in steps_block:
+        steps_block = match.group('steps')
+        if 'SimpleImputer' not in steps_block or 'StandardScaler' in steps_block:
             return code
 
         lines = steps_block.splitlines()
         inserted = False
         for idx, line in enumerate(lines):
-            if "SimpleImputer" in line:
-                indent = re.match(r"\s*", line).group(0)
+            if 'SimpleImputer' in line:
+                indent_match = re.match(r'\s*', line)
+                if not indent_match:
+                    continue
+                indent = indent_match.group(0)
                 lines.insert(idx + 1, f'{indent}("scaler", StandardScaler()),')
                 inserted = True
                 break
         if not inserted:
             return code
 
-        updated_steps = "\n".join(lines)
-        updated = f"{code[:match.start('steps')]}{updated_steps}{code[match.end('steps'):]}"
-        return self._ensure_import(updated, "sklearn.preprocessing", "StandardScaler")
+        updated_steps = '\n'.join(lines)
+        updated = f'{code[: match.start("steps")]}{updated_steps}{code[match.end("steps") :]}'
+        return self._ensure_import(updated, 'sklearn.preprocessing', 'StandardScaler')
 
     def _inject_fillna(self, code: str) -> str:
         if 'fillna(' in code or not (match := _FILLNA_PATTERN.search(code)):
@@ -1063,9 +1024,9 @@ class EvolverAgent(MemoryMixin):
         return self._apply_point_mutation(code, params)
 
     def _apply_hyperparameter_mutation(self, code: str, params: dict[str, Any]) -> str:
-        rng = self._seeded_rng(code, params, "hyperparameter")
-        magnitude = float(params.get("magnitude", 0.2))
-        requested = str(params.get("param", "")).strip()
+        rng = self._seeded_rng(code, params, 'hyperparameter')
+        magnitude = float(params.get('magnitude', 0.2))
+        requested = str(params.get('param', '')).strip()
 
         candidates: list[tuple[str, re.Pattern[str], re.Match[str]]] = []
         for name, pattern in _HYPERPARAM_PATTERNS.items():
@@ -1090,8 +1051,8 @@ class EvolverAgent(MemoryMixin):
         if name in _HYPERPARAM_INTEGER_KEYS:
             mutated_text = str(max(1, int(round(mutated))))
         else:
-            mutated_text = f"{max(0.0001, mutated):.6g}"
-        return pattern.sub(f"{match.group(1)}{mutated_text}", code, count=1)
+            mutated_text = f'{max(0.0001, mutated):.6g}'
+        return pattern.sub(f'{match.group(1)}{mutated_text}', code, count=1)
 
     def _apply_crossover(self, code: str, other: str, params: dict[str, Any]) -> str:
         if not other.strip():

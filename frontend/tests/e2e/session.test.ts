@@ -4,6 +4,8 @@ import { generateRandomTestUser } from "../helpers";
 import { AuthPage } from "../pages/auth";
 import { ChatPage } from "../pages/chat";
 
+const MISSION_CONFIGURATION_HEADING = /mission\\s+configuration/i;
+
 test.describe
   .serial("Guest Session", () => {
     test("Authenticate as guest user when a new session is loaded", async ({
@@ -118,7 +120,7 @@ test.describe
       await page.waitForURL("/");
       await expect(
         page.getByRole("heading", {
-          name: /mission\\s+configuration/i,
+          name: MISSION_CONFIGURATION_HEADING,
         })
       ).toBeVisible();
     });
@@ -129,7 +131,7 @@ test.describe
       await page.waitForURL("/");
       await expect(
         page.getByRole("heading", {
-          name: /mission\\s+configuration/i,
+          name: MISSION_CONFIGURATION_HEADING,
         })
       ).toBeVisible();
 

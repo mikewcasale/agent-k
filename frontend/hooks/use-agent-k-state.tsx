@@ -7,8 +7,8 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useReducer,
+  useRef,
 } from "react";
 import type {
   AgentKPatchOp,
@@ -164,7 +164,7 @@ function buildTask(template: TaskTemplate): PlannedTask {
     description: template.description,
     agent: template.agent,
     toolsRequired: template.toolsRequired,
-    estimatedDurationMs: template.estimatedDurationMs ?? 30000,
+    estimatedDurationMs: template.estimatedDurationMs ?? 30_000,
     priority: template.priority ?? "medium",
     dependencies: [],
     status: "pending",
@@ -173,10 +173,7 @@ function buildTask(template: TaskTemplate): PlannedTask {
   };
 }
 
-function buildPhasePlan(
-  phase: MissionPhase,
-  objectives?: string[]
-): PhasePlan {
+function buildPhasePlan(phase: MissionPhase, objectives?: string[]): PhasePlan {
   return {
     phase,
     displayName: PHASE_DISPLAY_NAMES[phase],
@@ -217,8 +214,9 @@ function calculateOverallProgress(phases: PhasePlan[]): number {
   if (!phases.length) {
     return 0;
   }
-  const completed = phases.filter((phase) => phase.status === "completed")
-    .length;
+  const completed = phases.filter(
+    (phase) => phase.status === "completed"
+  ).length;
   const inProgress = phases.some((phase) => phase.status === "in_progress");
   const progress = ((completed + (inProgress ? 0.5 : 0)) / phases.length) * 100;
   return Math.min(100, Math.max(0, Math.round(progress)));

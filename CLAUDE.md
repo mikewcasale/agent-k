@@ -121,6 +121,27 @@ pnpm test:e2e
 ./run.sh  # Starts backend (9000) and frontend (3000)
 ```
 
+## Pre-Commit Checks (Required)
+
+Before each commit (or pre-commit run), always execute and fix failures:
+
+### Backend (`backend/`)
+
+```bash
+uv run ruff format .
+uv run ruff check .
+uv run pytest -v --tb=short
+```
+
+### Frontend (`frontend/`)
+
+```bash
+pnpm lint
+pnpm build
+```
+
+If any formatter/linter changes files, re-run the checks before committing.
+
 ## Project Architecture
 
 ```

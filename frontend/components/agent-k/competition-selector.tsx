@@ -3,10 +3,10 @@
 import { motion } from "framer-motion";
 import { Filter, Link2, Search, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
+import { BestResults } from "@/components/agent-k/best-results";
 import { CompetitionPreview } from "@/components/agent-k/competition-preview";
 import { DirectUrlInput } from "@/components/agent-k/direct-url-input";
 import { EvolutionModelSelector } from "@/components/agent-k/evolution-model-selector";
-import { BestResults } from "@/components/agent-k/best-results";
 import { SearchCriteriaForm } from "@/components/agent-k/search-criteria-form";
 import { useAgentKState } from "@/hooks/use-agent-k-state";
 import {

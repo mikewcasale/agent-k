@@ -846,38 +846,35 @@ def create_app() -> FastAPI:  # noqa: C901
     chat_handler = ChatHandler(IntentClassifier(), MissionCriteriaParser())
 
     async def _schedule_mission_resume(
-        mission_id: str,
-        *,
-        persistence: MissionPersistence | None = None,
-        source: str = "api",
+        mission_id: str, *, persistence: MissionPersistence | None = None, source: str = 'api'
     ) -> str | None:
         from agent_k.agents.lycurgus import LycurgusOrchestrator
 
         entry = missions.get(mission_id)
-        if entry and entry.get("task") and not entry["task"].done():
-            return "Mission already active"
+        if entry and entry.get('task') and not entry['task'].done():
+            return 'Mission already active'
 
         persistence = persistence or create_persistence(mission_id)
         if not persistence.has_snapshots():
-            return "Mission not found"
+            return 'Mission not found'
 
         existing_result = await persistence.load_latest_result()
         if existing_result is not None:
-            return "Mission already completed"
+            return 'Mission already completed'
 
         emitter = EventEmitter()
         orchestrator = LycurgusOrchestrator(event_emitter=emitter)
         state = await persistence.load_latest_state()
 
         missions[mission_id] = {
-            "emitter": emitter,
-            "orchestrator": orchestrator,
-            "result": None,
-            "competition_id": state.competition_id if state else None,
+            'emitter': emitter,
+            'orchestrator': orchestrator,
+            'result': None,
+            'competition_id': state.competition_id if state else None,
         }
 
         async def run_mission() -> None:
-            error_id = f"mission_{mission_id}"
+            error_id = f'mission_{mission_id}'
             attempt = 0
             max_attempts = 2
 
@@ -887,23 +884,23 @@ def create_app() -> FastAPI:  # noqa: C901
                         result = await orchestrator.resume_persisted_mission(
                             mission_id, event_emitter=emitter, persistence=persistence
                         )
-                        missions[mission_id]["result"] = result
+                        missions[mission_id]['result'] = result
                         await emitter.emit(
-                            "mission-complete",
+                            'mission-complete',
                             {
-                                "success": result.success,
-                                "finalRank": result.final_rank,
-                                "finalScore": result.final_score,
-                                "errorMessage": result.error_message,
-                                "totalSubmissions": result.total_submissions,
-                                "evolutionGenerations": result.evolution_generations,
-                                "durationMs": result.duration_ms,
-                                "phasesCompleted": list(result.phases_completed),
+                                'success': result.success,
+                                'finalRank': result.final_rank,
+                                'finalScore': result.final_score,
+                                'errorMessage': result.error_message,
+                                'totalSubmissions': result.total_submissions,
+                                'evolutionGenerations': result.evolution_generations,
+                                'durationMs': result.duration_ms,
+                                'phasesCompleted': list(result.phases_completed),
                             },
                         )
                         if attempt > 0:
                             await emitter.emit_recovery_complete(
-                                error_id=error_id, success=True, resolution="mission_completed"
+                                error_id=error_id, success=True, resolution='mission_completed'
                             )
                         break
                     except Exception as exc:
@@ -914,41 +911,30 @@ def create_app() -> FastAPI:  # noqa: C901
                             category=category,
                             error_type=type(exc).__name__,
                             message=str(exc),
-                            context="mission_execution",
+                            context='mission_execution',
                             recovery_strategy=strategy,
                         )
                         logfire.error(
-                            "mission_execution_failed",
-                            error=str(exc),
-                            mission_id=mission_id,
-                            recoverable=recoverable,
+                            'mission_execution_failed', error=str(exc), mission_id=mission_id, recoverable=recoverable
                         )
                         if not recoverable or attempt >= max_attempts - 1:
                             if attempt > 0:
                                 await emitter.emit_recovery_complete(
-                                    error_id=error_id, success=False, resolution="exhausted"
+                                    error_id=error_id, success=False, resolution='exhausted'
                                 )
                             break
                         attempt += 1
-                        await emitter.emit_recovery_attempt(
-                            error_id=error_id,
-                            strategy=strategy,
-                            attempt=attempt,
-                        )
-                        logfire.warning(
-                            "mission_recovery_attempt",
-                            mission_id=mission_id,
-                            attempt=attempt,
-                        )
+                        await emitter.emit_recovery_attempt(error_id=error_id, strategy=strategy, attempt=attempt)
+                        logfire.warning('mission_recovery_attempt', mission_id=mission_id, attempt=attempt)
             finally:
                 emitter.close()
 
-        missions[mission_id]["task"] = asyncio.create_task(run_mission())
+        missions[mission_id]['task'] = asyncio.create_task(run_mission())
 
-        logfire.info("mission_resumed", mission_id=mission_id, source=source)
+        logfire.info('mission_resumed', mission_id=mission_id, source=source)
         return None
 
-    @app.on_event("startup")
+    @app.on_event('startup')
     async def auto_resume_missions() -> None:
         mission_ids = _list_persisted_mission_ids()
         if not mission_ids:
@@ -957,25 +943,17 @@ def create_app() -> FastAPI:  # noqa: C901
         resumed: list[str] = []
         for mission_id in mission_ids:
             try:
-                error = await _schedule_mission_resume(mission_id, source="startup")
+                error = await _schedule_mission_resume(mission_id, source='startup')
             except Exception as exc:
-                logfire.error(
-                    "mission_auto_resume_failed",
-                    mission_id=mission_id,
-                    error=str(exc),
-                )
+                logfire.error('mission_auto_resume_failed', mission_id=mission_id, error=str(exc))
                 continue
             if error:
-                logfire.info("mission_auto_resume_skipped", mission_id=mission_id, reason=error)
+                logfire.info('mission_auto_resume_skipped', mission_id=mission_id, reason=error)
                 continue
             resumed.append(mission_id)
 
         if resumed:
-            logfire.info(
-                "mission_auto_resume_started",
-                mission_ids=resumed,
-                count=len(resumed),
-            )
+            logfire.info('mission_auto_resume_started', mission_ids=resumed, count=len(resumed))
 
     @app.get('/health')
     async def health_check() -> dict[str, str]:
@@ -1084,8 +1062,8 @@ def create_app() -> FastAPI:  # noqa: C901
         """Resume a persisted mission and return mission ID."""
         error = await _schedule_mission_resume(mission_id)
         if error:
-            return {"error": error}
-        return {"missionId": mission_id}
+            return {'error': error}
+        return {'missionId': mission_id}
 
     @app.post('/api/competitions/search')
     async def search_competitions(request: CompetitionSearchRequest) -> dict[str, Any]:
@@ -1116,15 +1094,15 @@ def create_app() -> FastAPI:  # noqa: C901
             logfire.error('competition_fetch_failed', error=str(exc))
             return {'error': 'Competition fetch failed'}
 
-    @app.get("/api/mission/best-results")
+    @app.get('/api/mission/best-results')
     async def get_best_results(limit: int | None = None) -> dict[str, Any]:
         """Return best historical results from persisted missions."""
         try:
             results = await _load_best_results(limit=limit)
-            return {"results": results}
+            return {'results': results}
         except Exception as exc:
-            logfire.error("best_results_failed", error=str(exc))
-            return {"results": [], "error": "Unable to load best results"}
+            logfire.error('best_results_failed', error=str(exc))
+            return {'results': [], 'error': 'Unable to load best results'}
 
     @app.get('/api/mission/{mission_id}/stream')
     async def stream_mission(mission_id: str, request: Request) -> StreamingResponse:
@@ -1289,64 +1267,65 @@ def _derive_best_category(competition: Competition | None) -> str | None:
     return competition.competition_type.value
 
 
-def _select_best_submission(
-    submissions: list[LeaderboardSubmission],
-) -> LeaderboardSubmission | None:
+def _prefer_lower_optional(candidate: float | int | None, current: float | int | None) -> bool | None:
+    if candidate is None and current is None:
+        return None
+    if candidate is None:
+        return False
+    if current is None:
+        return True
+    return candidate < current
+
+
+def _prefer_higher_optional(candidate: float | None, current: float | None) -> bool | None:
+    if candidate is None and current is None:
+        return None
+    if candidate is None:
+        return False
+    if current is None:
+        return True
+    return candidate > current
+
+
+def _prefer_higher_if_better(candidate: float, current: float) -> bool | None:
+    if candidate > current:
+        return True
+    return None
+
+
+def _is_better_submission(candidate: LeaderboardSubmission, current: LeaderboardSubmission) -> bool:
+    decision = _prefer_lower_optional(candidate.rank, current.rank)
+    if decision is not None:
+        return decision
+
+    decision = _prefer_lower_optional(candidate.percentile, current.percentile)
+    if decision is not None:
+        return decision
+
+    decision = _prefer_higher_optional(candidate.public_score, current.public_score)
+    if decision is not None:
+        return decision
+
+    decision = _prefer_higher_if_better(candidate.cv_score, current.cv_score)
+    if decision is not None:
+        return decision
+
+    return candidate.submitted_at > current.submitted_at
+
+
+def _select_best_submission(submissions: list[LeaderboardSubmission]) -> LeaderboardSubmission | None:
     if not submissions:
         return None
 
     best = submissions[0]
     for current in submissions[1:]:
-        if best.rank is None and current.rank is not None:
-            best = current
-            continue
-
-        if best.rank is not None and current.rank is None:
-            continue
-
-        if best.rank is not None and current.rank is not None:
-            if current.rank < best.rank:
-                best = current
-            continue
-
-        if best.percentile is None and current.percentile is not None:
-            best = current
-            continue
-
-        if best.percentile is not None and current.percentile is None:
-            continue
-
-        if best.percentile is not None and current.percentile is not None:
-            if current.percentile < best.percentile:
-                best = current
-            continue
-
-        if best.public_score is None and current.public_score is not None:
-            best = current
-            continue
-
-        if best.public_score is not None and current.public_score is None:
-            continue
-
-        if best.public_score is not None and current.public_score is not None:
-            if current.public_score > best.public_score:
-                best = current
-            continue
-
-        if current.cv_score != best.cv_score and current.cv_score > best.cv_score:
-            best = current
-            continue
-
-        if current.submitted_at > best.submitted_at:
+        if _is_better_submission(current, best):
             best = current
 
     return best
 
 
-def _build_best_result(
-    state: MissionState | None,
-    result: MissionResult | None,
-) -> dict[str, Any] | None:
+def _build_best_result(state: MissionState | None, result: MissionResult | None) -> dict[str, Any] | None:
     competition = state.selected_competition if state else None
     competition_id = (
         competition.id
@@ -1405,50 +1384,57 @@ def _build_best_result(
         return None
 
     return {
-        "competitionId": competition_id,
-        "competitionTitle": competition_title,
-        "competitionUrl": competition.url if competition else None,
-        "submissionId": submission_id,
-        "rank": rank,
-        "totalTeams": total_teams,
-        "percentile": percentile,
-        "score": score,
-        "submittedAt": _format_datetime(submitted_at),
-        "category": _derive_best_category(competition),
-        "recordedAt": _format_datetime(recorded_at) or datetime.now(UTC).isoformat(),
+        'competitionId': competition_id,
+        'competitionTitle': competition_title,
+        'competitionUrl': competition.url if competition else None,
+        'submissionId': submission_id,
+        'rank': rank,
+        'totalTeams': total_teams,
+        'percentile': percentile,
+        'score': score,
+        'submittedAt': _format_datetime(submitted_at),
+        'category': _derive_best_category(competition),
+        'recordedAt': _format_datetime(recorded_at) or datetime.now(UTC).isoformat(),
     }
 
 
+def _as_int(value: Any) -> int | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int):
+        return value
+    return None
+
+
+def _as_float(value: Any) -> float | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    return None
+
+
 def _is_better_best_result(candidate: dict[str, Any], current: dict[str, Any]) -> bool:
-    candidate_rank = candidate.get("rank")
-    current_rank = current.get("rank")
-    if candidate_rank is not None and current_rank is None:
-        return True
-    if candidate_rank is None and current_rank is not None:
-        return False
-    if candidate_rank is not None and current_rank is not None:
-        return candidate_rank < current_rank
+    candidate_rank = _as_int(candidate.get('rank'))
+    current_rank = _as_int(current.get('rank'))
+    decision = _prefer_lower_optional(candidate_rank, current_rank)
+    if decision is not None:
+        return decision
 
-    candidate_percentile = candidate.get("percentile")
-    current_percentile = current.get("percentile")
-    if candidate_percentile is not None and current_percentile is None:
-        return True
-    if candidate_percentile is None and current_percentile is not None:
-        return False
-    if candidate_percentile is not None and current_percentile is not None:
-        return candidate_percentile < current_percentile
+    candidate_percentile = _as_float(candidate.get('percentile'))
+    current_percentile = _as_float(current.get('percentile'))
+    decision = _prefer_lower_optional(candidate_percentile, current_percentile)
+    if decision is not None:
+        return decision
 
-    candidate_score = candidate.get("score")
-    current_score = current.get("score")
-    if candidate_score is not None and current_score is None:
-        return True
-    if candidate_score is None and current_score is not None:
-        return False
-    if candidate_score is not None and current_score is not None:
-        return candidate_score > current_score
+    candidate_score = _as_float(candidate.get('score'))
+    current_score = _as_float(current.get('score'))
+    decision = _prefer_higher_optional(candidate_score, current_score)
+    if decision is not None:
+        return decision
 
-    candidate_time = _parse_datetime(candidate.get("recordedAt"))
-    current_time = _parse_datetime(current.get("recordedAt"))
+    candidate_time = _parse_datetime(candidate.get('recordedAt'))
+    current_time = _parse_datetime(current.get('recordedAt'))
     if candidate_time and current_time:
         return candidate_time > current_time
 
@@ -1457,10 +1443,10 @@ def _is_better_best_result(candidate: dict[str, Any], current: dict[str, Any]) -
 
 def _sort_best_results(results: list[dict[str, Any]]) -> list[dict[str, Any]]:
     def sort_key(entry: dict[str, Any]) -> tuple[int, float]:
-        rank = entry.get("rank")
+        rank = entry.get('rank')
         if rank is not None:
             return (0, float(rank))
-        recorded_at = _parse_datetime(entry.get("recordedAt"))
+        recorded_at = _parse_datetime(entry.get('recordedAt'))
         if recorded_at is not None:
             return (1, -recorded_at.timestamp())
         return (2, 0.0)
@@ -1474,7 +1460,7 @@ def _list_persisted_mission_ids() -> list[str]:
     try:
         mission_dirs = [path for path in CHECKPOINT_DIR.iterdir() if path.is_dir()]
     except OSError as exc:
-        logfire.warning("mission_history_scan_failed", error=str(exc))
+        logfire.warning('mission_history_scan_failed', error=str(exc))
         return []
 
     mission_dirs.sort(key=lambda path: path.stat().st_mtime, reverse=True)
@@ -1495,13 +1481,13 @@ async def _load_best_results(limit: int | None = None) -> list[dict[str, Any]]:
             state = await persistence.load_latest_state()
             result = await persistence.load_latest_result()
         except Exception as exc:
-            logfire.warning("mission_history_load_failed", mission_id=mission_id, error=str(exc))
+            logfire.warning('mission_history_load_failed', mission_id=mission_id, error=str(exc))
             continue
 
         best_result = _build_best_result(state, result)
         if not best_result:
             continue
-        competition_id = best_result["competitionId"]
+        competition_id = best_result['competitionId']
         existing = results_by_competition.get(competition_id)
         if existing is None or _is_better_best_result(best_result, existing):
             results_by_competition[competition_id] = best_result

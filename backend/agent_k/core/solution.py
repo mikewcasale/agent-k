@@ -124,12 +124,7 @@ async def _execute_solution_local(
     if os.name == 'posix':
         process_kwargs['start_new_session'] = True
 
-    process = await asyncio.create_subprocess_exec(
-        sys.executable,
-        '-I',
-        str(solution_path),
-        **process_kwargs,
-    )
+    process = await asyncio.create_subprocess_exec(sys.executable, '-I', str(solution_path), **process_kwargs)
 
     timed_out = False
     try:

@@ -236,7 +236,9 @@ export function bestResultFromMission(
   }
 
   const recordedAt =
-    bestSubmission?.submittedAt ?? mission.startedAt ?? new Date().toISOString();
+    bestSubmission?.submittedAt ??
+    mission.startedAt ??
+    new Date().toISOString();
 
   const rank = bestSubmission?.rank ?? result?.finalRank;
   const score =
@@ -259,9 +261,7 @@ export function bestResultFromMission(
   };
 }
 
-export function sortBestResults(
-  results: BestResultEntry[]
-): BestResultEntry[] {
+export function sortBestResults(results: BestResultEntry[]): BestResultEntry[] {
   return results.slice().sort((a, b) => {
     if (a.rank != null && b.rank != null) {
       return a.rank - b.rank;

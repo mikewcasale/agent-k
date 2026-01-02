@@ -25,15 +25,19 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic_ai import Agent
 
+from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
+
 # Local imports (core first, then alphabetical)
-from agent_k.core.constants import DEFAULT_MODEL
+from agent_k.core.constants import DEFAULT_MODEL, MISSION_PHASES
 from agent_k.core.exceptions import AgentKError, AuthenticationError, CompetitionNotFoundError, classify_error
 from agent_k.core.models import Competition, CompetitionType, MissionCriteria
-from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
 from agent_k.infra.providers import get_model
+from agent_k.mission.persistence import create_persistence
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
+
+    from agent_k.mission.state import MissionState
 
 __all__ = (
     'AgentKEvent',
@@ -189,6 +193,10 @@ class MissionRequest(BaseModel):
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     criteria: MissionCriteria = Field(..., description='Mission selection criteria')
+    evolution_models: list[str] | None = Field(
+        default=None,
+        description='Ordered list of model specs to rotate during evolution',
+    )
     user_prompt: str | None = Field(default=None, description='Optional user context for the mission')
     competition_id: str | None = Field(default=None, description='Optional competition id override')
     competition_url: str | None = Field(default=None, description='Optional competition URL override')
@@ -777,7 +785,49 @@ async def stream_text_response(text: str) -> AsyncIterator[str]:
     yield 'd:{"finishReason":"stop"}\n'
 
 
-def create_app() -> FastAPI:
+def _calculate_progress_percent(state: MissionState) -> float:
+    """Derive a progress percentage when the state lacks explicit progress."""
+    if state.overall_progress:
+        return state.overall_progress
+    phases = MISSION_PHASES
+    completed = float(len(state.phases_completed))
+    if state.current_phase in phases and state.current_phase not in state.phases_completed:
+        completed += 0.5
+    return round(min((completed / len(phases)) * 100.0, 100.0), 1)
+
+
+async def _load_persisted_status(mission_id: str) -> dict[str, Any] | None:
+    persistence = create_persistence(mission_id)
+    if not persistence.has_snapshots():
+        return None
+
+    result = await persistence.load_latest_result()
+    if result is not None:
+        return {
+            "missionId": mission_id,
+            "status": "completed" if result.success else "failed",
+            "currentPhase": None,
+            "progress": 100.0,
+            "competitionId": result.competition_id,
+            "errorMessage": result.error_message,
+        }
+
+    state = await persistence.load_latest_state()
+    if state is None:
+        return None
+
+    error_message = state.errors[-1].get("error") if state.errors else None
+    return {
+        "missionId": mission_id,
+        "status": "paused",
+        "currentPhase": state.current_phase,
+        "progress": _calculate_progress_percent(state),
+        "competitionId": state.competition_id,
+        "errorMessage": error_message,
+    }
+
+
+def create_app() -> FastAPI:  # noqa: C901
     """Create and configure the FastAPI application."""
     app = FastAPI(title='AGENT-K', description='Multi-agent Kaggle competition system', version=APP_VERSION)
 
@@ -806,6 +856,9 @@ def create_app() -> FastAPI:
 
         mission_id = str(uuid.uuid4())
         competition_id = request.competition_id
+        criteria = request.criteria
+        if request.evolution_models:
+            criteria = criteria.model_copy(update={'evolution_models': tuple(request.evolution_models)})
 
         if competition_id is None and request.competition_url:
             try:
@@ -842,7 +895,7 @@ def create_app() -> FastAPI:
                         result = await orchestrator.execute_mission(
                             competition_id,
                             mission_id=mission_id,
-                            criteria=request.criteria,
+                            criteria=criteria,
                             event_emitter=emitter,
                         )
                         missions[mission_id]['result'] = result
@@ -893,6 +946,96 @@ def create_app() -> FastAPI:
         logfire.info('mission_started', mission_id=mission_id)
 
         return {'missionId': mission_id}
+
+    @app.post("/api/mission/{mission_id}/resume")
+    async def resume_mission(mission_id: str) -> dict[str, str]:
+        """Resume a persisted mission and return mission ID."""
+        from agent_k.agents.lycurgus import LycurgusOrchestrator
+
+        entry = missions.get(mission_id)
+        if entry and entry.get("task") and not entry["task"].done():
+            return {"error": "Mission already active"}
+
+        persistence = create_persistence(mission_id)
+        if not persistence.has_snapshots():
+            return {"error": "Mission not found"}
+
+        existing_result = await persistence.load_latest_result()
+        if existing_result is not None:
+            return {"error": "Mission already completed"}
+
+        emitter = EventEmitter()
+        orchestrator = LycurgusOrchestrator(event_emitter=emitter)
+        state = await persistence.load_latest_state()
+
+        missions[mission_id] = {
+            "emitter": emitter,
+            "orchestrator": orchestrator,
+            "result": None,
+            "competition_id": state.competition_id if state else None,
+        }
+
+        async def run_mission() -> None:
+            error_id = f"mission_{mission_id}"
+            attempt = 0
+            max_attempts = 2
+
+            try:
+                while True:
+                    try:
+                        result = await orchestrator.resume_persisted_mission(
+                            mission_id,
+                            event_emitter=emitter,
+                            persistence=persistence,
+                        )
+                        missions[mission_id]["result"] = result
+                        await emitter.emit(
+                            "mission-complete",
+                            {
+                                "success": result.success,
+                                "final_rank": result.final_rank,
+                                "final_score": result.final_score,
+                            },
+                        )
+                        if attempt > 0:
+                            await emitter.emit_recovery_complete(
+                                error_id=error_id, success=True, resolution="mission_completed"
+                            )
+                        break
+                    except Exception as exc:
+                        category, strategy = classify_error(exc)
+                        recoverable = isinstance(exc, AgentKError) and exc.recoverable
+                        await emitter.emit_error(
+                            error_id=error_id,
+                            category=category,
+                            error_type=type(exc).__name__,
+                            message=str(exc),
+                            context="mission_execution",
+                            recovery_strategy=strategy,
+                        )
+                        logfire.error(
+                            "mission_execution_failed",
+                            error=str(exc),
+                            mission_id=mission_id,
+                            recoverable=recoverable,
+                        )
+                        if not recoverable or attempt >= max_attempts - 1:
+                            if attempt > 0:
+                                await emitter.emit_recovery_complete(
+                                    error_id=error_id, success=False, resolution="exhausted"
+                                )
+                            break
+                        attempt += 1
+                        await emitter.emit_recovery_attempt(error_id=error_id, strategy=strategy, attempt=attempt)
+                        logfire.warning("mission_recovery_attempt", mission_id=mission_id, attempt=attempt)
+            finally:
+                emitter.close()
+
+        missions[mission_id]["task"] = asyncio.create_task(run_mission())
+
+        logfire.info("mission_resumed", mission_id=mission_id)
+
+        return {"missionId": mission_id}
 
     @app.post('/api/competitions/search')
     async def search_competitions(request: CompetitionSearchRequest) -> dict[str, Any]:
@@ -947,7 +1090,10 @@ def create_app() -> FastAPI:
     async def get_mission_status(mission_id: str) -> dict[str, Any]:
         """Get current mission status."""
         if mission_id not in missions:
-            return {'error': 'Mission not found'}
+            persisted = await _load_persisted_status(mission_id)
+            if persisted is None:
+                return {"error": "Mission not found"}
+            return persisted
 
         entry = missions[mission_id]
         orchestrator = entry.get('orchestrator')
@@ -956,7 +1102,7 @@ def create_app() -> FastAPI:
 
         if state is not None:
             status = 'executing'
-            progress = state.overall_progress
+            progress = _calculate_progress_percent(state)
             current_phase = state.current_phase
             competition_id = state.competition_id
         elif result is not None:
@@ -1060,7 +1206,7 @@ def _serialize_competition(competition: Competition) -> dict[str, Any]:
     }
 
 
-async def _search_competitions(request: CompetitionSearchRequest) -> list[dict[str, Any]]:
+async def _search_competitions(request: CompetitionSearchRequest) -> list[dict[str, Any]]:  # noqa: C901
     adapter = _build_kaggle_adapter()
     competitions: list[Competition] = []
     seen: set[str] = set()

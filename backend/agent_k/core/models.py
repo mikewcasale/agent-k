@@ -472,6 +472,10 @@ class MissionCriteria(BaseModel):
     target_leaderboard_percentile: float = Field(
         default=0.10, ge=0.0, le=1.0, description='Target top N percentile on leaderboard'
     )
+    evolution_models: tuple[str, ...] = Field(
+        default_factory=tuple,
+        description='Ordered model specs to rotate during evolution',
+    )
 
     @model_validator(mode='after')
     def validate_domains_disjoint(self) -> Self:

@@ -21,6 +21,8 @@ from agent_k.core.types import CompetitionId, MissionId, MissionPhase, TaskId
 if TYPE_CHECKING:
     import httpx
 
+    from pydantic_ai import Agent
+
     from agent_k.core.protocols import PlatformAdapter
     from agent_k.ui.ag_ui import EventEmitter
 
@@ -85,3 +87,4 @@ class GraphContext:
     event_emitter: EventEmitter | None = None
     http_client: httpx.AsyncClient | None = None
     platform_adapter: PlatformAdapter | None = None
+    agents: dict[str, Agent[Any, Any]] | None = None

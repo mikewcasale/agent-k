@@ -1,6 +1,5 @@
 "use client";
 
-import type React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
@@ -14,10 +13,11 @@ import {
   Search,
   Send,
 } from "lucide-react";
-import type { PhasePlan, MissionPhase } from "@/lib/types/agent-k";
+import type React from "react";
+import { useAgentKState } from "@/hooks/use-agent-k-state";
+import type { MissionPhase, PhasePlan } from "@/lib/types/agent-k";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/utils/time";
-import { useAgentKState } from "@/hooks/use-agent-k-state";
 import { TaskCard } from "./task-card";
 
 const phaseIcons: Record<MissionPhase, React.ElementType> = {
@@ -36,16 +36,18 @@ const phaseColors: Record<MissionPhase, string> = {
   submission: "from-pink-500 to-rose-600",
 };
 
-interface PhaseCardProps {
+type PhaseCardProps = {
   phase: PhasePlan;
-}
+};
 
 export function PhaseCard({ phase }: PhaseCardProps) {
   const { state, togglePhase } = useAgentKState();
   const isExpanded = state.ui.expandedPhases.has(phase.phase);
 
   const Icon = phaseIcons[phase.phase];
-  const completedTasks = phase.tasks.filter((t) => t.status === "completed").length;
+  const completedTasks = phase.tasks.filter(
+    (t) => t.status === "completed"
+  ).length;
   const totalTasks = phase.tasks.length;
 
   const statusIcon = {
@@ -72,6 +74,7 @@ export function PhaseCard({ phase }: PhaseCardProps) {
       <button
         className="flex w-full items-center gap-4 p-4 text-left hover:bg-zinc-50 dark:hover:bg-zinc-800/60"
         onClick={() => togglePhase(phase.phase)}
+        type="button"
       >
         <div
           className={cn(
@@ -84,10 +87,10 @@ export function PhaseCard({ phase }: PhaseCardProps) {
 
         <div className="flex min-w-0 flex-1 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-lg font-semibold text-zinc-900 dark:text-white">
+            <span className="font-semibold text-lg text-zinc-900 dark:text-white">
               {phase.displayName}
             </span>
-            <span className="text-xs uppercase tracking-wide text-zinc-500">
+            <span className="text-xs text-zinc-500 uppercase tracking-wide">
               {phase.tasks.length} tasks
             </span>
           </div>
@@ -120,9 +123,9 @@ export function PhaseCard({ phase }: PhaseCardProps) {
 
           <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
             <motion.div
+              animate={{ width: `${Math.max(5, phase.progress)}%` }}
               className="h-full bg-gradient-to-r from-blue-500 to-violet-500"
               initial={{ width: 0 }}
-              animate={{ width: `${Math.max(5, phase.progress)}%` }}
               transition={{ duration: 0.4 }}
             />
           </div>
@@ -139,18 +142,20 @@ export function PhaseCard({ phase }: PhaseCardProps) {
       <AnimatePresence>
         {isExpanded && (
           <motion.div
-            initial={{ height: 0 }}
             animate={{ height: "auto" }}
+            className="overflow-hidden border-zinc-200 border-t bg-white dark:border-zinc-800 dark:bg-zinc-900"
             exit={{ height: 0 }}
-            className="overflow-hidden border-t border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900"
+            initial={{ height: 0 }}
           >
             <div className="flex flex-col gap-4 p-4">
               {phase.objectives?.length ? (
                 <div className="rounded-lg bg-zinc-50 p-3 text-sm text-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-200">
-                  <p className="mb-2 text-xs uppercase tracking-wide text-zinc-500">Objectives</p>
+                  <p className="mb-2 text-xs text-zinc-500 uppercase tracking-wide">
+                    Objectives
+                  </p>
                   <ul className="space-y-1">
                     {phase.objectives.map((objective) => (
-                      <li key={objective} className="flex items-start gap-2">
+                      <li className="flex items-start gap-2" key={objective}>
                         <CheckCircle2 className="mt-0.5 size-4 text-emerald-500" />
                         <span>{objective}</span>
                       </li>

@@ -1,5 +1,6 @@
 "use client";
 
+import { BookOpen, Github } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { memo } from "react";
@@ -8,7 +9,6 @@ import { SidebarToggle } from "@/components/sidebar-toggle";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "./icons";
 import { useSidebar } from "./ui/sidebar";
-import { BookOpen, Github } from "lucide-react";
 import { VisibilitySelector, type VisibilityType } from "./visibility-selector";
 
 function PureChatHeader({
@@ -52,11 +52,7 @@ function PureChatHeader({
       )}
 
       <div className="order-3 hidden gap-2 md:ml-auto md:flex">
-        <Button
-          asChild
-          className="h-fit px-2"
-          variant="outline"
-        >
+        <Button asChild className="h-fit px-2" variant="outline">
           <Link
             href="https://docs.agents-k.com"
             rel="noreferrer"

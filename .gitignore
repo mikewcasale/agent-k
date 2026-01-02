@@ -162,5 +162,9 @@ docs/evolution.md
 docs/python-ai-style-guide-compressed.md
 docs/python-ai-style-guide.md
 /backend/.agent_k_memory
+# test_plan.md
+# backend/.env
+/backend/scripts
+/new-design
 test_plan.md
 backend/.env

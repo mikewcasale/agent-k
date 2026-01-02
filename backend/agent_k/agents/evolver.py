@@ -20,15 +20,7 @@ from typing import TYPE_CHECKING, Any, Final, Self, cast
 # Third-party (alphabetical)
 import logfire
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-from pydantic_ai import (
-    Agent,
-    DeferredToolRequests,
-    ModelRetry,
-    ModelSettings,
-    RunContext,
-    ToolOutput,
-    ToolReturn,
-)
+from pydantic_ai import Agent, DeferredToolRequests, ModelRetry, ModelSettings, RunContext, ToolOutput, ToolReturn
 from pydantic_ai.builtin_tools import MCPServerTool
 from pydantic_ai.toolsets import FunctionToolset
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -108,6 +100,7 @@ class EvolverSettings(BaseSettings):
     output_retries: int = Field(default=2, ge=0, description='Output validation retry attempts')
     population_size: int = Field(default=EVOLUTION_POPULATION_SIZE, ge=1, description='Population size for evolution')
     max_generations: int = Field(default=MAX_EVOLUTION_GENERATIONS, ge=1, description='Maximum evolution generations')
+    min_generations: int = Field(default=0, ge=0, description='Minimum generations before convergence checks')
     convergence_threshold: int = Field(default=5, ge=1, description='Generations without improvement before stopping')
     enable_thinking: bool = Field(default=True, description='Enable extended reasoning mode for supported models')
     thinking_budget_tokens: int = Field(default=4096, ge=0, description='Token budget for model thinking mode')
@@ -118,6 +111,8 @@ class EvolverSettings(BaseSettings):
     @model_validator(mode='after')
     def validate_evolution_params(self) -> Self:
         """Validate cross-field evolution configuration."""
+        if self.min_generations > self.max_generations:
+            raise ValueError('min_generations cannot exceed max_generations')
         if self.convergence_threshold > self.max_generations:
             raise ValueError('convergence_threshold cannot exceed max_generations')
         if self.population_size < 2 and self.max_generations > 1:
@@ -156,8 +151,10 @@ class EvolverDeps:
     initial_solution: str = ''
     population_size: int = EVOLUTION_POPULATION_SIZE
     max_generations: int = MAX_EVOLUTION_GENERATIONS
+    min_generations: int = 0
     solution_timeout: int = SOLUTION_EXECUTION_TIMEOUT_SECONDS
     target_score: float = 0.0
+    generation_offset: int = 0
     best_solution: str | None = None
     best_fitness: float | None = None
     generation_history: list[dict[str, Any]] = field(default_factory=list)
@@ -201,18 +198,20 @@ class EvolverAgent(MemoryMixin):
     as instance methods for cleaner organization and testing.
     """
 
-    def __init__(self, settings: EvolverSettings | None = None) -> None:
+    def __init__(self, settings: EvolverSettings | None = None, *, register: bool = True) -> None:
         """Initialize the Evolver agent.
 
         Args:
             settings: Configuration for the agent. Uses defaults if not provided.
+            register: Whether to register this agent in the global registry.
         """
         self._settings = settings or EvolverSettings()
         self._toolset: FunctionToolset[EvolverDeps] = FunctionToolset(id='evolver')
         self._memory_backend = self._init_memory_backend()
         self._register_tools()
         self._agent = self._create_agent()
-        register_agent('evolver', self._agent)
+        if register:
+            register_agent('evolver', self._agent)
         self._setup_memory()
 
     @property
@@ -336,8 +335,9 @@ class EvolverAgent(MemoryMixin):
             worst_fitness: Worst fitness in generation.
             mutations: Count of each mutation type applied.
         """
+        global_generation = generation + ctx.deps.generation_offset
         metrics = {
-            'generation': generation,
+            'generation': global_generation,
             'best_fitness': best_fitness,
             'mean_fitness': mean_fitness,
             'worst_fitness': worst_fitness,
@@ -346,7 +346,7 @@ class EvolverAgent(MemoryMixin):
 
         ctx.deps.generation_history.append(metrics)
         await ctx.deps.event_emitter.emit_generation_complete(
-            generation=generation,
+            generation=global_generation,
             best_fitness=best_fitness,
             mean_fitness=mean_fitness,
             worst_fitness=worst_fitness,
@@ -355,7 +355,10 @@ class EvolverAgent(MemoryMixin):
         )
 
         logfire.info(
-            'evolution_generation', generation=generation, best_fitness=best_fitness, mean_fitness=mean_fitness
+            'evolution_generation',
+            generation=global_generation,
+            best_fitness=best_fitness,
+            mean_fitness=mean_fitness,
         )
 
     async def check_convergence(
@@ -372,6 +375,13 @@ class EvolverAgent(MemoryMixin):
             Convergence status dictionary.
         """
         history = ctx.deps.generation_history
+        if ctx.deps.min_generations and len(history) < ctx.deps.min_generations:
+            result = {
+                'converged': False,
+                'reason': f'Minimum generations not reached ({len(history)}/{ctx.deps.min_generations})',
+            }
+            return ToolReturn(return_value=result, content=json.dumps(result))
+
         if len(history) < threshold_generations:
             result = {'converged': False, 'reason': 'Not enough generations'}
             return ToolReturn(return_value=result, content=json.dumps(result))
@@ -387,9 +397,13 @@ class EvolverAgent(MemoryMixin):
             }
             return ToolReturn(return_value=result, content=json.dumps(result))
 
-        if ctx.deps.target_score > 0 and best >= ctx.deps.target_score:
-            result = {'converged': True, 'reason': 'Target score achieved', 'best_fitness': best}
-            return ToolReturn(return_value=result, content=json.dumps(result))
+        if ctx.deps.target_score > 0:
+            target_fitness = self._fitness_from_score(
+                ctx.deps.target_score, ctx.deps.competition.metric_direction
+            )
+            if best >= target_fitness:
+                result = {'converged': True, 'reason': 'Target score achieved', 'best_fitness': best}
+                return ToolReturn(return_value=result, content=json.dumps(result))
 
         result = {'converged': False, 'reason': 'Evolution in progress', 'recent_improvement': improvement}
         return ToolReturn(return_value=result, content=json.dumps(result))
@@ -514,7 +528,9 @@ class EvolverAgent(MemoryMixin):
                 'EVOLUTION STATE:\n'
                 f'- Generations Completed: {len(deps.generation_history)}\n'
                 f'- Population Size: {deps.population_size}\n'
-                f'- Max Generations: {deps.max_generations}'
+                f'- Max Generations: {deps.max_generations}\n'
+                f'- Minimum Generations: {deps.min_generations}\n'
+                f'- Generation Offset: {deps.generation_offset}'
             ),
         ]
         if deps.generation_history:

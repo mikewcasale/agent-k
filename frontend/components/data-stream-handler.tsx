@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
-import { initialArtifactData, useArtifact } from "@/hooks/use-artifact";
 import { useAgentKState } from "@/hooks/use-agent-k-state";
-import type { AgentKEvent, AgentKEventType } from "@/lib/types/events";
+import { initialArtifactData, useArtifact } from "@/hooks/use-artifact";
 import type { MissionState } from "@/lib/types/agent-k";
+import type { AgentKEvent, AgentKEventType } from "@/lib/types/events";
 import { artifactDefinitions } from "./artifact";
 import { useDataStream } from "./data-stream-provider";
 
@@ -43,8 +43,9 @@ export function DataStreamHandler() {
   const thinkingBuffer = useRef<Map<string, string>>(new Map());
 
   const isAgentKEvent = useMemo(
-    () => (part: { type: string }): part is AgentKEvent =>
-      AGENT_K_EVENT_TYPES.has(part.type as AgentKEventType),
+    () =>
+      (part: { type: string }): part is AgentKEvent =>
+        AGENT_K_EVENT_TYPES.has(part.type as AgentKEventType),
     []
   );
 
@@ -121,11 +122,10 @@ export function DataStreamHandler() {
         }
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    appendToolThinking,
     artifact,
     dataStream,
-    dispatch,
     isAgentKEvent,
     setArtifact,
     setDataStream,
@@ -149,15 +149,24 @@ export function DataStreamHandler() {
         break;
 
       case "phase-start":
-        dispatch({ type: "PHASE_START", payload: { ...(event.data as any), timestamp } });
+        dispatch({
+          type: "PHASE_START",
+          payload: { ...(event.data as any), timestamp },
+        });
         break;
 
       case "phase-complete":
-        dispatch({ type: "PHASE_COMPLETE", payload: { ...(event.data as any), timestamp } });
+        dispatch({
+          type: "PHASE_COMPLETE",
+          payload: { ...(event.data as any), timestamp },
+        });
         break;
 
       case "task-start":
-        dispatch({ type: "TASK_START", payload: { ...(event.data as any), timestamp } });
+        dispatch({
+          type: "TASK_START",
+          payload: { ...(event.data as any), timestamp },
+        });
         break;
 
       case "task-progress":
@@ -165,7 +174,10 @@ export function DataStreamHandler() {
         break;
 
       case "task-complete":
-        dispatch({ type: "TASK_COMPLETE", payload: { ...(event.data as any), timestamp } });
+        dispatch({
+          type: "TASK_COMPLETE",
+          payload: { ...(event.data as any), timestamp },
+        });
         break;
 
       case "tool-start": {
@@ -193,7 +205,11 @@ export function DataStreamHandler() {
         const key = `${taskId}:${toolCallId}`;
         const current = thinkingBuffer.current.get(key) || "";
         thinkingBuffer.current.set(key, current + chunk);
-        appendToolThinking(taskId, toolCallId, thinkingBuffer.current.get(key) ?? "");
+        appendToolThinking(
+          taskId,
+          toolCallId,
+          thinkingBuffer.current.get(key) ?? ""
+        );
         break;
       }
 
@@ -240,7 +256,10 @@ export function DataStreamHandler() {
         break;
 
       case "checkpoint-created":
-        dispatch({ type: "CHECKPOINT_CREATED", payload: { ...(event.data as any), timestamp } });
+        dispatch({
+          type: "CHECKPOINT_CREATED",
+          payload: { ...(event.data as any), timestamp },
+        });
         break;
 
       case "error-occurred":

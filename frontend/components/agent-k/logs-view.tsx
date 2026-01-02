@@ -10,7 +10,7 @@ export function LogsView() {
 
   if (!errors.length) {
     return (
-      <div className="rounded-lg border border-dashed border-zinc-300 bg-white px-4 py-6 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
+      <div className="rounded-lg border border-zinc-300 border-dashed bg-white px-4 py-6 text-sm text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">
         No errors reported. Live logs will appear here when available.
       </div>
     );
@@ -32,7 +32,7 @@ export function LogsView() {
               )}
             </div>
             <div className="flex-1 space-y-1">
-              <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-white">
+              <div className="flex flex-wrap items-center gap-2 font-semibold text-sm text-zinc-900 dark:text-white">
                 <span>{error.errorType}</span>
                 <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] text-amber-700 dark:bg-amber-900/40 dark:text-amber-200">
                   {error.category}
@@ -41,7 +41,9 @@ export function LogsView() {
                   Strategy {error.recoveryStrategy}
                 </span>
               </div>
-              <p className="text-sm text-zinc-600 dark:text-zinc-300">{error.message}</p>
+              <p className="text-sm text-zinc-600 dark:text-zinc-300">
+                {error.message}
+              </p>
               {error.context && (
                 <p className="text-xs text-zinc-500">
                   Context: {error.context}

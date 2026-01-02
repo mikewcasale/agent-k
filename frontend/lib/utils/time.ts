@@ -3,8 +3,12 @@ const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
 
 export function formatDuration(durationMs?: number): string {
-  if (durationMs === undefined || Number.isNaN(durationMs)) return "—";
-  if (durationMs < SECOND) return `${durationMs} ms`;
+  if (durationMs === undefined || Number.isNaN(durationMs)) {
+    return "—";
+  }
+  if (durationMs < SECOND) {
+    return `${durationMs} ms`;
+  }
 
   const hours = Math.floor(durationMs / HOUR);
   const minutes = Math.floor((durationMs % HOUR) / MINUTE);
@@ -18,9 +22,13 @@ export function formatDuration(durationMs?: number): string {
 }
 
 export function formatRelativeTime(timestamp?: string): string {
-  if (!timestamp) return "—";
+  if (!timestamp) {
+    return "—";
+  }
   const target = new Date(timestamp).getTime();
-  if (Number.isNaN(target)) return "—";
+  if (Number.isNaN(target)) {
+    return "—";
+  }
 
   const diff = target - Date.now();
   const absDiff = Math.abs(diff);
@@ -42,9 +50,13 @@ export function formatRelativeTime(timestamp?: string): string {
 }
 
 export function formatDateTime(timestamp?: string): string {
-  if (!timestamp) return "—";
+  if (!timestamp) {
+    return "—";
+  }
   const date = new Date(timestamp);
-  if (Number.isNaN(date.getTime())) return "—";
+  if (Number.isNaN(date.getTime())) {
+    return "—";
+  }
   return date.toLocaleString(undefined, {
     hour: "2-digit",
     minute: "2-digit",

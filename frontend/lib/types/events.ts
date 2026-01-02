@@ -59,7 +59,11 @@ export interface AgentKEventPayload {
   "state-delta": AgentKPatchOp[];
 
   "phase-start": { phase: MissionPhase; objectives: string[] };
-  "phase-complete": { phase: MissionPhase; success: boolean; durationMs: number };
+  "phase-complete": {
+    phase: MissionPhase;
+    success: boolean;
+    durationMs: number;
+  };
   "phase-error": { phase: MissionPhase; error: string; recoverable: boolean };
 
   "task-start": { taskId: string; phase: MissionPhase; name: string };
@@ -67,9 +71,20 @@ export interface AgentKEventPayload {
   "task-complete": { taskId: string; success: boolean; result?: unknown };
   "task-error": { taskId: string; error: string };
 
-  "tool-start": { taskId: string; toolCallId: string; toolType: ToolType; operation: string; params?: Record<string, unknown> };
+  "tool-start": {
+    taskId: string;
+    toolCallId: string;
+    toolType: ToolType;
+    operation: string;
+    params?: Record<string, unknown>;
+  };
   "tool-thinking": { taskId: string; toolCallId: string; chunk: string };
-  "tool-result": { taskId: string; toolCallId: string; result: unknown; durationMs: number };
+  "tool-result": {
+    taskId: string;
+    toolCallId: string;
+    result: unknown;
+    durationMs: number;
+  };
   "tool-error": { taskId: string; toolCallId: string; error: string };
 
   "generation-start": { generation: number; populationSize: number };
@@ -83,6 +98,14 @@ export interface AgentKEventPayload {
   "checkpoint-created": { name: string; phase: MissionPhase };
 
   "error-occurred": ErrorEvent;
-  "recovery-attempt": { errorId: string; strategy: RecoveryStrategy; attempt: number };
-  "recovery-complete": { errorId: string; success: boolean; resolution?: string };
+  "recovery-attempt": {
+    errorId: string;
+    strategy: RecoveryStrategy;
+    attempt: number;
+  };
+  "recovery-complete": {
+    errorId: string;
+    success: boolean;
+    resolution?: string;
+  };
 }

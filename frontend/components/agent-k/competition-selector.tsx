@@ -1,12 +1,17 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Link2, Search, Sparkles } from "lucide-react";
+import { Filter, Link2, Search, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import { CompetitionPreview } from "@/components/agent-k/competition-preview";
 import { DirectUrlInput } from "@/components/agent-k/direct-url-input";
+import { EvolutionModelSelector } from "@/components/agent-k/evolution-model-selector";
 import { SearchCriteriaForm } from "@/components/agent-k/search-criteria-form";
 import { useAgentKState } from "@/hooks/use-agent-k-state";
+import {
+  DEFAULT_EVOLUTION_MODELS,
+  evolutionModels,
+} from "@/lib/ai/agent-k-models";
 import type {
   CompetitionInfo,
   CompetitionSearchCriteria,
@@ -22,41 +27,23 @@ const DEFAULT_CRITERIA: CompetitionSearchCriteria = {
   minDaysRemaining: 7,
 };
 
-const tabs: Array<{
-  id: CompetitionSelectionMode;
-  label: string;
-  description: string;
-  icon: typeof Search;
-}> = [
-  {
-    id: "search",
-    label: "Search Competitions",
-    description: "Filter by prizes, domains, and timelines",
-    icon: Search,
-  },
-  {
-    id: "direct",
-    label: "Enter URL",
-    description: "Jump straight to a known competition",
-    icon: Link2,
-  },
-];
-
 export function CompetitionSelector() {
   const { dispatch } = useAgentKState();
   const [mode, setMode] = useState<CompetitionSelectionMode>("search");
-  const [criteria, setCriteria] = useState<CompetitionSearchCriteria>(DEFAULT_CRITERIA);
+  const [criteria, setCriteria] =
+    useState<CompetitionSearchCriteria>(DEFAULT_CRITERIA);
   const [url, setUrl] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCompetition, setSelectedCompetition] = useState<CompetitionInfo | null>(null);
+  const [selectedCompetition, setSelectedCompetition] =
+    useState<CompetitionInfo | null>(null);
   const [matchCount, setMatchCount] = useState<number | null>(null);
   const [lastFetchedUrl, setLastFetchedUrl] = useState("");
-
-  const isLoading = isSearching || isFetching;
-  const activeTab = tabs.find((tab) => tab.id === mode) ?? tabs[0];
+  const [selectedEvolutionModels, setSelectedEvolutionModels] = useState<
+    string[]
+  >(DEFAULT_EVOLUTION_MODELS);
 
   const missionCriteria = useMemo(() => {
     const base = mode === "search" ? criteria : DEFAULT_CRITERIA;
@@ -123,14 +110,20 @@ export function CompetitionSelector() {
       setSelectedCompetition(competitions[0]);
       setMatchCount(competitions.length);
     } catch (fetchError) {
-      setError(fetchError instanceof Error ? fetchError.message : "Competition search failed.");
+      setError(
+        fetchError instanceof Error
+          ? fetchError.message
+          : "Competition search failed."
+      );
     } finally {
       setIsSearching(false);
     }
   };
 
   const handleFetch = async (nextUrl: string) => {
-    if (nextUrl === lastFetchedUrl) return;
+    if (nextUrl === lastFetchedUrl) {
+      return;
+    }
     setIsFetching(true);
     setError(null);
     setSelectedCompetition(null);
@@ -156,7 +149,11 @@ export function CompetitionSelector() {
       setSelectedCompetition(data.competition);
       setLastFetchedUrl(nextUrl);
     } catch (fetchError) {
-      setError(fetchError instanceof Error ? fetchError.message : "Unable to fetch competition.");
+      setError(
+        fetchError instanceof Error
+          ? fetchError.message
+          : "Unable to fetch competition."
+      );
       setLastFetchedUrl("");
     } finally {
       setIsFetching(false);
@@ -164,13 +161,16 @@ export function CompetitionSelector() {
   };
 
   const handleConfirm = async () => {
-    if (!selectedCompetition) return;
+    if (!selectedCompetition) {
+      return;
+    }
     setIsStarting(true);
     setError(null);
     try {
       const payload: Record<string, unknown> = {
         criteria: missionCriteria,
         competition_id: selectedCompetition.id,
+        evolution_models: selectedEvolutionModels,
       };
       if (selectedCompetition.url) {
         payload.competition_url = selectedCompetition.url;
@@ -180,7 +180,10 @@ export function CompetitionSelector() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const data = (await response.json()) as { missionId?: string; error?: string };
+      const data = (await response.json()) as {
+        missionId?: string;
+        error?: string;
+      };
       if (!response.ok || data.error) {
         setError(data.error ?? "Unable to start mission.");
         return;
@@ -188,10 +191,17 @@ export function CompetitionSelector() {
 
       dispatch({
         type: "SET_COMPETITION",
-        payload: { competition: selectedCompetition, missionId: data.missionId },
+        payload: {
+          competition: selectedCompetition,
+          missionId: data.missionId,
+        },
       });
     } catch (fetchError) {
-      setError(fetchError instanceof Error ? fetchError.message : "Unable to start mission.");
+      setError(
+        fetchError instanceof Error
+          ? fetchError.message
+          : "Unable to start mission."
+      );
     } finally {
       setIsStarting(false);
     }
@@ -199,92 +209,138 @@ export function CompetitionSelector() {
 
   return (
     <div className="min-h-dvh bg-background">
-      <div className="mx-auto w-full max-w-5xl px-4 py-10">
+      <div className="mx-auto w-full max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8">
         <motion.div
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl border border-border bg-card/90 p-6 shadow-lg backdrop-blur md:p-8"
           initial={{ opacity: 0, y: 16 }}
           transition={{ duration: 0.3 }}
         >
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 text-sm font-semibold text-blue-500 dark:text-blue-400">
+          {/* Header */}
+          <header className="mb-10 flex flex-col gap-6 border-border border-b pb-8 md:flex-row md:items-end md:justify-between">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-blue-500">
                 <Sparkles className="size-4" />
-                Competition Selection
+                <span className="font-bold text-xs uppercase tracking-[0.2em]">
+                  Competition Selection
+                </span>
               </div>
-              <h1 className="mt-2 text-2xl font-semibold text-foreground md:text-3xl">
-                Choose the mission you want Agent-K to run.
-              </h1>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Search by criteria or jump directly to a Kaggle competition URL.
-              </p>
+              <div>
+                <h1 className="mb-2 font-semibold text-3xl text-foreground tracking-tight lg:text-4xl">
+                  Mission{" "}
+                  <span className="font-normal text-muted-foreground">
+                    Configuration
+                  </span>
+                </h1>
+                <p className="max-w-2xl font-light text-base text-muted-foreground">
+                  Select a target mission and configure evolutionary models for
+                  Agent-K.
+                </p>
+              </div>
             </div>
-            <div className="rounded-2xl border border-border bg-muted px-4 py-3 text-xs text-muted-foreground">
-              Mission kickoff is instant once you confirm.
+            <div className="flex items-center gap-3">
+              <div className="flex rounded-xl border border-border bg-muted p-1">
+                <button
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg px-4 py-2 font-medium text-sm transition-all",
+                    mode === "search"
+                      ? "border border-border bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-card/50 hover:text-foreground"
+                  )}
+                  onClick={() => {
+                    setMode("search");
+                    setError(null);
+                    setSelectedCompetition(null);
+                    setMatchCount(null);
+                  }}
+                  type="button"
+                >
+                  <Search className="size-4" />
+                  Search
+                </button>
+                <button
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg px-4 py-2 font-medium text-sm transition-all",
+                    mode === "direct"
+                      ? "border border-border bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-card/50 hover:text-foreground"
+                  )}
+                  onClick={() => {
+                    setMode("direct");
+                    setError(null);
+                    setSelectedCompetition(null);
+                    setMatchCount(null);
+                  }}
+                  type="button"
+                >
+                  <Link2 className="size-4" />
+                  URL
+                </button>
+              </div>
             </div>
-          </div>
+          </header>
 
-          <div className="mt-6 flex flex-wrap gap-2">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                className={cn(
-                  "flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
-                  mode === tab.id
-                    ? "border-blue-500/50 bg-blue-500/10 text-blue-600 dark:text-blue-300"
-                    : "border-border bg-background text-muted-foreground hover:border-blue-500/40 hover:bg-blue-500/5"
-                )}
-                onClick={() => {
-                  setMode(tab.id);
-                  setError(null);
-                  setSelectedCompetition(null);
-                  setMatchCount(null);
-                }}
-                type="button"
-              >
-                <tab.icon className="size-4" />
-                {tab.label}
-              </button>
-            ))}
-          </div>
+          {/* Main content grid */}
+          <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
+            {/* Left column - Search Criteria */}
+            <div className="flex flex-col gap-6 lg:col-span-7">
+              <section className="group relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
+                {/* Decorative gradient */}
+                <div className="-right-32 -top-32 pointer-events-none absolute size-96 rounded-full bg-blue-500/5 blur-3xl" />
 
-          <div className="mt-6 rounded-2xl border border-border bg-muted/40 p-5 shadow-sm">
-            <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
-              <activeTab.icon className="size-4 text-blue-500" />
-              {activeTab.label}
+                <div className="relative z-10">
+                  <div className="mb-8 flex items-center justify-between">
+                    <h2 className="flex items-center gap-3 font-medium text-foreground text-xl">
+                      <span className="flex size-10 items-center justify-center rounded-full bg-muted text-foreground">
+                        <Filter className="size-5" />
+                      </span>
+                      Search Criteria
+                    </h2>
+                  </div>
+
+                  {mode === "search" ? (
+                    <SearchCriteriaForm
+                      criteria={criteria}
+                      isLoading={isSearching}
+                      onChange={setCriteria}
+                      onSubmit={handleSearch}
+                    />
+                  ) : (
+                    <DirectUrlInput
+                      error={error}
+                      isLoading={isFetching}
+                      onChange={setUrl}
+                      onSubmit={handleFetch}
+                      value={url}
+                    />
+                  )}
+                </div>
+              </section>
             </div>
-            <p className="mb-6 text-sm text-muted-foreground">
-              {activeTab.description}
-            </p>
 
-            {mode === "search" ? (
-              <SearchCriteriaForm
-                criteria={criteria}
-                isLoading={isSearching}
-                onChange={setCriteria}
-                onSubmit={handleSearch}
+            {/* Right column - Evolution Models */}
+            <div className="flex flex-col gap-6 lg:col-span-5">
+              <EvolutionModelSelector
+                disabled={isStarting}
+                onChange={setSelectedEvolutionModels}
+                options={evolutionModels}
+                recommended={DEFAULT_EVOLUTION_MODELS}
+                value={selectedEvolutionModels}
               />
-            ) : (
-              <DirectUrlInput
-                error={error}
-                isLoading={isFetching}
-                onChange={setUrl}
-                onSubmit={handleFetch}
-                value={url}
-              />
-            )}
+            </div>
           </div>
 
+          {/* Error message */}
           {error && mode === "search" && (
-            <div className="mt-4 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+            <div className="mt-6 rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-destructive text-sm">
               {error}
             </div>
           )}
 
+          {/* Competition Preview */}
           {selectedCompetition && (
             <motion.div
               animate={{ opacity: 1, y: 0 }}
-              className="mt-6"
+              className="mt-8"
               initial={{ opacity: 0, y: 12 }}
               transition={{ duration: 0.2 }}
             >

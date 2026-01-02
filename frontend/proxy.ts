@@ -19,7 +19,13 @@ const SUSPICIOUS_USER_AGENTS = [
   /httpie/i,
   /postman/i,
 ];
-const ALLOWED_BOTS = [/googlebot/i, /bingbot/i, /slackbot/i, /discordbot/i, /linkedinbot/i];
+const ALLOWED_BOTS = [
+  /googlebot/i,
+  /bingbot/i,
+  /slackbot/i,
+  /discordbot/i,
+  /linkedinbot/i,
+];
 
 const ipRequestCounts = new Map<
   string,
@@ -76,7 +82,11 @@ export async function proxy(request: NextRequest) {
 
   // Rate limiting for API routes (abuse prevention)
   // Skip rate limiting in development - FORCE DISABLED FOR LOCAL TESTING
-  if (false && !isDevelopmentEnvironment && RATE_LIMITED_PATHS.some((path) => pathname.startsWith(path))) {
+  if (
+    false &&
+    !isDevelopmentEnvironment &&
+    RATE_LIMITED_PATHS.some((path) => pathname.startsWith(path))
+  ) {
     const ip = getClientIp(request);
     const userAgent = request.headers.get("user-agent");
 
@@ -127,7 +137,10 @@ export async function proxy(request: NextRequest) {
 
   if (!token) {
     // Use forwarded host for proper URL construction behind reverse proxies (Render, etc.)
-    const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? new URL(request.url).host;
+    const host =
+      request.headers.get("x-forwarded-host") ??
+      request.headers.get("host") ??
+      new URL(request.url).host;
     const protocol = request.headers.get("x-forwarded-proto") ?? "https";
     const pathname = new URL(request.url).pathname;
     const publicUrl = `${protocol}://${host}${pathname}`;

@@ -18,7 +18,6 @@ import { fetchModels } from "tokenlens/fetch";
 import { getUsage } from "tokenlens/helpers";
 import { auth, type UserType } from "@/app/(auth)/auth";
 import type { VisibilityType } from "@/components/visibility-selector";
-import { entitlementsByUserType } from "@/lib/ai/entitlements";
 import type { ChatModel } from "@/lib/ai/models";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
 import { myProvider } from "@/lib/ai/providers";
@@ -26,25 +25,19 @@ import { createDocument } from "@/lib/ai/tools/create-document";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { updateDocument } from "@/lib/ai/tools/update-document";
-import {
-  acquireRequestSlot,
-  checkConcurrentLimit,
-} from "@/lib/concurrent-limit";
 import { isProductionEnvironment, PYTHON_BACKEND_URL } from "@/lib/constants";
 import {
   createStreamId,
   deleteChatById,
   getChatById,
-  getMessageCountByUserId,
   getMessagesByChatId,
   saveChat,
   saveMessages,
   updateChatLastContextById,
 } from "@/lib/db/queries";
 import type { DBMessage } from "@/lib/db/schema";
-import { checkTokenBudget, incrementTokenUsage } from "@/lib/db/token-usage";
+import { incrementTokenUsage } from "@/lib/db/token-usage";
 import { ChatSDKError } from "@/lib/errors";
-import { checkRateLimit, recordRequest } from "@/lib/rate-limit";
 import type { ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { convertToUIMessages, generateUUID } from "@/lib/utils";
@@ -60,7 +53,7 @@ let globalStreamContext: ResumableStreamContext | null = null;
  * Transform Agent K backend SSE stream to Vercel AI SDK format.
  */
 function transformAgentKStream(
- inputStream: ReadableStream<Uint8Array>
+  inputStream: ReadableStream<Uint8Array>
 ): ReadableStream<Uint8Array> {
   const decoder = new TextDecoder();
   const encoder = new TextEncoder();
@@ -109,20 +102,29 @@ function transformAgentKStream(
           buffer = lines.pop() || "";
 
           for (const line of lines) {
-            if (!line.startsWith("data: ")) continue;
+            if (!line.startsWith("data: ")) {
+              continue;
+            }
             const data = line.slice(6).trim();
-            if (data === "[DONE]") continue;
+            if (data === "[DONE]") {
+              continue;
+            }
 
             try {
               const event = JSON.parse(data);
 
               if (event.type === "text-delta" && event.textDelta) {
-                const escaped = event.textDelta.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+                const escaped = event.textDelta
+                  .replace(/\\/g, "\\\\")
+                  .replace(/"/g, '\\"');
                 controller.enqueue(encoder.encode(`0:"${escaped}"\n`));
                 continue;
               }
 
-              if (agentKEventTypes.has(event.type) && event.data !== undefined) {
+              if (
+                agentKEventTypes.has(event.type) &&
+                event.data !== undefined
+              ) {
                 const dp = JSON.stringify({
                   type: event.type,
                   data: event.data,
@@ -135,10 +137,16 @@ function transformAgentKStream(
               if (event.type === "tool-output-available" && event.output) {
                 const output = event.output;
                 if (output.type === "state-snapshot") {
-                  const dp = JSON.stringify({ type: "state-snapshot", data: output.snapshot });
+                  const dp = JSON.stringify({
+                    type: "state-snapshot",
+                    data: output.snapshot,
+                  });
                   controller.enqueue(encoder.encode(`8:${dp}\n`));
                 } else if (output.type === "state-delta") {
-                  const dp = JSON.stringify({ type: "state-delta", data: output.delta });
+                  const dp = JSON.stringify({
+                    type: "state-delta",
+                    data: output.delta,
+                  });
                   controller.enqueue(encoder.encode(`8:${dp}\n`));
                 }
                 continue;
@@ -246,7 +254,10 @@ async function handleAgentKRequest({
   }
 
   // Transform and stream the response back
-  const transformedStream = transformAgentKStream(backendResponse.body!);
+  if (!backendResponse.body) {
+    return new ChatSDKError("offline:chat").toResponse();
+  }
+  const transformedStream = transformAgentKStream(backendResponse.body);
   return new Response(transformedStream, {
     headers: {
       "Content-Type": "text/event-stream",
@@ -325,7 +336,6 @@ export async function POST(request: Request) {
 
     const userType: UserType = session.user.type;
     const userId = session.user.id;
-    const requestId = generateUUID();
 
     // =========================================================================
     // Defense Layer 1: Input Validation
@@ -387,7 +397,12 @@ export async function POST(request: Request) {
     // Route to Python backend for Agent K model
     if (selectedChatModel === "agent-k") {
       try {
-        return await handleAgentKRequest({ id, message, selectedVisibilityType, session });
+        return await handleAgentKRequest({
+          id,
+          message,
+          selectedVisibilityType,
+          session,
+        });
       } finally {
         await releaseSlot();
       }
@@ -420,11 +435,16 @@ export async function POST(request: Request) {
     const sanitizedMessage = {
       ...message,
       parts: message.parts.filter(
-        (part) => part.type !== "text" || (part.type === "text" && part.text.trim().length > 0)
+        (part) =>
+          part.type !== "text" ||
+          (part.type === "text" && part.text.trim().length > 0)
       ),
     };
 
-    const uiMessages = [...convertToUIMessages(messagesFromDb), sanitizedMessage];
+    const uiMessages = [
+      ...convertToUIMessages(messagesFromDb),
+      sanitizedMessage,
+    ];
 
     const { longitude, latitude, city, country } = geolocation(request);
 
@@ -563,7 +583,9 @@ export async function POST(request: Request) {
       },
       onError: () => {
         // Release slot on error too
-        releaseSlot().catch(() => {});
+        releaseSlot().catch(() => {
+          // Intentionally empty - we don't need to handle release failures
+        });
         return "Oops, an error occurred!";
       },
     });

@@ -1,5 +1,8 @@
 import type { CompetitionInfo } from "@/lib/types/agent-k";
 
+const RULES_SUFFIX_REGEX = /\/rules\/?$/;
+const TRAILING_SLASH_REGEX = /\/$/;
+
 export function buildCompetitionRulesUrl(
   competition?: CompetitionInfo | null,
   competitionId?: string | null
@@ -8,8 +11,8 @@ export function buildCompetitionRulesUrl(
     try {
       const parsed = new URL(competition.url);
       const cleanedPath = parsed.pathname
-        .replace(/\/rules\/?$/, "")
-        .replace(/\/$/, "");
+        .replace(RULES_SUFFIX_REGEX, "")
+        .replace(TRAILING_SLASH_REGEX, "");
       return `${parsed.origin}${cleanedPath}/rules`;
     } catch {
       // Fall back to the canonical rules path.
@@ -23,7 +26,9 @@ export function buildCompetitionRulesUrl(
 }
 
 export function isRulesAcceptanceError(message?: string | null) {
-  if (!message) return false;
+  if (!message) {
+    return false;
+  }
   const normalized = message.toLowerCase();
   return (
     (normalized.includes("accept") && normalized.includes("rules")) ||

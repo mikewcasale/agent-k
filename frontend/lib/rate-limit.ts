@@ -56,13 +56,13 @@ const isDevelopment = true; // process.env.NODE_ENV === "development";
 export const rateLimitsByUserType: Record<UserType, UserRateLimits> = {
   guest: {
     perMinute: isDevelopment ? 1000 : 5,
-    perHour: isDevelopment ? 10000 : 15,
-    perDay: isDevelopment ? 100000 : 20,
+    perHour: isDevelopment ? 10_000 : 15,
+    perDay: isDevelopment ? 100_000 : 20,
   },
   regular: {
     perMinute: isDevelopment ? 1000 : 10,
-    perHour: isDevelopment ? 10000 : 50,
-    perDay: isDevelopment ? 100000 : 100,
+    perHour: isDevelopment ? 10_000 : 50,
+    perDay: isDevelopment ? 100_000 : 100,
   },
 };
 
@@ -357,7 +357,7 @@ export async function getRateLimitStatus(
 
 const IP_RATE_LIMITS = {
   perMinute: isDevelopment ? 1000 : 20,
-  perHour: isDevelopment ? 10000 : 100,
+  perHour: isDevelopment ? 10_000 : 100,
 };
 
 /**

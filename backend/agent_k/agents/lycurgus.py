@@ -33,6 +33,7 @@ from agent_k.core.constants import DEFAULT_MODEL
 from agent_k.core.exceptions import CompetitionNotFoundError
 from agent_k.core.models import MissionCriteria
 from agent_k.mission.nodes import DiscoveryNode, EvolutionNode, PrototypeNode, ResearchNode, SubmissionNode
+from agent_k.mission.persistence import MissionPersistence, create_persistence
 from agent_k.mission.state import GraphContext, MissionResult, MissionState
 from agent_k.ui.ag_ui import EventEmitter
 
@@ -307,6 +308,7 @@ class LycurgusOrchestrator:
         event_emitter: EventEmitter | None = None,
         http_client: httpx.AsyncClient | None = None,
         platform_adapter: PlatformAdapter | None = None,
+        persistence: MissionPersistence | None = None,
     ) -> MissionResult:
         """Execute a full competition mission.
 
@@ -323,6 +325,7 @@ class LycurgusOrchestrator:
             event_emitter: Event emitter for streaming events.
             http_client: Shared HTTP client for research tools.
             platform_adapter: Adapter for platform operations.
+            persistence: Optional persistence store for mission snapshots.
 
         Returns:
             MissionResult containing outcomes and metrics.
@@ -345,6 +348,17 @@ class LycurgusOrchestrator:
                 self._owns_platform_adapter = False
 
             mission_id = mission_id or str(uuid.uuid4())
+            persistence = persistence or create_persistence(mission_id)
+            if persistence.has_snapshots():
+                self._logger.warning("mission_persistence_exists", mission_id=mission_id)
+                return await self.resume_persisted_mission(
+                    mission_id,
+                    event_emitter=self._event_emitter,
+                    http_client=self._http_client,
+                    platform_adapter=self._platform_adapter,
+                    persistence=persistence,
+                )
+
             self._state = MissionState(
                 mission_id=mission_id, competition_id=competition_id, criteria=criteria or MissionCriteria()
             )
@@ -359,8 +373,56 @@ class LycurgusOrchestrator:
                     event_emitter=self._event_emitter,
                     http_client=self._http_client,
                     platform_adapter=self._platform_adapter,
+                    agents=self._agents,
                 )
-                return await self._run_graph(context)
+                return await self._run_graph(context, persistence=persistence, resume=False)
+            finally:
+                if initialized_here and not self._entered:
+                    await self._cleanup_resources()
+                self._state = None
+
+    async def resume_persisted_mission(
+        self,
+        mission_id: str,
+        *,
+        event_emitter: EventEmitter | None = None,
+        http_client: httpx.AsyncClient | None = None,
+        platform_adapter: PlatformAdapter | None = None,
+        persistence: MissionPersistence | None = None,
+    ) -> MissionResult:
+        """Resume a persisted mission from snapshots."""
+        if self.is_active:
+            raise RuntimeError("Cannot resume while mission is active")
+
+        with self._logger.span("resume_persisted_mission", mission_id=mission_id):
+            if event_emitter is not None:
+                self._event_emitter = event_emitter
+            if http_client is not None:
+                self._http_client = http_client
+                self._owns_http_client = False
+            if platform_adapter is not None:
+                self._platform_adapter = platform_adapter
+                self._owns_platform_adapter = False
+
+            persistence = persistence or create_persistence(mission_id)
+            if not persistence.has_snapshots():
+                raise RuntimeError("No persisted mission state to resume")
+
+            initialized_here = False
+            if not self._resources_ready:
+                await self._initialize_resources()
+                initialized_here = True
+
+            self._paused = False
+
+            try:
+                context = GraphContext(
+                    event_emitter=self._event_emitter,
+                    http_client=self._http_client,
+                    platform_adapter=self._platform_adapter,
+                    agents=self._agents,
+                )
+                return await self._run_graph(context, persistence=persistence, resume=True)
             finally:
                 if initialized_here and not self._entered:
                     await self._cleanup_resources()
@@ -439,12 +501,31 @@ class LycurgusOrchestrator:
             nodes=(DiscoveryNode, ResearchNode, PrototypeNode, EvolutionNode, SubmissionNode), state_type=MissionState
         )
 
-    async def _run_graph(self, context: GraphContext) -> MissionResult:
+    async def _run_graph(
+        self,
+        context: GraphContext,
+        *,
+        persistence: MissionPersistence,
+        resume: bool,
+    ) -> MissionResult:
         """Execute the orchestration graph to completion."""
-        if self._state is None:
-            raise RuntimeError('No mission state initialized')
-        node = DiscoveryNode(lobbyist_agent=self._agents['lobbyist'])
-        result = await self._graph.run(node, state=self._state, deps=context)
+        existing_result = await persistence.load_latest_result()
+        if existing_result is not None:
+            self._state = await persistence.load_latest_state()
+            return existing_result
+
+        if not resume:
+            if self._state is None:
+                raise RuntimeError("No mission state initialized")
+            await self._graph.initialize(DiscoveryNode(), persistence, state=self._state)
+
+        async with self._graph.iter_from_persistence(persistence, deps=context) as graph_run:
+            self._state = graph_run.state
+            async for _node in graph_run:
+                pass
+
+        result = graph_run.result
+        assert result is not None, "GraphRun should have a result"
         self._state = result.state
         return result.output
 

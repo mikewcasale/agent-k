@@ -38,7 +38,7 @@ type MissionCriteria = {
   minDaysRemaining: number;
 };
 
-export function QuickStart({ onStartMission }: QuickStartProps) {
+export function QuickStart(_props: QuickStartProps) {
   return (
     <motion.div
       animate={{ opacity: 1, y: 0 }}
@@ -60,14 +60,14 @@ export function QuickStart({ onStartMission }: QuickStartProps) {
 
       {/* Domain Selection */}
       <div className="mb-5">
-        <label className="mb-2 flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+        <p className="mb-2 flex items-center gap-1.5 font-medium text-xs text-zinc-600 dark:text-zinc-400">
           <Target className="size-3.5" />
           Target Domains
-        </label>
+        </p>
         <div className="flex flex-wrap gap-2">
           {domains.map((domain) => (
             <button
-              className="flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:border-blue-300 hover:bg-blue-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-blue-600 dark:hover:bg-blue-950/30"
+              className="flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1.5 font-medium text-xs text-zinc-700 transition-colors hover:border-blue-300 hover:bg-blue-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-blue-600 dark:hover:bg-blue-950/30"
               key={domain.id}
               type="button"
             >
@@ -80,14 +80,14 @@ export function QuickStart({ onStartMission }: QuickStartProps) {
 
       {/* Competition Type */}
       <div className="mb-5">
-        <label className="mb-2 flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+        <p className="mb-2 flex items-center gap-1.5 font-medium text-xs text-zinc-600 dark:text-zinc-400">
           <Award className="size-3.5" />
           Competition Types
-        </label>
+        </p>
         <div className="flex flex-wrap gap-2">
           {competitionTypes.map((type) => (
             <button
-              className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 text-xs font-medium text-zinc-700 transition-colors hover:border-blue-300 hover:bg-blue-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-blue-600 dark:hover:bg-blue-950/30"
+              className="rounded-full border border-zinc-200 bg-white px-3 py-1.5 font-medium text-xs text-zinc-700 transition-colors hover:border-blue-300 hover:bg-blue-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:border-blue-600 dark:hover:bg-blue-950/30"
               key={type.id}
               type="button"
             >
@@ -100,11 +100,17 @@ export function QuickStart({ onStartMission }: QuickStartProps) {
       {/* Prize & Timeline */}
       <div className="mb-6 grid grid-cols-2 gap-4">
         <div>
-          <label className="mb-2 flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+          <label
+            className="mb-2 flex items-center gap-1.5 font-medium text-xs text-zinc-600 dark:text-zinc-400"
+            htmlFor="min-prize-select"
+          >
             <Award className="size-3.5" />
             Min Prize
           </label>
-          <select className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+          <select
+            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+            id="min-prize-select"
+          >
             <option value="0">Any</option>
             <option value="1000">$1,000+</option>
             <option value="10000">$10,000+</option>
@@ -113,11 +119,17 @@ export function QuickStart({ onStartMission }: QuickStartProps) {
           </select>
         </div>
         <div>
-          <label className="mb-2 flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400">
+          <label
+            className="mb-2 flex items-center gap-1.5 font-medium text-xs text-zinc-600 dark:text-zinc-400"
+            htmlFor="min-days-select"
+          >
             <Calendar className="size-3.5" />
             Min Days Left
           </label>
-          <select className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+          <select
+            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
+            id="min-days-select"
+          >
             <option value="0">Any</option>
             <option value="7">7+ days</option>
             <option value="14">14+ days</option>
@@ -142,4 +154,3 @@ export function QuickStart({ onStartMission }: QuickStartProps) {
     </motion.div>
   );
 }
-

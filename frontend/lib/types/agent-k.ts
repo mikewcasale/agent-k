@@ -30,7 +30,12 @@ export type MemoryOperation = "store" | "retrieve" | "checkpoint" | "restore";
 
 export type ErrorCategory = "transient" | "recoverable" | "fatal";
 
-export type RecoveryStrategy = "retry" | "fallback" | "skip" | "replan" | "abort";
+export type RecoveryStrategy =
+  | "retry"
+  | "fallback"
+  | "skip"
+  | "replan"
+  | "abort";
 
 // =============================================================================
 // Tool Events
@@ -386,7 +391,11 @@ export type AgentKPatchOp =
     }
 
   // Evolution updates
-  | { op: "add"; path: "/evolution/generationHistory/-"; value: GenerationMetrics }
+  | {
+      op: "add";
+      path: "/evolution/generationHistory/-";
+      value: GenerationMetrics;
+    }
   | { op: "replace"; path: "/evolution/currentGeneration"; value: number }
   | {
       op: "replace";

@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Sparkles, Target, Beaker, Dna, Send } from "lucide-react";
+import { Beaker, Dna, Send, Sparkles, Target } from "lucide-react";
 import Link from "next/link";
 
 export const Greeting = () => {
@@ -29,10 +29,10 @@ export const Greeting = () => {
       >
         Autonomous Multi-Agent{" "}
         <Link
-          href="https://www.kaggle.com"
-          target="_blank"
-          rel="noreferrer"
           className="text-zinc-300 underline decoration-zinc-500 underline-offset-2 transition-colors hover:text-white hover:decoration-zinc-300"
+          href="https://www.kaggle.com"
+          rel="noreferrer"
+          target="_blank"
         >
           Kaggle
         </Link>{" "}
@@ -47,16 +47,16 @@ export const Greeting = () => {
       >
         Discover, research, prototype, evolve, and submit winning solutions to{" "}
         <Link
-          href="https://www.kaggle.com/competitions"
-          target="_blank"
-          rel="noreferrer"
           className="text-zinc-300 underline decoration-zinc-500 underline-offset-2 transition-colors hover:text-white hover:decoration-zinc-300"
+          href="https://www.kaggle.com/competitions"
+          rel="noreferrer"
+          target="_blank"
         >
           Kaggle competitions
         </Link>
         .
       </motion.p>
-      
+
       {/* Phase indicators */}
       <motion.div
         animate={{ opacity: 1, y: 0 }}
@@ -65,22 +65,22 @@ export const Greeting = () => {
         initial={{ opacity: 0, y: 10 }}
         transition={{ delay: 0.7 }}
       >
-        <PhaseIndicator icon={Target} label="Discovery" color="blue" />
-        <PhaseIndicator icon={Beaker} label="Research" color="emerald" />
-        <PhaseIndicator icon={Dna} label="Evolution" color="violet" />
-        <PhaseIndicator icon={Send} label="Submission" color="amber" />
+        <PhaseIndicator color="blue" icon={Target} label="Discovery" />
+        <PhaseIndicator color="emerald" icon={Beaker} label="Research" />
+        <PhaseIndicator color="violet" icon={Dna} label="Evolution" />
+        <PhaseIndicator color="amber" icon={Send} label="Submission" />
       </motion.div>
     </div>
   );
 };
 
-function PhaseIndicator({ 
-  icon: Icon, 
-  label, 
-  color 
-}: { 
-  icon: React.ElementType; 
-  label: string; 
+function PhaseIndicator({
+  icon: Icon,
+  label,
+  color,
+}: {
+  icon: React.ElementType;
+  label: string;
   color: string;
 }) {
   const colorClasses: Record<string, string> = {
@@ -89,9 +89,11 @@ function PhaseIndicator({
     violet: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
     amber: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
   };
-  
+
   return (
-    <div className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium ${colorClasses[color]}`}>
+    <div
+      className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium text-xs ${colorClasses[color]}`}
+    >
       <Icon className="size-3.5" />
       {label}
     </div>

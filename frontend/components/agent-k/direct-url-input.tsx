@@ -41,18 +41,22 @@ export function DirectUrlInput({
       }}
     >
       <div className="space-y-2">
-        <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        <label
+          className="flex items-center gap-2 font-semibold text-muted-foreground text-xs uppercase tracking-wide"
+          htmlFor="kaggle-url-input"
+        >
           <Link2 className="size-3.5" />
           Kaggle competition URL
         </label>
         <div className="relative">
           <input
             className={cn(
-              "w-full rounded-xl border bg-background px-3 py-2 pr-10 text-sm text-foreground shadow-sm outline-none placeholder:text-muted-foreground focus:ring-2",
+              "w-full rounded-xl border bg-background px-3 py-2 pr-10 text-foreground text-sm shadow-sm outline-none placeholder:text-muted-foreground focus:ring-2",
               showInvalid
                 ? "border-destructive/60 focus:border-destructive focus:ring-destructive/30"
                 : "border-border focus:border-blue-500/60 focus:ring-blue-500/20"
             )}
+            id="kaggle-url-input"
             onBlur={() => {
               setTouched(true);
               if (isValid && !isLoading) {
@@ -64,21 +68,25 @@ export function DirectUrlInput({
             type="url"
             value={value}
           />
-          <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-            {isLoading ? <Loader2 className="size-4 animate-spin" /> : <Link2 className="size-4" />}
+          <div className="-translate-y-1/2 pointer-events-none absolute top-1/2 right-3 text-muted-foreground">
+            {isLoading ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Link2 className="size-4" />
+            )}
           </div>
         </div>
       </div>
 
       {showInvalid && (
-        <div className="flex items-center gap-2 text-xs text-destructive">
+        <div className="flex items-center gap-2 text-destructive text-xs">
           <TriangleAlert className="size-3.5" />
           Enter a valid Kaggle competition URL.
         </div>
       )}
 
       {error && !showInvalid && (
-        <div className="flex items-center gap-2 text-xs text-destructive">
+        <div className="flex items-center gap-2 text-destructive text-xs">
           <TriangleAlert className="size-3.5" />
           {error}
         </div>
@@ -86,8 +94,10 @@ export function DirectUrlInput({
 
       <button
         className={cn(
-          "flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-zinc-800 to-zinc-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all",
-          isLoading ? "cursor-not-allowed opacity-80" : "hover:from-zinc-700 hover:to-zinc-500"
+          "flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-zinc-800 to-zinc-600 px-4 py-3 font-semibold text-sm text-white shadow-sm transition-all",
+          isLoading
+            ? "cursor-not-allowed opacity-80"
+            : "hover:from-zinc-700 hover:to-zinc-500"
         )}
         disabled={isLoading || !isValid}
         type="submit"

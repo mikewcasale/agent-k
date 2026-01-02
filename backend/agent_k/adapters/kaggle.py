@@ -12,11 +12,11 @@ import csv
 import io
 import re
 import zipfile
-from urllib.parse import quote
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
+from urllib.parse import quote
 
 # Third-party (alphabetical)
 import httpx

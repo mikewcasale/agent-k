@@ -41,7 +41,7 @@ export type RecoveryStrategy =
 // Tool Events
 // =============================================================================
 
-export interface ToolCall {
+export type ToolCall = {
   id: string;
   type: ToolType;
   operation: string;
@@ -52,7 +52,7 @@ export interface ToolCall {
   startedAt: string;
   completedAt?: string;
   durationMs?: number;
-}
+};
 
 export interface WebSearchCall extends ToolCall {
   type: "web_search";
@@ -98,7 +98,7 @@ export interface MemoryCall extends ToolCall {
 // Task and Phase Models
 // =============================================================================
 
-export interface PlannedTask {
+export type PlannedTask = {
   id: string;
   name: string;
   description: string;
@@ -115,9 +115,9 @@ export interface PlannedTask {
   toolCalls: ToolCall[];
   startedAt?: string;
   completedAt?: string;
-}
+};
 
-export interface PhasePlan {
+export type PhasePlan = {
   phase: MissionPhase;
   displayName: string;
   objectives: string[];
@@ -129,13 +129,13 @@ export interface PhasePlan {
   progress: number;
   startedAt?: string;
   completedAt?: string;
-}
+};
 
 // =============================================================================
 // Evolution-Specific State
 // =============================================================================
 
-export interface GenerationMetrics {
+export type GenerationMetrics = {
   generation: number;
   bestFitness: number;
   meanFitness: number;
@@ -148,9 +148,9 @@ export interface GenerationMetrics {
     crossover: number;
   };
   timestamp: string;
-}
+};
 
-export interface LeaderboardSubmission {
+export type LeaderboardSubmission = {
   submissionId: string;
   generation: number;
   cvScore: number;
@@ -159,9 +159,9 @@ export interface LeaderboardSubmission {
   totalTeams?: number;
   percentile?: number;
   submittedAt: string;
-}
+};
 
-export interface EvolutionState {
+export type EvolutionState = {
   currentGeneration: number;
   maxGenerations: number;
   populationSize: number;
@@ -174,7 +174,7 @@ export interface EvolutionState {
   convergenceDetected: boolean;
   convergenceReason?: string;
   leaderboardSubmissions: LeaderboardSubmission[];
-}
+};
 
 // =============================================================================
 // Competition and Research State
@@ -184,15 +184,15 @@ export type CompetitionSelectionMode = "search" | "direct";
 
 export type CompetitionPaidStatus = "any" | "paid" | "free";
 
-export interface CompetitionSearchCriteria {
+export type CompetitionSearchCriteria = {
   paidStatus: CompetitionPaidStatus;
   domains: string[];
   competitionTypes: string[];
   minPrize: number | null;
   minDaysRemaining: number;
-}
+};
 
-export interface CompetitionInfo {
+export type CompetitionInfo = {
   id: string;
   title: string;
   description?: string;
@@ -205,9 +205,9 @@ export interface CompetitionInfo {
   maxDailySubmissions: number;
   tags: string[];
   url?: string;
-}
+};
 
-export interface LeaderboardAnalysis {
+export type LeaderboardAnalysis = {
   topScore: number;
   medianScore: number;
   targetScore: number;
@@ -216,9 +216,9 @@ export interface LeaderboardAnalysis {
   scoreDistribution: Array<{ score: number; count: number }>;
   commonApproaches: string[];
   improvementOpportunities: string[];
-}
+};
 
-export interface ResearchFindings {
+export type ResearchFindings = {
   leaderboardAnalysis?: LeaderboardAnalysis;
   papers: Array<{
     title: string;
@@ -239,13 +239,13 @@ export interface ResearchFindings {
     dataQualityIssues: string[];
   };
   strategyRecommendations: string[];
-}
+};
 
 // =============================================================================
 // Error and Recovery State
 // =============================================================================
 
-export interface ErrorEvent {
+export type ErrorEvent = {
   id: string;
   timestamp: string;
   category: ErrorCategory;
@@ -258,13 +258,13 @@ export interface ErrorEvent {
   recoveryAttempts: number;
   resolved: boolean;
   resolution?: string;
-}
+};
 
 // =============================================================================
 // Memory State
 // =============================================================================
 
-export interface MemoryEntry {
+export type MemoryEntry = {
   key: string;
   scope: "session" | "persistent" | "global";
   category: string;
@@ -273,9 +273,9 @@ export interface MemoryEntry {
   accessedAt: string;
   accessCount: number;
   sizeBytes: number;
-}
+};
 
-export interface MemoryState {
+export type MemoryState = {
   entries: MemoryEntry[];
   checkpoints: Array<{
     name: string;
@@ -284,13 +284,13 @@ export interface MemoryState {
     stateSnapshot: string;
   }>;
   totalSizeBytes: number;
-}
+};
 
 // =============================================================================
 // Mission State (Root)
 // =============================================================================
 
-export interface MissionState {
+export type MissionState = {
   // Identity
   missionId: string;
   competitionId?: string;
@@ -332,13 +332,13 @@ export interface MissionState {
     phasesCompleted: MissionPhase[];
     errorMessage?: string;
   };
-}
+};
 
 // =============================================================================
 // UI View State
 // =============================================================================
 
-export interface AgentKUIState {
+export type AgentKUIState = {
   expandedPhases: Set<MissionPhase>;
   expandedTasks: Set<string>;
   expandedToolCalls: Set<string>;
@@ -352,12 +352,12 @@ export interface AgentKUIState {
 
   evolutionChartType: "fitness" | "mutations" | "submissions";
   evolutionChartRange: "all" | "last50" | "last10";
-}
+};
 
-export interface AgentKState {
+export type AgentKState = {
   mission: MissionState;
   ui: AgentKUIState;
-}
+};
 
 // =============================================================================
 // Extended Patch Operations

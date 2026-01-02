@@ -166,11 +166,7 @@ class CompetitionRulesNotAcceptedError(CompetitionError):
             f'Competition rules not accepted for {competition_id}. '
             f'Open {rules_url} and accept the rules before downloading data.'
         )
-        super().__init__(
-            message,
-            context={'competition_id': competition_id, 'rules_url': rules_url},
-            recoverable=False,
-        )
+        super().__init__(message, context={'competition_id': competition_id, 'rules_url': rules_url}, recoverable=False)
 
 
 class SubmissionError(CompetitionError):

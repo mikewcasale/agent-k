@@ -20,7 +20,6 @@ from agent_k.core.types import CompetitionId, MissionId, MissionPhase, TaskId
 
 if TYPE_CHECKING:
     import httpx
-
     from pydantic_ai import Agent
 
     from agent_k.core.protocols import PlatformAdapter

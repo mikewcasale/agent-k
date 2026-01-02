@@ -473,8 +473,7 @@ class MissionCriteria(BaseModel):
         default=0.10, ge=0.0, le=1.0, description='Target top N percentile on leaderboard'
     )
     evolution_models: tuple[str, ...] = Field(
-        default_factory=tuple,
-        description='Ordered model specs to rotate during evolution',
+        default_factory=tuple, description='Ordered model specs to rotate during evolution'
     )
 
     @model_validator(mode='after')

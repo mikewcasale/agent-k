@@ -42,9 +42,7 @@ if TYPE_CHECKING:
 __all__ = ('KaggleAdapter', 'KaggleSettings', 'SCHEMA_VERSION')
 
 SCHEMA_VERSION: Final[str] = '1.0.0'
-_COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(
-    r'kaggle\.com/competitions/([a-zA-Z0-9-]+)'
-)
+_COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r'kaggle\.com/competitions/([a-zA-Z0-9-]+)')
 
 
 class KaggleSettings(BaseSettings):
@@ -198,10 +196,7 @@ class KaggleAdapter(PlatformAdapter):
             content = response.content
             if response.headers.get('content-type', '').startswith('application/zip') or content[:2] == b'PK':
                 with zipfile.ZipFile(io.BytesIO(content)) as archive:
-                    csv_name = next(
-                        (name for name in archive.namelist() if name.lower().endswith('.csv')),
-                        None,
-                    )
+                    csv_name = next((name for name in archive.namelist() if name.lower().endswith('.csv')), None)
                     if not csv_name:
                         return entries
                     csv_text = archive.read(csv_name).decode('utf-8', errors='ignore')
@@ -265,9 +260,7 @@ class KaggleAdapter(PlatformAdapter):
                 'submissionDescription': (None, message),
             }
             submit_response = await self._request(
-                'POST',
-                f'/competitions/submissions/submit/{competition_id}',
-                files=submit_fields,
+                'POST', f'/competitions/submissions/submit/{competition_id}', files=submit_fields
             )
             if submit_response.status_code != 200:
                 raise SubmissionError(competition_id, f'Submission failed: {submit_response.text}')
@@ -297,11 +290,7 @@ class KaggleAdapter(PlatformAdapter):
                     )
 
             return Submission(
-                id=submission_id,
-                competition_id=competition_id,
-                file_name='',
-                status='pending',
-                public_score=None,
+                id=submission_id, competition_id=competition_id, file_name='', status='pending', public_score=None
             )
 
     async def download_data(self, competition_id: str, destination: str) -> list[str]:

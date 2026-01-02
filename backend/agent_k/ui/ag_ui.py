@@ -194,8 +194,7 @@ class MissionRequest(BaseModel):
     schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
     criteria: MissionCriteria = Field(..., description='Mission selection criteria')
     evolution_models: list[str] | None = Field(
-        default=None,
-        description='Ordered list of model specs to rotate during evolution',
+        default=None, description='Ordered list of model specs to rotate during evolution'
     )
     user_prompt: str | None = Field(default=None, description='Optional user context for the mission')
     competition_id: str | None = Field(default=None, description='Optional competition id override')
@@ -804,26 +803,26 @@ async def _load_persisted_status(mission_id: str) -> dict[str, Any] | None:
     result = await persistence.load_latest_result()
     if result is not None:
         return {
-            "missionId": mission_id,
-            "status": "completed" if result.success else "failed",
-            "currentPhase": None,
-            "progress": 100.0,
-            "competitionId": result.competition_id,
-            "errorMessage": result.error_message,
+            'missionId': mission_id,
+            'status': 'completed' if result.success else 'failed',
+            'currentPhase': None,
+            'progress': 100.0,
+            'competitionId': result.competition_id,
+            'errorMessage': result.error_message,
         }
 
     state = await persistence.load_latest_state()
     if state is None:
         return None
 
-    error_message = state.errors[-1].get("error") if state.errors else None
+    error_message = state.errors[-1].get('error') if state.errors else None
     return {
-        "missionId": mission_id,
-        "status": "paused",
-        "currentPhase": state.current_phase,
-        "progress": _calculate_progress_percent(state),
-        "competitionId": state.competition_id,
-        "errorMessage": error_message,
+        'missionId': mission_id,
+        'status': 'paused',
+        'currentPhase': state.current_phase,
+        'progress': _calculate_progress_percent(state),
+        'competitionId': state.competition_id,
+        'errorMessage': error_message,
     }
 
 
@@ -893,10 +892,7 @@ def create_app() -> FastAPI:  # noqa: C901
                 while True:
                     try:
                         result = await orchestrator.execute_mission(
-                            competition_id,
-                            mission_id=mission_id,
-                            criteria=criteria,
-                            event_emitter=emitter,
+                            competition_id, mission_id=mission_id, criteria=criteria, event_emitter=emitter
                         )
                         missions[mission_id]['result'] = result
                         await emitter.emit(
@@ -924,10 +920,7 @@ def create_app() -> FastAPI:  # noqa: C901
                             recovery_strategy=strategy,
                         )
                         logfire.error(
-                            'mission_execution_failed',
-                            error=str(exc),
-                            mission_id=mission_id,
-                            recoverable=recoverable,
+                            'mission_execution_failed', error=str(exc), mission_id=mission_id, recoverable=recoverable
                         )
                         if not recoverable or attempt >= max_attempts - 1:
                             if attempt > 0:
@@ -947,36 +940,36 @@ def create_app() -> FastAPI:  # noqa: C901
 
         return {'missionId': mission_id}
 
-    @app.post("/api/mission/{mission_id}/resume")
+    @app.post('/api/mission/{mission_id}/resume')
     async def resume_mission(mission_id: str) -> dict[str, str]:
         """Resume a persisted mission and return mission ID."""
         from agent_k.agents.lycurgus import LycurgusOrchestrator
 
         entry = missions.get(mission_id)
-        if entry and entry.get("task") and not entry["task"].done():
-            return {"error": "Mission already active"}
+        if entry and entry.get('task') and not entry['task'].done():
+            return {'error': 'Mission already active'}
 
         persistence = create_persistence(mission_id)
         if not persistence.has_snapshots():
-            return {"error": "Mission not found"}
+            return {'error': 'Mission not found'}
 
         existing_result = await persistence.load_latest_result()
         if existing_result is not None:
-            return {"error": "Mission already completed"}
+            return {'error': 'Mission already completed'}
 
         emitter = EventEmitter()
         orchestrator = LycurgusOrchestrator(event_emitter=emitter)
         state = await persistence.load_latest_state()
 
         missions[mission_id] = {
-            "emitter": emitter,
-            "orchestrator": orchestrator,
-            "result": None,
-            "competition_id": state.competition_id if state else None,
+            'emitter': emitter,
+            'orchestrator': orchestrator,
+            'result': None,
+            'competition_id': state.competition_id if state else None,
         }
 
         async def run_mission() -> None:
-            error_id = f"mission_{mission_id}"
+            error_id = f'mission_{mission_id}'
             attempt = 0
             max_attempts = 2
 
@@ -984,22 +977,20 @@ def create_app() -> FastAPI:  # noqa: C901
                 while True:
                     try:
                         result = await orchestrator.resume_persisted_mission(
-                            mission_id,
-                            event_emitter=emitter,
-                            persistence=persistence,
+                            mission_id, event_emitter=emitter, persistence=persistence
                         )
-                        missions[mission_id]["result"] = result
+                        missions[mission_id]['result'] = result
                         await emitter.emit(
-                            "mission-complete",
+                            'mission-complete',
                             {
-                                "success": result.success,
-                                "final_rank": result.final_rank,
-                                "final_score": result.final_score,
+                                'success': result.success,
+                                'final_rank': result.final_rank,
+                                'final_score': result.final_score,
                             },
                         )
                         if attempt > 0:
                             await emitter.emit_recovery_complete(
-                                error_id=error_id, success=True, resolution="mission_completed"
+                                error_id=error_id, success=True, resolution='mission_completed'
                             )
                         break
                     except Exception as exc:
@@ -1010,32 +1001,29 @@ def create_app() -> FastAPI:  # noqa: C901
                             category=category,
                             error_type=type(exc).__name__,
                             message=str(exc),
-                            context="mission_execution",
+                            context='mission_execution',
                             recovery_strategy=strategy,
                         )
                         logfire.error(
-                            "mission_execution_failed",
-                            error=str(exc),
-                            mission_id=mission_id,
-                            recoverable=recoverable,
+                            'mission_execution_failed', error=str(exc), mission_id=mission_id, recoverable=recoverable
                         )
                         if not recoverable or attempt >= max_attempts - 1:
                             if attempt > 0:
                                 await emitter.emit_recovery_complete(
-                                    error_id=error_id, success=False, resolution="exhausted"
+                                    error_id=error_id, success=False, resolution='exhausted'
                                 )
                             break
                         attempt += 1
                         await emitter.emit_recovery_attempt(error_id=error_id, strategy=strategy, attempt=attempt)
-                        logfire.warning("mission_recovery_attempt", mission_id=mission_id, attempt=attempt)
+                        logfire.warning('mission_recovery_attempt', mission_id=mission_id, attempt=attempt)
             finally:
                 emitter.close()
 
-        missions[mission_id]["task"] = asyncio.create_task(run_mission())
+        missions[mission_id]['task'] = asyncio.create_task(run_mission())
 
-        logfire.info("mission_resumed", mission_id=mission_id)
+        logfire.info('mission_resumed', mission_id=mission_id)
 
-        return {"missionId": mission_id}
+        return {'missionId': mission_id}
 
     @app.post('/api/competitions/search')
     async def search_competitions(request: CompetitionSearchRequest) -> dict[str, Any]:
@@ -1092,7 +1080,7 @@ def create_app() -> FastAPI:  # noqa: C901
         if mission_id not in missions:
             persisted = await _load_persisted_status(mission_id)
             if persisted is None:
-                return {"error": "Mission not found"}
+                return {'error': 'Mission not found'}
             return persisted
 
         entry = missions[mission_id]
@@ -1219,10 +1207,7 @@ async def _search_competitions(request: CompetitionSearchRequest) -> list[dict[s
     async with adapter:
         if not categories:
             async for competition in adapter.search_competitions(
-                categories=None,
-                keywords=keywords or None,
-                min_prize=min_prize,
-                active_only=True,
+                categories=None, keywords=keywords or None, min_prize=min_prize, active_only=True
             ):
                 if competition.id in seen:
                     continue
@@ -1239,10 +1224,7 @@ async def _search_competitions(request: CompetitionSearchRequest) -> list[dict[s
         else:
             for category in categories:
                 async for competition in adapter.search_competitions(
-                    categories=[category],
-                    keywords=keywords or None,
-                    min_prize=min_prize,
-                    active_only=True,
+                    categories=[category], keywords=keywords or None, min_prize=min_prize, active_only=True
                 ):
                     if competition.id in seen:
                         continue

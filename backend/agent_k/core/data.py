@@ -78,12 +78,7 @@ def locate_data_files(paths: Iterable[str | Path]) -> tuple[Path, Path, Path]:
 
 
 def stage_competition_data(
-    train_path: Path,
-    test_path: Path,
-    sample_path: Path,
-    destination: Path,
-    *,
-    competition_id: str | None = None,
+    train_path: Path, test_path: Path, sample_path: Path, destination: Path, *, competition_id: str | None = None
 ) -> dict[str, Path]:
     """Stage competition data into canonical filenames."""
     destination.mkdir(parents=True, exist_ok=True)

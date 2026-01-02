@@ -48,13 +48,13 @@ export type AgentKEventType =
   | "recovery-attempt"
   | "recovery-complete";
 
-export interface AgentKEvent<T extends AgentKEventType = AgentKEventType> {
+export type AgentKEvent<T extends AgentKEventType = AgentKEventType> = {
   type: T;
   timestamp: string;
   data: AgentKEventPayload[T];
-}
+};
 
-export interface AgentKEventPayload {
+export type AgentKEventPayload = {
   "state-snapshot": MissionState;
   "state-delta": AgentKPatchOp[];
 
@@ -108,4 +108,4 @@ export interface AgentKEventPayload {
     success: boolean;
     resolution?: string;
   };
-}
+};

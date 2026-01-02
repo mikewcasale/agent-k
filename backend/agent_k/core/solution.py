@@ -80,11 +80,7 @@ async def execute_solution(
     normalized_code = _normalize_kaggle_paths(code)
     if use_builtin_code_execution:
         tool_result = await _execute_with_builtin_tool(
-            normalized_code,
-            work_path,
-            env=env,
-            model_spec=model_spec,
-            max_inline_data_bytes=max_inline_data_bytes,
+            normalized_code, work_path, env=env, model_spec=model_spec, max_inline_data_bytes=max_inline_data_bytes
         )
         if tool_result is not None:
             return tool_result

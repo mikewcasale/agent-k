@@ -49,7 +49,6 @@ from .state import GraphContext, MissionResult, MissionState
 
 if TYPE_CHECKING:
     import httpx
-
     from pydantic_ai import Agent
 
     from ..core.protocols import PlatformAdapter
@@ -108,7 +107,7 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 deps = LobbyistDeps(http_client=http_client, platform_adapter=platform_adapter, event_emitter=emitter)
 
                 # Run lobbyist agent
-                lobbyist_agent = _resolve_agent(ctx.deps, "lobbyist")
+                lobbyist_agent = _resolve_agent(ctx.deps, 'lobbyist')
                 run_result = await lobbyist_agent.run(prompt, deps=deps)
                 result = run_result.output
 
@@ -186,6 +185,7 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
         """Calculate elapsed milliseconds."""
         return int((datetime.now(UTC) - start).total_seconds() * 1000) if start else 0
 
+
 @dataclass
 class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
     """Research phase node.
@@ -235,7 +235,7 @@ class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 )
 
                 prompt = f'Research competition: {competition.title}'
-                scientist_agent = _resolve_agent(ctx.deps, "scientist")
+                scientist_agent = _resolve_agent(ctx.deps, 'scientist')
                 run_result = await scientist_agent.run(prompt, deps=deps)
                 result = run_result.output
 
@@ -322,11 +322,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     data_files = await platform_adapter.download_data(competition_id, work_dir)
                     train_path, test_path, sample_path = locate_data_files(data_files)
                     staged = stage_competition_data(
-                        train_path,
-                        test_path,
-                        sample_path,
-                        work_path,
-                        competition_id=competition_id,
+                        train_path, test_path, sample_path, work_path, competition_id=competition_id
                     )
                     schema = infer_competition_schema(staged['train'], staged['test'], staged['sample'])
 
@@ -646,6 +642,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
     def _elapsed_ms(self, start: datetime | None) -> int:
         return int((datetime.now(UTC) - start).total_seconds() * 1000) if start else 0
 
+
 @dataclass
 class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
     """Evolution phase node.
@@ -702,11 +699,7 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     data_files = await platform_adapter.download_data(competition_id, work_dir)
                     train_path, test_path, sample_path = locate_data_files(data_files)
                     staged = stage_competition_data(
-                        train_path,
-                        test_path,
-                        sample_path,
-                        work_path,
-                        competition_id=competition_id,
+                        train_path, test_path, sample_path, work_path, competition_id=competition_id
                     )
                     schema = infer_competition_schema(staged['train'], staged['test'], staged['sample'])
 
@@ -738,10 +731,7 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     convergence_reason: str | None = None
 
                     def record_rate_limit(
-                        error_message: str,
-                        *,
-                        model_spec: str | None,
-                        error_type: str | None,
+                        error_message: str, *, model_spec: str | None, error_type: str | None
                     ) -> None:
                         state.errors.append(
                             {
@@ -752,9 +742,7 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                             }
                         )
                         logfire.warning(
-                            'evolution_rate_limited',
-                            model=model_spec or evolver_settings.model,
-                            error=error_message,
+                            'evolution_rate_limited', model=model_spec or evolver_settings.model, error=error_message
                         )
 
                     deps_kwargs = {
@@ -775,20 +763,16 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
 
                     if not evolution_models:
                         deps = EvolverDeps(
-                            **deps_kwargs,
+                            **deps_kwargs,  # type: ignore[arg-type]
                             initial_solution=best_solution,
                             max_generations=state.criteria.max_evolution_rounds,
                         )
-                        evolver_agent = _resolve_agent(ctx.deps, "evolver")
+                        evolver_agent = _resolve_agent(ctx.deps, 'evolver')
                         try:
                             run_result = await evolver_agent.run(base_prompt, deps=deps)
                         except Exception as exc:
                             if _is_rate_limit_error(exc):
-                                record_rate_limit(
-                                    str(exc),
-                                    model_spec=None,
-                                    error_type=getattr(exc, 'code', None),
-                                )
+                                record_rate_limit(str(exc), model_spec=None, error_type=getattr(exc, 'code', None))
                                 combined_history = deps.generation_history
                                 convergence_detected = True
                                 convergence_reason = 'rate_limit'
@@ -797,17 +781,14 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         else:
                             result = run_result.output
                             if isinstance(result, EvolutionFailure):
-                                is_rate_limited = (
-                                    _is_rate_limit_error(result.error_message)
-                                    or _is_rate_limit_error(result.error_type)
+                                is_rate_limited = _is_rate_limit_error(result.error_message) or _is_rate_limit_error(
+                                    result.error_type
                                 )
                                 if is_rate_limited:
                                     if result.partial_solution:
                                         best_solution = result.partial_solution
                                     record_rate_limit(
-                                        result.error_message,
-                                        model_spec=None,
-                                        error_type=result.error_type,
+                                        result.error_message, model_spec=None, error_type=result.error_type
                                     )
                                     combined_history = deps.generation_history
                                     convergence_detected = True
@@ -859,8 +840,7 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         while remaining_generations > 0 and available_models:
                             segment_index += 1
                             rotation_stride = max(
-                                5,
-                                min(25, math.ceil(remaining_generations / max(len(available_models), 1))),
+                                5, min(25, math.ceil(remaining_generations / max(len(available_models), 1)))
                             )
                             model_spec = available_models[model_index % len(available_models)]
                             segment_generations = min(rotation_stride, remaining_generations)
@@ -881,7 +861,7 @@ Model rotation segment {segment_index} using {model_spec}."""
                             )
 
                             segment_deps = EvolverDeps(
-                                **deps_kwargs,
+                                **deps_kwargs,  # type: ignore[arg-type]
                                 initial_solution=best_solution or state.prototype_code or '',
                                 best_solution=best_solution or None,
                                 best_fitness=best_fitness,
@@ -894,9 +874,7 @@ Model rotation segment {segment_index} using {model_spec}."""
                             except Exception as exc:
                                 if _is_rate_limit_error(exc):
                                     record_rate_limit(
-                                        str(exc),
-                                        model_spec=model_spec,
-                                        error_type=getattr(exc, 'code', None),
+                                        str(exc), model_spec=model_spec, error_type=getattr(exc, 'code', None)
                                     )
                                     agents_by_model.pop(model_spec, None)
                                     available_models = [model for model in available_models if model != model_spec]
@@ -908,17 +886,14 @@ Model rotation segment {segment_index} using {model_spec}."""
 
                             result = run_result.output
                             if isinstance(result, EvolutionFailure):
-                                is_rate_limited = (
-                                    _is_rate_limit_error(result.error_message)
-                                    or _is_rate_limit_error(result.error_type)
+                                is_rate_limited = _is_rate_limit_error(result.error_message) or _is_rate_limit_error(
+                                    result.error_type
                                 )
                                 if is_rate_limited:
                                     if result.partial_solution:
                                         best_solution = result.partial_solution
                                     record_rate_limit(
-                                        result.error_message,
-                                        model_spec=model_spec,
-                                        error_type=result.error_type,
+                                        result.error_message, model_spec=model_spec, error_type=result.error_type
                                     )
                                     agents_by_model.pop(model_spec, None)
                                     available_models = [model for model in available_models if model != model_spec]
@@ -968,7 +943,9 @@ Model rotation segment {segment_index} using {model_spec}."""
                                 break
 
                             if len(combined_history) <= generation_offset:
-                                baseline = result.best_fitness if result.best_fitness is not None else (best_fitness or 0.0)
+                                baseline = (
+                                    result.best_fitness if result.best_fitness is not None else (best_fitness or 0.0)
+                                )
                                 for idx in range(segment_generations):
                                     combined_history.append(
                                         {
@@ -1059,17 +1036,18 @@ Model rotation segment {segment_index} using {model_spec}."""
                 mutations=mutations,
             )
 
-        state.evolution_state = state.evolution_state.model_copy(
-            update={
-                'current_generation': max_generations,
-                'max_generations': max_generations,
-                'population_size': population_size,
-                'best_solution': {'code': state.prototype_code or '', 'fitness': baseline_score},
-                'generation_history': generation_history,
-                'convergence_detected': True,
-                'convergence_reason': 'quick_test_mode',
-            }
-        )
+        if state.evolution_state is not None:
+            state.evolution_state = state.evolution_state.model_copy(
+                update={
+                    'current_generation': max_generations,
+                    'max_generations': max_generations,
+                    'population_size': population_size,
+                    'best_solution': {'code': state.prototype_code or '', 'fitness': baseline_score},
+                    'generation_history': generation_history,
+                    'convergence_detected': True,
+                    'convergence_reason': 'quick_test_mode',
+                }
+            )
         state.phases_completed.append('evolution')
         await emitter.emit_phase_complete(
             phase='evolution', success=True, duration_ms=self._elapsed_ms(state.phase_started_at)
@@ -1154,11 +1132,7 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     data_files = await platform_adapter.download_data(competition_id, work_dir)
                     train_path, test_path, sample_path = locate_data_files(data_files)
                     staged = stage_competition_data(
-                        train_path,
-                        test_path,
-                        sample_path,
-                        work_path,
-                        competition_id=competition_id,
+                        train_path, test_path, sample_path, work_path, competition_id=competition_id
                     )
 
                     submission_path = work_path / 'submission.csv'

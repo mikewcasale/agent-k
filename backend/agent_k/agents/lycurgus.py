@@ -350,7 +350,7 @@ class LycurgusOrchestrator:
             mission_id = mission_id or str(uuid.uuid4())
             persistence = persistence or create_persistence(mission_id)
             if persistence.has_snapshots():
-                self._logger.warning("mission_persistence_exists", mission_id=mission_id)
+                self._logger.warning('mission_persistence_exists', mission_id=mission_id)
                 return await self.resume_persisted_mission(
                     mission_id,
                     event_emitter=self._event_emitter,
@@ -392,9 +392,9 @@ class LycurgusOrchestrator:
     ) -> MissionResult:
         """Resume a persisted mission from snapshots."""
         if self.is_active:
-            raise RuntimeError("Cannot resume while mission is active")
+            raise RuntimeError('Cannot resume while mission is active')
 
-        with self._logger.span("resume_persisted_mission", mission_id=mission_id):
+        with self._logger.span('resume_persisted_mission', mission_id=mission_id):
             if event_emitter is not None:
                 self._event_emitter = event_emitter
             if http_client is not None:
@@ -406,7 +406,7 @@ class LycurgusOrchestrator:
 
             persistence = persistence or create_persistence(mission_id)
             if not persistence.has_snapshots():
-                raise RuntimeError("No persisted mission state to resume")
+                raise RuntimeError('No persisted mission state to resume')
 
             initialized_here = False
             if not self._resources_ready:
@@ -502,11 +502,7 @@ class LycurgusOrchestrator:
         )
 
     async def _run_graph(
-        self,
-        context: GraphContext,
-        *,
-        persistence: MissionPersistence,
-        resume: bool,
+        self, context: GraphContext, *, persistence: MissionPersistence, resume: bool
     ) -> MissionResult:
         """Execute the orchestration graph to completion."""
         existing_result = await persistence.load_latest_result()
@@ -516,7 +512,7 @@ class LycurgusOrchestrator:
 
         if not resume:
             if self._state is None:
-                raise RuntimeError("No mission state initialized")
+                raise RuntimeError('No mission state initialized')
             await self._graph.initialize(DiscoveryNode(), persistence, state=self._state)
 
         async with self._graph.iter_from_persistence(persistence, deps=context) as graph_run:
@@ -525,7 +521,7 @@ class LycurgusOrchestrator:
                 pass
 
         result = graph_run.result
-        assert result is not None, "GraphRun should have a result"
+        assert result is not None, 'GraphRun should have a result'
         self._state = result.state
         return result.output
 

@@ -14,10 +14,16 @@ export function formatDuration(durationMs?: number): string {
   const minutes = Math.floor((durationMs % HOUR) / MINUTE);
   const seconds = Math.floor((durationMs % MINUTE) / SECOND);
 
-  const parts = [];
-  if (hours) parts.push(`${hours}h`);
-  if (minutes) parts.push(`${minutes}m`);
-  if (seconds || (!hours && !minutes)) parts.push(`${seconds}s`);
+  const parts: string[] = [];
+  if (hours) {
+    parts.push(`${hours}h`);
+  }
+  if (minutes) {
+    parts.push(`${minutes}m`);
+  }
+  if (seconds || (!hours && !minutes)) {
+    parts.push(`${seconds}s`);
+  }
   return parts.join(" ");
 }
 

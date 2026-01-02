@@ -60,8 +60,12 @@ function isIpRateLimited(ip: string): { limited: boolean; remaining: number } {
 }
 
 function isSuspiciousUserAgent(userAgent: string | null): boolean {
-  if (!userAgent) return true;
-  if (ALLOWED_BOTS.some((p) => p.test(userAgent))) return false;
+  if (!userAgent) {
+    return true;
+  }
+  if (ALLOWED_BOTS.some((p) => p.test(userAgent))) {
+    return false;
+  }
   return SUSPICIOUS_USER_AGENTS.some((p) => p.test(userAgent));
 }
 
@@ -81,9 +85,10 @@ export async function proxy(request: NextRequest) {
   }
 
   // Rate limiting for API routes (abuse prevention)
-  // Skip rate limiting in development - FORCE DISABLED FOR LOCAL TESTING
+  // Skip rate limiting in development - set to true to enable
+  const RATE_LIMITING_ENABLED = false;
   if (
-    false &&
+    RATE_LIMITING_ENABLED &&
     !isDevelopmentEnvironment &&
     RATE_LIMITED_PATHS.some((path) => pathname.startsWith(path))
   ) {
@@ -99,7 +104,7 @@ export async function proxy(request: NextRequest) {
     }
 
     // IP-based rate limiting
-    const { limited, remaining } = isIpRateLimited(ip);
+    const { limited } = isIpRateLimited(ip);
     if (limited) {
       return NextResponse.json(
         {
@@ -142,8 +147,8 @@ export async function proxy(request: NextRequest) {
       request.headers.get("host") ??
       new URL(request.url).host;
     const protocol = request.headers.get("x-forwarded-proto") ?? "https";
-    const pathname = new URL(request.url).pathname;
-    const publicUrl = `${protocol}://${host}${pathname}`;
+    const redirectPathname = new URL(request.url).pathname;
+    const publicUrl = `${protocol}://${host}${redirectPathname}`;
     const redirectUrl = encodeURIComponent(publicUrl);
 
     return NextResponse.redirect(

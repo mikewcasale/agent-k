@@ -125,11 +125,7 @@ class EvolverSettings(BaseSettings):
         settings: ModelSettings = {'temperature': self.temperature, 'max_tokens': self.max_tokens}
 
         if self.enable_thinking and 'anthropic' in self.model:
-            logfire.info(
-                'evolver_thinking_disabled',
-                model=self.model,
-                reason='anthropic_output_tools_incompatible',
-            )
+            logfire.info('evolver_thinking_disabled', model=self.model, reason='anthropic_output_tools_incompatible')
             return settings
 
         return settings
@@ -355,10 +351,7 @@ class EvolverAgent(MemoryMixin):
         )
 
         logfire.info(
-            'evolution_generation',
-            generation=global_generation,
-            best_fitness=best_fitness,
-            mean_fitness=mean_fitness,
+            'evolution_generation', generation=global_generation, best_fitness=best_fitness, mean_fitness=mean_fitness
         )
 
     async def check_convergence(
@@ -398,9 +391,7 @@ class EvolverAgent(MemoryMixin):
             return ToolReturn(return_value=result, content=json.dumps(result))
 
         if ctx.deps.target_score > 0:
-            target_fitness = self._fitness_from_score(
-                ctx.deps.target_score, ctx.deps.competition.metric_direction
-            )
+            target_fitness = self._fitness_from_score(ctx.deps.target_score, ctx.deps.competition.metric_direction)
             if best >= target_fitness:
                 result = {'converged': True, 'reason': 'Target score achieved', 'best_fitness': best}
                 return ToolReturn(return_value=result, content=json.dumps(result))
@@ -649,6 +640,7 @@ class EvolverAgent(MemoryMixin):
             'generation': len(ctx.deps.generation_history),
             'runtime_ms': execution.runtime_ms,
         }
+
     def _seeded_rng(self, solution_code: str, params: dict[str, Any], salt: str) -> random.Random:
         seed_input = f'{salt}:{solution_code}:{sorted(params.items())}'.encode()
         seed = int(hashlib.sha256(seed_input).hexdigest(), 16)

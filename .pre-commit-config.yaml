@@ -1,0 +1,33 @@
+repos:
+  - repo: local
+    hooks:
+      - id: backend-format
+        name: Backend format
+        entry: bash -c "cd backend && uv run ruff format ."
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: backend-lint
+        name: Backend lint
+        entry: bash -c "cd backend && uv run ruff check ."
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: backend-tests
+        name: Backend tests
+        entry: bash -c "cd backend && uv run pytest -v --tb=short"
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: frontend-lint
+        name: Frontend lint
+        entry: bash -c "cd frontend && pnpm lint"
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: frontend-build
+        name: Frontend build
+        entry: bash -c "cd frontend && pnpm build"
+        language: system
+        pass_filenames: false
+        always_run: true

@@ -707,7 +707,10 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
 
             try:
                 # Initialize evolution state
-                state.evolution_state = EvolutionState(max_generations=state.criteria.max_evolution_rounds)
+                state.evolution_state = EvolutionState(
+                    max_generations=state.criteria.max_evolution_rounds,
+                    min_improvements_required=state.criteria.min_improvements_required,
+                )
 
                 if _quick_test_enabled(state.criteria):
                     return await self._run_quick_evolution(state, emitter)
@@ -733,6 +736,7 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         solution_timeout = min(solution_timeout, 180)
 
                     min_generations = min(evolver_settings.min_generations, state.criteria.max_evolution_rounds)
+                    min_improvements_required = state.criteria.min_improvements_required
                     target_score = self._calculate_target_score(state)
                     evolution_models = [model.strip() for model in state.criteria.evolution_models if model.strip()]
                     strategy_recommendations = (
@@ -745,6 +749,7 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     Target: Top {state.criteria.target_leaderboard_percentile * 100:.0f}% on leaderboard.
                     Research suggests: {strategy_text}
                     Minimum generations before convergence (overall): {min_generations}. Do not treat this as a per-segment requirement.
+                    Minimum improvements required before submission: {min_improvements_required}.
                     Maintain diversity using model families and solution complexity bins.
                     Use sample_elites to pull top and diverse candidates.
                     Use cascade evaluation in evaluate_fitness to skip full runs when quick checks fail.
@@ -752,8 +757,10 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     If research mentions disallowed libraries, ignore those suggestions and stay within the allowed stack.
                     """
 
+                    baseline_fitness = _fitness_from_score(state.prototype_score, competition.metric_direction)
                     best_solution = state.prototype_code or ''
-                    best_fitness: float | None = None
+                    best_fitness: float | None = baseline_fitness
+                    improvement_count = 0
                     combined_history: list[dict[str, Any]] = []
                     elite_archive: dict[tuple[int, str], Any] = {}
                     convergence_detected = False
@@ -788,13 +795,17 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         'solution_timeout': solution_timeout,
                         'target_score': target_score,
                         'min_generations': min_generations,
+                        'min_improvements_required': min_improvements_required,
                     }
 
                     if not evolution_models:
                         deps = EvolverDeps(
                             **deps_kwargs,  # type: ignore[arg-type]
                             initial_solution=best_solution,
+                            best_solution=best_solution or None,
+                            best_fitness=best_fitness,
                             max_generations=state.criteria.max_evolution_rounds,
+                            improvement_count=improvement_count,
                             elite_archive=elite_archive,
                         )
                         evolver_agent = _resolve_agent(ctx.deps, 'evolver')
@@ -804,6 +815,7 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                             if _is_rate_limit_error(exc):
                                 record_rate_limit(str(exc), model_spec=None, error_type=getattr(exc, 'code', None))
                                 combined_history = deps.generation_history
+                                improvement_count = deps.improvement_count
                                 convergence_detected = True
                                 convergence_reason = 'rate_limit'
                             else:
@@ -821,12 +833,14 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                                         result.error_message, model_spec=None, error_type=result.error_type
                                     )
                                     combined_history = deps.generation_history
+                                    improvement_count = deps.improvement_count
                                     convergence_detected = True
                                     convergence_reason = 'rate_limit'
                                 elif _is_constraints_failure(result.error_message):
                                     best_solution = result.partial_solution or state.prototype_code or ''
-                                    best_fitness = state.prototype_score or 0.0
+                                    best_fitness = baseline_fitness or 0.0
                                     combined_history = deps.generation_history
+                                    improvement_count = deps.improvement_count
                                     convergence_detected = True
                                     convergence_reason = 'constraints'
                                     logfire.warning('evolution_constraints_fallback', error=result.error_message)
@@ -892,6 +906,7 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
 
                             if not isinstance(result, EvolutionFailure):
                                 combined_history = deps.generation_history
+                                improvement_count = deps.improvement_count
                                 best_solution = result.best_solution
                                 best_fitness = result.best_fitness
                                 convergence_detected = result.convergence_achieved
@@ -932,6 +947,7 @@ Model rotation segment {segment_index} using {model_spec}."""
                                 best_solution=best_solution or None,
                                 best_fitness=best_fitness,
                                 max_generations=segment_generations,
+                                improvement_count=improvement_count,
                                 generation_history=combined_history,
                                 generation_offset=generation_offset,
                                 elite_archive=elite_archive,
@@ -962,6 +978,7 @@ Model rotation segment {segment_index} using {model_spec}."""
                                     record_rate_limit(
                                         result.error_message, model_spec=model_spec, error_type=result.error_type
                                     )
+                                    improvement_count = segment_deps.improvement_count
                                     agents_by_model.pop(model_spec, None)
                                     available_models = [model for model in available_models if model != model_spec]
                                     if not available_models:
@@ -974,8 +991,9 @@ Model rotation segment {segment_index} using {model_spec}."""
                                     elif not best_solution:
                                         best_solution = state.prototype_code or ''
                                     if best_fitness is None:
-                                        best_fitness = state.prototype_score or 0.0
+                                        best_fitness = baseline_fitness or 0.0
                                     combined_history = segment_deps.generation_history
+                                    improvement_count = segment_deps.improvement_count
                                     convergence_detected = True
                                     convergence_reason = 'constraints'
                                     logfire.warning(
@@ -1043,6 +1061,7 @@ Model rotation segment {segment_index} using {model_spec}."""
                             if best_fitness is None or result.best_fitness > best_fitness:
                                 best_fitness = result.best_fitness
                                 best_solution = result.best_solution
+                            improvement_count = segment_deps.improvement_count
                             model_index += 1
 
                             if result.convergence_achieved and len(combined_history) >= min_generations:
@@ -1090,6 +1109,8 @@ Model rotation segment {segment_index} using {model_spec}."""
                         'current_generation': len(history),
                         'max_generations': state.criteria.max_evolution_rounds,
                         'population_size': population_size,
+                        'improvement_count': improvement_count,
+                        'min_improvements_required': min_improvements_required,
                         'generation_history': _convert_generation_history(history, population_size),
                     }
                 )
@@ -1158,6 +1179,8 @@ Model rotation segment {segment_index} using {model_spec}."""
                     'current_generation': max_generations,
                     'max_generations': max_generations,
                     'population_size': population_size,
+                    'improvement_count': 0,
+                    'min_improvements_required': state.criteria.min_improvements_required,
                     'best_solution': {'code': state.prototype_code or '', 'fitness': baseline_score},
                     'generation_history': generation_history,
                     'convergence_detected': True,
@@ -1224,6 +1247,41 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
             state.phase_started_at = datetime.now(UTC)
 
             try:
+                min_improvements_required = (
+                    state.evolution_state.min_improvements_required if state.evolution_state else 0
+                )
+                improvement_count = state.evolution_state.improvement_count if state.evolution_state else 0
+                if min_improvements_required > 0 and improvement_count < min_improvements_required:
+                    error_message = (
+                        f'Minimum improvements not reached ({improvement_count}/{min_improvements_required})'
+                    )
+                    logfire.warning(
+                        'submission_blocked_min_improvements',
+                        improvement_count=improvement_count,
+                        min_improvements_required=min_improvements_required,
+                    )
+                    state.errors.append(
+                        {
+                            'phase': 'submission',
+                            'error': error_message,
+                            'error_type': 'min_improvements',
+                            'timestamp': datetime.now(UTC).isoformat(),
+                        }
+                    )
+                    await emitter.emit_phase_error(phase='submission', error=error_message, recoverable=True)
+                    await emitter.emit_phase_complete(
+                        phase='submission', success=False, duration_ms=self._elapsed_ms(state.phase_started_at)
+                    )
+                    return End(
+                        MissionResult(
+                            success=False,
+                            mission_id=state.mission_id,
+                            competition_id=state.competition_id,
+                            error_message=error_message,
+                            phases_completed=list(state.phases_completed),
+                        )
+                    )
+
                 # Get best solution
                 best_code = ''
                 if state.evolution_state and state.evolution_state.best_solution:
@@ -1512,6 +1570,13 @@ def _prediction_value(
         return pred_numeric, pred_numeric
 
     return mean_value, mean_value
+
+
+def _fitness_from_score(score: float | None, direction: str) -> float | None:
+    if score is None:
+        return None
+    value = max(score, 0.0)
+    return 1.0 / (1.0 + value) if direction == 'minimize' else value
 
 
 def _evaluate_metric(metric: EvaluationMetric, values: list[float], prediction: float) -> float:

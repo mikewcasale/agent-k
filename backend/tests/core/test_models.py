@@ -124,13 +124,17 @@ class TestMissionCriteria:
 
         assert criteria.target_leaderboard_percentile == 0.10
         assert criteria.max_evolution_rounds == 100
+        assert criteria.min_improvements_required == 0
 
     def test_custom_values(self) -> None:
         """Criteria should accept custom values."""
-        criteria = MissionCriteria(target_leaderboard_percentile=0.05, max_evolution_rounds=200)
+        criteria = MissionCriteria(
+            target_leaderboard_percentile=0.05, max_evolution_rounds=200, min_improvements_required=10
+        )
 
         assert criteria.target_leaderboard_percentile == 0.05
         assert criteria.max_evolution_rounds == 200
+        assert criteria.min_improvements_required == 10
 
 
 class TestMissionResult:
@@ -192,6 +196,8 @@ class TestEvolutionState:
         assert state.current_generation == 0
         assert state.convergence_detected is False
         assert state.best_solution is None
+        assert state.improvement_count == 0
+        assert state.min_improvements_required == 0
 
 
 class TestMemoryEntry:

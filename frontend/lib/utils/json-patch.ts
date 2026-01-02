@@ -113,6 +113,8 @@ export function applyPatches(
         currentGeneration: 0,
         maxGenerations: 0,
         populationSize: 0,
+        improvementCount: 0,
+        minImprovementsRequired: 0,
         generationHistory: [],
         convergenceDetected: false,
         leaderboardSubmissions: [],

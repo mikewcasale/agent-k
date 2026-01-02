@@ -29,7 +29,7 @@ from agent_k.agents.evolver import evolver_agent
 from agent_k.agents.lobbyist import lobbyist_agent
 from agent_k.agents.prompts import LYCURGUS_SYSTEM_PROMPT
 from agent_k.agents.scientist import scientist_agent
-from agent_k.core.constants import DEFAULT_MODEL
+from agent_k.core.constants import DEFAULT_MODEL, MAX_MISSION_EVOLUTION_ROUNDS
 from agent_k.core.exceptions import CompetitionNotFoundError
 from agent_k.core.models import MissionCriteria
 from agent_k.mission.nodes import DiscoveryNode, EvolutionNode, PrototypeNode, ResearchNode, SubmissionNode
@@ -63,7 +63,12 @@ class LycurgusSettings(BaseSettings):
 
     model_config = SettingsConfigDict(env_prefix='LYCURGUS_', env_file='.env', extra='ignore', validate_default=True)
     default_model: str = Field(default=DEFAULT_MODEL, description='Default model spec for mission orchestration')
-    max_evolution_rounds: int = Field(default=100, ge=1, description='Maximum evolution rounds for missions')
+    max_evolution_rounds: int = Field(
+        default=100,
+        ge=1,
+        le=MAX_MISSION_EVOLUTION_ROUNDS,
+        description='Maximum evolution rounds for missions',
+    )
 
     @classmethod
     def from_file(cls, path: Path) -> LycurgusSettings:

@@ -15,6 +15,7 @@ from typing import Any, Final, Self
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
 
 # Local imports (core first, then alphabetical)
+from .constants import MAX_MISSION_EVOLUTION_ROUNDS
 from .types import (
     CompetitionId,
     ErrorCategory,
@@ -472,7 +473,9 @@ class MissionCriteria(BaseModel):
     min_days_remaining: int = Field(default=7, ge=1, description='Minimum days remaining')
     target_domains: frozenset[str] = Field(default_factory=frozenset, description='Target domains')
     exclude_domains: frozenset[str] = Field(default_factory=frozenset, description='Excluded domains')
-    max_evolution_rounds: int = Field(default=100, ge=1, description='Max evolution rounds')
+    max_evolution_rounds: int = Field(
+        default=100, ge=1, le=MAX_MISSION_EVOLUTION_ROUNDS, description='Max evolution rounds'
+    )
     min_improvements_required: int = Field(
         default=0, ge=0, description='Minimum number of fitness improvements required before submission'
     )

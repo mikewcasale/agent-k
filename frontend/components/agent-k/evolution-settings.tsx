@@ -4,6 +4,9 @@ import { Dna } from "lucide-react";
 import type { CompetitionSearchCriteria } from "@/lib/types/agent-k";
 import { cn } from "@/lib/utils";
 
+const DEFAULT_MAX_EVOLUTION_ROUNDS = 100;
+const MAX_EVOLUTION_ROUNDS = 200;
+
 type EvolutionSettingsProps = {
   criteria: CompetitionSearchCriteria;
   onChange: (criteria: CompetitionSearchCriteria) => void;
@@ -50,13 +53,14 @@ export function EvolutionSettings({
                 onChange({
                   ...criteria,
                   maxEvolutionRounds: Number.isNaN(value)
-                    ? 100
-                    : Math.max(1, value),
+                    ? DEFAULT_MAX_EVOLUTION_ROUNDS
+                    : Math.min(MAX_EVOLUTION_ROUNDS, Math.max(1, value)),
                 });
               }}
               placeholder="100"
               step={1}
               type="number"
+              max={MAX_EVOLUTION_ROUNDS}
               value={criteria.maxEvolutionRounds}
             />
           </div>
@@ -93,7 +97,8 @@ export function EvolutionSettings({
       </div>
 
       <p className="mt-4 text-muted-foreground text-xs">
-        Default 100 rounds. Set 0 to allow submission without improvement gates.
+        Default 100 rounds. Max {MAX_EVOLUTION_ROUNDS}. Set 0 to allow
+        submission without improvement gates.
       </p>
     </section>
   );

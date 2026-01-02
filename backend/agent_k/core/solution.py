@@ -11,12 +11,14 @@ import asyncio
 import base64
 import os
 import re
+import signal
 import sys
 import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Final, cast
 
 # Third-party (alphabetical)
+import logfire
 from pydantic_ai import Agent, ModelSettings
 from pydantic_ai.builtin_tools import CodeExecutionTool
 from pydantic_ai.messages import BuiltinToolReturnPart, ModelResponse
@@ -113,14 +115,20 @@ async def _execute_solution_local(
     exec_env = _sanitize_env(env, work_path=work_path)
 
     start_time = time.perf_counter()
+    process_kwargs: dict[str, Any] = {
+        'cwd': str(work_path),
+        'stdout': asyncio.subprocess.PIPE,
+        'stderr': asyncio.subprocess.PIPE,
+        'env': exec_env,
+    }
+    if os.name == 'posix':
+        process_kwargs['start_new_session'] = True
+
     process = await asyncio.create_subprocess_exec(
         sys.executable,
         '-I',
         str(solution_path),
-        cwd=str(work_path),
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-        env=exec_env,
+        **process_kwargs,
     )
 
     timed_out = False
@@ -131,8 +139,9 @@ async def _execute_solution_local(
             stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout_seconds)
     except TimeoutError:
         timed_out = True
-        process.kill()
-        stdout, stderr = await process.communicate()
+        logfire.warning('solution_execution_timeout', timeout_seconds=timeout_seconds, pid=process.pid)
+        _terminate_process(process)
+        stdout, stderr = await _safe_communicate(process, timeout_seconds=5)
 
     runtime_ms = int((time.perf_counter() - start_time) * 1000)
     return ExecutionResult(
@@ -283,3 +292,28 @@ def _is_sensitive_env_key(key: str) -> bool:
 
 def _supports_code_execution(model_spec: str) -> bool:
     return model_spec.startswith('openai:')
+
+
+async def _safe_communicate(
+    process: asyncio.subprocess.Process, *, timeout_seconds: float | None
+) -> tuple[bytes, bytes]:
+    try:
+        if timeout_seconds is None:
+            return await process.communicate()
+        return await asyncio.wait_for(process.communicate(), timeout=timeout_seconds)
+    except TimeoutError:
+        return b'', b''
+
+
+def _terminate_process(process: asyncio.subprocess.Process) -> None:
+    if process.returncode is not None:
+        return
+    if os.name == 'posix':
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+            return
+        except ProcessLookupError:
+            return
+        except PermissionError:
+            pass
+    process.kill()

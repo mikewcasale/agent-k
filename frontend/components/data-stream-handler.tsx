@@ -33,6 +33,7 @@ const AGENT_K_EVENT_TYPES: Set<AgentKEventType> = new Set([
   "error-occurred",
   "recovery-attempt",
   "recovery-complete",
+  "mission-complete",
 ]);
 
 export function DataStreamHandler() {
@@ -79,6 +80,20 @@ export function DataStreamHandler() {
             payload: { ...(event.data as any), timestamp },
           });
           break;
+
+        case "phase-error": {
+          const data = event.data as any;
+          dispatch({
+            type: "PHASE_COMPLETE",
+            payload: {
+              phase: data.phase,
+              success: false,
+              durationMs: 0,
+              timestamp,
+            },
+          });
+          break;
+        }
 
         case "task-start":
           dispatch({
@@ -189,6 +204,10 @@ export function DataStreamHandler() {
 
         case "recovery-complete":
           dispatch({ type: "RECOVERY_COMPLETE", payload: event.data as any });
+          break;
+
+        case "mission-complete":
+          dispatch({ type: "MISSION_COMPLETE", payload: event.data as any });
           break;
 
         default:

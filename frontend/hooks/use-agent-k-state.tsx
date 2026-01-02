@@ -7,6 +7,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useReducer,
 } from "react";
 import type {
@@ -23,9 +24,205 @@ import type {
   PlannedTask,
   ToolCall,
 } from "@/lib/types/agent-k";
+import {
+  bestResultFromMission,
+  upsertBestResult,
+} from "@/lib/utils/best-results";
 import { applyPatches } from "@/lib/utils/json-patch";
 
 const UI_STATE_STORAGE_KEY = "agentk-ui-state";
+
+const MISSION_PHASE_ORDER: MissionPhase[] = [
+  "discovery",
+  "research",
+  "prototype",
+  "evolution",
+  "submission",
+];
+
+const PHASE_DISPLAY_NAMES: Record<MissionPhase, string> = {
+  discovery: "Discovery",
+  research: "Research",
+  prototype: "Prototype",
+  evolution: "Evolution",
+  submission: "Submission",
+};
+
+const PHASE_TIMEOUTS_MS: Record<MissionPhase, number> = {
+  discovery: 5 * 60 * 1000,
+  research: 10 * 60 * 1000,
+  prototype: 15 * 60 * 1000,
+  evolution: 120 * 60 * 1000,
+  submission: 2 * 60 * 1000,
+};
+
+const PHASE_OBJECTIVES: Record<MissionPhase, string[]> = {
+  discovery: [
+    "Find competitions matching criteria",
+    "Validate competition accessibility",
+    "Rank by fit score",
+  ],
+  research: [
+    "Analyze leaderboard and score distribution",
+    "Review relevant papers and techniques",
+    "Perform exploratory data analysis",
+    "Synthesize strategy recommendations",
+  ],
+  prototype: [
+    "Generate baseline solution code",
+    "Validate solution structure",
+    "Establish baseline score",
+  ],
+  evolution: [
+    "Generate improved solutions",
+    "Track fitness improvements",
+    "Detect convergence",
+  ],
+  submission: [
+    "Prepare final submission",
+    "Submit to leaderboard",
+    "Record final score",
+  ],
+};
+
+type TaskTemplate = {
+  id: string;
+  name: string;
+  description: string;
+  agent: PlannedTask["agent"];
+  toolsRequired: PlannedTask["toolsRequired"];
+  estimatedDurationMs?: number;
+  priority?: PlannedTask["priority"];
+};
+
+const PHASE_TASKS: Record<MissionPhase, TaskTemplate[]> = {
+  discovery: [
+    {
+      id: "discovery-search",
+      name: "Search competitions",
+      description: "Find competitions that match the mission criteria.",
+      agent: "lobbyist",
+      toolsRequired: ["kaggle_mcp", "web_search"],
+    },
+    {
+      id: "discovery-score",
+      name: "Score fit",
+      description: "Rank candidates by fit score and accessibility.",
+      agent: "lobbyist",
+      toolsRequired: [],
+    },
+  ],
+  research: [
+    {
+      id: "research-leaderboard",
+      name: "Analyze leaderboard",
+      description: "Review leaderboard trends and metric behavior.",
+      agent: "scientist",
+      toolsRequired: ["kaggle_mcp"],
+    },
+    {
+      id: "research-techniques",
+      name: "Survey techniques",
+      description: "Identify high-impact approaches and baselines.",
+      agent: "scientist",
+      toolsRequired: ["web_search", "browser"],
+    },
+  ],
+  prototype: [
+    {
+      id: "prototype-baseline",
+      name: "Build baseline",
+      description: "Generate and validate a baseline solution.",
+      agent: "evolver",
+      toolsRequired: ["code_executor"],
+    },
+  ],
+  evolution: [
+    {
+      id: "evolution-optimize",
+      name: "Optimize solutions",
+      description: "Iterate on candidate solutions and track fitness.",
+      agent: "evolver",
+      toolsRequired: ["code_executor", "memory"],
+    },
+  ],
+  submission: [
+    {
+      id: "submission-submit",
+      name: "Submit results",
+      description: "Package and submit the best solution.",
+      agent: "lycurgus",
+      toolsRequired: ["kaggle_mcp"],
+    },
+  ],
+};
+
+function buildTask(template: TaskTemplate): PlannedTask {
+  return {
+    id: template.id,
+    name: template.name,
+    description: template.description,
+    agent: template.agent,
+    toolsRequired: template.toolsRequired,
+    estimatedDurationMs: template.estimatedDurationMs ?? 30000,
+    priority: template.priority ?? "medium",
+    dependencies: [],
+    status: "pending",
+    progress: 0,
+    toolCalls: [],
+  };
+}
+
+function buildPhasePlan(
+  phase: MissionPhase,
+  objectives?: string[]
+): PhasePlan {
+  return {
+    phase,
+    displayName: PHASE_DISPLAY_NAMES[phase],
+    objectives: objectives ?? PHASE_OBJECTIVES[phase],
+    successCriteria: [],
+    tasks: (PHASE_TASKS[phase] ?? []).map(buildTask),
+    timeoutMs: PHASE_TIMEOUTS_MS[phase],
+    status: "pending",
+    progress: 0,
+  };
+}
+
+function ensurePhasePlan(
+  phases: PhasePlan[],
+  phase: MissionPhase,
+  objectives?: string[]
+): PhasePlan {
+  let plan = phases.find((item) => item.phase === phase);
+  if (!plan) {
+    plan = buildPhasePlan(phase, objectives);
+    phases.push(plan);
+    phases.sort(
+      (a, b) =>
+        MISSION_PHASE_ORDER.indexOf(a.phase) -
+        MISSION_PHASE_ORDER.indexOf(b.phase)
+    );
+  } else if (objectives?.length) {
+    plan.objectives = objectives;
+  }
+  return plan;
+}
+
+function createDefaultPhasePlans(): PhasePlan[] {
+  return MISSION_PHASE_ORDER.map((phase) => buildPhasePlan(phase));
+}
+
+function calculateOverallProgress(phases: PhasePlan[]): number {
+  if (!phases.length) {
+    return 0;
+  }
+  const completed = phases.filter((phase) => phase.status === "completed")
+    .length;
+  const inProgress = phases.some((phase) => phase.status === "in_progress");
+  const progress = ((completed + (inProgress ? 0.5 : 0)) / phases.length) * 100;
+  return Math.min(100, Math.max(0, Math.round(progress)));
+}
 
 type AgentKAction =
   // State management
@@ -136,6 +333,21 @@ type AgentKAction =
       payload: { errorId: string; success: boolean; resolution?: string };
     }
 
+  // Mission lifecycle
+  | {
+      type: "MISSION_COMPLETE";
+      payload: {
+        success: boolean;
+        finalRank?: number;
+        finalScore?: number;
+        errorMessage?: string;
+        totalSubmissions?: number;
+        evolutionGenerations?: number;
+        durationMs?: number;
+        phasesCompleted?: MissionPhase[];
+      };
+    }
+
   // UI actions
   | { type: "TOGGLE_PHASE"; payload: MissionPhase }
   | { type: "TOGGLE_TASK"; payload: string }
@@ -215,6 +427,10 @@ function agentKReducer(state: AgentKState, action: AgentKAction): AgentKState {
       if (mission.status === "idle") {
         mission.status = "planning";
       }
+      if (!mission.phases.length) {
+        mission.phases = createDefaultPhasePlans();
+      }
+      mission.overallProgress = calculateOverallProgress(mission.phases);
       return { ...state, mission };
     }
 
@@ -229,32 +445,44 @@ function agentKReducer(state: AgentKState, action: AgentKAction): AgentKState {
 
     case "PHASE_START": {
       const mission = cloneMissionState(state.mission);
-      const phase = mission.phases.find(
-        (p) => p.phase === action.payload.phase
+      const phase = ensurePhasePlan(
+        mission.phases,
+        action.payload.phase,
+        action.payload.objectives
       );
-      if (phase) {
-        phase.status = "in_progress";
-        phase.startedAt =
-          phase.startedAt ??
-          action.payload.timestamp ??
-          new Date().toISOString();
-        mission.currentPhase = phase.phase;
+      phase.status = "in_progress";
+      phase.progress = Math.max(phase.progress, 5);
+      phase.startedAt =
+        phase.startedAt ?? action.payload.timestamp ?? new Date().toISOString();
+      for (const task of phase.tasks) {
+        if (task.status === "pending") {
+          task.status = "in_progress";
+          task.startedAt = task.startedAt ?? phase.startedAt;
+          task.progress = Math.max(task.progress, 5);
+        }
       }
+      mission.currentPhase = phase.phase;
+      mission.status = "executing";
+      mission.overallProgress = calculateOverallProgress(mission.phases);
       return { ...state, mission };
     }
 
     case "PHASE_COMPLETE": {
       const mission = cloneMissionState(state.mission);
-      const phase = mission.phases.find(
-        (p) => p.phase === action.payload.phase
-      );
-      if (phase) {
-        phase.status = action.payload.success ? "completed" : "failed";
-        phase.progress = 100;
-        phase.completedAt =
-          action.payload.timestamp ?? new Date().toISOString();
+      const phase = ensurePhasePlan(mission.phases, action.payload.phase);
+      phase.status = action.payload.success ? "completed" : "failed";
+      phase.progress = 100;
+      phase.completedAt = action.payload.timestamp ?? new Date().toISOString();
+      for (const task of phase.tasks) {
+        task.status = action.payload.success ? "completed" : "failed";
+        task.progress = action.payload.success ? 100 : task.progress;
+        task.completedAt = phase.completedAt;
+      }
+      if (!action.payload.success) {
+        mission.status = "failed";
       }
       mission.currentPhase = undefined;
+      mission.overallProgress = calculateOverallProgress(mission.phases);
       return { ...state, mission };
     }
 
@@ -467,6 +695,25 @@ function agentKReducer(state: AgentKState, action: AgentKAction): AgentKState {
       return { ...state, mission };
     }
 
+    case "MISSION_COMPLETE": {
+      const mission = cloneMissionState(state.mission);
+      mission.status = action.payload.success ? "completed" : "failed";
+      mission.overallProgress = 100;
+      mission.currentPhase = undefined;
+      mission.currentTaskId = undefined;
+      mission.result = {
+        success: action.payload.success,
+        finalRank: action.payload.finalRank,
+        finalScore: action.payload.finalScore,
+        totalSubmissions: action.payload.totalSubmissions ?? 0,
+        evolutionGenerations: action.payload.evolutionGenerations ?? 0,
+        durationMs: action.payload.durationMs ?? 0,
+        phasesCompleted: action.payload.phasesCompleted ?? [],
+        errorMessage: action.payload.errorMessage,
+      };
+      return { ...state, mission };
+    }
+
     case "TOGGLE_PHASE": {
       const expandedPhases = new Set(state.ui.expandedPhases);
       if (expandedPhases.has(action.payload)) {
@@ -572,6 +819,7 @@ export function AgentKStateProvider({
     mission: createInitialMissionState(),
     ui: createInitialUIState(),
   });
+  const lastBestResultKey = useRef<string | null>(null);
 
   // Hydrate UI state from localStorage
   useEffect(() => {
@@ -607,6 +855,27 @@ export function AgentKStateProvider({
       JSON.stringify(serializable)
     );
   }, [state.ui]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const bestResult = bestResultFromMission(state.mission);
+    if (!bestResult) {
+      return;
+    }
+    const nextKey = [
+      bestResult.competitionId,
+      bestResult.submissionId ?? "",
+      bestResult.rank ?? "",
+      bestResult.recordedAt,
+    ].join("|");
+    if (nextKey === lastBestResultKey.current) {
+      return;
+    }
+    lastBestResultKey.current = nextKey;
+    upsertBestResult(bestResult);
+  }, [state.mission]);
 
   const currentPhase = useMemo(
     () => state.mission.phases.find((phase) => phase.status === "in_progress"),

@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 import { CompetitionPreview } from "@/components/agent-k/competition-preview";
 import { DirectUrlInput } from "@/components/agent-k/direct-url-input";
 import { EvolutionModelSelector } from "@/components/agent-k/evolution-model-selector";
+import { BestResults } from "@/components/agent-k/best-results";
 import { SearchCriteriaForm } from "@/components/agent-k/search-criteria-form";
 import { useAgentKState } from "@/hooks/use-agent-k-state";
 import {
@@ -315,6 +316,7 @@ export function CompetitionSelector() {
                   )}
                 </div>
               </section>
+              <BestResults />
             </div>
 
             {/* Right column - Evolution Models */}

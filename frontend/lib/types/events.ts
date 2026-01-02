@@ -46,7 +46,8 @@ export type AgentKEventType =
   // Error handling
   | "error-occurred"
   | "recovery-attempt"
-  | "recovery-complete";
+  | "recovery-complete"
+  | "mission-complete";
 
 export type AgentKEvent<T extends AgentKEventType = AgentKEventType> = {
   type: T;
@@ -107,5 +108,16 @@ export type AgentKEventPayload = {
     errorId: string;
     success: boolean;
     resolution?: string;
+  };
+
+  "mission-complete": {
+    success: boolean;
+    finalRank?: number;
+    finalScore?: number;
+    errorMessage?: string;
+    totalSubmissions?: number;
+    evolutionGenerations?: number;
+    durationMs?: number;
+    phasesCompleted?: MissionPhase[];
   };
 };

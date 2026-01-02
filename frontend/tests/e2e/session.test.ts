@@ -116,14 +116,22 @@ test.describe
       await authPage.login(testUser.email, testUser.password);
 
       await page.waitForURL("/");
-      await expect(page.getByPlaceholder("Send a message...")).toBeVisible();
+      await expect(
+        page.getByRole("heading", {
+          name: /mission\\s+configuration/i,
+        })
+      ).toBeVisible();
     });
 
     test("Display user email in user menu", async ({ page }) => {
       await authPage.login(testUser.email, testUser.password);
 
       await page.waitForURL("/");
-      await expect(page.getByPlaceholder("Send a message...")).toBeVisible();
+      await expect(
+        page.getByRole("heading", {
+          name: /mission\\s+configuration/i,
+        })
+      ).toBeVisible();
 
       const userEmail = await page.getByTestId("user-email");
       await expect(userEmail).toHaveText(testUser.email);

@@ -165,6 +165,9 @@ docs/python-ai-style-guide.md
 # test_plan.md
 # backend/.env
 /backend/scripts
-/new-design
+# /new-design
 test_plan.md
+# backend/.env
 backend/.env
+/new-design
+/.agent_k_memory

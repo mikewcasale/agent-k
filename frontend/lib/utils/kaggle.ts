@@ -1,6 +1,7 @@
 import type { CompetitionInfo } from "@/lib/types/agent-k";
 
 const RULES_SUFFIX_REGEX = /\/rules\/?$/;
+const SUBMISSIONS_SUFFIX_REGEX = /\/submissions\/?$/;
 const TRAILING_SLASH_REGEX = /\/$/;
 
 export function buildCompetitionRulesUrl(
@@ -21,6 +22,36 @@ export function buildCompetitionRulesUrl(
   const id = competition?.id ?? competitionId ?? "";
   if (id) {
     return `https://www.kaggle.com/competitions/${id}/rules`;
+  }
+  return "https://www.kaggle.com/competitions";
+}
+
+export function buildCompetitionSubmissionsUrl(
+  competition?: Pick<CompetitionInfo, "id" | "url"> | null,
+  competitionId?: string | null,
+  submissionId?: string | null
+) {
+  if (competition?.url) {
+    try {
+      const parsed = new URL(competition.url);
+      const cleanedPath = parsed.pathname
+        .replace(RULES_SUFFIX_REGEX, "")
+        .replace(SUBMISSIONS_SUFFIX_REGEX, "")
+        .replace(TRAILING_SLASH_REGEX, "");
+      const base = `${parsed.origin}${cleanedPath}/submissions`;
+      return submissionId
+        ? `${base}?submissionId=${encodeURIComponent(submissionId)}`
+        : base;
+    } catch {
+      // Fall back to the canonical submissions path.
+    }
+  }
+  const id = competition?.id ?? competitionId ?? "";
+  if (id) {
+    const base = `https://www.kaggle.com/competitions/${id}/submissions`;
+    return submissionId
+      ? `${base}?submissionId=${encodeURIComponent(submissionId)}`
+      : base;
   }
   return "https://www.kaggle.com/competitions";
 }

@@ -7,6 +7,7 @@ import { BestResults } from "@/components/agent-k/best-results";
 import { CompetitionPreview } from "@/components/agent-k/competition-preview";
 import { DirectUrlInput } from "@/components/agent-k/direct-url-input";
 import { EvolutionModelSelector } from "@/components/agent-k/evolution-model-selector";
+import { EvolutionSettings } from "@/components/agent-k/evolution-settings";
 import { SearchCriteriaForm } from "@/components/agent-k/search-criteria-form";
 import { useAgentKState } from "@/hooks/use-agent-k-state";
 import {
@@ -26,6 +27,8 @@ const DEFAULT_CRITERIA: CompetitionSearchCriteria = {
   competitionTypes: [],
   minPrize: null,
   minDaysRemaining: 7,
+  maxEvolutionRounds: 100,
+  minImprovementsRequired: 0,
 };
 
 export function CompetitionSelector() {
@@ -50,6 +53,8 @@ export function CompetitionSelector() {
     const base = mode === "search" ? criteria : DEFAULT_CRITERIA;
     const payload: Record<string, unknown> = {
       min_days_remaining: base.minDaysRemaining,
+      max_evolution_rounds: criteria.maxEvolutionRounds,
+      min_improvements_required: criteria.minImprovementsRequired,
     };
     if (base.competitionTypes.length) {
       payload.target_competition_types = base.competitionTypes;
@@ -319,7 +324,7 @@ export function CompetitionSelector() {
               <BestResults />
             </div>
 
-            {/* Right column - Evolution Models */}
+            {/* Right column - Evolution */}
             <div className="flex flex-col gap-6 lg:col-span-5">
               <EvolutionModelSelector
                 disabled={isStarting}
@@ -327,6 +332,11 @@ export function CompetitionSelector() {
                 options={evolutionModels}
                 recommended={DEFAULT_EVOLUTION_MODELS}
                 value={selectedEvolutionModels}
+              />
+              <EvolutionSettings
+                criteria={criteria}
+                disabled={isStarting}
+                onChange={setCriteria}
               />
             </div>
           </div>

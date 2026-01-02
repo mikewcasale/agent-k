@@ -165,6 +165,8 @@ export type EvolutionState = {
   currentGeneration: number;
   maxGenerations: number;
   populationSize: number;
+  improvementCount: number;
+  minImprovementsRequired: number;
   bestSolution?: {
     code: string;
     fitness: number;
@@ -190,6 +192,8 @@ export type CompetitionSearchCriteria = {
   competitionTypes: string[];
   minPrize: number | null;
   minDaysRemaining: number;
+  maxEvolutionRounds: number;
+  minImprovementsRequired: number;
 };
 
 export type CompetitionInfo = {

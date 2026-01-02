@@ -115,6 +115,7 @@ Extract the following criteria if mentioned:
 - Target leaderboard percentile (e.g., "top 10%" = 0.10)
 - Population size for evolution (default: 50)
 - Max evolution rounds (default: 100)
+- Minimum improvements required before submission (default: 0)
 
 If the message is NOT about starting a mission, return is_mission=False with null criteria.
 If it IS a mission request, return is_mission=True with extracted criteria (use defaults for unspecified fields).

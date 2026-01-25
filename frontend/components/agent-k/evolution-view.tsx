@@ -211,8 +211,12 @@ function LeaderboardTracker() {
               </p>
             </div>
             <div className="flex items-center gap-3 text-xs">
-              <Badge color="emerald">CV {submission.cvScore.toFixed(4)}</Badge>
-              {submission.publicScore !== undefined && (
+              {submission.cvScore != null && (
+                <Badge color="emerald">
+                  CV {submission.cvScore.toFixed(4)}
+                </Badge>
+              )}
+              {submission.publicScore != null && (
                 <Badge color="blue">
                   Public {submission.publicScore.toFixed(4)}
                 </Badge>

@@ -159,15 +159,26 @@ repomix-output.txt
 # docs/python-ai-style-guide-compressed.md
 docs/observability.md
 docs/evolution.md
-docs/python-ai-style-guide-compressed.md
+# docs/python-ai-style-guide-compressed.md
 docs/python-ai-style-guide.md
-/backend/.agent_k_memory
+# /backend/.agent_k_memory
 # test_plan.md
 # backend/.env
 /backend/scripts
 # /new-design
 test_plan.md
 # backend/.env
-backend/.env
+# backend/.env
 /new-design
+# /.agent_k_memory
+/backend/house_prices_runs
+/backend/examples
+/.cursor
 /.agent_k_memory
+/backend/.agent_k_memory
+/backend/backend/reports
+/backend/reports
+backend/.env
+backend/fix_evaluator.py
+backend/solution.py
+python-ai-style-guide-compressed.md

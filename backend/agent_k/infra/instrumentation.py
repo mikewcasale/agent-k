@@ -21,13 +21,13 @@ from opentelemetry.trace import Span, Status, StatusCode
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable, Iterator
 
-P = ParamSpec('P')
+P = ParamSpec("P")
 """Parameter specification for traced decorators."""
 
-R = TypeVar('R')
+R = TypeVar("R")
 """Type variable for traced return values."""
 
-__all__ = ('configure_instrumentation', 'get_logger', 'traced', 'operation_span', 'Metrics')
+__all__ = ("configure_instrumentation", "get_logger", "traced", "operation_span", "Metrics")
 
 
 class Metrics:
@@ -40,17 +40,17 @@ class Metrics:
     @staticmethod
     def record_agent_run(agent_name: str, duration_ms: float, tokens_used: int, success: bool) -> None:
         """Record agent run metrics."""
-        logfire.info('agent_run', agent=agent_name, duration_ms=duration_ms, tokens=tokens_used, success=success)
+        logfire.info("agent_run", agent=agent_name, duration_ms=duration_ms, tokens=tokens_used, success=success)
 
     @staticmethod
     def record_api_call(endpoint: str, status_code: int, duration_ms: float) -> None:
         """Record API call metrics."""
-        logfire.info('api_call', endpoint=endpoint, status_code=status_code, duration_ms=duration_ms)
+        logfire.info("api_call", endpoint=endpoint, status_code=status_code, duration_ms=duration_ms)
 
     @staticmethod
     def record_submission(competition_id: str, score: float | None, rank: int | None) -> None:
         """Record competition submission metrics."""
-        logfire.info('submission', competition_id=competition_id, score=score, rank=rank)
+        logfire.info("submission", competition_id=competition_id, score=score, rank=rank)
 
     @staticmethod
     def record_evolution_generation(
@@ -58,7 +58,7 @@ class Metrics:
     ) -> None:
         """Record evolution generation metrics."""
         logfire.info(
-            'evolution_generation',
+            "evolution_generation",
             generation=generation,
             best_fitness=best_fitness,
             mean_fitness=mean_fitness,
@@ -68,9 +68,9 @@ class Metrics:
 
 def configure_instrumentation(
     *,
-    service_name: str = 'agent-k',
+    service_name: str = "agent-k",
     environment: str | None = None,
-    send_to_logfire: bool | Literal['if-token-present'] | None = 'if-token-present',
+    send_to_logfire: bool | Literal["if-token-present"] | None = "if-token-present",
 ) -> None:
     """Configure global instrumentation settings.
 
@@ -81,14 +81,14 @@ def configure_instrumentation(
         environment: Deployment environment (dev, staging, prod).
         send_to_logfire: Whether to send telemetry to Logfire.
     """
-    environment = environment or os.getenv('ENVIRONMENT', 'development')
+    environment = environment or os.getenv("ENVIRONMENT", "development")
 
     logfire.configure(service_name=service_name, environment=environment, send_to_logfire=send_to_logfire)
 
     # Instrument common libraries
     logfire.instrument_pydantic_ai()
     logfire.instrument_httpx()
-    instrument_asyncio = getattr(logfire, 'instrument_asyncio', None)
+    instrument_asyncio = getattr(logfire, "instrument_asyncio", None)
     if instrument_asyncio is not None:
         instrument_asyncio()
 
@@ -102,7 +102,7 @@ def get_logger(name: str) -> logfire.Logfire:
     Returns:
         Configured Logfire instance.
     """
-    return logfire.with_settings(tags=[f'component:{name}'])
+    return logfire.with_settings(tags=[f"component:{name}"])
 
 
 # =============================================================================
@@ -122,52 +122,52 @@ def traced(
         Decorated function with tracing.
 
     Example:
-        >>> @traced('my_operation')
+        >>> @traced("my_operation")
         ... async def process_data(data: list[int]) -> int:
         ...     return sum(data)
     """
 
     def decorator(func: Callable[P, R]) -> Callable[P, R]:
-        span_name = name or f'{func.__module__}.{func.__name__}'
+        span_name = name or f"{func.__module__}.{func.__name__}"
 
         @wraps(func)
         async def async_wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             attributes: dict[str, Any] = {}
             if record_args:
-                attributes['args'] = _serialize_args(args, kwargs)
+                attributes["args"] = _serialize_args(args, kwargs)
 
             with logfire.span(span_name, **attributes) as span:
                 try:
-                    async_func = cast('Callable[P, Awaitable[R]]', func)
+                    async_func = cast("Callable[P, Awaitable[R]]", func)
                     result = await async_func(*args, **kwargs)
                     if record_result:
-                        span.set_attribute('result', _serialize_result(result))
+                        span.set_attribute("result", _serialize_result(result))
                     return result
                 except Exception as e:
-                    span.set_attribute('error', str(e))
-                    span.set_attribute('error_type', type(e).__name__)
+                    span.set_attribute("error", str(e))
+                    span.set_attribute("error_type", type(e).__name__)
                     raise
 
         @wraps(func)
         def sync_wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             attributes: dict[str, Any] = {}
             if record_args:
-                attributes['args'] = _serialize_args(args, kwargs)
+                attributes["args"] = _serialize_args(args, kwargs)
 
             with logfire.span(span_name, **attributes) as span:
                 try:
                     result = func(*args, **kwargs)
                     if record_result:
-                        span.set_attribute('result', _serialize_result(result))
+                        span.set_attribute("result", _serialize_result(result))
                     return result
                 except Exception as e:
-                    span.set_attribute('error', str(e))
-                    span.set_attribute('error_type', type(e).__name__)
+                    span.set_attribute("error", str(e))
+                    span.set_attribute("error_type", type(e).__name__)
                     raise
 
         if asyncio.iscoroutinefunction(func):
-            return cast('Callable[P, R]', async_wrapper)
-        return cast('Callable[P, R]', sync_wrapper)
+            return cast("Callable[P, R]", async_wrapper)
+        return cast("Callable[P, R]", sync_wrapper)
 
     return decorator
 
@@ -184,11 +184,11 @@ def operation_span(name: str, **attributes: Any) -> Iterator[Span]:
         Active span for additional annotations.
 
     Example:
-        >>> with operation_span('process_batch', batch_size=100) as span:
+        >>> with operation_span("process_batch", batch_size=100) as span:
         ...     results = process(batch)
-        ...     span.set_attribute('processed_count', len(results))
+        ...     span.set_attribute("processed_count", len(results))
     """
-    tracer = trace.get_tracer('agent-k')
+    tracer = trace.get_tracer("agent-k")
     with tracer.start_as_current_span(name) as span:
         for key, value in attributes.items():
             span.set_attribute(key, _serialize_value(value))
@@ -207,8 +207,8 @@ def operation_span(name: str, **attributes: Any) -> Iterator[Span]:
 def _serialize_args(args: tuple[Any, ...], kwargs: dict[str, Any]) -> str:
     """Serialize function arguments for logging."""
     parts = [repr(a)[:100] for a in args]
-    parts.extend(f'{k}={repr(v)[:100]}' for k, v in kwargs.items())
-    return ', '.join(parts)[:500]
+    parts.extend(f"{k}={repr(v)[:100]}" for k, v in kwargs.items())
+    return ", ".join(parts)[:500]
 
 
 def _serialize_result(result: Any) -> str:

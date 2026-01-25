@@ -25,8 +25,8 @@ from agent_k.toolsets import build_kaggle_search_query, build_scholarly_query
 kaggle_query = build_kaggle_search_query("titanic")
 # -> "site:kaggle.com titanic"
 
-papers_query = build_scholarly_query("xgboost")
-# -> "site:arxiv.org OR site:paperswithcode.com xgboost"
+papers_query = build_scholarly_query("lightgbm")
+# -> "site:arxiv.org OR site:paperswithcode.com lightgbm"
 ```
 
 ## Built-in Tool Usage
@@ -34,7 +34,7 @@ papers_query = build_scholarly_query("xgboost")
 The built-in tool name is `web_search`. Example prompt guidance:
 
 ```text
-Call web_search(query="site:arxiv.org OR site:paperswithcode.com xgboost")
+Call web_search(query="site:arxiv.org OR site:paperswithcode.com lightgbm")
 ```
 
 If you need URL fetching, add `prepare_web_fetch` to `builtin_tools` and call `web_fetch` when supported by the provider.

@@ -34,15 +34,15 @@ class TestCompetitionType:
 
     def test_featured_value(self) -> None:
         """Featured type should have correct value."""
-        assert CompetitionType.FEATURED.value == 'featured'
+        assert CompetitionType.FEATURED.value == "featured"
 
     def test_research_value(self) -> None:
         """Research type should have correct value."""
-        assert CompetitionType.RESEARCH.value == 'research'
+        assert CompetitionType.RESEARCH.value == "research"
 
     def test_getting_started_value(self) -> None:
         """Getting started type should have correct value."""
-        assert CompetitionType.GETTING_STARTED.value == 'getting_started'
+        assert CompetitionType.GETTING_STARTED.value == "getting_started"
 
 
 class TestEvaluationMetric:
@@ -50,15 +50,15 @@ class TestEvaluationMetric:
 
     def test_accuracy_value(self) -> None:
         """Accuracy metric should have correct value."""
-        assert EvaluationMetric.ACCURACY.value == 'accuracy'
+        assert EvaluationMetric.ACCURACY.value == "accuracy"
 
     def test_auc_value(self) -> None:
         """AUC metric should have correct value."""
-        assert EvaluationMetric.AUC.value == 'auc'
+        assert EvaluationMetric.AUC.value == "auc"
 
     def test_rmse_value(self) -> None:
         """RMSE metric should have correct value."""
-        assert EvaluationMetric.RMSE.value == 'rmse'
+        assert EvaluationMetric.RMSE.value == "rmse"
 
 
 class TestCompetition:
@@ -67,36 +67,36 @@ class TestCompetition:
     def test_minimal_creation(self) -> None:
         """Competition should be created with minimal fields."""
         comp = Competition(
-            id='titanic',
-            title='Titanic',
+            id="titanic",
+            title="Titanic",
             competition_type=CompetitionType.GETTING_STARTED,
             metric=EvaluationMetric.ACCURACY,
             deadline=datetime(2030, 1, 1, tzinfo=UTC),
         )
 
-        assert comp.id == 'titanic'
-        assert comp.title == 'Titanic'
+        assert comp.id == "titanic"
+        assert comp.title == "Titanic"
         assert comp.competition_type == CompetitionType.GETTING_STARTED
 
     def test_is_frozen(self) -> None:
         """Competition should be immutable."""
         comp = Competition(
-            id='titanic',
-            title='Titanic',
+            id="titanic",
+            title="Titanic",
             competition_type=CompetitionType.GETTING_STARTED,
             metric=EvaluationMetric.ACCURACY,
             deadline=datetime(2030, 1, 1, tzinfo=UTC),
         )
 
         with pytest.raises(ValidationError):
-            comp.id = 'new_id'  # type: ignore
+            comp.id = "new_id"  # type: ignore
 
     def test_invalid_id_pattern(self) -> None:
         """Competition should reject invalid ID patterns."""
         with pytest.raises(ValidationError):
             Competition(
-                id='Invalid ID!',  # Contains invalid characters
-                title='Test',
+                id="Invalid ID!",  # Contains invalid characters
+                title="Test",
                 competition_type=CompetitionType.FEATURED,
                 metric=EvaluationMetric.ACCURACY,
                 deadline=datetime(2030, 1, 1, tzinfo=UTC),
@@ -108,10 +108,10 @@ class TestLeaderboardEntry:
 
     def test_creation(self) -> None:
         """Entry should be created with required fields."""
-        entry = LeaderboardEntry(rank=1, team_name='winning_team', score=0.99999)
+        entry = LeaderboardEntry(rank=1, team_name="winning_team", score=0.99999)
 
         assert entry.rank == 1
-        assert entry.team_name == 'winning_team'
+        assert entry.team_name == "winning_team"
         assert entry.score == 0.99999
 
 
@@ -143,7 +143,7 @@ class TestMissionResult:
     def test_success_result(self) -> None:
         """Success result should have correct values."""
         result = MissionResult(
-            success=True, mission_id='test_mission', competition_id='titanic', final_rank=10, final_score=0.85
+            success=True, mission_id="test_mission", competition_id="titanic", final_rank=10, final_score=0.85
         )
 
         assert result.success is True
@@ -152,10 +152,10 @@ class TestMissionResult:
 
     def test_failure_result(self) -> None:
         """Failure result should include error message."""
-        result = MissionResult(success=False, mission_id='test_mission', error_message='Discovery failed')
+        result = MissionResult(success=False, mission_id="test_mission", error_message="Discovery failed")
 
         assert result.success is False
-        assert result.error_message == 'Discovery failed'
+        assert result.error_message == "Discovery failed"
 
 
 class TestPlannedTask:
@@ -164,12 +164,12 @@ class TestPlannedTask:
     def test_creation(self) -> None:
         """Task should be created with required fields."""
         task = PlannedTask(
-            id='task_1', name='Search competitions', description='Search Kaggle for competitions', agent='lobbyist'
+            id="task_1", name="Search competitions", description="Search Kaggle for competitions", agent="lobbyist"
         )
 
-        assert task.id == 'task_1'
-        assert task.name == 'Search competitions'
-        assert task.description == 'Search Kaggle for competitions'
+        assert task.id == "task_1"
+        assert task.name == "Search competitions"
+        assert task.description == "Search Kaggle for competitions"
 
 
 class TestGenerationMetrics:
@@ -198,6 +198,7 @@ class TestEvolutionState:
         assert state.best_solution is None
         assert state.improvement_count == 0
         assert state.min_improvements_required == 0
+        assert state.failure_summary == {}
 
 
 class TestMemoryEntry:
@@ -205,10 +206,10 @@ class TestMemoryEntry:
 
     def test_creation(self) -> None:
         """Entry should be created with required fields."""
-        entry = MemoryEntry(key='test_key', category='test_category', value_preview='test preview')
+        entry = MemoryEntry(key="test_key", category="test_category", value_preview="test preview")
 
-        assert entry.key == 'test_key'
-        assert entry.category == 'test_category'
+        assert entry.key == "test_key"
+        assert entry.category == "test_category"
 
 
 class TestMemoryState:
@@ -227,8 +228,8 @@ class TestErrorEvent:
 
     def test_creation(self) -> None:
         """Error should be created with required fields."""
-        error = ErrorEvent(id='err_1', error_type='RateLimitError', category='recoverable', message='Rate limited')
+        error = ErrorEvent(id="err_1", error_type="RateLimitError", category="recoverable", message="Rate limited")
 
-        assert error.id == 'err_1'
-        assert error.error_type == 'RateLimitError'
-        assert error.message == 'Rate limited'
+        assert error.id == "err_1"
+        assert error.error_type == "RateLimitError"
+        assert error.message == "Rate limited"

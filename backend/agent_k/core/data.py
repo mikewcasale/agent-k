@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
-__all__ = ('CompetitionSchema', 'infer_competition_schema', 'locate_data_files', 'stage_competition_data')
+__all__ = ("CompetitionSchema", "infer_competition_schema", "locate_data_files", "stage_competition_data")
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,7 +37,7 @@ def infer_competition_schema(train_path: Path, test_path: Path, sample_path: Pat
     sample_header = _read_header(sample_path)
 
     if len(sample_header) < 2:
-        raise ValueError('Sample submission missing required columns')
+        raise ValueError("Sample submission missing required columns")
 
     id_column = sample_header[0]
     target_columns = sample_header[1:]
@@ -58,7 +58,7 @@ def locate_data_files(paths: Iterable[str | Path]) -> tuple[Path, Path, Path]:
     for path_value in paths:
         path = Path(path_value)
         files.append(path)
-        if path.suffix.lower() == '.zip' and path.exists():
+        if path.suffix.lower() == ".zip" and path.exists():
             files.extend(_safe_extract_zip(path, path.parent))
 
     def pick(token: str) -> Path | None:
@@ -67,12 +67,12 @@ def locate_data_files(paths: Iterable[str | Path]) -> tuple[Path, Path, Path]:
                 return path
         return None
 
-    train_path = pick('train')
-    test_path = pick('test')
-    sample_path = pick('sample_submission') or pick('submission')
+    train_path = pick("train")
+    test_path = pick("test")
+    sample_path = pick("sample_submission") or pick("submission")
 
     if not train_path or not test_path or not sample_path:
-        raise FileNotFoundError('Required competition data files not found')
+        raise FileNotFoundError("Required competition data files not found")
 
     return train_path, test_path, sample_path
 
@@ -84,27 +84,27 @@ def stage_competition_data(
     destination.mkdir(parents=True, exist_ok=True)
 
     staged = {
-        'train': destination / 'train.csv',
-        'test': destination / 'test.csv',
-        'sample': destination / 'sample_submission.csv',
+        "train": destination / "train.csv",
+        "test": destination / "test.csv",
+        "sample": destination / "sample_submission.csv",
     }
 
-    _link_or_copy(train_path, staged['train'])
-    _link_or_copy(test_path, staged['test'])
-    _link_or_copy(sample_path, staged['sample'])
+    _link_or_copy(train_path, staged["train"])
+    _link_or_copy(test_path, staged["test"])
+    _link_or_copy(sample_path, staged["sample"])
 
     if competition_id:
         competition_dir = destination / competition_id
         competition_dir.mkdir(parents=True, exist_ok=True)
-        _link_or_copy(staged['train'], competition_dir / staged['train'].name)
-        _link_or_copy(staged['test'], competition_dir / staged['test'].name)
-        _link_or_copy(staged['sample'], competition_dir / staged['sample'].name)
+        _link_or_copy(staged["train"], competition_dir / staged["train"].name)
+        _link_or_copy(staged["test"], competition_dir / staged["test"].name)
+        _link_or_copy(staged["sample"], competition_dir / staged["sample"].name)
 
     return staged
 
 
 def _read_header(path: Path) -> list[str]:
-    with path.open('r', encoding='utf-8', errors='ignore', newline='') as handle:
+    with path.open("r", encoding="utf-8", errors="ignore", newline="") as handle:
         reader = csv.reader(handle)
         return next(reader, [])
 
@@ -115,11 +115,11 @@ def _safe_extract_zip(archive_path: Path, destination: Path) -> list[Path]:
 
     with zipfile.ZipFile(archive_path) as archive:
         for member in archive.infolist():
-            if member.is_dir() or member.filename.endswith('/'):
+            if member.is_dir() or member.filename.endswith("/"):
                 continue
             target_path = (destination / member.filename).resolve()
             if not str(target_path).startswith(str(destination_resolved)):
-                raise ValueError(f'Zip entry escapes destination: {member.filename}')
+                raise ValueError(f"Zip entry escapes destination: {member.filename}")
             archive.extract(member, destination)
             extracted.append(target_path)
 

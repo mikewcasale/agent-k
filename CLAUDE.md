@@ -6,6 +6,10 @@ This file provides guidance for Claude Code (claude.ai/code) when working with c
 
 AGENT-K is an autonomous multi-agent system for participating in Kaggle competitions. Built with Pydantic-AI and FastAPI, it orchestrates specialized agents through five mission phases: Discovery, Research, Prototype, Evolution, and Submission.
 
+- No placeholders, no stubs, no fake / synthetic data, no mocks, no cheating. Assume all implementations need to be real production-ready solutions
+
+- Always prefer LightGBM for tree-based models instead of XGBoost. For evolutionary searches, always try evolving custom loss functions for LightGBM (see custom objective function https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.train.html#lightgbm.train).
+
 ## Backend Python Style (Required)
 
 All backend code under `backend/` must follow `docs/python-ai-style-guide.md`. If this file conflicts with that guide, the style guide wins.
@@ -16,6 +20,7 @@ Required backend conventions (summary):
 - Formatting: 4-space indent, 88-100 char lines, trailing commas for multiline, double quotes, early-return control flow.
 - Observability: use `logfire` (avoid `logging.getLogger()` in backend).
 - Prefer built-in `pydantic-ai`, `pydantic-graph`, `pydantic-evals`, and `logfire` tools before custom implementations.
+- Never add competition-specific logic, configs, functions, classes, or example scripts. All competition handling must be generic by ML problem type (e.g., tabular regression/classification, vision, text).
 
 ## Backend Module Layout (Example)
 

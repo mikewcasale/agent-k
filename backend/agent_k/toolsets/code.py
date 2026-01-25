@@ -19,12 +19,12 @@ try:  # pragma: no cover - optional dependency
 except ImportError:  # pragma: no cover - optional dependency
     OpenAIChatModel = None  # type: ignore[misc,assignment]
 
-__all__ = ('code_toolset', 'create_code_execution_tool', 'prepare_code_execution_tool')
+__all__ = ("code_toolset", "create_code_execution_tool", "prepare_code_execution_tool")
 
 # =============================================================================
 # Toolset Definition
 # =============================================================================
-code_toolset: FunctionToolset[Any] = FunctionToolset(id='code')
+code_toolset: FunctionToolset[Any] = FunctionToolset(id="code")
 
 
 def create_code_execution_tool() -> CodeExecutionTool:
@@ -34,7 +34,7 @@ def create_code_execution_tool() -> CodeExecutionTool:
 
 async def prepare_code_execution_tool(ctx: RunContext[Any]) -> CodeExecutionTool | None:
     """Enable CodeExecutionTool only for supported providers."""
-    if ctx.model.system != 'openai':
+    if ctx.model.system != "openai":
         return None
     if OpenAIChatModel is not None and isinstance(ctx.model, OpenAIChatModel):
         return None

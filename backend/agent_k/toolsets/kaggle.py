@@ -25,15 +25,18 @@ if TYPE_CHECKING:
     from agent_k.core.models import Competition
     from agent_k.core.protocols import PlatformAdapter
 
-P = ParamSpec('P')
-ToolResultT = TypeVar('ToolResultT')
+P = ParamSpec("P")
+"""Parameter specification for tool wrapper callables."""
 
-__all__ = ('KaggleDeps', 'kaggle_toolset')
+ToolResultT = TypeVar("ToolResultT")
+"""Type variable for tool result payloads."""
+
+__all__ = ("KaggleDeps", "kaggle_toolset")
 
 # =============================================================================
 # Toolset Definition
 # =============================================================================
-kaggle_toolset: FunctionToolset[Any] = FunctionToolset(id='kaggle')
+kaggle_toolset: FunctionToolset[Any] = FunctionToolset(id="kaggle")
 
 # Cache for competition data
 _cache: dict[str, Competition] = {}
@@ -43,27 +46,27 @@ _cache: dict[str, Competition] = {}
 # Tool Helpers
 # =============================================================================
 def _error_dict_response(error: str) -> dict[str, Any]:
-    return {'error': error}
+    return {"error": error}
 
 
 def _error_list_response(error: str) -> list[dict[str, Any]]:
-    return [{'error': error}]
+    return [{"error": error}]
 
 
 def _search_summary(result: list[dict[str, Any]]) -> dict[str, Any]:
-    return {'count': len(result)}
+    return {"count": len(result)}
 
 
 def _competition_summary(result: dict[str, Any]) -> dict[str, Any]:
-    return {'id': result.get('id')}
+    return {"id": result.get("id")}
 
 
 def _leaderboard_summary(result: dict[str, Any]) -> dict[str, Any]:
-    return {'total_entries': result.get('total_entries', 0)}
+    return {"total_entries": result.get("total_entries", 0)}
 
 
 def _dataset_summary(result: dict[str, Any]) -> dict[str, Any]:
-    return {'file_count': len(result.get('files', []))}
+    return {"file_count": len(result.get("files", []))}
 
 
 def with_tool_telemetry(
@@ -79,15 +82,15 @@ def with_tool_telemetry(
     def decorator(func: Callable[P, Awaitable[ToolResultT]]) -> Callable[P, Awaitable[ToolResultT]]:
         @wraps(func)
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> ToolResultT:
-            ctx_obj = args[0] if args else kwargs.get('ctx')
+            ctx_obj = args[0] if args else kwargs.get("ctx")
             if ctx_obj is None:
-                raise RuntimeError('RunContext is required for tool telemetry')
-            ctx = cast('RunContext[Any]', ctx_obj)
-            tool_call_id = f'{task_id}_{id(ctx):x}'
+                raise RuntimeError("RunContext is required for tool telemetry")
+            ctx = cast("RunContext[Any]", ctx_obj)
+            tool_call_id = f"{task_id}_{id(ctx):x}"
             start_time = time.perf_counter()
             await _emit_tool_event(
                 ctx,
-                'emit_tool_start',
+                "emit_tool_start",
                 task_id=task_id,
                 tool_call_id=tool_call_id,
                 tool_type=tool_type,
@@ -99,7 +102,7 @@ def with_tool_telemetry(
             except Exception as exc:
                 await _emit_tool_event(
                     ctx,
-                    'emit_tool_error',
+                    "emit_tool_error",
                     task_id=task_id,
                     tool_call_id=tool_call_id,
                     tool_type=tool_type,
@@ -111,7 +114,7 @@ def with_tool_telemetry(
             duration_ms = int((time.perf_counter() - start_time) * 1000)
             await _emit_tool_event(
                 ctx,
-                'emit_tool_result',
+                "emit_tool_result",
                 task_id=task_id,
                 tool_call_id=tool_call_id,
                 tool_type=tool_type,
@@ -129,24 +132,24 @@ def with_tool_telemetry(
 def _require_adapter(ctx: RunContext[Any]) -> PlatformAdapter:
     adapter = _resolve_adapter(ctx)
     if adapter is None:
-        raise RuntimeError('Kaggle adapter is not configured')
+        raise RuntimeError("Kaggle adapter is not configured")
     return adapter
 
 
 def _serialize_competition(comp: Competition) -> dict[str, Any]:
     return {
-        'id': comp.id,
-        'title': comp.title,
-        'description': comp.description[:500] if comp.description else None,
-        'type': comp.competition_type.value,
-        'metric': comp.metric.value,
-        'metric_direction': comp.metric_direction,
-        'days_remaining': comp.days_remaining,
-        'deadline': comp.deadline.isoformat(),
-        'prize_pool': comp.prize_pool,
-        'max_team_size': comp.max_team_size,
-        'max_daily_submissions': comp.max_daily_submissions,
-        'tags': list(comp.tags) if comp.tags else [],
+        "id": comp.id,
+        "title": comp.title,
+        "description": comp.description[:500] if comp.description else None,
+        "type": comp.competition_type.value,
+        "metric": comp.metric.value,
+        "metric_direction": comp.metric_direction,
+        "days_remaining": comp.days_remaining,
+        "deadline": comp.deadline.isoformat(),
+        "prize_pool": comp.prize_pool,
+        "max_team_size": comp.max_team_size,
+        "max_daily_submissions": comp.max_daily_submissions,
+        "tags": list(comp.tags) if comp.tags else [],
     }
 
 
@@ -155,9 +158,9 @@ def _serialize_competition(comp: Competition) -> dict[str, Any]:
 # =============================================================================
 @kaggle_toolset.tool
 @with_tool_telemetry(
-    task_id='kaggle_search',
-    tool_type='kaggle_mcp',
-    operation='competitions.list',
+    task_id="kaggle_search",
+    tool_type="kaggle_mcp",
+    operation="competitions.list",
     error_response=_error_list_response,
     result_summary=_search_summary,
 )
@@ -169,7 +172,7 @@ async def kaggle_search_competitions(
     active_only: bool = True,
 ) -> list[dict[str, Any]]:
     """Search Kaggle for active competitions."""
-    with logfire.span('kaggle_search_competitions', categories=categories, keywords=keywords):
+    with logfire.span("kaggle_search_competitions", categories=categories, keywords=keywords):
         adapter = _require_adapter(ctx)
 
         competitions: list[dict[str, Any]] = []
@@ -180,17 +183,17 @@ async def kaggle_search_competitions(
             _store_competition(ctx, comp)
             competitions.append(
                 {
-                    'id': comp.id,
-                    'title': comp.title,
-                    'type': comp.competition_type.value,
-                    'metric': comp.metric.value,
-                    'days_remaining': comp.days_remaining,
-                    'prize_pool': comp.prize_pool,
-                    'tags': list(comp.tags) if comp.tags else [],
-                    'is_active': comp.is_active,
+                    "id": comp.id,
+                    "title": comp.title,
+                    "type": comp.competition_type.value,
+                    "metric": comp.metric.value,
+                    "days_remaining": comp.days_remaining,
+                    "prize_pool": comp.prize_pool,
+                    "tags": list(comp.tags) if comp.tags else [],
+                    "is_active": comp.is_active,
                 }
             )
-            max_results = getattr(ctx.deps, 'max_results', 50) or 50
+            max_results = getattr(ctx.deps, "max_results", 50) or 50
             if len(competitions) >= max_results:
                 break
 
@@ -199,15 +202,15 @@ async def kaggle_search_competitions(
 
 @kaggle_toolset.tool
 @with_tool_telemetry(
-    task_id='kaggle_competition',
-    tool_type='kaggle_mcp',
-    operation='competitions.get',
+    task_id="kaggle_competition",
+    tool_type="kaggle_mcp",
+    operation="competitions.get",
     error_response=_error_dict_response,
     result_summary=_competition_summary,
 )
 async def kaggle_get_competition(ctx: RunContext[Any], competition_id: str) -> dict[str, Any]:
     """Get detailed information about a specific Kaggle competition."""
-    with logfire.span('kaggle_get_competition', competition_id=competition_id):
+    with logfire.span("kaggle_get_competition", competition_id=competition_id):
         adapter = _require_adapter(ctx)
 
         if competition_id in _cache:
@@ -221,63 +224,63 @@ async def kaggle_get_competition(ctx: RunContext[Any], competition_id: str) -> d
 
 @kaggle_toolset.tool
 @with_tool_telemetry(
-    task_id='kaggle_leaderboard',
-    tool_type='kaggle_mcp',
-    operation='competitions.leaderboard',
+    task_id="kaggle_leaderboard",
+    tool_type="kaggle_mcp",
+    operation="competitions.leaderboard",
     error_response=_error_dict_response,
     result_summary=_leaderboard_summary,
 )
 async def kaggle_get_leaderboard(ctx: RunContext[Any], competition_id: str, limit: int = 20) -> dict[str, Any]:
     """Get the current leaderboard for a competition."""
-    with logfire.span('kaggle_get_leaderboard', competition_id=competition_id):
+    with logfire.span("kaggle_get_leaderboard", competition_id=competition_id):
         adapter = _require_adapter(ctx)
         entries = await adapter.get_leaderboard(competition_id, limit=limit)
         return {
-            'competition_id': competition_id,
-            'total_entries': len(entries),
-            'entries': [{'rank': e.rank, 'team_name': e.team_name, 'score': e.score} for e in entries],
+            "competition_id": competition_id,
+            "total_entries": len(entries),
+            "entries": [{"rank": e.rank, "team_name": e.team_name, "score": e.score} for e in entries],
         }
 
 
 @kaggle_toolset.tool
 @with_tool_telemetry(
-    task_id='kaggle_datasets',
-    tool_type='kaggle_mcp',
-    operation='competitions.data',
+    task_id="kaggle_datasets",
+    tool_type="kaggle_mcp",
+    operation="competitions.data",
     error_response=_error_dict_response,
     result_summary=_dataset_summary,
 )
 async def kaggle_list_datasets(ctx: RunContext[Any], competition_id: str) -> dict[str, Any]:
     """List available datasets for a competition."""
-    with logfire.span('kaggle_list_datasets', competition_id=competition_id):
+    with logfire.span("kaggle_list_datasets", competition_id=competition_id):
         adapter = _require_adapter(ctx)
-        request = getattr(adapter, '_request', None)
+        request = getattr(adapter, "_request", None)
         if request is None:
-            raise RuntimeError('Adapter does not support listing datasets')
+            raise RuntimeError("Adapter does not support listing datasets")
 
-        response = await request('GET', f'/competitions/data/list/{competition_id}')
+        response = await request("GET", f"/competitions/data/list/{competition_id}")
         if response.status_code != 200:
-            raise RuntimeError(f'Failed to list datasets: {response.status_code}')
+            raise RuntimeError(f"Failed to list datasets: {response.status_code}")
 
         files = response.json()
         return {
-            'competition_id': competition_id,
-            'files': [
-                {'name': f.get('name'), 'size': f.get('totalBytes'), 'description': f.get('description')} for f in files
+            "competition_id": competition_id,
+            "files": [
+                {"name": f.get("name"), "size": f.get("totalBytes"), "description": f.get("description")} for f in files
             ],
         }
 
 
 def _resolve_adapter(ctx: RunContext[Any]) -> PlatformAdapter | None:
-    adapter = getattr(ctx.deps, 'kaggle_adapter', None)
+    adapter = getattr(ctx.deps, "kaggle_adapter", None)
     if adapter is None:
-        adapter = getattr(ctx.deps, 'platform_adapter', None)
+        adapter = getattr(ctx.deps, "platform_adapter", None)
     return adapter
 
 
 def _store_competition(ctx: RunContext[Any], competition: Competition) -> None:
     _cache[competition.id] = competition
-    search_cache = getattr(ctx.deps, 'search_cache', None)
+    search_cache = getattr(ctx.deps, "search_cache", None)
     if isinstance(search_cache, dict):
         search_cache[competition.id] = competition
 
@@ -294,16 +297,16 @@ async def _emit_tool_event(
     error: str | None = None,
     duration_ms: int | None = None,
 ) -> None:
-    emitter = getattr(ctx.deps, 'event_emitter', None)
+    emitter = getattr(ctx.deps, "event_emitter", None)
     if emitter is None:
         return
     handler = getattr(emitter, method, None)
     if handler is None:
         return
-    if method == 'emit_tool_start':
+    if method == "emit_tool_start":
         await handler(task_id=task_id, tool_call_id=tool_call_id, tool_type=tool_type, operation=operation)
         return
-    if method == 'emit_tool_error':
-        await handler(task_id=task_id, tool_call_id=tool_call_id, error=error or 'Unknown error')
+    if method == "emit_tool_error":
+        await handler(task_id=task_id, tool_call_id=tool_call_id, error=error or "Unknown error")
         return
     await handler(task_id=task_id, tool_call_id=tool_call_id, result=result, duration_ms=duration_ms or 0)

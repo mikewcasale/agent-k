@@ -31,6 +31,14 @@ export const evolutionModels: EvolutionModelOption[] = [
     freeTier: true,
   },
   {
+    id: "openrouter:qwen/qwen3-coder:free",
+    label: "Qwen3 Coder",
+    description: "Free-tier code model with strong function calling.",
+    provider: "OpenRouter",
+    icon: "code",
+    freeTier: true,
+  },
+  {
     id: "openrouter:kwaipilot/kat-coder-pro:free",
     label: "KAT Coder Pro",
     description: "Free-tier code specialist.",
@@ -48,5 +56,7 @@ export const evolutionModels: EvolutionModelOption[] = [
 ];
 
 export const DEFAULT_EVOLUTION_MODELS: string[] = [
-  "anthropic:claude-sonnet-4-5",
+  "openrouter:mistralai/devstral-2512:free",
+  "openrouter:kwaipilot/kat-coder-pro:free",
+  "openrouter:qwen/qwen3-coder:free",
 ];

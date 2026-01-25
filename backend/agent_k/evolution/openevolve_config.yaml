@@ -1,0 +1,72 @@
+# Optimized OpenEvolve configuration for improved evolution performance
+max_iterations: 200
+checkpoint_interval: 25  # More frequent checkpoints (was 50)
+log_level: INFO
+diff_based_evolution: false
+max_code_length: 25000
+
+llm:
+  api_base: "https://openrouter.ai/api/v1"
+  temperature: 0.8  # Slightly higher for more exploration (was 0.7)
+  top_p: 0.95
+  max_tokens: 4096
+  timeout: 90
+  retries: 3
+  retry_delay: 5
+  models:
+    - name: "mistralai/devstral-2512:free"
+      weight: 1.0
+
+prompt:
+  system_message: |
+    You are an expert ML engineer optimizing a Kaggle solution.
+    
+    REQUIREMENTS:
+    - Apply at least ONE preprocessing hint with `# Applied hint: <hint_id>` comment.
+    - Address issues from execution artifacts (stderr, warnings).
+    - Improve model performance while keeping the solution runnable.
+    - Keep the baseline print line: "Baseline <metric> score: <value>".
+    - Always write submission.csv using sample_submission.csv in the working directory.
+    - Use local train.csv, test.csv, and sample_submission.csv (no /kaggle/input paths).
+  include_artifacts: true
+  max_artifact_bytes: 32768  # 32KB for more context
+  num_top_programs: 5        # Increase from 3
+  num_diverse_programs: 4    # Increase from 2
+  use_template_stochasticity: true
+  template_variations:
+    optimization_focus:
+      - "Focus on improving model accuracy through hyperparameter tuning"
+      - "Focus on feature engineering to capture more signal"
+      - "Focus on reducing overfitting through regularization"
+      - "Focus on ensemble diversity and blending weights"
+    mutation_style:
+      - "Make small, incremental improvements"
+      - "Try a different algorithmic approach"
+      - "Optimize the preprocessing pipeline"
+      - "Adjust the cross-validation strategy"
+
+database:
+  population_size: 300      # Increase from 200
+  archive_size: 200         # Increase from 120
+  num_islands: 5            # Increase from 2 for more diversity
+  feature_dimensions:
+    - complexity
+    - model_family
+    - runtime_ms            # NEW: Track execution speed
+  feature_bins:
+    complexity: 6
+    model_family: 8
+    runtime_ms: 4
+  migration_interval: 3     # Migrate every 3 generations (was 5)
+  migration_rate: 0.15      # 15% migration (was 10%)
+  diversity_reference_size: 30  # Increase for better diversity calc
+
+evaluator:
+  timeout: 180
+  cascade_evaluation: true  # ENABLE cascade evaluation
+  cascade_thresholds: [0.3, 0.6, 0.85]  # Progressive filtering
+  parallel_evaluations: 1
+
+# Early stopping - require more patience
+early_stopping_patience: 20  # Don't stop too early
+convergence_threshold: 0.0005  # Tighter threshold

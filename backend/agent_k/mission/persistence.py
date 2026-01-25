@@ -20,10 +20,10 @@ from pydantic_graph.persistence.file import FileStatePersistence
 # Local imports (core first, then alphabetical)
 from .state import MissionResult, MissionState
 
-__all__ = ('MissionPersistence', 'create_persistence', 'CHECKPOINT_DIR')
+__all__ = ("MissionPersistence", "create_persistence", "CHECKPOINT_DIR")
 
-CHECKPOINT_DIR: Final[Path] = Path('~/.agent_k/checkpoints').expanduser()
-CHECKPOINT_PREFIX: Final[str] = 'checkpoint_'
+CHECKPOINT_DIR: Final[Path] = Path("~/.agent_k/checkpoints").expanduser()
+CHECKPOINT_PREFIX: Final[str] = "checkpoint_"
 
 
 class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
@@ -35,7 +35,7 @@ class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
         self.mission_dir = checkpoint_dir / mission_id
         self.mission_dir.mkdir(parents=True, exist_ok=True)
 
-        super().__init__(self.mission_dir / 'state.json')
+        super().__init__(self.mission_dir / "state.json")
 
     def has_snapshots(self) -> bool:
         """Return whether persistence already has stored snapshots."""
@@ -61,7 +61,7 @@ class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
             snapshot = self._select_resumable_snapshot(snapshots)
             if snapshot is None:
                 return None
-            snapshot.status = 'pending'
+            snapshot.status = "pending"
             await self._save(snapshots)
             return snapshot
 
@@ -87,10 +87,10 @@ class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
         self, snapshots: list[Snapshot[MissionState, MissionResult]]
     ) -> NodeSnapshot[MissionState, MissionResult] | None:
         for snapshot in reversed(snapshots):
-            if isinstance(snapshot, NodeSnapshot) and snapshot.status in {'created', 'pending'}:
+            if isinstance(snapshot, NodeSnapshot) and snapshot.status in {"created", "pending"}:
                 return snapshot
         for snapshot in reversed(snapshots):
-            if isinstance(snapshot, NodeSnapshot) and snapshot.status in {'running', 'error'}:
+            if isinstance(snapshot, NodeSnapshot) and snapshot.status in {"running", "error"}:
                 return snapshot
         return None
 
@@ -106,15 +106,15 @@ class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
 
     async def _save_checkpoint(self, state: MissionState) -> None:
         """Save state with timestamp and clean up old checkpoints."""
-        with logfire.span('mission.persistence.save', mission_id=self.mission_id):
-            timestamp = datetime.now(UTC).strftime('%Y%m%d_%H%M%S')
-            checkpoint_path = self.mission_dir / f'{CHECKPOINT_PREFIX}{timestamp}.json'
-            checkpoint_path.write_text(state.model_dump_json(indent=2), encoding='utf-8')
+        with logfire.span("mission.persistence.save", mission_id=self.mission_id):
+            timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
+            checkpoint_path = self.mission_dir / f"{CHECKPOINT_PREFIX}{timestamp}.json"
+            checkpoint_path.write_text(state.model_dump_json(indent=2), encoding="utf-8")
             await self._cleanup_old_checkpoints()
 
     async def _cleanup_old_checkpoints(self) -> None:
         checkpoints = sorted(
-            self.mission_dir.glob(f'{CHECKPOINT_PREFIX}*.json'), key=lambda p: p.stat().st_mtime, reverse=True
+            self.mission_dir.glob(f"{CHECKPOINT_PREFIX}*.json"), key=lambda p: p.stat().st_mtime, reverse=True
         )
         for old_checkpoint in checkpoints[self.max_checkpoints :]:
             old_checkpoint.unlink()

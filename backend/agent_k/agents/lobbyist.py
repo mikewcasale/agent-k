@@ -33,28 +33,28 @@ if TYPE_CHECKING:
     from agent_k.ui.ag_ui import EventEmitter
 
 __all__ = (
-    'DiscoveryResult',
-    'LobbyistAgent',
-    'LobbyistDeps',
-    'LobbyistSettings',
-    'LOBBYIST_SYSTEM_PROMPT',
-    'SCHEMA_VERSION',
-    'lobbyist_agent',
+    "DiscoveryResult",
+    "LobbyistAgent",
+    "LobbyistDeps",
+    "LobbyistSettings",
+    "LOBBYIST_SYSTEM_PROMPT",
+    "SCHEMA_VERSION",
+    "lobbyist_agent",
 )
 
-SCHEMA_VERSION: Final[str] = '1.0.0'
+SCHEMA_VERSION: Final[str] = "1.0.0"
 
 
 class LobbyistSettings(BaseSettings):
     """Configuration for the Lobbyist agent."""
 
-    model_config = SettingsConfigDict(env_prefix='LOBBYIST_', env_file='.env', extra='ignore', validate_default=True)
-    model: str = Field(default=DEFAULT_MODEL, description='Model identifier for discovery tasks')
-    temperature: float = Field(default=0.2, ge=0.0, le=2.0, description='Sampling temperature for discovery prompts')
-    max_tokens: int = Field(default=2048, ge=1, description='Maximum tokens for responses')
-    tool_retries: int = Field(default=2, ge=0, description='Tool retry attempts')
-    output_retries: int = Field(default=1, ge=0, description='Output validation retry attempts')
-    max_results: int = Field(default=50, ge=1, description='Maximum competitions to return')
+    model_config = SettingsConfigDict(env_prefix="LOBBYIST_", env_file=".env", extra="ignore", validate_default=True)
+    model: str = Field(default=DEFAULT_MODEL, description="Model identifier for discovery tasks")
+    temperature: float = Field(default=0.2, ge=0.0, le=2.0, description="Sampling temperature for discovery prompts")
+    max_tokens: int = Field(default=2048, ge=1, description="Maximum tokens for responses")
+    tool_retries: int = Field(default=2, ge=0, description="Tool retry attempts")
+    output_retries: int = Field(default=1, ge=0, description="Output validation retry attempts")
+    max_results: int = Field(default=50, ge=1, description="Maximum competitions to return")
 
     @property
     def model_settings(self) -> ModelSettings:
@@ -76,12 +76,12 @@ class DiscoveryResult(BaseModel):
     """Result of competition discovery."""
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
-    schema_version: str = Field(default=SCHEMA_VERSION, description='Schema version')
+    schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
     competitions: list[Competition] = Field(
-        default_factory=list, description='Discovered competitions matching criteria'
+        default_factory=list, description="Discovered competitions matching criteria"
     )
-    total_searched: int = Field(default=0, ge=0, description='Total competitions scanned')
-    filters_applied: list[str] = Field(default_factory=list, description='Filters applied during discovery')
+    total_searched: int = Field(default=0, ge=0, description="Total competitions scanned")
+    filters_applied: list[str] = Field(default_factory=list, description="Filters applied during discovery")
 
 
 class LobbyistAgent(MemoryMixin):
@@ -94,11 +94,11 @@ class LobbyistAgent(MemoryMixin):
             settings: Configuration for the agent. Uses defaults if not provided.
         """
         self._settings = settings or LobbyistSettings()
-        self._toolset: FunctionToolset[LobbyistDeps] = FunctionToolset(id='lobbyist')
+        self._toolset: FunctionToolset[LobbyistDeps] = FunctionToolset(id="lobbyist")
         self._memory_backend = self._init_memory_backend()
         self._register_tools()
         self._agent = self._create_agent()
-        register_agent('lobbyist', self._agent)
+        register_agent("lobbyist", self._agent)
         self._setup_memory()
 
     @property
@@ -119,12 +119,12 @@ class LobbyistAgent(MemoryMixin):
         min_prize: int | None = None,
     ) -> list[dict[str, Any]]:
         """Search Kaggle for competitions matching criteria."""
-        with logfire.span('lobbyist.search_kaggle', categories=categories, keywords=keywords):
+        with logfire.span("lobbyist.search_kaggle", categories=categories, keywords=keywords):
             await ctx.deps.event_emitter.emit_tool_start(
-                task_id='discovery_search',
-                tool_call_id=f'kaggle_search_{id(ctx)}',
-                tool_type='kaggle_mcp',
-                operation='competitions.list',
+                task_id="discovery_search",
+                tool_call_id=f"kaggle_search_{id(ctx)}",
+                tool_type="kaggle_mcp",
+                operation="competitions.list",
             )
 
             adapter = ctx.deps.platform_adapter
@@ -137,9 +137,9 @@ class LobbyistAgent(MemoryMixin):
                 ctx.deps.search_cache[comp.id] = comp
 
             await ctx.deps.event_emitter.emit_tool_result(
-                task_id='discovery_search',
-                tool_call_id=f'kaggle_search_{id(ctx)}',
-                result={'count': len(competitions)},
+                task_id="discovery_search",
+                tool_call_id=f"kaggle_search_{id(ctx)}",
+                result={"count": len(competitions)},
                 duration_ms=0,
             )
 
@@ -147,7 +147,7 @@ class LobbyistAgent(MemoryMixin):
 
     async def get_competition_details(self, ctx: RunContext[LobbyistDeps], competition_id: str) -> dict[str, Any]:
         """Get detailed information about a specific competition."""
-        with logfire.span('lobbyist.get_details', competition_id=competition_id):
+        with logfire.span("lobbyist.get_details", competition_id=competition_id):
             adapter = ctx.deps.platform_adapter
             competition = await adapter.get_competition(competition_id)
             return competition.model_dump()
@@ -163,30 +163,30 @@ class LobbyistAgent(MemoryMixin):
         """Score how well a competition fits the mission criteria."""
         competition = ctx.deps.search_cache.get(competition_id)
         if not competition:
-            return {'score': 0.0, 'reason': 'Competition not in cache'}
+            return {"score": 0.0, "reason": "Competition not in cache"}
 
         score = 0.0
         reasons: list[str] = []
-        if any(domain.lower() in ' '.join(competition.tags).lower() for domain in target_domains):
+        if any(domain.lower() in " ".join(competition.tags).lower() for domain in target_domains):
             score += 0.4
-            reasons.append('matches_domain')
+            reasons.append("matches_domain")
 
         days_remaining = competition.days_remaining
         if days_remaining >= min_days_remaining:
             score += 0.3
-            reasons.append('sufficient_time')
+            reasons.append("sufficient_time")
 
         if competition.prize_pool and competition.prize_pool >= 10000:
             score += 0.2
-            reasons.append('good_prize')
+            reasons.append("good_prize")
 
         score += min(0.1, target_percentile / 100.0)
-        reasons.append('target_percentile')
+        reasons.append("target_percentile")
         return {
-            'competition_id': competition_id,
-            'score': round(score, 2),
-            'reasons': reasons,
-            'days_remaining': days_remaining,
+            "competition_id": competition_id,
+            "score": round(score, 2),
+            "reasons": reasons,
+            "days_remaining": days_remaining,
         }
 
     def _create_agent(self) -> Agent[LobbyistDeps, DiscoveryResult]:
@@ -200,13 +200,13 @@ class LobbyistAgent(MemoryMixin):
             deps_type=LobbyistDeps,
             output_type=DiscoveryResult,
             instructions=LOBBYIST_SYSTEM_PROMPT,
-            name='lobbyist',
+            name="lobbyist",
             model_settings=self._settings.model_settings,
             retries=self._settings.tool_retries,
             output_retries=self._settings.output_retries,
             builtin_tools=builtin_tools,
             toolsets=[
-                create_production_toolset([self._toolset, cast('FunctionToolset[LobbyistDeps]', kaggle_toolset)])
+                create_production_toolset([self._toolset, cast("FunctionToolset[LobbyistDeps]", kaggle_toolset)])
             ],
             prepare_tools=universal_tool_preparation,
             instrument=True,
@@ -229,12 +229,12 @@ class LobbyistAgent(MemoryMixin):
         if ctx.partial_output:
             return result
         if not result.competitions:
-            raise ModelRetry('No competitions found. Broaden criteria and try again.')
+            raise ModelRetry("No competitions found. Broaden criteria and try again.")
         return result
 
     async def _add_search_context(self, ctx: RunContext[LobbyistDeps]) -> str:
         """Add cached search results to context."""
-        return f'Previously found competitions: {list(ctx.deps.search_cache.keys())}' if ctx.deps.search_cache else ''
+        return f"Previously found competitions: {list(ctx.deps.search_cache.keys())}" if ctx.deps.search_cache else ""
 
 
 # Module-level singleton for backward compatibility

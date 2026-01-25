@@ -12,13 +12,13 @@ from .retriever import RAGRetriever, RetrievalResult
 from .store import InMemoryVectorStore, VectorRecord, VectorStore
 
 __all__ = (
-    'DEFAULT_MODEL',
-    'embed_documents',
-    'embed_query',
-    'get_embedder',
-    'RAGRetriever',
-    'RetrievalResult',
-    'InMemoryVectorStore',
-    'VectorRecord',
-    'VectorStore',
+    "DEFAULT_MODEL",
+    "embed_documents",
+    "embed_query",
+    "get_embedder",
+    "RAGRetriever",
+    "RetrievalResult",
+    "InMemoryVectorStore",
+    "VectorRecord",
+    "VectorStore",
 )

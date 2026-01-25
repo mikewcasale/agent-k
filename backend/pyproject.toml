@@ -20,6 +20,8 @@ dependencies = [
     "numpy>=1.26.0",
     "pandas>=2.2.0",
     "scikit-learn>=1.4.0",
+    "lightgbm>=4.0.0",
+    "openevolve>=0.2.25",
 ]
 
 [project.optional-dependencies]
@@ -71,6 +73,7 @@ dev = [
 [tool.ruff]
 line-length = 120
 target-version = "py312"
+exclude = [".agent_k_memory"]
 
 [tool.ruff.lint]
 preview = true
@@ -85,9 +88,10 @@ extend-select = [
     "TID251",   # banned imports
     "PLW1514",  # unspecified encoding
 ]
-flake8-quotes = { inline-quotes = "single", multiline-quotes = "double" }
+flake8-quotes = { inline-quotes = "double", multiline-quotes = "double" }
 mccabe = { max-complexity = 15 }
 ignore = [
+    "C901",    # complexity warnings are acceptable
     "D100",    # missing module docstring
     "D102",    # missing public method docstring
     "D104",    # missing public package docstring
@@ -112,7 +116,7 @@ convention = "google"
 
 [tool.ruff.format]
 docstring-code-format = true
-quote-style = "single"
+quote-style = "double"
 skip-magic-trailing-comma = true
 
 [tool.mypy]

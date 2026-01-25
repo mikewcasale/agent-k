@@ -26,13 +26,13 @@ class TestParseBaselineScore:
     """Tests for baseline score parsing."""
 
     @pytest.mark.parametrize(
-        ('output', 'expected'),
+        ("output", "expected"),
         [
-            ('Baseline RMSE score: 0.123', 0.123),
-            ('baseline accuracy score: -1.5', -1.5),
-            ('some text\nBaseline logLoss score: 1.2345\n', 1.2345),
-            ('no score here', None),
-            ('Baseline score: not-a-number', None),
+            ("Baseline RMSE score: 0.123", 0.123),
+            ("baseline accuracy score: -1.5", -1.5),
+            ("some text\nBaseline logLoss score: 1.2345\n", 1.2345),
+            ("no score here", None),
+            ("Baseline score: not-a-number", None),
         ],
     )
     def test_parse_baseline_score(self, output: str, expected: float | None) -> None:
@@ -48,8 +48,8 @@ class TestEnvSanitization:
     """Tests for environment sanitization helpers."""
 
     @pytest.mark.parametrize(
-        ('key', 'expected'),
-        [('OPENAI_API_KEY', True), ('kaggle_key', True), ('my_token', True), ('PATH', False), ('DATA_DIR', False)],
+        ("key", "expected"),
+        [("OPENAI_API_KEY", True), ("kaggle_key", True), ("my_token", True), ("PATH", False), ("DATA_DIR", False)],
     )
     def test_is_sensitive_env_key(self, key: str, expected: bool) -> None:
         """Sensitive keys should be detected case-insensitively."""
@@ -57,17 +57,17 @@ class TestEnvSanitization:
 
     def test_sanitize_env_filters_sensitive_keys(self, env: TestEnv, tmp_path: Path) -> None:
         """Sanitization should drop sensitive keys and set defaults."""
-        env.set('KAGGLE_KEY', 'secret')
-        env.set('SAFE_VAR', 'ok')
+        env.set("KAGGLE_KEY", "secret")
+        env.set("SAFE_VAR", "ok")
 
-        sanitized = _sanitize_env({'EXTRA': '1'}, work_path=tmp_path)
+        sanitized = _sanitize_env({"EXTRA": "1"}, work_path=tmp_path)
 
-        assert 'KAGGLE_KEY' not in sanitized
-        assert sanitized['SAFE_VAR'] == 'ok'
-        assert sanitized['EXTRA'] == '1'
-        assert sanitized['HOME'] == str(tmp_path)
-        assert sanitized['PYTHONNOUSERSITE'] == '1'
-        assert sanitized['PYTHONDONTWRITEBYTECODE'] == '1'
+        assert "KAGGLE_KEY" not in sanitized
+        assert sanitized["SAFE_VAR"] == "ok"
+        assert sanitized["EXTRA"] == "1"
+        assert sanitized["HOME"] == str(tmp_path)
+        assert sanitized["PYTHONNOUSERSITE"] == "1"
+        assert sanitized["PYTHONDONTWRITEBYTECODE"] == "1"
 
 
 class TestExecuteSolution:
@@ -75,7 +75,7 @@ class TestExecuteSolution:
 
     async def test_execute_solution_nonzero_exit(self, tmp_path: Path) -> None:
         """Execution should capture non-zero return codes."""
-        code = 'import sys\nsys.exit(7)\n'
+        code = "import sys\nsys.exit(7)\n"
         result = await execute_solution(code, tmp_path, timeout_seconds=1)
 
         assert result.returncode == 7
@@ -83,7 +83,7 @@ class TestExecuteSolution:
 
     async def test_execute_solution_timeout(self, tmp_path: Path) -> None:
         """Execution should report timeouts."""
-        code = 'import time\ntime.sleep(1)\n'
+        code = "import time\ntime.sleep(1)\n"
         result = await execute_solution(code, tmp_path, timeout_seconds=0.2)
 
         assert result.timed_out is True

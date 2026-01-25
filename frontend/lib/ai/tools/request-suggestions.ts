@@ -32,33 +32,35 @@ export const requestSuggestions = ({
         };
       }
 
-      const suggestions: Omit<
-        Suggestion,
-        "userId" | "createdAt" | "documentCreatedAt"
-      >[] = [];
+      const suggestions: Suggestion[] = [];
+      const userId = session.user?.id ?? "unknown";
 
+      const suggestionSchema = z.object({
+        originalSentence: z.string().describe("The original sentence"),
+        suggestedSentence: z.string().describe("The suggested sentence"),
+        description: z.string().describe("The description of the suggestion"),
+      });
+      type SuggestionElement = z.infer<typeof suggestionSchema>;
       const { elementStream } = streamObject({
         model: myProvider.languageModel("artifact-model"),
         system:
           "You are a help writing assistant. Given a piece of writing, please offer suggestions to improve the piece of writing and describe the change. It is very important for the edits to contain full sentences instead of just words. Max 5 suggestions.",
         prompt: document.content,
         output: "array",
-        schema: z.object({
-          originalSentence: z.string().describe("The original sentence"),
-          suggestedSentence: z.string().describe("The suggested sentence"),
-          description: z.string().describe("The description of the suggestion"),
-        }),
+        schema: suggestionSchema,
       });
 
-      for await (const element of elementStream) {
-        // @ts-expect-error todo: fix type
+      for await (const element of elementStream as AsyncIterable<SuggestionElement>) {
         const suggestion: Suggestion = {
           originalText: element.originalSentence,
           suggestedText: element.suggestedSentence,
           description: element.description,
           id: generateUUID(),
           documentId,
+          documentCreatedAt: document.createdAt,
           isResolved: false,
+          userId,
+          createdAt: new Date(),
         };
 
         dataStream.write({
@@ -71,16 +73,7 @@ export const requestSuggestions = ({
       }
 
       if (session.user?.id) {
-        const userId = session.user.id;
-
-        await saveSuggestions({
-          suggestions: suggestions.map((suggestion) => ({
-            ...suggestion,
-            userId,
-            createdAt: new Date(),
-            documentCreatedAt: document.createdAt,
-          })),
-        });
+        await saveSuggestions({ suggestions });
       }
 
       return {

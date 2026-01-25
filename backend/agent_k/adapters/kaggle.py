@@ -39,10 +39,10 @@ from agent_k.core.protocols import PlatformAdapter
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
 
-__all__ = ('KaggleAdapter', 'KaggleSettings', 'SCHEMA_VERSION')
+__all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
 
-SCHEMA_VERSION: Final[str] = '1.0.0'
-_COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r'kaggle\.com/competitions/([a-zA-Z0-9-]+)')
+SCHEMA_VERSION: Final[str] = "1.0.0"
+_COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
 
 
 class KaggleSettings(BaseSettings):
@@ -51,13 +51,14 @@ class KaggleSettings(BaseSettings):
     Environment variables are prefixed with KAGGLE_.
     """
 
-    model_config = SettingsConfigDict(env_prefix='KAGGLE_', env_file='.env', extra='ignore', validate_default=True)
-    username: str = Field(..., description='Kaggle API username')
-    api_key: str = Field(..., description='Kaggle API key')
-    base_url: str = Field(default='https://www.kaggle.com/api/v1', description='Base URL for Kaggle API')
-    timeout: int = Field(default=30, ge=1, description='HTTP timeout in seconds')
-    max_retries: int = Field(default=3, ge=0, description='Maximum retry attempts for failed requests')
-    rate_limit_delay: float = Field(default=1.0, ge=0.0, description='Delay between rate-limited requests (seconds)')
+    model_config = SettingsConfigDict(env_prefix="KAGGLE_", env_file=".env", extra="ignore", validate_default=True)
+    username: str = Field(..., description="Kaggle API username")
+    api_key: str = Field(..., description="Kaggle API key")
+    base_url: str = Field(default="https://www.kaggle.com/api/v1", description="Base URL for Kaggle API")
+    timeout: int = Field(default=30, ge=1, description="HTTP timeout in seconds")
+    max_retries: int = Field(default=3, ge=0, description="Maximum retry attempts for failed requests")
+    rate_limit_delay: float = Field(default=1.0, ge=0.0, description="Delay between rate-limited requests (seconds)")
+    dry_run: bool = Field(default=False, description="Skip Kaggle submissions when enabled")
 
 
 @dataclass
@@ -69,9 +70,9 @@ class KaggleAdapter(PlatformAdapter):
     rate limiting, and error recovery.
 
     Example:
-        >>> config = KaggleSettings(username='my_username', api_key='my_api_key')
+        >>> config = KaggleSettings(username="my_username", api_key="my_api_key")
         >>> async with KaggleAdapter(config) as adapter:
-        ...     async for comp in adapter.search_competitions(['featured']):
+        ...     async for comp in adapter.search_competitions(["featured"]):
         ...         print(comp.title)
     """
 
@@ -79,12 +80,14 @@ class KaggleAdapter(PlatformAdapter):
     _client: httpx.AsyncClient = field(init=False, repr=False)
     _authenticated: bool = field(default=False, init=False)
     _rate_limit_semaphore: asyncio.Semaphore = field(init=False, repr=False)
+    _dry_run: bool = field(default=False, init=False)
 
     def __post_init__(self) -> None:
         self._client = httpx.AsyncClient(
             base_url=self.config.base_url, timeout=self.config.timeout, auth=(self.config.username, self.config.api_key)
         )
         self._rate_limit_semaphore = asyncio.Semaphore(5)
+        self._dry_run = self.config.dry_run
 
     async def __aenter__(self) -> KaggleAdapter:
         await self.authenticate()
@@ -96,17 +99,17 @@ class KaggleAdapter(PlatformAdapter):
     @property
     def platform_name(self) -> str:
         """Return the platform identifier."""
-        return 'kaggle'
+        return "kaggle"
 
     async def authenticate(self) -> bool:
         """Authenticate with Kaggle API."""
-        with logfire.span('kaggle.authenticate'):
+        with logfire.span("kaggle.authenticate"):
             try:
-                response = await self._request('GET', '/competitions/list', params={'page': 1})
+                response = await self._request("GET", "/competitions/list", params={"page": 1})
                 self._authenticated = response.status_code == 200
                 return self._authenticated
             except httpx.HTTPError as exc:
-                raise AuthenticationError('kaggle', f'Authentication failed: {exc}') from exc
+                raise AuthenticationError("kaggle", f"Authentication failed: {exc}") from exc
 
     async def search_competitions(
         self,
@@ -116,16 +119,16 @@ class KaggleAdapter(PlatformAdapter):
         active_only: bool = True,
     ) -> AsyncIterator[Competition]:
         """Search Kaggle competitions."""
-        with logfire.span('kaggle.search_competitions', categories=categories):
+        with logfire.span("kaggle.search_competitions", categories=categories):
             page = 1
             while True:
-                params: dict[str, Any] = {'page': page}
+                params: dict[str, Any] = {"page": page}
                 if categories:
-                    params['category'] = categories[0]  # Kaggle API supports single category
+                    params["category"] = categories[0]  # Kaggle API supports single category
                 if keywords:
-                    params['search'] = ' '.join(keywords)
+                    params["search"] = " ".join(keywords)
 
-                response = await self._request('GET', '/competitions/list', params=params)
+                response = await self._request("GET", "/competitions/list", params=params)
                 data = response.json()
 
                 if not data:
@@ -134,13 +137,13 @@ class KaggleAdapter(PlatformAdapter):
                 for item in data:
                     # Skip if item is not a dict (malformed data)
                     if not isinstance(item, dict):
-                        logfire.warning('skipping_malformed_competition', item=str(item)[:100])
+                        logfire.warning("skipping_malformed_competition", item=str(item)[:100])
                         continue
 
                     try:
                         competition = self._parse_competition(item)
                     except Exception as exc:
-                        logfire.warning('failed_to_parse_competition', error=str(exc))
+                        logfire.warning("failed_to_parse_competition", error=str(exc))
                         continue
 
                     # Apply filters
@@ -157,21 +160,21 @@ class KaggleAdapter(PlatformAdapter):
 
     async def get_competition(self, competition_id: str) -> Competition:
         """Get competition details from Kaggle."""
-        with logfire.span('kaggle.get_competition', competition_id=competition_id):
-            response = await self._request('GET', f'/competitions/data/list/{competition_id}')
+        with logfire.span("kaggle.get_competition", competition_id=competition_id):
+            response = await self._request("GET", f"/competitions/data/list/{competition_id}")
 
             if response.status_code == 404:
                 raise CompetitionNotFoundError(competition_id)
 
             response.raise_for_status()
             # Note: Kaggle API requires additional call for full details
-            list_response = await self._request('GET', '/competitions/list', params={'search': competition_id})
+            list_response = await self._request("GET", "/competitions/list", params={"search": competition_id})
 
             for item in list_response.json():
                 try:
                     competition = self._parse_competition(item)
                 except Exception as exc:
-                    logfire.warning('failed_to_parse_competition', error=str(exc))
+                    logfire.warning("failed_to_parse_competition", error=str(exc))
                     continue
                 if competition.id == competition_id:
                     return competition
@@ -187,19 +190,19 @@ class KaggleAdapter(PlatformAdapter):
 
     async def get_leaderboard(self, competition_id: str, *, limit: int = 100) -> list[LeaderboardEntry]:
         """Get competition leaderboard."""
-        with logfire.span('kaggle.get_leaderboard', competition_id=competition_id):
-            response = await self._request('GET', f'/competitions/{competition_id}/leaderboard/download')
+        with logfire.span("kaggle.get_leaderboard", competition_id=competition_id):
+            response = await self._request("GET", f"/competitions/{competition_id}/leaderboard/download")
             self._raise_rules_not_accepted(response, competition_id)
             response.raise_for_status()
 
             entries: list[LeaderboardEntry] = []
             content = response.content
-            if response.headers.get('content-type', '').startswith('application/zip') or content[:2] == b'PK':
+            if response.headers.get("content-type", "").startswith("application/zip") or content[:2] == b"PK":
                 with zipfile.ZipFile(io.BytesIO(content)) as archive:
-                    csv_name = next((name for name in archive.namelist() if name.lower().endswith('.csv')), None)
+                    csv_name = next((name for name in archive.namelist() if name.lower().endswith(".csv")), None)
                     if not csv_name:
                         return entries
-                    csv_text = archive.read(csv_name).decode('utf-8', errors='ignore')
+                    csv_text = archive.read(csv_name).decode("utf-8", errors="ignore")
             else:
                 csv_text = response.text
 
@@ -212,7 +215,7 @@ class KaggleAdapter(PlatformAdapter):
                     break
                 if not row:
                     continue
-                team_name = row[1] if len(row) > 1 else 'Unknown'
+                team_name = row[1] if len(row) > 1 else "Unknown"
                 score = 0.0
                 if len(row) > 2:
                     try:
@@ -223,110 +226,127 @@ class KaggleAdapter(PlatformAdapter):
 
             return entries
 
-    async def submit(self, competition_id: str, file_path: str, message: str = '') -> Submission:
+    async def submit(self, competition_id: str, file_path: str, message: str = "") -> Submission:
         """Submit solution to Kaggle competition."""
-        with logfire.span('kaggle.submit', competition_id=competition_id):
+        with logfire.span("kaggle.submit", competition_id=competition_id):
             path = Path(file_path)
             if not path.exists():
-                raise SubmissionError(competition_id, f'Submission file not found: {file_path}')
+                raise SubmissionError(competition_id, f"Submission file not found: {file_path}")
+            if self._dry_run:
+                logfire.info("kaggle_submit_dry_run", competition_id=competition_id, file_name=path.name)
+                return Submission(
+                    id="dry-run",
+                    competition_id=competition_id,
+                    file_name=path.name,
+                    status="complete",
+                    error_message="dry-run",
+                )
 
             content_length = path.stat().st_size
             last_modified = int(path.stat().st_mtime)
             start_fields = {
-                'competitionName': (None, competition_id),
-                'contentLength': (None, str(content_length)),
-                'lastModifiedEpochSeconds': (None, str(last_modified)),
-                'fileName': (None, path.name),
+                "competitionName": (None, competition_id),
+                "contentLength": (None, str(content_length)),
+                "lastModifiedEpochSeconds": (None, str(last_modified)),
+                "fileName": (None, path.name),
             }
-            start_response = await self._request('POST', '/competitions/submission-url', files=start_fields)
+            start_response = await self._request("POST", "/competitions/submission-url", files=start_fields)
             if start_response.status_code != 200:
-                raise SubmissionError(competition_id, f'Submission start failed: {start_response.text}')
+                raise SubmissionError(competition_id, f"Submission start failed: {start_response.text}")
 
             start_payload = start_response.json()
-            token = start_payload.get('token')
-            create_url = start_payload.get('createUrl') or start_payload.get('create_url')
+            token = start_payload.get("token")
+            create_url = start_payload.get("createUrl") or start_payload.get("create_url")
             if not token or not create_url:
-                raise SubmissionError(competition_id, f'Invalid submission upload response: {start_payload}')
+                raise SubmissionError(competition_id, f"Invalid submission upload response: {start_payload}")
 
             payload = path.read_bytes()
             async with httpx.AsyncClient(timeout=self.config.timeout) as upload_client:
                 upload_response = await upload_client.put(create_url, content=payload)
             if upload_response.status_code not in {200, 201}:
-                raise SubmissionError(competition_id, f'Upload failed: {upload_response.text}')
+                raise SubmissionError(competition_id, f"Upload failed: {upload_response.text}")
 
             submit_fields = {
-                'competitionName': (None, competition_id),
-                'blobFileTokens': (None, token),
-                'submissionDescription': (None, message),
+                "competitionName": (None, competition_id),
+                "blobFileTokens": (None, token),
+                "submissionDescription": (None, message),
             }
             submit_response = await self._request(
-                'POST', f'/competitions/submissions/submit/{competition_id}', files=submit_fields
+                "POST", f"/competitions/submissions/submit/{competition_id}", files=submit_fields
             )
             if submit_response.status_code != 200:
-                raise SubmissionError(competition_id, f'Submission failed: {submit_response.text}')
+                raise SubmissionError(competition_id, f"Submission failed: {submit_response.text}")
 
             result = submit_response.json()
             return Submission(
-                id=str(result.get('ref', 'unknown')),
+                id=str(result.get("ref", "unknown")),
                 competition_id=competition_id,
                 file_name=path.name,
-                status='pending',
+                status="pending",
             )
 
     async def get_submission_status(self, competition_id: str, submission_id: str) -> Submission:
         """Get submission status from Kaggle."""
-        with logfire.span('kaggle.get_submission_status', submission_id=submission_id):
-            response = await self._request('GET', f'/competitions/submissions/list/{competition_id}')
+        with logfire.span("kaggle.get_submission_status", submission_id=submission_id):
+            if self._dry_run:
+                return Submission(
+                    id=submission_id,
+                    competition_id=competition_id,
+                    file_name="dry-run",
+                    status="complete",
+                    error_message="dry-run",
+                )
+            response = await self._request("GET", f"/competitions/submissions/list/{competition_id}")
             response.raise_for_status()
 
             for item in response.json():
-                if item.get('ref') == submission_id:
+                if item.get("ref") == submission_id:
                     return Submission(
                         id=submission_id,
                         competition_id=competition_id,
-                        file_name=item.get('fileName', ''),
-                        status='complete' if item.get('hasPublicScore') else 'pending',
-                        public_score=item.get('publicScore'),
+                        file_name=item.get("fileName", ""),
+                        status="complete" if item.get("hasPublicScore") else "pending",
+                        public_score=item.get("publicScore"),
                     )
 
             return Submission(
-                id=submission_id, competition_id=competition_id, file_name='', status='pending', public_score=None
+                id=submission_id, competition_id=competition_id, file_name="", status="pending", public_score=None
             )
 
     async def download_data(self, competition_id: str, destination: str) -> list[str]:
         """Download competition data files."""
-        with logfire.span('kaggle.download_data', competition_id=competition_id):
+        with logfire.span("kaggle.download_data", competition_id=competition_id):
             dest_path = Path(destination)
             dest_path.mkdir(parents=True, exist_ok=True)
 
             # List available files
-            response = await self._request('GET', f'/competitions/data/list/{competition_id}')
+            response = await self._request("GET", f"/competitions/data/list/{competition_id}")
             self._raise_rules_not_accepted(response, competition_id)
             response.raise_for_status()
 
             payload = response.json()
-            files = payload.get('files', []) if isinstance(payload, dict) else payload
+            files = payload.get("files", []) if isinstance(payload, dict) else payload
 
             downloaded: list[str] = []
             for file_info in files:
                 if isinstance(file_info, str):
                     file_name = file_info
-                    file_url = ''
+                    file_url = ""
                 else:
-                    file_name = file_info.get('name') or file_info.get('nameNullable') or ''
-                    file_url = file_info.get('url', '')
+                    file_name = file_info.get("name") or file_info.get("nameNullable") or ""
+                    file_url = file_info.get("url", "")
 
                 if not file_name:
                     continue
 
                 if not file_url:
-                    file_url = f'/competitions/data/download/{competition_id}/{quote(file_name)}'
+                    file_url = f"/competitions/data/download/{competition_id}/{quote(file_name)}"
 
                 file_path = dest_path / file_name
-                async with self._client.stream('GET', file_url, follow_redirects=True) as file_response:
+                async with self._client.stream("GET", file_url, follow_redirects=True) as file_response:
                     self._raise_rules_not_accepted(file_response, competition_id)
                     file_response.raise_for_status()
-                    with file_path.open('wb') as handle:
+                    with file_path.open("wb") as handle:
                         async for chunk in file_response.aiter_bytes():
                             handle.write(chunk)
                 downloaded.append(str(file_path))
@@ -344,89 +364,119 @@ class KaggleAdapter(PlatformAdapter):
                     response = await self._client.request(method, path, **kwargs)
 
                     if response.status_code == 429:
-                        retry_after = int(response.headers.get('Retry-After', 60))
-                        raise RateLimitError('kaggle', 'Rate limit exceeded', retry_after=retry_after)
+                        retry_after = int(response.headers.get("Retry-After", 60))
+                        raise RateLimitError("kaggle", "Rate limit exceeded", retry_after=retry_after)
 
                     return response
 
                 except httpx.HTTPError as exc:
                     if attempt == self.config.max_retries - 1:
-                        raise PlatformConnectionError('kaggle', f'Kaggle API error: {exc}') from exc
+                        raise PlatformConnectionError("kaggle", f"Kaggle API error: {exc}") from exc
                     await asyncio.sleep(self.config.rate_limit_delay * (attempt + 1))
 
-            raise PlatformConnectionError('kaggle', 'Max retries exceeded')
+            raise PlatformConnectionError("kaggle", "Max retries exceeded")
 
     def _raise_rules_not_accepted(self, response: httpx.Response, competition_id: str) -> None:
         if response.status_code != 403:
             return
         text = response.text.lower()
-        if 'accept' in text and 'rules' in text:
+        if "accept" in text and "rules" in text:
             raise CompetitionRulesNotAcceptedError(competition_id)
 
     def _parse_competition(self, data: dict[str, Any]) -> Competition:
         """Parse Kaggle API response into Competition model."""
         # Map Kaggle category to our enum
         category_map = {
-            'Featured': CompetitionType.FEATURED,
-            'Research': CompetitionType.RESEARCH,
-            'Getting Started': CompetitionType.GETTING_STARTED,
-            'Playground': CompetitionType.PLAYGROUND,
-            'Community': CompetitionType.COMMUNITY,
+            "Featured": CompetitionType.FEATURED,
+            "Research": CompetitionType.RESEARCH,
+            "Getting Started": CompetitionType.GETTING_STARTED,
+            "Playground": CompetitionType.PLAYGROUND,
+            "Community": CompetitionType.COMMUNITY,
         }
 
         # Map Kaggle metric to our enum
         metric_map = {
-            'accuracy': EvaluationMetric.ACCURACY,
-            'auc': EvaluationMetric.AUC,
-            'logloss': EvaluationMetric.LOG_LOSS,
-            'rmse': EvaluationMetric.RMSE,
-            'mae': EvaluationMetric.MAE,
+            "accuracy": EvaluationMetric.ACCURACY,
+            "auc": EvaluationMetric.AUC,
+            "logloss": EvaluationMetric.LOG_LOSS,
+            "rmse": EvaluationMetric.RMSE,
+            "mae": EvaluationMetric.MAE,
+            "rmsle": EvaluationMetric.RMSLE,
         }
+        metric_raw = str(data.get("evaluationMetric", "accuracy")).strip()
+        metric_key = metric_raw.lower()
+        metric = metric_map.get(metric_key)
+        if metric is None:
+            if "logarithmic" in metric_key or "rmsle" in metric_key:
+                metric = EvaluationMetric.RMSLE
+            elif "mean squared" in metric_key or "rmse" in metric_key:
+                metric = EvaluationMetric.RMSE
+            elif "mean absolute" in metric_key or "mae" in metric_key:
+                metric = EvaluationMetric.MAE
+            elif "log loss" in metric_key or "logloss" in metric_key:
+                metric = EvaluationMetric.LOG_LOSS
+            elif "auc" in metric_key:
+                metric = EvaluationMetric.AUC
+            else:
+                metric = EvaluationMetric.ACCURACY
+        metric_direction_map = {
+            EvaluationMetric.ACCURACY: "maximize",
+            EvaluationMetric.AUC: "maximize",
+            EvaluationMetric.F1: "maximize",
+            EvaluationMetric.LOG_LOSS: "minimize",
+            EvaluationMetric.RMSE: "minimize",
+            EvaluationMetric.MAE: "minimize",
+            EvaluationMetric.RMSLE: "minimize",
+            EvaluationMetric.MAP: "maximize",
+            EvaluationMetric.NDCG: "maximize",
+        }
+        metric_direction = metric_direction_map.get(metric, "maximize")
 
         # Parse tags - they may be strings or dicts with 'name' key
-        raw_tags = data.get('tags', [])
+        raw_tags = data.get("tags", [])
         if raw_tags and isinstance(raw_tags[0], dict):
-            tags = frozenset(t.get('name', str(t)) for t in raw_tags if t)
+            tags = frozenset(t.get("name", str(t)) for t in raw_tags if t)
         else:
             tags = frozenset(str(t) for t in raw_tags if t)
 
         # Parse competition ID - extract slug from ref or URL
         # ref is typically a full URL like https://www.kaggle.com/competitions/slug
-        comp_id_raw = data.get('ref', '') or data.get('url', '') or str(data.get('id', ''))
-        if 'competitions/' in comp_id_raw:
+        comp_id_raw = data.get("ref", "") or data.get("url", "") or str(data.get("id", ""))
+        if "competitions/" in comp_id_raw:
             # Extract slug from URL
-            comp_id = comp_id_raw.split('competitions/')[-1].rstrip('/').split('/')[0]
-        elif '/' in comp_id_raw:
+            comp_id = comp_id_raw.split("competitions/")[-1].rstrip("/").split("/")[0]
+        elif "/" in comp_id_raw:
             # Extract slug from path
-            comp_id = comp_id_raw.rstrip('/').split('/')[-1]
+            comp_id = comp_id_raw.rstrip("/").split("/")[-1]
         else:
             comp_id = comp_id_raw
 
         # Parse prize pool - may be integer, string number, or text like "Swag"
-        prize_raw = data.get('reward')
+        prize_raw = data.get("reward")
         prize_pool = None
         if prize_raw is not None:
             if isinstance(prize_raw, int):
                 prize_pool = prize_raw
             elif isinstance(prize_raw, str):
                 # Try to extract numeric value
-                match = re.search(r'[\d,]+', prize_raw.replace(',', ''))
+                match = re.search(r"[\d,]+", prize_raw.replace(",", ""))
                 if match:
                     try:
-                        prize_pool = int(match.group().replace(',', ''))
+                        prize_pool = int(match.group().replace(",", ""))
                     except ValueError:
                         prize_pool = None
 
         return Competition(
             id=comp_id,
-            title=data.get('title', ''),
-            description=data.get('description'),
-            competition_type=category_map.get(data.get('category', ''), CompetitionType.COMMUNITY),
-            metric=metric_map.get(data.get('evaluationMetric', 'accuracy').lower(), EvaluationMetric.ACCURACY),
-            deadline=datetime.fromisoformat(data.get('deadline', '2099-12-31T23:59:59+00:00').replace('Z', '+00:00')),
+            title=data.get("title", ""),
+            description=data.get("description"),
+            competition_type=category_map.get(data.get("category", ""), CompetitionType.COMMUNITY),
+            metric=metric,
+            metric_direction=metric_direction,
+            deadline=datetime.fromisoformat(data.get("deadline", "2099-12-31T23:59:59+00:00").replace("Z", "+00:00")),
             prize_pool=prize_pool,
-            max_team_size=data.get('maxTeamSize', 1),
-            max_daily_submissions=data.get('maxDailySubmissions', 5),
+            max_team_size=data.get("maxTeamSize", 1),
+            max_daily_submissions=data.get("maxDailySubmissions", 5),
             tags=tags,
-            url=data.get('url'),
+            url=data.get("url"),
         )

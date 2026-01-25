@@ -169,7 +169,7 @@ Evolves solutions using evolutionary code search to maximize competition score.
 from agent_k import evolver_agent
 
 result = await evolver_agent.run(
-    "Optimize this XGBoost solution",
+    "Optimize this LightGBM solution",
     deps=deps,
 )
 ```

@@ -45,41 +45,41 @@ if TYPE_CHECKING:
     from agent_k.core.protocols import PlatformAdapter
 
 __all__ = (
-    'LycurgusDeps',
-    'LycurgusOrchestrator',
-    'LycurgusSettings',
-    'LYCURGUS_SYSTEM_PROMPT',
-    'MissionStatus',
-    'SCHEMA_VERSION',
-    'orchestrate',
-    'validate_mission_result',
+    "LycurgusDeps",
+    "LycurgusOrchestrator",
+    "LycurgusSettings",
+    "LYCURGUS_SYSTEM_PROMPT",
+    "MissionStatus",
+    "SCHEMA_VERSION",
+    "orchestrate",
+    "validate_mission_result",
 )
 
-SCHEMA_VERSION: Final[str] = '1.0.0'
+SCHEMA_VERSION: Final[str] = "1.0.0"
 
 
 class LycurgusSettings(BaseSettings):
     """Settings for the Lycurgus orchestrator."""
 
-    model_config = SettingsConfigDict(env_prefix='LYCURGUS_', env_file='.env', extra='ignore', validate_default=True)
-    default_model: str = Field(default=DEFAULT_MODEL, description='Default model spec for mission orchestration')
+    model_config = SettingsConfigDict(env_prefix="LYCURGUS_", env_file=".env", extra="ignore", validate_default=True)
+    default_model: str = Field(default=DEFAULT_MODEL, description="Default model spec for mission orchestration")
     max_evolution_rounds: int = Field(
-        default=100, ge=1, le=MAX_MISSION_EVOLUTION_ROUNDS, description='Maximum evolution rounds for missions'
+        default=100, ge=1, le=MAX_MISSION_EVOLUTION_ROUNDS, description="Maximum evolution rounds for missions"
     )
 
     @classmethod
     def from_file(cls, path: Path) -> LycurgusSettings:
         """Create settings from JSON file."""
-        data = json.loads(path.read_text(encoding='utf-8'))
+        data = json.loads(path.read_text(encoding="utf-8"))
         return cls(
-            default_model=data.get('default_model', cls().default_model),
-            max_evolution_rounds=data.get('max_evolution_rounds', cls().max_evolution_rounds),
+            default_model=data.get("default_model", cls().default_model),
+            max_evolution_rounds=data.get("max_evolution_rounds", cls().max_evolution_rounds),
         )
 
     @classmethod
     def with_devstral(cls, base_url: str | None = None) -> LycurgusSettings:
         """Create settings using Devstral model."""
-        model = f'devstral:{base_url}' if base_url else 'devstral:local'
+        model = f"devstral:{base_url}" if base_url else "devstral:local"
         return cls(default_model=model)
 
 
@@ -99,7 +99,7 @@ class MissionStatus:
     phase: str
     progress: float
     metrics: dict[str, Any]
-    ABORTED: ClassVar[str] = 'aborted'
+    ABORTED: ClassVar[str] = "aborted"
 
 
 class LycurgusOrchestrator:
@@ -121,27 +121,27 @@ class LycurgusOrchestrator:
     # =========================================================================
     # Class Variables (ClassVar annotations)
     # =========================================================================
-    _default_model: ClassVar[str] = 'anthropic:claude-sonnet-4-5'
+    _default_model: ClassVar[str] = "anthropic:claude-sonnet-4-5"
     _max_evolution_rounds: ClassVar[int] = 100
-    _supported_competition_types: ClassVar[frozenset[str]] = frozenset({'featured', 'research', 'playground'})
+    _supported_competition_types: ClassVar[frozenset[str]] = frozenset({"featured", "research", "playground"})
 
     # =========================================================================
     # Instance Variable Annotations (slots if applicable)
     # =========================================================================
     __slots__ = (
-        '_state',
-        '_agents',
-        '_graph',
-        '_config',
-        '_logger',
-        '_event_emitter',
-        '_http_client',
-        '_platform_adapter',
-        '_owns_http_client',
-        '_owns_platform_adapter',
-        '_paused',
-        '_entered',
-        '_resources_ready',
+        "_state",
+        "_agents",
+        "_graph",
+        "_config",
+        "_logger",
+        "_event_emitter",
+        "_http_client",
+        "_platform_adapter",
+        "_owns_http_client",
+        "_owns_platform_adapter",
+        "_paused",
+        "_entered",
+        "_resources_ready",
     )
 
     def __init__(
@@ -182,11 +182,11 @@ class LycurgusOrchestrator:
     # Other Dunder Methods (alphabetical)
     # =========================================================================
     def __repr__(self) -> str:
-        return f'{type(self).__name__}(state={self._state!r}, agents={list(self._agents.keys())!r})'
+        return f"{type(self).__name__}(state={self._state!r}, agents={list(self._agents.keys())!r})"
 
     def __str__(self) -> str:
-        status = 'active' if self._state else 'idle'
-        return f'LYCURGUS Orchestrator ({status})'
+        status = "active" if self._state else "idle"
+        return f"LYCURGUS Orchestrator ({status})"
 
     async def __aenter__(self) -> LycurgusOrchestrator:
         """Async context manager entry for resource management."""
@@ -242,7 +242,7 @@ class LycurgusOrchestrator:
         Returns:
             True if valid, False otherwise.
         """
-        pattern = r'^[a-z0-9-]+$'
+        pattern = r"^[a-z0-9-]+$"
         return bool(re.match(pattern, competition_id))
 
     # =========================================================================
@@ -279,7 +279,7 @@ class LycurgusOrchestrator:
             RuntimeError: If mission is active during reconfiguration.
         """
         if self.is_active:
-            raise RuntimeError('Cannot reconfigure during active mission')
+            raise RuntimeError("Cannot reconfigure during active mission")
         self._config = value
 
     # =========================================================================
@@ -295,9 +295,9 @@ class LycurgusOrchestrator:
             RuntimeError: If no mission is active.
         """
         if not self.is_active:
-            raise RuntimeError('No active mission to abort')
+            raise RuntimeError("No active mission to abort")
 
-        with self._logger.span('abort_mission', reason=reason):
+        with self._logger.span("abort_mission", reason=reason):
             await self._transition_to_aborted(reason)
             self._state = None
 
@@ -336,7 +336,7 @@ class LycurgusOrchestrator:
             CompetitionNotFoundError: If competition doesn't exist.
             MissionExecutionError: If mission fails during execution.
         """
-        with self._logger.span('execute_mission', competition_id=competition_id):
+        with self._logger.span("execute_mission", competition_id=competition_id):
             if competition_id and not self.validate_competition_id(competition_id):
                 raise CompetitionNotFoundError(competition_id)
 
@@ -352,7 +352,7 @@ class LycurgusOrchestrator:
             mission_id = mission_id or str(uuid.uuid4())
             persistence = persistence or create_persistence(mission_id)
             if persistence.has_snapshots():
-                self._logger.warning('mission_persistence_exists', mission_id=mission_id)
+                self._logger.warning("mission_persistence_exists", mission_id=mission_id)
                 return await self.resume_persisted_mission(
                     mission_id,
                     event_emitter=self._event_emitter,
@@ -394,9 +394,9 @@ class LycurgusOrchestrator:
     ) -> MissionResult:
         """Resume a persisted mission from snapshots."""
         if self.is_active:
-            raise RuntimeError('Cannot resume while mission is active')
+            raise RuntimeError("Cannot resume while mission is active")
 
-        with self._logger.span('resume_persisted_mission', mission_id=mission_id):
+        with self._logger.span("resume_persisted_mission", mission_id=mission_id):
             if event_emitter is not None:
                 self._event_emitter = event_emitter
             if http_client is not None:
@@ -408,7 +408,7 @@ class LycurgusOrchestrator:
 
             persistence = persistence or create_persistence(mission_id)
             if not persistence.has_snapshots():
-                raise RuntimeError('No persisted mission state to resume')
+                raise RuntimeError("No persisted mission state to resume")
 
             initialized_here = False
             if not self._resources_ready:
@@ -440,28 +440,30 @@ class LycurgusOrchestrator:
             RuntimeError: If no mission is active.
         """
         if not self.is_active:
-            raise RuntimeError('No active mission')
+            raise RuntimeError("No active mission")
 
         state = self._state
         if state is None:
-            raise RuntimeError('No active mission')
+            raise RuntimeError("No active mission")
         progress = self._calculate_progress(state)
         metrics = {
-            'phases_completed': list(state.phases_completed),
-            'competitions_found': len(state.discovered_competitions),
-            'current_phase': state.current_phase,
-            'generations': (len(state.evolution_state.generation_history) if state.evolution_state else 0),
+            "phases_completed": list(state.phases_completed),
+            "competitions_found": len(state.discovered_competitions),
+            "current_phase": state.current_phase,
+            "generations": (len(state.evolution_state.generation_history) if state.evolution_state else 0),
         }
+        if state.evolution_state and state.evolution_state.failure_summary:
+            metrics["failure_summary"] = dict(state.evolution_state.failure_summary)
         return MissionStatus(phase=state.current_phase, progress=progress, metrics=metrics)
 
     async def pause_mission(self) -> None:
         """Pause the current mission for later resumption."""
         if not self.is_active:
-            raise RuntimeError('No active mission')
+            raise RuntimeError("No active mission")
 
         state = self._state
         if state is None:
-            raise RuntimeError('No active mission')
+            raise RuntimeError("No active mission")
 
         if self._paused:
             return
@@ -469,33 +471,33 @@ class LycurgusOrchestrator:
         self._paused = True
         if self._event_emitter:
             await self._event_emitter.emit(
-                'phase-error', {'phase': state.current_phase, 'error': 'mission_paused', 'recoverable': True}
+                "phase-error", {"phase": state.current_phase, "error": "mission_paused", "recoverable": True}
             )
-        self._logger.info('mission_paused', mission_id=state.mission_id)
+        self._logger.info("mission_paused", mission_id=state.mission_id)
 
     async def resume_mission(self) -> None:
         """Resume a previously paused mission."""
         if not self.is_active:
-            raise RuntimeError('No active mission')
+            raise RuntimeError("No active mission")
 
         state = self._state
         if state is None:
-            raise RuntimeError('No active mission')
+            raise RuntimeError("No active mission")
 
         if not self._paused:
             return
 
         self._paused = False
         if self._event_emitter:
-            await self._event_emitter.emit('recovery-attempt', {'phase': state.current_phase, 'strategy': 'resume'})
-        self._logger.info('mission_resumed', mission_id=state.mission_id)
+            await self._event_emitter.emit("recovery-attempt", {"phase": state.current_phase, "strategy": "resume"})
+        self._logger.info("mission_resumed", mission_id=state.mission_id)
 
     # =========================================================================
     # Protected Methods (for subclass use)
     # =========================================================================
     def _initialize_agents(self) -> dict[str, Agent[Any, Any]]:
         """Initialize specialized agent singletons."""
-        return {'lobbyist': lobbyist_agent, 'scientist': scientist_agent, 'evolver': evolver_agent}
+        return {"lobbyist": lobbyist_agent, "scientist": scientist_agent, "evolver": evolver_agent}
 
     def _build_orchestration_graph(self) -> Graph[MissionState, GraphContext, MissionResult]:
         """Build the state machine graph for orchestration."""
@@ -514,7 +516,7 @@ class LycurgusOrchestrator:
 
         if not resume:
             if self._state is None:
-                raise RuntimeError('No mission state initialized')
+                raise RuntimeError("No mission state initialized")
             await self._graph.initialize(DiscoveryNode(), persistence, state=self._state)
 
         async with self._graph.iter_from_persistence(persistence, deps=context) as graph_run:
@@ -523,7 +525,7 @@ class LycurgusOrchestrator:
                 pass
 
         result = graph_run.result
-        assert result is not None, 'GraphRun should have a result'
+        assert result is not None, "GraphRun should have a result"
         self._state = result.state
         return result.output
 
@@ -532,7 +534,7 @@ class LycurgusOrchestrator:
     # =========================================================================
     def _calculate_progress(self, state: MissionState) -> float:
         """Calculate mission progress from the current state."""
-        phases = ('discovery', 'research', 'prototype', 'evolution', 'submission')
+        phases = ("discovery", "research", "prototype", "evolution", "submission")
         completed = float(len(state.phases_completed))
         if state.current_phase in phases and state.current_phase not in state.phases_completed:
             completed += 0.5
@@ -540,15 +542,15 @@ class LycurgusOrchestrator:
 
     def _create_platform_adapter(self) -> PlatformAdapter:
         """Create a platform adapter based on available credentials."""
-        username = os.getenv('KAGGLE_USERNAME')
-        api_key = os.getenv('KAGGLE_KEY')
+        username = os.getenv("KAGGLE_USERNAME")
+        api_key = os.getenv("KAGGLE_KEY")
         if username and api_key:
             return KaggleAdapter(KaggleSettings(username=username, api_key=api_key))
         return OpenEvolveAdapter()
 
     async def _maybe_enter(self, adapter: PlatformAdapter) -> None:
         """Enter adapter context or authenticate when required."""
-        enter = getattr(adapter, '__aenter__', None)
+        enter = getattr(adapter, "__aenter__", None)
         if callable(enter):
             result = enter()
             if inspect.isawaitable(result):
@@ -558,7 +560,7 @@ class LycurgusOrchestrator:
 
     async def _maybe_exit(self, adapter: PlatformAdapter) -> None:
         """Exit adapter context manager when supported."""
-        exit_fn = getattr(adapter, '__aexit__', None)
+        exit_fn = getattr(adapter, "__aexit__", None)
         if callable(exit_fn):
             result = exit_fn(None, None, None)
             if inspect.isawaitable(result):
@@ -600,9 +602,9 @@ class LycurgusOrchestrator:
         """Handle transition to aborted state."""
         if self._event_emitter and self._state:
             await self._event_emitter.emit(
-                'phase-error', {'phase': self._state.current_phase, 'error': reason, 'recoverable': False}
+                "phase-error", {"phase": self._state.current_phase, "error": reason, "recoverable": False}
             )
-        self._logger.warning('mission_aborted', reason=reason)
+        self._logger.warning("mission_aborted", reason=reason)
 
 
 async def orchestrate(

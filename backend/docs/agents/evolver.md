@@ -57,6 +57,7 @@ deps = EvolverDeps(
     sample_path=staged["sample"],
     target_columns=schema.target_columns,
     train_target_columns=schema.train_target_columns,
+    id_column=schema.id_column,
     initial_solution=baseline_code,
 )
 

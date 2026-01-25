@@ -29,29 +29,29 @@ from agent_k.infra.providers import get_model
 if TYPE_CHECKING:
     from pathlib import Path
 
-__all__ = ('BASELINE_SCORE_PATTERN', 'ExecutionResult', 'execute_solution', 'parse_baseline_score')
+__all__ = ("BASELINE_SCORE_PATTERN", "ExecutionResult", "execute_solution", "parse_baseline_score")
 
-BASELINE_SCORE_PATTERN: Final[re.Pattern[str]] = re.compile(r'Baseline .*? score:\s*(-?[0-9.]+)', re.IGNORECASE)
+BASELINE_SCORE_PATTERN: Final[re.Pattern[str]] = re.compile(r"Baseline .*? score:\s*(-?[0-9.]+)", re.IGNORECASE)
 _CODE_EXECUTION_SYSTEM_PROMPT: Final[str] = (
-    'You are a code execution runner. Always call the code_execution tool with the exact '
-    'Python code provided by the user message, without modification. After the tool '
+    "You are a code execution runner. Always call the code_execution tool with the exact "
+    "Python code provided by the user message, without modification. After the tool "
     "returns, respond with the single word 'done'."
 )
 _DEFAULT_MAX_INLINE_DATA_BYTES: Final[int] = 100_000
-_EXECUTION_DATA_FILES: Final[tuple[str, ...]] = ('train.csv', 'test.csv', 'sample_submission.csv')
-_KAGGLE_INPUT_PREFIX: Final[str] = '/kaggle/input'
+_EXECUTION_DATA_FILES: Final[tuple[str, ...]] = ("train.csv", "test.csv", "sample_submission.csv")
+_KAGGLE_INPUT_PREFIX: Final[str] = "/kaggle/input"
 _SENSITIVE_ENV_TOKENS: Final[tuple[str, ...]] = (
-    'KEY',
-    'TOKEN',
-    'SECRET',
-    'PASSWORD',
-    'PASS',
-    'CREDENTIAL',
-    'OPENAI',
-    'ANTHROPIC',
-    'OPENROUTER',
-    'KAGGLE',
-    'LOGFIRE',
+    "KEY",
+    "TOKEN",
+    "SECRET",
+    "PASSWORD",
+    "PASS",
+    "CREDENTIAL",
+    "OPENAI",
+    "ANTHROPIC",
+    "OPENROUTER",
+    "KAGGLE",
+    "LOGFIRE",
 )
 
 _CODE_EXECUTION_AGENT_CACHE: dict[str, Agent[None, str]] = {}
@@ -103,28 +103,28 @@ def parse_baseline_score(output: str) -> float | None:
 def _normalize_kaggle_paths(code: str) -> str:
     if _KAGGLE_INPUT_PREFIX not in code:
         return code
-    return code.replace(_KAGGLE_INPUT_PREFIX, '.')
+    return code.replace(_KAGGLE_INPUT_PREFIX, ".")
 
 
 async def _execute_solution_local(
     code: str, work_path: Path, *, timeout_seconds: float | None, env: dict[str, str] | None
 ) -> ExecutionResult:
-    solution_path = work_path / 'solution.py'
-    solution_path.write_text(code, encoding='utf-8')
+    solution_path = work_path / "solution.py"
+    solution_path.write_text(code, encoding="utf-8")
 
     exec_env = _sanitize_env(env, work_path=work_path)
 
     start_time = time.perf_counter()
     process_kwargs: dict[str, Any] = {
-        'cwd': str(work_path),
-        'stdout': asyncio.subprocess.PIPE,
-        'stderr': asyncio.subprocess.PIPE,
-        'env': exec_env,
+        "cwd": str(work_path),
+        "stdout": asyncio.subprocess.PIPE,
+        "stderr": asyncio.subprocess.PIPE,
+        "env": exec_env,
     }
-    if os.name == 'posix':
-        process_kwargs['start_new_session'] = True
+    if os.name == "posix":
+        process_kwargs["start_new_session"] = True
 
-    process = await asyncio.create_subprocess_exec(sys.executable, '-I', str(solution_path), **process_kwargs)
+    process = await asyncio.create_subprocess_exec(sys.executable, "-I", str(solution_path), **process_kwargs)
 
     timed_out = False
     try:
@@ -134,15 +134,15 @@ async def _execute_solution_local(
             stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout_seconds)
     except TimeoutError:
         timed_out = True
-        logfire.warning('solution_execution_timeout', timeout_seconds=timeout_seconds, pid=process.pid)
+        logfire.warning("solution_execution_timeout", timeout_seconds=timeout_seconds, pid=process.pid)
         _terminate_process(process)
         stdout, stderr = await _safe_communicate(process, timeout_seconds=5)
 
     runtime_ms = int((time.perf_counter() - start_time) * 1000)
     return ExecutionResult(
         returncode=process.returncode if process.returncode is not None else 1,
-        stdout=stdout.decode('utf-8', errors='ignore'),
-        stderr=stderr.decode('utf-8', errors='ignore'),
+        stdout=stdout.decode("utf-8", errors="ignore"),
+        stderr=stderr.decode("utf-8", errors="ignore"),
         runtime_ms=runtime_ms,
         timed_out=timed_out,
     )
@@ -182,7 +182,7 @@ def _get_code_execution_agent(model_spec: str) -> Agent[None, str]:
         return cached
 
     model_settings = cast(
-        'ModelSettings', {'temperature': 0.0, 'max_tokens': 256, 'openai_include_code_execution_outputs': True}
+        "ModelSettings", {"temperature": 0.0, "max_tokens": 256, "openai_include_code_execution_outputs": True}
     )
     agent = Agent(
         model=get_model(model_spec),
@@ -192,7 +192,7 @@ def _get_code_execution_agent(model_spec: str) -> Agent[None, str]:
         model_settings=model_settings,
         retries=1,
         output_retries=0,
-        name='code_executor',
+        name="code_executor",
         instrument=True,
     )
     _CODE_EXECUTION_AGENT_CACHE[model_spec] = agent
@@ -211,26 +211,26 @@ def _load_inline_files(work_path: Path, *, max_inline_data_bytes: int) -> dict[s
         if total_bytes > max_inline_data_bytes:
             return None
         data = file_path.read_bytes()
-        payloads[filename] = base64.b64encode(data).decode('ascii')
+        payloads[filename] = base64.b64encode(data).decode("ascii")
     return payloads
 
 
 def _build_code_execution_script(code: str, *, env: dict[str, str] | None, inline_files: dict[str, str]) -> str:
-    lines: list[str] = ['import base64', 'from pathlib import Path']
+    lines: list[str] = ["import base64", "from pathlib import Path"]
 
     if env:
-        lines.append('import os')
-        lines.extend(f'os.environ[{key!r}] = {value!r}' for key, value in env.items())
+        lines.append("import os")
+        lines.extend(f"os.environ[{key!r}] = {value!r}" for key, value in env.items())
     if inline_files:
-        lines.append('FILES = {')
+        lines.append("FILES = {")
         for name in sorted(inline_files):
             payload = inline_files[name]
-            lines.append(f'    {name!r}: {payload!r},')
+            lines.append(f"    {name!r}: {payload!r},")
         lines.extend(
-            ('}', 'for name, payload in FILES.items():', '    Path(name).write_bytes(base64.b64decode(payload))')
+            ("}", "for name, payload in FILES.items():", "    Path(name).write_bytes(base64.b64decode(payload))")
         )
     lines.append(code)
-    return '\n'.join(lines)
+    return "\n".join(lines)
 
 
 def _extract_code_execution_result(messages: list[Any]) -> dict[str, Any] | None:
@@ -241,25 +241,25 @@ def _extract_code_execution_result(messages: list[Any]) -> dict[str, Any] | None
             if isinstance(part, BuiltinToolReturnPart) and part.tool_name == CodeExecutionTool.kind:
                 if isinstance(part.content, dict):
                     return part.content
-                return {'return_value': part.content}
+                return {"return_value": part.content}
     return None
 
 
 def _parse_code_execution_result(content: dict[str, Any], runtime_ms: int) -> ExecutionResult:
-    if error_code := content.get('error_code'):
+    if error_code := content.get("error_code"):
         return ExecutionResult(
             returncode=1,
-            stdout='',
-            stderr=f'Code execution error: {error_code}',
+            stdout="",
+            stderr=f"Code execution error: {error_code}",
             runtime_ms=runtime_ms,
-            timed_out=error_code == 'execution_time_exceeded',
+            timed_out=error_code == "execution_time_exceeded",
         )
 
-    stdout = content.get('stdout') or ''
-    stderr = content.get('stderr') or ''
-    returncode = content.get('return_code')
+    stdout = content.get("stdout") or ""
+    stderr = content.get("stderr") or ""
+    returncode = content.get("return_code")
     if returncode is None:
-        returncode = content.get('returncode', content.get('exit_code', 0))
+        returncode = content.get("returncode", content.get("exit_code", 0))
     try:
         returncode_value = int(returncode)
     except (TypeError, ValueError):
@@ -273,10 +273,10 @@ def _sanitize_env(extra_env: dict[str, str] | None, *, work_path: Path) -> dict[
     sanitized = {key: value for key, value in os.environ.items() if not _is_sensitive_env_key(key)}
     if extra_env:
         sanitized.update(extra_env)
-    sanitized.setdefault('PYTHONNOUSERSITE', '1')
-    sanitized.setdefault('PYTHONDONTWRITEBYTECODE', '1')
+    sanitized.setdefault("PYTHONNOUSERSITE", "1")
+    sanitized.setdefault("PYTHONDONTWRITEBYTECODE", "1")
     # Always override HOME to isolate execution in the work directory
-    sanitized['HOME'] = str(work_path)
+    sanitized["HOME"] = str(work_path)
     return sanitized
 
 
@@ -286,7 +286,7 @@ def _is_sensitive_env_key(key: str) -> bool:
 
 
 def _supports_code_execution(model_spec: str) -> bool:
-    return model_spec.startswith('openai:')
+    return model_spec.startswith("openai:")
 
 
 async def _safe_communicate(
@@ -297,13 +297,13 @@ async def _safe_communicate(
             return await process.communicate()
         return await asyncio.wait_for(process.communicate(), timeout=timeout_seconds)
     except TimeoutError:
-        return b'', b''
+        return b"", b""
 
 
 def _terminate_process(process: asyncio.subprocess.Process) -> None:
     if process.returncode is not None:
         return
-    if os.name == 'posix':
+    if os.name == "posix":
         try:
             os.killpg(process.pid, signal.SIGKILL)
             return

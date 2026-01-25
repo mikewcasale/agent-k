@@ -30,13 +30,13 @@ class TestMissionState:
 
         assert state.mission_id == mission_id
         assert state.competition_id is None
-        assert state.current_phase == 'discovery'
+        assert state.current_phase == "discovery"
 
     def test_creation_with_competition_id(self) -> None:
         """State should accept competition ID."""
-        state = MissionState(mission_id=str(uuid4()), competition_id='titanic')
+        state = MissionState(mission_id=str(uuid4()), competition_id="titanic")
 
-        assert state.competition_id == 'titanic'
+        assert state.competition_id == "titanic"
 
     def test_default_criteria(self) -> None:
         """State should have default criteria."""

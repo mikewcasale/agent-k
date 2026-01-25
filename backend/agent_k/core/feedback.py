@@ -9,7 +9,7 @@ from __future__ import annotations as _annotations
 # Standard library (alphabetical)
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any, Final, TypeAliasType
+from typing import TYPE_CHECKING, Any, Final, TypeAlias
 
 # Third-party (alphabetical)
 import logfire
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
     from agent_k.core.types import MetricDirection
 
-MutationWeights = TypeAliasType("MutationWeights", dict[str, float])
+MutationWeights: TypeAlias = dict[str, float]
 """Weight mapping for mutation tags."""
 
 __all__ = ("SubmissionCandidate", "SubmissionFeedback", "SubmissionOrchestrator")

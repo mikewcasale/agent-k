@@ -1111,7 +1111,7 @@ class EvolverAgent(MemoryMixin):
                     return hint
 
         prioritized = self._get_prioritized_hints(ctx.deps)
-        candidates = [item["hint"] for item in prioritized if not item["suppressed"]]
+        candidates: list[PreprocessingHint] = [item["hint"] for item in prioritized if not item["suppressed"]]
         if applied:
             fresh = [hint for hint in candidates if hint.id not in applied]
             if fresh:
@@ -1173,7 +1173,7 @@ class EvolverAgent(MemoryMixin):
         return lines
 
     def _find_dataframe_var(self, code: str) -> str | None:
-        matches = re.findall(r"(?m)^(\w+)\s*=\s*pd\.read_(?:csv|parquet|feather)\(", code)
+        matches: list[str] = re.findall(r"(?m)^(\w+)\s*=\s*pd\.read_(?:csv|parquet|feather)\(", code)
         if not matches:
             return None
         for name in matches:
@@ -1606,26 +1606,29 @@ class EvolverAgent(MemoryMixin):
         tracker = ctx.deps.experiment_tracker
         if tracker is not None:
             cached = tracker.find_latest_by_code_signature(ctx.deps.competition.id, code_signature)
-            cached_stage = cached.metrics.get("stage") if cached is not None else None
-            if cached_stage in {"full", "cached"} and (
-                cached.cv_score is not None or cached.metrics.get("valid") is False
-            ):
-                cached_fitness = cached.metrics.get("fitness")
-                cached_valid = cached.metrics.get("valid", cached.cv_score is not None)
-                cached_error = cached.metrics.get("error")
-                if cached_fitness is None and cached.cv_score is not None:
-                    cached_fitness = self._fitness_from_score(cached.cv_score, ctx.deps.competition.metric_direction)
-                return {
-                    "fitness": round(float(cached_fitness or 0.0), 6),
-                    "cv_score": round(float(cached.cv_score or 0.0), 6),
-                    "valid": bool(cached_valid),
-                    "runtime_ms": 0,
-                    "timed_out": False,
-                    "returncode": 0 if cached_valid else 1,
-                    "error": cached_error,
-                    "cached": True,
-                    "stage": "cached",
-                }
+            if cached is not None:
+                cached_stage = cached.metrics.get("stage")
+                if cached_stage in {"full", "cached"} and (
+                    cached.cv_score is not None or cached.metrics.get("valid") is False
+                ):
+                    cached_fitness = cached.metrics.get("fitness")
+                    cached_valid = cached.metrics.get("valid", cached.cv_score is not None)
+                    cached_error = cached.metrics.get("error")
+                    if cached_fitness is None and cached.cv_score is not None:
+                        cached_fitness = self._fitness_from_score(
+                            cached.cv_score, ctx.deps.competition.metric_direction
+                        )
+                    return {
+                        "fitness": round(float(cached_fitness or 0.0), 6),
+                        "cv_score": round(float(cached.cv_score or 0.0), 6),
+                        "valid": bool(cached_valid),
+                        "runtime_ms": 0,
+                        "timed_out": False,
+                        "returncode": 0 if cached_valid else 1,
+                        "error": cached_error,
+                        "cached": True,
+                        "stage": "cached",
+                    }
 
         if not self._settings.cascade_evaluation or self._settings.cascade_stage1_rows <= 0:
             result = await self._evaluate_solution(ctx, solution_code, validation_split=validation_split, stage="full")
@@ -2172,11 +2175,12 @@ class EvolverAgent(MemoryMixin):
             return pattern.sub(f"{match.group(1)}{mutated_text}", code, count=1)
 
         bounds = _HYPERPARAM_BOUNDS.get(param, (1.0, 30.0))
+        sampled_value: int | float
         if param in _HYPERPARAM_INTEGER_KEYS:
-            sampled = max(1, int(round(rng.uniform(bounds[0], bounds[1]))))
+            sampled_value = max(1, int(round(rng.uniform(bounds[0], bounds[1]))))
         else:
-            sampled = rng.uniform(bounds[0], bounds[1])
-        return self._replace_or_insert_param(code, param, sampled)
+            sampled_value = rng.uniform(bounds[0], bounds[1])
+        return self._replace_or_insert_param(code, param, sampled_value)
 
     def _apply_knn_mutation(self, code: str, params: dict[str, Any]) -> str:
         if not _KNN_MODEL_PATTERN.search(code):
@@ -2252,22 +2256,22 @@ class EvolverAgent(MemoryMixin):
             current = match.group(2).strip().strip("'\"")
             options = list(_CATEGORICAL_HYPERPARAMS[name])
             choices = [option for option in options if option != current]
-            mutated = rng.choice(choices or options)
-            return pattern.sub(f"{match.group(1)}{json.dumps(mutated)}", code, count=1)
+            mutated_cat = rng.choice(choices or options)
+            return pattern.sub(f"{match.group(1)}{json.dumps(mutated_cat)}", code, count=1)
 
         try:
             value = float(match.group(2))
         except ValueError:
             return self._apply_point_mutation(code, params)
 
-        mutated = value * (1 + magnitude * rng.choice([-1, 1]))
+        mutated_val: float = value * (1 + magnitude * rng.choice([-1, 1]))
         bounds = _HYPERPARAM_BOUNDS.get(name)
         if bounds is not None:
-            mutated = min(max(mutated, bounds[0]), bounds[1])
+            mutated_val = min(max(mutated_val, bounds[0]), bounds[1])
         if name in _HYPERPARAM_INTEGER_KEYS:
-            mutated_text = str(max(1, int(round(mutated))))
+            mutated_text = str(max(1, int(round(mutated_val))))
         else:
-            mutated_text = f"{max(0.0001, mutated):.6g}"
+            mutated_text = f"{max(0.0001, mutated_val):.6g}"
         return pattern.sub(f"{match.group(1)}{mutated_text}", code, count=1)
 
     def _apply_crossover(self, code: str, other: str, params: dict[str, Any]) -> str:

@@ -17,7 +17,7 @@ import sys
 import tempfile
 import traceback
 from pathlib import Path
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Any, Final
 
 # Third-party (alphabetical)
 import logfire
@@ -53,31 +53,32 @@ _MODEL_FAMILY_PATTERNS: Final[tuple[tuple[float, re.Pattern[str]], ...]] = (
 )
 
 
-def _load_context() -> dict:
+def _load_context() -> dict[str, Any]:
     """Load evaluation context from environment variable."""
     context_json = os.environ.get(_CONTEXT_ENV, "{}")
-    return json.loads(context_json)
+    result: dict[str, Any] = json.loads(context_json)
+    return result
 
 
-def _resolve_work_dir(context: dict) -> Path:
+def _resolve_work_dir(context: dict[str, Any]) -> Path:
     """Resolve working directory from context."""
     work_dir_str = context.get("work_dir", ".")
     return Path(work_dir_str).resolve()
 
 
-def _coerce_timeout(context: dict) -> int:
+def _coerce_timeout(context: dict[str, Any]) -> int:
     """Coerce timeout to integer seconds."""
     timeout = context.get("timeout", _DEFAULT_TIMEOUT_SECONDS)
     return int(timeout)
 
 
-def _coerce_validation_split(context: dict) -> float:
+def _coerce_validation_split(context: dict[str, Any]) -> float:
     """Coerce validation split to float."""
     split = context.get("validation_split", _DEFAULT_VALIDATION_SPLIT)
     return float(split)
 
 
-def _load_hints(hints_data: list) -> list:
+def _load_hints(hints_data: list[dict[str, Any]]) -> list[Any]:
     """Load preprocessing hints from context data."""
     from agent_k.core.hints import PreprocessingHint
 
@@ -88,7 +89,7 @@ def _load_hints(hints_data: list) -> list:
     return hints
 
 
-def _failure_metrics() -> dict:
+def _failure_metrics() -> dict[str, float]:
     """Return metrics for a failed evaluation."""
     return {
         "combined_score": 0.0,
@@ -103,7 +104,7 @@ def _failure_metrics() -> dict:
     }
 
 
-def _error_artifacts(exc: Exception) -> dict:
+def _error_artifacts(exc: Exception) -> dict[str, str]:
     """Return artifacts for an error."""
     return {"error": str(exc), "traceback": _truncate(traceback.format_exc(), 1000), "execution_status": "error"}
 

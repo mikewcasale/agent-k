@@ -12,15 +12,15 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 # Third-party (alphabetical)
-from typing import Any, Literal, TypeAliasType
+from typing import Any, Literal, TypeAlias
 
 # Local imports (core first, then alphabetical)
 from agent_k.evolution.framework import FitnessFn, Individual, Population
 
-TransformType = TypeAliasType("TransformType", Literal["log", "sqrt", "square", "boxcox", "yeojohnson"])
+TransformType: TypeAlias = Literal["log", "sqrt", "square", "boxcox", "yeojohnson"]
 """Supported transformation genes."""
 
-BinningStrategy = TypeAliasType("BinningStrategy", Literal["equal_width", "equal_frequency", "kmeans"])
+BinningStrategy: TypeAlias = Literal["equal_width", "equal_frequency", "kmeans"]
 """Supported binning strategies."""
 
 __all__ = (

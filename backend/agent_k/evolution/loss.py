@@ -11,12 +11,12 @@ import random
 from dataclasses import dataclass, field
 
 # Third-party (alphabetical)
-from typing import Any, TypeAliasType
+from typing import Any, TypeAlias
 
 # Local imports (core first, then alphabetical)
 from agent_k.evolution.framework import FitnessFn, Individual, Population
 
-LossObjective = TypeAliasType("LossObjective", str)
+LossObjective: TypeAlias = str
 """LightGBM objective identifiers."""
 
 __all__ = ("LossFunctionEvolver", "LossGenome", "build_lightgbm_objective_params")

@@ -20,7 +20,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from pathlib import Path
-from typing import Any, Final, TypeAliasType
+from typing import Any, Final, TypeAlias
 
 # Third-party (alphabetical)
 import logfire
@@ -287,8 +287,8 @@ class OpenEvolveRunner:
         os.environ.setdefault("ENABLE_ARTIFACTS", "true")
 
 
-FitnessFunction = TypeAliasType("FitnessFunction", Callable[[str], float | Awaitable[float]])
-EvolutionConfigInput = TypeAliasType("EvolutionConfigInput", OpenEvolveEvolutionConfig | dict[str, Any] | None)
+FitnessFunction: TypeAlias = Callable[[str], float | Awaitable[float]]
+EvolutionConfigInput: TypeAlias = OpenEvolveEvolutionConfig | dict[str, Any] | None
 
 
 @dataclass

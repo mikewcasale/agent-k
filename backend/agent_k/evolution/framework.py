@@ -19,16 +19,16 @@ from typing import Any, Generic, TypeAliasType, TypeVar
 GenomeT = TypeVar("GenomeT")
 """Type variable for genomes."""
 
-FitnessFn = TypeAliasType("FitnessFn", Callable[[GenomeT], float])
+FitnessFn = TypeAliasType("FitnessFn", Callable[[GenomeT], float], type_params=(GenomeT,))
 """Callable signature for fitness evaluation."""
 
-MutationFn = TypeAliasType("MutationFn", Callable[[GenomeT, random.Random], GenomeT])
+MutationFn = TypeAliasType("MutationFn", Callable[[GenomeT, random.Random], GenomeT], type_params=(GenomeT,))
 """Callable signature for genome mutation."""
 
-CrossoverFn = TypeAliasType("CrossoverFn", Callable[[GenomeT, GenomeT, random.Random], GenomeT])
+CrossoverFn = TypeAliasType("CrossoverFn", Callable[[GenomeT, GenomeT, random.Random], GenomeT], type_params=(GenomeT,))
 """Callable signature for genome crossover."""
 
-DescriptorFn = TypeAliasType("DescriptorFn", Callable[[GenomeT], tuple[int, ...]])
+DescriptorFn = TypeAliasType("DescriptorFn", Callable[[GenomeT], tuple[int, ...]], type_params=(GenomeT,))
 """Callable signature for MAP-Elites descriptors."""
 
 __all__ = (

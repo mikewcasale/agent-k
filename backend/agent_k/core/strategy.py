@@ -12,12 +12,15 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 
 # Standard library (continued)
-from typing import Final, TypeAliasType
+from typing import TYPE_CHECKING, Final, TypeAlias
 
 # Local imports (core first, then alphabetical)
 from .data import CompetitionSchema
 from .models import Competition, EvaluationMetric, MissionCriteria
 from .types import MetricDirection
+
+if TYPE_CHECKING:
+    pass  # FitnessInput is defined later in this module
 
 __all__ = (
     "FitnessFunction",
@@ -39,7 +42,7 @@ _CLASSIFICATION_METRICS: Final[frozenset[EvaluationMetric]] = frozenset(
 _VISION_TAGS: Final[frozenset[str]] = frozenset({"vision", "computer vision", "image", "images"})
 _TEXT_TAGS: Final[frozenset[str]] = frozenset({"nlp", "text", "language"})
 
-FitnessFunction = TypeAliasType("FitnessFunction", Callable[["FitnessInput"], float])
+FitnessFunction: TypeAlias = Callable[["FitnessInput"], float]
 
 
 class ProblemType(StrEnum):

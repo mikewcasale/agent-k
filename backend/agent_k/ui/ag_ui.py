@@ -15,7 +15,7 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any, Final, Literal, TypeAliasType
+from typing import TYPE_CHECKING, Any, Final, Literal, TypeAlias
 
 # Third-party (alphabetical)
 import logfire
@@ -151,44 +151,41 @@ AGENT_K_EVENT_TYPES: Final[frozenset[str]] = frozenset(
     }
 )
 
-EventType = TypeAliasType(
-    "EventType",
-    Literal[
-        # State management
-        "state-snapshot",
-        "state-delta",
-        # Phase lifecycle
-        "phase-start",
-        "phase-complete",
-        "phase-error",
-        # Task lifecycle
-        "task-start",
-        "task-progress",
-        "task-complete",
-        "task-error",
-        # Tool usage
-        "tool-start",
-        "tool-thinking",
-        "tool-result",
-        "tool-error",
-        # Evolution specific
-        "generation-start",
-        "generation-complete",
-        "fitness-update",
-        "submission-result",
-        "convergence-detected",
-        # Memory operations
-        "memory-store",
-        "memory-retrieve",
-        "checkpoint-created",
-        # Error handling
-        "error-occurred",
-        "recovery-attempt",
-        "recovery-complete",
-        # Mission lifecycle
-        "mission-complete",
-    ],
-)
+EventType: TypeAlias = Literal[
+    # State management
+    "state-snapshot",
+    "state-delta",
+    # Phase lifecycle
+    "phase-start",
+    "phase-complete",
+    "phase-error",
+    # Task lifecycle
+    "task-start",
+    "task-progress",
+    "task-complete",
+    "task-error",
+    # Tool usage
+    "tool-start",
+    "tool-thinking",
+    "tool-result",
+    "tool-error",
+    # Evolution specific
+    "generation-start",
+    "generation-complete",
+    "fitness-update",
+    "submission-result",
+    "convergence-detected",
+    # Memory operations
+    "memory-store",
+    "memory-retrieve",
+    "checkpoint-created",
+    # Error handling
+    "error-occurred",
+    "recovery-attempt",
+    "recovery-complete",
+    # Mission lifecycle
+    "mission-complete",
+]
 
 
 class MissionRequest(BaseModel):

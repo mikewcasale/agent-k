@@ -1011,12 +1011,13 @@ def _numeric_stats(series: pd.Series) -> dict[str, float]:
     series = series.dropna()
     if series.empty:
         return {}
+    skew_val = series.skew()
     return {
         "mean": float(series.mean()),
         "std": float(series.std(ddof=0)),
         "min_value": float(series.min()),
         "max_value": float(series.max()),
-        "skewness": float(series.skew()),
+        "skewness": float(skew_val) if isinstance(skew_val, (int, float)) else 0.0,
     }
 
 
@@ -1119,6 +1120,7 @@ def _build_target_distribution(df: pd.DataFrame, target_columns: Iterable[str]) 
     series = pd.to_numeric(df[target_name], errors="coerce").dropna()
     if series.empty:
         return None
+    skew_val = series.skew()
     return DistributionStats(
         column_name=target_name,
         count=int(series.count()),
@@ -1127,7 +1129,7 @@ def _build_target_distribution(df: pd.DataFrame, target_columns: Iterable[str]) 
         min_value=float(series.min()),
         max_value=float(series.max()),
         median=float(series.median()),
-        skewness=float(series.skew()),
+        skewness=float(skew_val) if isinstance(skew_val, (int, float)) else 0.0,
     )
 
 

@@ -10,7 +10,7 @@ from __future__ import annotations as _annotations
 from collections.abc import Awaitable, Callable
 
 # Third-party (alphabetical)
-from typing import TYPE_CHECKING, Any, Literal, ParamSpec, TypeAlias, TypeAliasType, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, ParamSpec, TypeAlias, TypeVar
 
 if TYPE_CHECKING:
     from pydantic_ai.messages import ModelMessage
@@ -72,18 +72,18 @@ LeaderboardRank: TypeAlias = int
 Score: TypeAlias = float
 FitnessScore: TypeAlias = float
 
-JsonDict = TypeAliasType("JsonDict", dict[str, Any])
-MessageHistory = TypeAliasType("MessageHistory", list["ModelMessage"])
-ToolResult = TypeAliasType("ToolResult", str | dict[str, Any])
+JsonDict: TypeAlias = dict[str, Any]
+MessageHistory: TypeAlias = list["ModelMessage"]
+ToolResult: TypeAlias = str | dict[str, Any]
 
-MetricDirection = TypeAliasType("MetricDirection", Literal["maximize", "minimize"])
-MissionPhase = TypeAliasType("MissionPhase", Literal["discovery", "research", "prototype", "evolution", "submission"])
-TaskStatus = TypeAliasType("TaskStatus", Literal["pending", "in_progress", "completed", "failed", "blocked", "skipped"])
-TaskPriority = TypeAliasType("TaskPriority", Literal["critical", "high", "medium", "low"])
-ToolType = TypeAliasType("ToolType", Literal["web_search", "kaggle_mcp", "code_executor", "memory", "browser"])
-MemoryScope = TypeAliasType("MemoryScope", Literal["session", "persistent", "global"])
-ErrorCategory = TypeAliasType("ErrorCategory", Literal["transient", "recoverable", "fatal"])
-RecoveryStrategy = TypeAliasType("RecoveryStrategy", Literal["retry", "fallback", "skip", "replan", "abort"])
+MetricDirection: TypeAlias = Literal["maximize", "minimize"]
+MissionPhase: TypeAlias = Literal["discovery", "research", "prototype", "evolution", "submission"]
+TaskStatus: TypeAlias = Literal["pending", "in_progress", "completed", "failed", "blocked", "skipped"]
+TaskPriority: TypeAlias = Literal["critical", "high", "medium", "low"]
+ToolType: TypeAlias = Literal["web_search", "kaggle_mcp", "code_executor", "memory", "browser"]
+MemoryScope: TypeAlias = Literal["session", "persistent", "global"]
+ErrorCategory: TypeAlias = Literal["transient", "recoverable", "fatal"]
+RecoveryStrategy: TypeAlias = Literal["retry", "fallback", "skip", "replan", "abort"]
 
-AsyncCallback = TypeAliasType("AsyncCallback", Callable[[str], Awaitable[None]])
-EventCallback = TypeAliasType("EventCallback", Callable[[str, JsonDict], Awaitable[None]])
+AsyncCallback: TypeAlias = Callable[[str], Awaitable[None]]
+EventCallback: TypeAlias = Callable[[str, JsonDict], Awaitable[None]]

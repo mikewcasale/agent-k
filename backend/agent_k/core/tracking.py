@@ -883,7 +883,7 @@ def _record_to_row(payload: dict[str, Any]) -> dict[str, Any]:
         "config_signature": payload.get("config_signature"),
         "dataset_fingerprint": payload.get("dataset_fingerprint"),
         "notes": payload.get("notes"),
-        "created_at": payload.get("created_at").isoformat(),
+        "created_at": payload["created_at"].isoformat(),
     }
 
 
@@ -924,7 +924,7 @@ def _submission_to_row(payload: dict[str, Any]) -> dict[str, Any]:
         "model_config_hash": payload.get("model_config_hash"),
         "feature_set_hash": payload.get("feature_set_hash"),
         "hyperparameters_json": json.dumps(payload.get("hyperparameters", {}), sort_keys=True, default=str),
-        "created_at": payload.get("created_at").isoformat(),
+        "created_at": payload["created_at"].isoformat(),
     }
 
 

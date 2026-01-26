@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:EvolutionFailure",
+  "line": 526,
+  "notice": "Failure result for evolution process.",
+  "pattern": {
+    "name": "output-model",
+    "rationale": "Stable schema for failed evolution outputs.",
+    "violations": "Opaque errors make recovery harder."
+  },
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Failure result for evolution process.",
+  "type": "class"
+}

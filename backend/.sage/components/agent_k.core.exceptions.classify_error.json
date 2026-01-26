@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Used by error handlers to determine retry vs abort behavior.\nReturns (category, strategy) tuple for the exception type.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.exceptions:classify_error",
+  "line": 573,
+  "notice": "Maps exceptions to error categories and recovery strategies.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/exceptions.py",
+  "summary": "Classify errors into recovery categories and strategies.",
+  "type": "function"
+}

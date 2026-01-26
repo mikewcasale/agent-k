@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.adapters.kaggle:KaggleSettings",
+  "type": "class",
+  "summary": "Settings for Kaggle adapter.",
+  "notice": "Settings for Kaggle adapter.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: settings\n    rationale: \"Centralizes Kaggle adapter configuration.\"\n    violations: \"Ad-hoc config makes auth inconsistent.\"",
+  "source": "backend/agent_k/adapters/kaggle.py",
+  "line": 73,
+  "path": "backend/agent_k/adapters/kaggle.py",
+  "location": {
+    "path": "backend/agent_k/adapters/kaggle.py",
+    "line": 73,
+    "character": 7
+  }
+}

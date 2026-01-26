@@ -1,0 +1,13 @@
+{
+  "id": "backend..agent_k_memory.gen1_best_weighted",
+  "type": "module",
+  "summary": "GENERATION 1 BEST - Fast Weighted Ensemble",
+  "source": "backend/.agent_k_memory/gen1_best_weighted.py",
+  "line": 0,
+  "path": "backend/.agent_k_memory/gen1_best_weighted.py",
+  "location": {
+    "path": "backend/.agent_k_memory/gen1_best_weighted.py",
+    "line": 0,
+    "character": 3
+  }
+}

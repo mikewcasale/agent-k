@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_baseline:TestEvaluateMetric.test_auc_baseline",
+  "type": "method",
+  "summary": "AUC baseline should be constant.",
+  "source": "backend/tests/mission/test_baseline.py",
+  "line": 73,
+  "path": "backend/tests/mission/test_baseline.py",
+  "location": {
+    "path": "backend/tests/mission/test_baseline.py",
+    "line": 73,
+    "character": 11
+  }
+}

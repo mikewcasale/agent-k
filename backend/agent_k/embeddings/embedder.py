@@ -69,11 +69,25 @@ class Embedder(Protocol):
     def __init__(self, model: str) -> None: ...
 
     async def embed_documents(self, documents: list[str]) -> dict[str, list[float]]:
-        """Embed multiple documents."""
+        """Embed multiple documents.
+
+        @notice: |
+            Embed multiple documents.
+
+        @dev: |
+            See module for behavior details and invariants.
+        """
         ...
 
     async def embed_query(self, query: str) -> EmbedQueryResult:
-        """Embed a single query string."""
+        """Embed a single query string.
+
+        @notice: |
+            Embed a single query string.
+
+        @dev: |
+            See module for behavior details and invariants.
+        """
         ...
 
 
@@ -81,8 +95,11 @@ class Embedder(Protocol):
 def get_embedder(model: Annotated[str, Doc("Embedding model identifier.")] = DEFAULT_MODEL) -> Embedder:
     """Get cached embedder instance.
 
-    @notice: |
-        Returns a cached Embedder instance for the model.
+    @dev: |
+        See module for behavior details and invariants.
+
+        @notice: |
+            Returns a cached Embedder instance for the model.
     """
     embedder_cls = _resolve_embedder_class()
     return embedder_cls(model)
@@ -94,8 +111,11 @@ async def embed_documents(
 ) -> list[list[float]]:
     """Embed multiple documents for indexing.
 
-    @notice: |
-        Returns embeddings aligned to the input document order.
+    @dev: |
+        See module for behavior details and invariants.
+
+        @notice: |
+            Returns embeddings aligned to the input document order.
     """
     embedder = get_embedder(model)
     result = await embedder.embed_documents(documents)
@@ -108,8 +128,11 @@ async def embed_query(
 ) -> list[float]:
     """Embed query for similarity search.
 
-    @notice: |
-        Returns a single embedding vector for the query.
+    @dev: |
+        See module for behavior details and invariants.
+
+        @notice: |
+            Returns a single embedding vector for the query.
     """
     embedder = get_embedder(model)
     result = await embedder.embed_query(query)

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.ui.test_ag_ui:TestMissionStreamEndpoint",
+  "type": "class",
+  "summary": "Tests for the /api/mission/{mission_id}/stream endpoint.",
+  "source": "backend/tests/ui/test_ag_ui.py",
+  "line": 145,
+  "path": "backend/tests/ui/test_ag_ui.py",
+  "location": {
+    "path": "backend/tests/ui/test_ag_ui.py",
+    "line": 145,
+    "character": 7
+  }
+}

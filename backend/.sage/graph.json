@@ -1,0 +1,1282 @@
+{
+  "edges": [
+    {
+      "source": "agent_k",
+      "target": "agent_k",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.__main__",
+      "target": "agent_k.__main__",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k._version",
+      "target": "agent_k._version:__version__",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.adapters",
+      "target": "agent_k.adapters",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.adapters.kaggle",
+      "target": "agent_k.adapters.kaggle:KaggleAdapter",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.adapters.kaggle",
+      "target": "agent_k.adapters.kaggle:KaggleSettings",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.adapters.kaggle",
+      "target": "agent_k.toolsets.kaggle",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.adapters.openevolve",
+      "target": "agent_k.adapters.openevolve:OpenEvolveAdapter",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.adapters.openevolve",
+      "target": "agent_k.adapters.openevolve:OpenEvolveRunner",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.adapters.openevolve",
+      "target": "agent_k.adapters.openevolve:OpenEvolveSettings",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.adapters.openevolve",
+      "target": "agent_k.adapters.openevolve:OpenEvolveEvolutionConfig",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.adapters.openevolve",
+      "target": "agent_k.evolution.framework",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.agents",
+      "target": "agent_k.agents:AGENT_REGISTRY",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents",
+      "target": "agent_k.agents:register_agent",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents",
+      "target": "agent_k.agents:get_agent",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents",
+      "target": "agent_k.agents.evolver:EvolverAgent",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents",
+      "target": "agent_k.agents.lobbyist:LobbyistAgent",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents",
+      "target": "agent_k.agents.scientist:ScientistAgent",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents",
+      "target": "agent_k.agents.lycurgus:LycurgusOrchestrator",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents",
+      "target": "agent_k.mission.nodes",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.agents.base",
+      "target": "agent_k.agents.base:AgentDeps",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.base",
+      "target": "agent_k.agents.base:BaseAgentMixin",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.base",
+      "target": "agent_k.agents.base:MemoryMixin",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.base",
+      "target": "agent_k.agents.base:universal_tool_preparation",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.base",
+      "target": "agent_k.agents.base:prepare_output_tools_strict",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.base",
+      "target": "agent_k.toolsets.memory:AgentKMemoryTool",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.base",
+      "target": "agent_k.toolsets.memory:create_memory_backend",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.base",
+      "target": "agent_k.toolsets.memory:register_memory_tool",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.evolver",
+      "target": "agent_k.agents.evolver:EvolverAgent",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.evolver",
+      "target": "agent_k.agents.evolver:EvolverDeps",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.evolver",
+      "target": "agent_k.agents.evolver:EvolverSettings",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.evolver",
+      "target": "agent_k.agents.evolver:EvolutionResult",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.evolver",
+      "target": "agent_k.agents.evolver:EvolutionFailure",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.evolver",
+      "target": "agent_k.agents.evolver:EVOLUTION_OUTPUT_TYPE",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.evolver",
+      "target": "agent_k.agents.evolver:evolver_agent",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.evolver",
+      "target": "agent_k.core.protocols:PlatformAdapter",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.evolver",
+      "target": "agent_k.ui.agui:EventEmitter",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.evolver",
+      "target": "agent_k.adapters.openevolve:OpenEvolveRunner",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.evolver",
+      "target": "agent_k.toolsets.code:code_toolset",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.evolver",
+      "target": "agent_k.agents.scientist",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.agents.evolver",
+      "target": "agent_k.evolution.framework",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.agents.lobbyist",
+      "target": "agent_k.agents.lobbyist:LobbyistAgent",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.lobbyist",
+      "target": "agent_k.agents.lobbyist:LobbyistDeps",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.lobbyist",
+      "target": "agent_k.agents.lobbyist:LobbyistSettings",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.lobbyist",
+      "target": "agent_k.agents.lobbyist:DiscoveryResult",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.lobbyist",
+      "target": "agent_k.agents.lobbyist:lobbyist_agent",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.lobbyist",
+      "target": "agent_k.core.protocols:PlatformAdapter",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.lobbyist",
+      "target": "agent_k.ui.agui:EventEmitter",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.lobbyist",
+      "target": "agent_k.toolsets.kaggle:kaggle_toolset",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.lobbyist",
+      "target": "agent_k.agents.scientist",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.agents.lycurgus",
+      "target": "agent_k.agents.lycurgus:LycurgusOrchestrator",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.lycurgus",
+      "target": "agent_k.agents.lycurgus:LycurgusSettings",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.lycurgus",
+      "target": "agent_k.agents.lycurgus:LycurgusDeps",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.lycurgus",
+      "target": "agent_k.agents.lycurgus:MissionStatus",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.lycurgus",
+      "target": "agent_k.agents.lycurgus:orchestrate",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.lycurgus",
+      "target": "agent_k.agents.lycurgus:validate_mission_result",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.lycurgus",
+      "target": "agent_k.mission.nodes:DiscoveryNode",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.lycurgus",
+      "target": "agent_k.mission.nodes:ResearchNode",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.lycurgus",
+      "target": "agent_k.mission.nodes:PrototypeNode",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.lycurgus",
+      "target": "agent_k.mission.nodes:EvolutionNode",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.lycurgus",
+      "target": "agent_k.mission.nodes:SubmissionNode",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.lycurgus",
+      "target": "agent_k.ui.agui:EventEmitter",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.lycurgus",
+      "target": "agent_k.mission.nodes",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.agents.prompts",
+      "target": "agent_k.agents.prompts",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.scientist",
+      "target": "agent_k.agents.scientist:ScientistAgent",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.scientist",
+      "target": "agent_k.agents.scientist:ScientistDeps",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.scientist",
+      "target": "agent_k.agents.scientist:ScientistSettings",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.scientist",
+      "target": "agent_k.agents.scientist:ResearchReport",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.scientist",
+      "target": "agent_k.agents.scientist:ResearchFinding",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.scientist",
+      "target": "agent_k.agents.scientist:LeaderboardAnalysis",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.scientist",
+      "target": "agent_k.agents.scientist:get_external_data_policy",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.scientist",
+      "target": "agent_k.agents.scientist:scientist_agent",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.agents.scientist",
+      "target": "agent_k.core.protocols:PlatformAdapter",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.scientist",
+      "target": "agent_k.toolsets.kaggle:kaggle_toolset",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.scientist",
+      "target": "agent_k.toolsets.search:prepare_web_search",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.scientist",
+      "target": "agent_k.toolsets.search:prepare_web_fetch",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.agents.scientist",
+      "target": "agent_k.agents.lobbyist",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.agents.scientist",
+      "target": "agent_k.agents.evolver",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.core",
+      "target": "agent_k.core",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.constants",
+      "target": "agent_k.core.constants",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.data",
+      "target": "agent_k.core.data",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.deps",
+      "target": "agent_k.core.deps:BaseDeps",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.deps",
+      "target": "agent_k.core.deps:KaggleDeps",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.exceptions",
+      "target": "agent_k.core.exceptions",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.feedback",
+      "target": "agent_k.core.feedback",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.hints",
+      "target": "agent_k.core.hints",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.models",
+      "target": "agent_k.core.models",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.protocols",
+      "target": "agent_k.core.protocols",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.sage",
+      "target": "agent_k.core.sage:Doc",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.sage",
+      "target": "agent_k.core.sage:Constraint",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.sage",
+      "target": "agent_k.core.sage:Range",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.sage",
+      "target": "agent_k.core.sage:Default",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.settings",
+      "target": "agent_k.core.settings",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.solution",
+      "target": "agent_k.core.solution",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.strategy",
+      "target": "agent_k.core.strategy",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.tracking",
+      "target": "agent_k.core.tracking:ExperimentTracker",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.tracking",
+      "target": "agent_k.core.tracking:create_experiment_tracker",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.tracking",
+      "target": "agent_k.core.tracking:ExperimentRecord",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.tracking",
+      "target": "agent_k.core.tracking:HintEffectivenessTracker",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.types",
+      "target": "agent_k.core.types",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.embeddings",
+      "target": "agent_k.embeddings",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.embeddings.embedder",
+      "target": "agent_k.embeddings.embedder:Embedder",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.embeddings.embedder",
+      "target": "agent_k.embeddings.embedder:get_embedder",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.embeddings.embedder",
+      "target": "agent_k.embeddings.embedder:embed_documents",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.embeddings.embedder",
+      "target": "agent_k.embeddings.embedder:embed_query",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.embeddings.retriever",
+      "target": "agent_k.embeddings.retriever:RAGRetriever",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.embeddings.retriever",
+      "target": "agent_k.embeddings.retriever:RetrievalResult",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.embeddings.store",
+      "target": "agent_k.embeddings.store:VectorStore",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.embeddings.store",
+      "target": "agent_k.embeddings.store:VectorRecord",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.embeddings.store",
+      "target": "agent_k.embeddings.store:InMemoryVectorStore",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.evals",
+      "target": "agent_k.evals",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.evals.datasets",
+      "target": "agent_k.evals.datasets",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.evals.evaluators",
+      "target": "agent_k.evals.evaluators",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.evolution",
+      "target": "agent_k.evolution",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.evolution.evaluator",
+      "target": "agent_k.evolution.evaluator",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.evolution.features",
+      "target": "agent_k.evolution.features",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.evolution.framework",
+      "target": "agent_k.evolution.framework",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.evolution.loss",
+      "target": "agent_k.evolution.loss",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.infra",
+      "target": "agent_k.infra",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.infra.config",
+      "target": "agent_k.infra.config",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.infra.instrumentation",
+      "target": "agent_k.infra.instrumentation",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.infra.logging",
+      "target": "agent_k.infra.logging",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.infra.providers",
+      "target": "agent_k.infra.providers:get_model",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.infra.providers",
+      "target": "agent_k.infra.providers:create_devstral_model",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.infra.providers",
+      "target": "agent_k.infra.providers:create_openrouter_model",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.infra.providers",
+      "target": "agent_k.infra.providers:is_devstral_model",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.infra.providers",
+      "target": "agent_k.infra.providers:DEVSTRAL_MODEL_ID",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.infra.providers",
+      "target": "agent_k.infra.providers:DEVSTRAL_BASE_URL",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.infra.providers",
+      "target": "agent_k.infra.config",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.mission",
+      "target": "agent_k.mission",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.mission.nodes",
+      "target": "agent_k.mission.nodes:DiscoveryNode",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.mission.nodes",
+      "target": "agent_k.mission.nodes:ResearchNode",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.mission.nodes",
+      "target": "agent_k.mission.nodes:PrototypeNode",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.mission.nodes",
+      "target": "agent_k.mission.nodes:EvolutionNode",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.mission.nodes",
+      "target": "agent_k.mission.nodes:SubmissionNode",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.mission.nodes",
+      "target": "agent_k.mission.state:MissionState",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.mission.nodes",
+      "target": "agent_k.agents.lobbyist:LobbyistAgent",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.mission.nodes",
+      "target": "agent_k.agents.scientist:ScientistAgent",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.mission.nodes",
+      "target": "agent_k.agents.evolver:EvolverAgent",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.mission.nodes",
+      "target": "agent_k.agents.lycurgus",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.mission.persistence",
+      "target": "agent_k.mission.persistence:MissionPersistence",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.mission.persistence",
+      "target": "agent_k.mission.persistence:create_persistence",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.mission.persistence",
+      "target": "agent_k.mission.persistence:CHECKPOINT_DIR",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.mission.persistence",
+      "target": "agent_k.core.tracking",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.mission.state",
+      "target": "agent_k.mission.state:MissionState",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.mission.state",
+      "target": "agent_k.mission.state:MissionResult",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.mission.state",
+      "target": "agent_k.mission.state:GraphContext",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.mission.state",
+      "target": "agent_k.mission.nodes",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.toolsets",
+      "target": "agent_k.toolsets:TOOLSET_REGISTRY",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets",
+      "target": "agent_k.toolsets:compose_toolsets",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets",
+      "target": "agent_k.toolsets:create_production_toolset",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets",
+      "target": "agent_k.toolsets.kaggle",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.toolsets.browser",
+      "target": "agent_k.toolsets.browser",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.code",
+      "target": "agent_k.toolsets.code:code_toolset",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.code",
+      "target": "agent_k.toolsets.code:create_code_execution_tool",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.code",
+      "target": "agent_k.toolsets.code:prepare_code_execution_tool",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.kaggle",
+      "target": "agent_k.toolsets.kaggle:kaggle_toolset",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.kaggle",
+      "target": "agent_k.toolsets.kaggle:kaggle_search_competitions",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.kaggle",
+      "target": "agent_k.toolsets.kaggle:kaggle_get_competition",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.kaggle",
+      "target": "agent_k.toolsets.kaggle:kaggle_get_leaderboard",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.kaggle",
+      "target": "agent_k.toolsets.kaggle:kaggle_list_datasets",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.kaggle",
+      "target": "agent_k.adapters.kaggle",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.toolsets.memory",
+      "target": "agent_k.toolsets.memory:AgentKMemoryTool",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.memory",
+      "target": "agent_k.toolsets.memory:create_memory_backend",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.memory",
+      "target": "agent_k.toolsets.memory:prepare_memory_tool",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.memory",
+      "target": "agent_k.toolsets.memory:register_memory_tool",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.memory",
+      "target": "agent_k.embeddings.store",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.toolsets.scholarly",
+      "target": "agent_k.toolsets.scholarly",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.search",
+      "target": "agent_k.toolsets.search:build_kaggle_search_query",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.search",
+      "target": "agent_k.toolsets.search:build_scholarly_query",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.search",
+      "target": "agent_k.toolsets.search:create_web_search_tool",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.search",
+      "target": "agent_k.toolsets.search:prepare_web_search",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.search",
+      "target": "agent_k.toolsets.search:create_web_fetch_tool",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.search",
+      "target": "agent_k.toolsets.search:prepare_web_fetch",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.search",
+      "target": "agent_k.toolsets.browser",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.toolsets.tracking",
+      "target": "agent_k.toolsets.tracking:tracking_toolset",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.tracking",
+      "target": "agent_k.toolsets.tracking:tracking_record_experiment",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.tracking",
+      "target": "agent_k.toolsets.tracking:tracking_list_experiments",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.tracking",
+      "target": "agent_k.toolsets.tracking:tracking_best_experiment",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.tracking",
+      "target": "agent_k.core.tracking",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.ui",
+      "target": "agent_k.ui",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.ui.agui",
+      "target": "agent_k.ui.agui:EventEmitter",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.ui.agui",
+      "target": "agent_k.ui.agui:create_app",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.ui.agui",
+      "target": "agent_k.mission.nodes",
+      "type": "similar"
+    }
+  ],
+  "generated": "2026-01-26T12:50:04.843456+00:00",
+  "nodes": [
+    {
+      "id": "agent_k",
+      "label": "agent_k",
+      "pattern": "package-entry",
+      "source": "agent_k/__init__.py"
+    },
+    {
+      "id": "agent_k.__main__",
+      "label": "__main__",
+      "pattern": "cli-entrypoint",
+      "source": "agent_k/__main__.py"
+    },
+    {
+      "id": "agent_k._version",
+      "label": "_version",
+      "pattern": "versioning",
+      "source": "agent_k/_version.py"
+    },
+    {
+      "id": "agent_k.adapters",
+      "label": "adapters",
+      "pattern": "adapter-package",
+      "source": "agent_k/adapters/__init__.py"
+    },
+    {
+      "id": "agent_k.adapters.kaggle",
+      "label": "kaggle",
+      "pattern": "adapter",
+      "source": "agent_k/adapters/kaggle.py"
+    },
+    {
+      "id": "agent_k.adapters.openevolve",
+      "label": "openevolve",
+      "pattern": "adapter",
+      "source": "agent_k/adapters/openevolve.py"
+    },
+    {
+      "id": "agent_k.agents",
+      "label": "agents",
+      "pattern": "agent-registry",
+      "source": "agent_k/agents/__init__.py"
+    },
+    {
+      "id": "agent_k.agents.base",
+      "label": "base",
+      "pattern": "agent-base",
+      "source": "agent_k/agents/base.py"
+    },
+    {
+      "id": "agent_k.agents.evolver",
+      "label": "evolver",
+      "pattern": "agent-singleton",
+      "source": "agent_k/agents/evolver.py"
+    },
+    {
+      "id": "agent_k.agents.lobbyist",
+      "label": "lobbyist",
+      "pattern": "agent-singleton",
+      "source": "agent_k/agents/lobbyist.py"
+    },
+    {
+      "id": "agent_k.agents.lycurgus",
+      "label": "lycurgus",
+      "pattern": "orchestrator",
+      "source": "agent_k/agents/lycurgus.py"
+    },
+    {
+      "id": "agent_k.agents.prompts",
+      "label": "prompts",
+      "pattern": "prompt-catalog",
+      "source": "agent_k/agents/prompts.py"
+    },
+    {
+      "id": "agent_k.agents.scientist",
+      "label": "scientist",
+      "pattern": "agent-singleton",
+      "source": "agent_k/agents/scientist.py"
+    },
+    {
+      "id": "agent_k.core",
+      "label": "core",
+      "pattern": "core-facade",
+      "source": "agent_k/core/__init__.py"
+    },
+    {
+      "id": "agent_k.core.constants",
+      "label": "constants",
+      "pattern": "constants",
+      "source": "agent_k/core/constants.py"
+    },
+    {
+      "id": "agent_k.core.data",
+      "label": "data",
+      "pattern": "data-access",
+      "source": "agent_k/core/data.py"
+    },
+    {
+      "id": "agent_k.core.deps",
+      "label": "deps",
+      "pattern": "dependency-container",
+      "source": "agent_k/core/deps.py"
+    },
+    {
+      "id": "agent_k.core.exceptions",
+      "label": "exceptions",
+      "pattern": "exception-hierarchy",
+      "source": "agent_k/core/exceptions.py"
+    },
+    {
+      "id": "agent_k.core.feedback",
+      "label": "feedback",
+      "pattern": "feedback-models",
+      "source": "agent_k/core/feedback.py"
+    },
+    {
+      "id": "agent_k.core.hints",
+      "label": "hints",
+      "pattern": "analysis-hints",
+      "source": "agent_k/core/hints.py"
+    },
+    {
+      "id": "agent_k.core.models",
+      "label": "models",
+      "pattern": "domain-models",
+      "source": "agent_k/core/models.py"
+    },
+    {
+      "id": "agent_k.core.protocols",
+      "label": "protocols",
+      "pattern": "protocols",
+      "source": "agent_k/core/protocols.py"
+    },
+    {
+      "id": "agent_k.core.sage",
+      "label": "sage",
+      "pattern": "doc-metadata",
+      "source": "agent_k/core/sage.py"
+    },
+    {
+      "id": "agent_k.core.settings",
+      "label": "settings",
+      "pattern": "settings",
+      "source": "agent_k/core/settings.py"
+    },
+    {
+      "id": "agent_k.core.solution",
+      "label": "solution",
+      "pattern": "solution-models",
+      "source": "agent_k/core/solution.py"
+    },
+    {
+      "id": "agent_k.core.strategy",
+      "label": "strategy",
+      "pattern": "strategy",
+      "source": "agent_k/core/strategy.py"
+    },
+    {
+      "id": "agent_k.core.tracking",
+      "label": "tracking",
+      "pattern": "tracking-store",
+      "source": "agent_k/core/tracking.py"
+    },
+    {
+      "id": "agent_k.core.types",
+      "label": "types",
+      "pattern": "type-definitions",
+      "source": "agent_k/core/types.py"
+    },
+    {
+      "id": "agent_k.embeddings",
+      "label": "embeddings",
+      "pattern": "embeddings-package",
+      "source": "agent_k/embeddings/__init__.py"
+    },
+    {
+      "id": "agent_k.embeddings.embedder",
+      "label": "embedder",
+      "pattern": "embedder",
+      "source": "agent_k/embeddings/embedder.py"
+    },
+    {
+      "id": "agent_k.embeddings.retriever",
+      "label": "retriever",
+      "pattern": "retriever",
+      "source": "agent_k/embeddings/retriever.py"
+    },
+    {
+      "id": "agent_k.embeddings.store",
+      "label": "store",
+      "pattern": "embedding-store",
+      "source": "agent_k/embeddings/store.py"
+    },
+    {
+      "id": "agent_k.evals",
+      "label": "evals",
+      "pattern": "evals-package",
+      "source": "agent_k/evals/__init__.py"
+    },
+    {
+      "id": "agent_k.evals.datasets",
+      "label": "datasets",
+      "pattern": "evaluation-datasets",
+      "source": "agent_k/evals/datasets.py"
+    },
+    {
+      "id": "agent_k.evals.evaluators",
+      "label": "evaluators",
+      "pattern": "evaluation",
+      "source": "agent_k/evals/evaluators.py"
+    },
+    {
+      "id": "agent_k.evolution",
+      "label": "evolution",
+      "pattern": "evolution-package",
+      "source": "agent_k/evolution/__init__.py"
+    },
+    {
+      "id": "agent_k.evolution.evaluator",
+      "label": "evaluator",
+      "pattern": "evolution-evaluator",
+      "source": "agent_k/evolution/evaluator.py"
+    },
+    {
+      "id": "agent_k.evolution.features",
+      "label": "features",
+      "pattern": "feature-engineering",
+      "source": "agent_k/evolution/features.py"
+    },
+    {
+      "id": "agent_k.evolution.framework",
+      "label": "framework",
+      "pattern": "evolution-framework",
+      "source": "agent_k/evolution/framework.py"
+    },
+    {
+      "id": "agent_k.evolution.loss",
+      "label": "loss",
+      "pattern": "loss-functions",
+      "source": "agent_k/evolution/loss.py"
+    },
+    {
+      "id": "agent_k.infra",
+      "label": "infra",
+      "pattern": "infra-package",
+      "source": "agent_k/infra/__init__.py"
+    },
+    {
+      "id": "agent_k.infra.config",
+      "label": "config",
+      "pattern": "config",
+      "source": "agent_k/infra/config.py"
+    },
+    {
+      "id": "agent_k.infra.instrumentation",
+      "label": "instrumentation",
+      "pattern": "instrumentation",
+      "source": "agent_k/infra/instrumentation.py"
+    },
+    {
+      "id": "agent_k.infra.logging",
+      "label": "logging",
+      "pattern": "logging",
+      "source": "agent_k/infra/logging.py"
+    },
+    {
+      "id": "agent_k.infra.providers",
+      "label": "providers",
+      "pattern": "model-factory",
+      "source": "agent_k/infra/providers.py"
+    },
+    {
+      "id": "agent_k.mission",
+      "label": "mission",
+      "pattern": "mission-package",
+      "source": "agent_k/mission/__init__.py"
+    },
+    {
+      "id": "agent_k.mission.nodes",
+      "label": "nodes",
+      "pattern": "graph-state-machine",
+      "source": "agent_k/mission/nodes.py"
+    },
+    {
+      "id": "agent_k.mission.persistence",
+      "label": "persistence",
+      "pattern": "state-persistence",
+      "source": "agent_k/mission/persistence.py"
+    },
+    {
+      "id": "agent_k.mission.state",
+      "label": "state",
+      "pattern": "mission-state",
+      "source": "agent_k/mission/state.py"
+    },
+    {
+      "id": "agent_k.toolsets",
+      "label": "toolsets",
+      "pattern": "toolset-registry",
+      "source": "agent_k/toolsets/__init__.py"
+    },
+    {
+      "id": "agent_k.toolsets.browser",
+      "label": "browser",
+      "pattern": "toolset",
+      "source": "agent_k/toolsets/browser.py"
+    },
+    {
+      "id": "agent_k.toolsets.code",
+      "label": "code",
+      "pattern": "toolset",
+      "source": "agent_k/toolsets/code.py"
+    },
+    {
+      "id": "agent_k.toolsets.kaggle",
+      "label": "kaggle",
+      "pattern": "toolset",
+      "source": "agent_k/toolsets/kaggle.py"
+    },
+    {
+      "id": "agent_k.toolsets.memory",
+      "label": "memory",
+      "pattern": "toolset",
+      "source": "agent_k/toolsets/memory.py"
+    },
+    {
+      "id": "agent_k.toolsets.scholarly",
+      "label": "scholarly",
+      "pattern": "toolset",
+      "source": "agent_k/toolsets/scholarly.py"
+    },
+    {
+      "id": "agent_k.toolsets.search",
+      "label": "search",
+      "pattern": "toolset",
+      "source": "agent_k/toolsets/search.py"
+    },
+    {
+      "id": "agent_k.toolsets.tracking",
+      "label": "tracking",
+      "pattern": "toolset",
+      "source": "agent_k/toolsets/tracking.py"
+    },
+    {
+      "id": "agent_k.ui",
+      "label": "ui",
+      "pattern": "ui-package",
+      "source": "agent_k/ui/__init__.py"
+    },
+    {
+      "id": "agent_k.ui.agui",
+      "label": "agui",
+      "pattern": "ui-api",
+      "source": "agent_k/ui/agui.py"
+    }
+  ],
+  "version": "1.3.6"
+}

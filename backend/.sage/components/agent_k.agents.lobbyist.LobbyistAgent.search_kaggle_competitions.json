@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Emits telemetry events before and after the search.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.lobbyist:LobbyistAgent.search_kaggle_competitions",
+  "line": 239,
+  "notice": "Queries the platform adapter for competition listings.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/lobbyist.py",
+  "summary": "Search Kaggle for competitions matching criteria.",
+  "type": "method"
+}

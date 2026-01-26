@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.models:GenerationMetrics",
+  "type": "class",
+  "summary": "Metrics for a single evolution generation.",
+  "notice": "Metrics for a single evolution generation.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: immutable-entity\n    rationale: \"Frozen Pydantic model for evolution generation metrics.\"",
+  "source": "backend/agent_k/core/models.py",
+  "line": 475,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 475,
+    "character": 7
+  }
+}

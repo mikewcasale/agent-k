@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.agents.base:MemoryMixin",
+  "type": "class",
+  "summary": "Mixin providing memory backend initialization for agents.",
+  "notice": "Mixin providing memory backend initialization for agents.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: mixin\n    rationale: \"Shares memory initialization across agents without inheritance chains.\"\n    violations: \"Duplicating memory setup logic in each agent.\"\n\n@concurrency:\n    model: asyncio\n    safe: false\n    reason: \"Mutates agent instance state during setup.\"",
+  "source": "backend/agent_k/agents/base.py",
+  "line": 148,
+  "path": "backend/agent_k/agents/base.py",
+  "location": {
+    "path": "backend/agent_k/agents/base.py",
+    "line": 148,
+    "character": 7
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Compares train vs test headers to identify target columns.\nFalls back to sample submission columns if no difference found.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.data:infer_competition_schema",
+  "line": 68,
+  "notice": "Analyzes CSV headers to determine ID column and target columns.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/data.py",
+  "summary": "Infer competition schema from train/test/sample submission files.",
+  "type": "function"
+}

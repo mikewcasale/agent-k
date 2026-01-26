@@ -79,22 +79,25 @@ def create_devstral_model(
 ) -> OpenAIChatModel:
     """Create a Devstral model instance for local LM Studio server.
 
-    This creates an OpenAI-compatible model that connects to a local
-    LM Studio server running Devstral.
+        This creates an OpenAI-compatible model that connects to a local
+        LM Studio server running Devstral.
 
-    @notice: |
-        Creates an OpenAIChatModel configured for Devstral.
+    @dev: |
+        See module for behavior details and invariants.
 
-    @factory-for:
-        id: pydantic_ai.models.openai:OpenAIChatModel
-        rationale: "Centralizes local LM Studio configuration."
-        singleton: false
-        cache-key: model_id
+        @notice: |
+            Creates an OpenAIChatModel configured for Devstral.
 
-    @canonical-home:
-        for:
-            - "devstral model creation"
-        notes: "Use create_devstral_model for local Devstral endpoints."
+        @factory-for:
+            id: pydantic_ai.models.openai:OpenAIChatModel
+            rationale: "Centralizes local LM Studio configuration."
+            singleton: false
+            cache-key: model_id
+
+        @canonical-home:
+            for:
+                - "devstral model creation"
+            notes: "Use create_devstral_model for local Devstral endpoints."
     """
     url = base_url or DEVSTRAL_BASE_URL
 
@@ -110,22 +113,25 @@ def create_devstral_model(
 def create_openrouter_model(model_id: Annotated[str, Doc("OpenRouter model identifier.")]) -> OpenAIChatModel:
     """Create a model instance using OpenRouter.
 
-    OpenRouter provides access to many models including Devstral, Claude,
-    GPT-4, and more through a unified API.
+        OpenRouter provides access to many models including Devstral, Claude,
+        GPT-4, and more through a unified API.
 
-    @notice: |
-        Creates an OpenAIChatModel configured for OpenRouter.
+    @dev: |
+        See module for behavior details and invariants.
 
-    @factory-for:
-        id: pydantic_ai.models.openai:OpenAIChatModel
-        rationale: "Centralizes OpenRouter provider configuration."
-        singleton: false
-        cache-key: model_id
+        @notice: |
+            Creates an OpenAIChatModel configured for OpenRouter.
 
-    @canonical-home:
-        for:
-            - "openrouter model creation"
-        notes: "Use create_openrouter_model for OpenRouter endpoints."
+        @factory-for:
+            id: pydantic_ai.models.openai:OpenAIChatModel
+            rationale: "Centralizes OpenRouter provider configuration."
+            singleton: false
+            cache-key: model_id
+
+        @canonical-home:
+            for:
+                - "openrouter model creation"
+            notes: "Use create_openrouter_model for OpenRouter endpoints."
     """
     return OpenAIChatModel(model_id, provider=OpenRouterProvider())
 
@@ -182,7 +188,10 @@ def get_model(model_spec: Annotated[str, Doc("Model specification string.")]) ->
 def is_devstral_model(model_spec: Annotated[str, Doc("Model specification string.")]) -> bool:
     """Check if a model specification refers to Devstral.
 
-    @notice: |
-        Returns true when the model spec targets Devstral.
+    @dev: |
+        See module for behavior details and invariants.
+
+        @notice: |
+            Returns true when the model spec targets Devstral.
     """
     return model_spec.startswith("devstral:")

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.evaluator:evaluate_stage2",
+  "line": 488,
+  "notice": "Stage 2: Medium evaluation on subset of data.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/evaluator.py",
+  "summary": "Stage 2: Medium evaluation on subset of data.",
+  "type": "function"
+}

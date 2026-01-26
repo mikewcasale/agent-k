@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.tracking:HintEffectivenessTracker.get_last_attempt",
+  "type": "method",
+  "summary": "Return the most recent attempt for a hint in a competition.",
+  "source": "backend/agent_k/core/tracking.py",
+  "line": 793,
+  "path": "backend/agent_k/core/tracking.py",
+  "location": {
+    "path": "backend/agent_k/core/tracking.py",
+    "line": 793,
+    "character": 11
+  }
+}

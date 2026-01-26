@@ -1,0 +1,13 @@
+{
+  "id": "refs.scripts.check_module_docstrings:check_file_docstring",
+  "type": "function",
+  "summary": "Check if a Python file has proper module docstring with copyright.",
+  "source": "refs/scripts/check_module_docstrings.py",
+  "line": 65,
+  "path": "refs/scripts/check_module_docstrings.py",
+  "location": {
+    "path": "refs/scripts/check_module_docstrings.py",
+    "line": 65,
+    "character": 7
+  }
+}

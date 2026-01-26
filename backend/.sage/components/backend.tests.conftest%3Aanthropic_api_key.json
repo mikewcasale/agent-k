@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.conftest:anthropic_api_key",
+  "type": "function",
+  "summary": "Get Anthropic API key from environment or use mock value.",
+  "source": "backend/tests/conftest.py",
+  "line": 144,
+  "path": "backend/tests/conftest.py",
+  "location": {
+    "path": "backend/tests/conftest.py",
+    "line": 144,
+    "character": 7
+  }
+}

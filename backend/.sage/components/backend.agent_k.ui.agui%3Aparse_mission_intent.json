@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.ui.agui:parse_mission_intent",
+  "type": "function",
+  "summary": "Parse chat messages to detect mission intent and extract criteria.",
+  "notice": "Parse chat messages to detect mission intent and extract criteria.",
+  "dev": "See module for behavior details and invariants.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 865,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 865,
+    "character": 7
+  }
+}

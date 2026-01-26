@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.framework:Individual",
+  "line": 67,
+  "notice": "Evolutionary individual with lineage tracking.",
+  "pattern": {
+    "name": "individual-model",
+    "rationale": "Generic dataclass for evolutionary individuals with lineage."
+  },
+  "similar": null,
+  "source": "agent_k/evolution/framework.py",
+  "summary": "Evolutionary individual with lineage tracking.",
+  "type": "class"
+}

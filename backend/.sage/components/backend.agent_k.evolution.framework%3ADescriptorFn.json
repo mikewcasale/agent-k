@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.evolution.framework:DescriptorFn",
+  "type": "attribute",
+  "summary": "Callable signature for MAP-Elites descriptors.",
+  "source": "backend/agent_k/evolution/framework.py",
+  "line": 51,
+  "path": "backend/agent_k/evolution/framework.py",
+  "location": {
+    "path": "backend/agent_k/evolution/framework.py",
+    "line": 51,
+    "character": 3
+  }
+}

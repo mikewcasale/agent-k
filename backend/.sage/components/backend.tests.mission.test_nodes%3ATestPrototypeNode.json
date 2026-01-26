@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_nodes:TestPrototypeNode",
+  "type": "class",
+  "summary": "Tests for the PrototypeNode.",
+  "source": "backend/tests/mission/test_nodes.py",
+  "line": 46,
+  "path": "backend/tests/mission/test_nodes.py",
+  "location": {
+    "path": "backend/tests/mission/test_nodes.py",
+    "line": 46,
+    "character": 7
+  }
+}

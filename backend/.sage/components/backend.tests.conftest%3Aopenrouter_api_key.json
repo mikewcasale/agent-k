@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.conftest:openrouter_api_key",
+  "type": "function",
+  "summary": "Get OpenRouter API key from environment or use mock value.",
+  "source": "backend/tests/conftest.py",
+  "line": 150,
+  "path": "backend/tests/conftest.py",
+  "location": {
+    "path": "backend/tests/conftest.py",
+    "line": 150,
+    "character": 7
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.adapters.test_openevolve:TestOpenEvolveAdapter.test_evolution_job_lifecycle",
+  "type": "method",
+  "summary": "Evolution job should complete and return a solution.",
+  "source": "backend/tests/adapters/test_openevolve.py",
+  "line": 75,
+  "path": "backend/tests/adapters/test_openevolve.py",
+  "location": {
+    "path": "backend/tests/adapters/test_openevolve.py",
+    "line": 75,
+    "character": 11
+  }
+}

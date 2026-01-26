@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.embeddings.test_retriever:TestRAGRetriever.test_init_zero_norm_embeddings",
+  "type": "method",
+  "summary": "Constructor should reject zero-norm embeddings.",
+  "source": "backend/tests/embeddings/test_retriever.py",
+  "line": 27,
+  "path": "backend/tests/embeddings/test_retriever.py",
+  "location": {
+    "path": "backend/tests/embeddings/test_retriever.py",
+    "line": 27,
+    "character": 11
+  }
+}

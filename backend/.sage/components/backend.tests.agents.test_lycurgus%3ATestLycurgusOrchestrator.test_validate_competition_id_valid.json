@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_lycurgus:TestLycurgusOrchestrator.test_validate_competition_id_valid",
+  "type": "method",
+  "summary": "Valid competition IDs should pass validation.",
+  "source": "backend/tests/agents/test_lycurgus.py",
+  "line": 163,
+  "path": "backend/tests/agents/test_lycurgus.py",
+  "location": {
+    "path": "backend/tests/agents/test_lycurgus.py",
+    "line": 163,
+    "character": 11
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Penalty weight scales with min_improvements_required.\nComplexity threshold defaults based on problem type.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.strategy:build_fitness_policy",
+  "line": 266,
+  "notice": "Creates a FitnessPolicy with penalty weights and thresholds.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/strategy.py",
+  "summary": "Create a fitness policy using variable conditions and criteria.",
+  "type": "function"
+}

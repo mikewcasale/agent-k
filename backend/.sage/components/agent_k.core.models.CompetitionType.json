@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.models:CompetitionType",
+  "line": 94,
+  "notice": "Type of Kaggle competition.",
+  "pattern": {
+    "name": "enumeration",
+    "rationale": "StrEnum for string-serializable competition categories."
+  },
+  "similar": null,
+  "source": "agent_k/core/models.py",
+  "summary": "Type of Kaggle competition.",
+  "type": "class"
+}

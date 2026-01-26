@@ -316,7 +316,14 @@ def _fitness_from_score(cv_score: float | None, metric_direction: str) -> float:
 
 
 def evaluate(program_path: str) -> EvaluationResult:
-    """Evaluate a program and return metrics and artifacts for OpenEvolve."""
+    """Evaluate a program and return metrics and artifacts for OpenEvolve.
+
+    @notice: |
+        Evaluate a program and return metrics and artifacts for OpenEvolve.
+
+    @dev: |
+        See module for behavior details and invariants.
+    """
     from agent_k.core.hints import detect_applied_hints
     from agent_k.core.solution import execute_solution, parse_baseline_score
 
@@ -382,16 +389,22 @@ def evaluate(program_path: str) -> EvaluationResult:
 def evaluate_stage1(program_path: str) -> EvaluationResult:
     """Stage 1: Quick syntax and import validation.
 
-    This stage runs with a 5-second timeout and validates:
-    - Python syntax is correct (AST parsing)
-    - Required imports are available
-    - Basic structure is present (has main function or training logic)
+        This stage runs with a 5-second timeout and validates:
+        - Python syntax is correct (AST parsing)
+        - Required imports are available
+        - Basic structure is present (has main function or training logic)
 
     Args:
-        program_path: Path to the Python solution file.
+            program_path: Path to the Python solution file.
 
     Returns:
-        EvaluationResult with score 0.0 if validation fails, 0.3 if passes.
+            EvaluationResult with score 0.0 if validation fails, 0.3 if passes.
+
+    @notice: |
+        Stage 1: Quick syntax and import validation.
+
+    @dev: |
+        See module for behavior details and invariants.
     """
     try:
         code = Path(program_path).read_text(encoding="utf-8")
@@ -474,16 +487,22 @@ def evaluate_stage1(program_path: str) -> EvaluationResult:
 def evaluate_stage2(program_path: str) -> EvaluationResult:
     """Stage 2: Medium evaluation on subset of data.
 
-    This stage runs with a 30-second timeout and:
-    - Executes the solution on a small data subset (first 1000 rows)
-    - Validates output format is correct
-    - Gets a preliminary score estimate
+        This stage runs with a 30-second timeout and:
+        - Executes the solution on a small data subset (first 1000 rows)
+        - Validates output format is correct
+        - Gets a preliminary score estimate
 
     Args:
-        program_path: Path to the Python solution file.
+            program_path: Path to the Python solution file.
 
     Returns:
-        EvaluationResult with preliminary fitness score.
+            EvaluationResult with preliminary fitness score.
+
+    @notice: |
+        Stage 2: Medium evaluation on subset of data.
+
+    @dev: |
+        See module for behavior details and invariants.
     """
     from agent_k.core.solution import execute_solution, parse_baseline_score
 

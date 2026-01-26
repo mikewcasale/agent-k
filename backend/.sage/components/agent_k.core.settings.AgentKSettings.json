@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.settings:AgentKSettings",
+  "line": 42,
+  "notice": "Base settings with shared environment defaults.",
+  "pattern": {
+    "name": "settings-model",
+    "rationale": "Centralizes shared environment defaults.",
+    "violations": "Scattered env lookups drift across modules."
+  },
+  "similar": null,
+  "source": "agent_k/core/settings.py",
+  "summary": "Base settings with shared environment defaults.",
+  "type": "class"
+}

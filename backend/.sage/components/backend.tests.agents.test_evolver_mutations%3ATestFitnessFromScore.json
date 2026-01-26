@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_evolver_mutations:TestFitnessFromScore",
+  "type": "class",
+  "summary": "Tests for fitness calculation helper.",
+  "source": "backend/tests/agents/test_evolver_mutations.py",
+  "line": 25,
+  "path": "backend/tests/agents/test_evolver_mutations.py",
+  "location": {
+    "path": "backend/tests/agents/test_evolver_mutations.py",
+    "line": 25,
+    "character": 7
+  }
+}

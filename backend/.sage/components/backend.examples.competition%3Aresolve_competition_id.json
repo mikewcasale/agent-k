@@ -1,0 +1,13 @@
+{
+  "id": "backend.examples.competition:resolve_competition_id",
+  "type": "function",
+  "summary": "Resolve competition id from CLI or environment.",
+  "source": "backend/examples/competition.py",
+  "line": 274,
+  "path": "backend/examples/competition.py",
+  "location": {
+    "path": "backend/examples/competition.py",
+    "line": 274,
+    "character": 7
+  }
+}

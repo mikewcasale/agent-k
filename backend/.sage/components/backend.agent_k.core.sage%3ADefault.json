@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.sage:Default",
+  "type": "class",
+  "summary": "Default-value metadata for parameters.",
+  "notice": "Default-value metadata for parameters.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: doc-metadata\n    rationale: \"Makes implicit defaults discoverable to agents.\"\n    violations: \"Silent defaults can mislead tool usage.\"",
+  "source": "backend/agent_k/core/sage.py",
+  "line": 100,
+  "path": "backend/agent_k/core/sage.py",
+  "location": {
+    "path": "backend/agent_k/core/sage.py",
+    "line": 100,
+    "character": 7
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.infra.instrumentation:Metrics.record_submission",
+  "type": "method",
+  "summary": "Record competition submission metrics.",
+  "source": "backend/agent_k/infra/instrumentation.py",
+  "line": 83,
+  "path": "backend/agent_k/infra/instrumentation.py",
+  "location": {
+    "path": "backend/agent_k/infra/instrumentation.py",
+    "line": 83,
+    "character": 11
+  }
+}

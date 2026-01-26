@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.feedback:SubmissionOrchestrator.iteration",
+  "line": 145,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/feedback.py",
+  "summary": "Return the current iteration counter.",
+  "type": "method"
+}

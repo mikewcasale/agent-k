@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.embeddings",
+  "type": "module",
+  "summary": "Embeddings tests for AGENT-K.",
+  "source": "backend/tests/embeddings/__init__.py",
+  "line": 0,
+  "path": "backend/tests/embeddings/__init__.py",
+  "location": {
+    "path": "backend/tests/embeddings/__init__.py",
+    "line": 0,
+    "character": 3
+  }
+}

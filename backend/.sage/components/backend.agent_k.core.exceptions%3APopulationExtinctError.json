@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.exceptions:PopulationExtinctError",
+  "type": "class",
+  "summary": "Raised when all population members fail fitness evaluation.",
+  "notice": "Raised when all population members fail fitness evaluation.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: exception-specific\n    rationale: \"Non-recoverable population extinction.\"",
+  "source": "backend/agent_k/core/exceptions.py",
+  "line": 401,
+  "path": "backend/agent_k/core/exceptions.py",
+  "location": {
+    "path": "backend/agent_k/core/exceptions.py",
+    "line": 401,
+    "character": 7
+  }
+}

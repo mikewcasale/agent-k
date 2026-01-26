@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.lycurgus:LycurgusSettings",
+  "line": 99,
+  "notice": "Settings for the Lycurgus orchestrator.",
+  "pattern": {
+    "name": "settings",
+    "rationale": "Centralizes orchestration configuration.",
+    "violations": "Per-run overrides lead to inconsistent missions."
+  },
+  "similar": null,
+  "source": "agent_k/agents/lycurgus.py",
+  "summary": "Settings for the Lycurgus orchestrator.",
+  "type": "class"
+}

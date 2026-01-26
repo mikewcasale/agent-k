@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents",
+  "type": "module",
+  "summary": "Agent tests.",
+  "source": "backend/tests/agents/__init__.py",
+  "line": 0,
+  "path": "backend/tests/agents/__init__.py",
+  "location": {
+    "path": "backend/tests/agents/__init__.py",
+    "line": 0,
+    "character": 3
+  }
+}

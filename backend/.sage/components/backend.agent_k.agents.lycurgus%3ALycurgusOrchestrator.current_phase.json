@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.current_phase",
+  "type": "method",
+  "summary": "Current phase of the active mission.",
+  "source": "backend/agent_k/agents/lycurgus.py",
+  "line": 365,
+  "path": "backend/agent_k/agents/lycurgus.py",
+  "location": {
+    "path": "backend/agent_k/agents/lycurgus.py",
+    "line": 365,
+    "character": 11
+  }
+}

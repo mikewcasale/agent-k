@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_scientist:TestScientistAgentSingleton",
+  "type": "class",
+  "summary": "Tests for the Scientist agent singleton.",
+  "source": "backend/tests/agents/test_scientist.py",
+  "line": 20,
+  "path": "backend/tests/agents/test_scientist.py",
+  "location": {
+    "path": "backend/tests/agents/test_scientist.py",
+    "line": 20,
+    "character": 7
+  }
+}

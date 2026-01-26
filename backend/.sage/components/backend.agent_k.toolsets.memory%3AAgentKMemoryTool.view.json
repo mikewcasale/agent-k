@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.toolsets.memory:AgentKMemoryTool.view",
+  "type": "method",
+  "summary": "View file contents or list directory entries.",
+  "source": "backend/agent_k/toolsets/memory.py",
+  "line": 103,
+  "path": "backend/agent_k/toolsets/memory.py",
+  "location": {
+    "path": "backend/agent_k/toolsets/memory.py",
+    "line": 103,
+    "character": 11
+  }
+}

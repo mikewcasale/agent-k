@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.features:FeatureGenome",
+  "line": 156,
+  "notice": "Complete feature engineering genome.",
+  "pattern": {
+    "name": "genome-model",
+    "rationale": "Mutable dataclass aggregating feature engineering genes."
+  },
+  "similar": null,
+  "source": "agent_k/evolution/features.py",
+  "summary": "Complete feature engineering genome.",
+  "type": "class"
+}

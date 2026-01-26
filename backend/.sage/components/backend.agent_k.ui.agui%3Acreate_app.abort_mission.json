@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:create_app.abort_mission",
+  "type": "function",
+  "summary": "Abort an active mission.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 1365,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 1365,
+    "character": 11
+  }
+}

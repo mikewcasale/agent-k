@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.conftest:mock_event_emitter",
+  "type": "function",
+  "summary": "Create a mock event emitter for testing.",
+  "source": "backend/tests/conftest.py",
+  "line": 124,
+  "path": "backend/tests/conftest.py",
+  "location": {
+    "path": "backend/tests/conftest.py",
+    "line": 124,
+    "character": 7
+  }
+}

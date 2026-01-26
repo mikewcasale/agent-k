@@ -42,10 +42,16 @@ __all__ = ("Constraint", "Default", "Doc", "Range")
 class Doc:
     """Human-facing parameter description.
 
-    @pattern:
-        name: doc-metadata
-        rationale: "Co-locates parameter docs with type hints."
-        violations: "Out-of-band docs drift from signatures."
+    @notice: |
+        Human-facing parameter description.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: doc-metadata
+            rationale: "Co-locates parameter docs with type hints."
+            violations: "Out-of-band docs drift from signatures."
     """
 
     text: str
@@ -55,10 +61,16 @@ class Doc:
 class Constraint:
     """Machine-readable parameter constraint.
 
-    @pattern:
-        name: doc-metadata
-        rationale: "Captures validation rules without custom parsers."
-        violations: "Opaque constraints make automated checks brittle."
+    @notice: |
+        Machine-readable parameter constraint.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: doc-metadata
+            rationale: "Captures validation rules without custom parsers."
+            violations: "Opaque constraints make automated checks brittle."
     """
 
     pattern: str
@@ -68,10 +80,16 @@ class Constraint:
 class Range:
     """Numeric range constraint for parameters.
 
-    @pattern:
-        name: doc-metadata
-        rationale: "Encodes min/max bounds for tooling and agents."
-        violations: "Hidden bounds lead to invalid parameter choices."
+    @notice: |
+        Numeric range constraint for parameters.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: doc-metadata
+            rationale: "Encodes min/max bounds for tooling and agents."
+            violations: "Hidden bounds lead to invalid parameter choices."
     """
 
     min: float | int
@@ -82,10 +100,16 @@ class Range:
 class Default:
     """Default-value metadata for parameters.
 
-    @pattern:
-        name: doc-metadata
-        rationale: "Makes implicit defaults discoverable to agents."
-        violations: "Silent defaults can mislead tool usage."
+    @notice: |
+        Default-value metadata for parameters.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: doc-metadata
+            rationale: "Makes implicit defaults discoverable to agents."
+            violations: "Silent defaults can mislead tool usage."
     """
 
     value: str

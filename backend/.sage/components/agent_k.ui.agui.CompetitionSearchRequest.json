@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:CompetitionSearchRequest",
+  "line": 243,
+  "notice": "Request payload for competition search.",
+  "pattern": {
+    "name": "request-model",
+    "rationale": "Frozen Pydantic model for competition search requests."
+  },
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Request payload for competition search.",
+  "type": "class"
+}

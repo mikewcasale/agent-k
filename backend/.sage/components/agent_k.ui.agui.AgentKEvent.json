@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:AgentKEvent",
+  "line": 283,
+  "notice": "Event to be streamed to the frontend.",
+  "pattern": {
+    "name": "event-model",
+    "rationale": "Frozen Pydantic model for SSE event streaming."
+  },
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Event to be streamed to the frontend.",
+  "type": "class"
+}

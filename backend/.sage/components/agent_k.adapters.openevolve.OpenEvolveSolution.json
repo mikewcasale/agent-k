@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.adapters.openevolve:OpenEvolveSolution",
+  "line": 192,
+  "notice": "Best solution produced by an OpenEvolve job.",
+  "pattern": {
+    "name": "output-model",
+    "rationale": "Stable schema for OpenEvolve solutions.",
+    "violations": "Free-form outputs hinder integration."
+  },
+  "similar": null,
+  "source": "agent_k/adapters/openevolve.py",
+  "summary": "Best solution produced by an OpenEvolve job.",
+  "type": "class"
+}

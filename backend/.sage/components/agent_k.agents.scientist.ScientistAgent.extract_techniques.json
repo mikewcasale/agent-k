@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.scientist:ScientistAgent.extract_techniques",
+  "line": 495,
+  "notice": "Scans code for common ML techniques and feature engineering patterns.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/scientist.py",
+  "summary": "Extract modeling techniques from Kaggle kernel code.",
+  "type": "method"
+}

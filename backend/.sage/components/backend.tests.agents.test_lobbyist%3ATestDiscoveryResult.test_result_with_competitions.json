@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_lobbyist:TestDiscoveryResult.test_result_with_competitions",
+  "type": "method",
+  "summary": "Result should accept competition list.",
+  "source": "backend/tests/agents/test_lobbyist.py",
+  "line": 56,
+  "path": "backend/tests/agents/test_lobbyist.py",
+  "location": {
+    "path": "backend/tests/agents/test_lobbyist.py",
+    "line": 56,
+    "character": 11
+  }
+}

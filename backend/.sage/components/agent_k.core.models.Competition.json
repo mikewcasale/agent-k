@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.models:Competition",
+  "line": 170,
+  "notice": "Kaggle competition entity.",
+  "pattern": {
+    "name": "immutable-entity",
+    "rationale": "Frozen Pydantic model for competition metadata."
+  },
+  "similar": null,
+  "source": "agent_k/core/models.py",
+  "summary": "Kaggle competition entity.",
+  "type": "class"
+}

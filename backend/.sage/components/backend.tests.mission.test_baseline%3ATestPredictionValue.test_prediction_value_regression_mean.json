@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_baseline:TestPredictionValue.test_prediction_value_regression_mean",
+  "type": "method",
+  "summary": "Regression metrics should return the mean value.",
+  "source": "backend/tests/mission/test_baseline.py",
+  "line": 34,
+  "path": "backend/tests/mission/test_baseline.py",
+  "location": {
+    "path": "backend/tests/mission/test_baseline.py",
+    "line": 34,
+    "character": 11
+  }
+}

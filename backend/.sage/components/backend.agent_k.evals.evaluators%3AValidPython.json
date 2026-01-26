@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.evals.evaluators:ValidPython",
+  "type": "class",
+  "summary": "Evaluate if output is valid Python code.",
+  "notice": "Evaluate if output is valid Python code.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: evaluator\n    rationale: \"Encapsulates evaluation logic for pydantic-evals.\"\n    violations: \"Inline checks are harder to reuse and test.\"",
+  "source": "backend/agent_k/evals/evaluators.py",
+  "line": 42,
+  "path": "backend/agent_k/evals/evaluators.py",
+  "location": {
+    "path": "backend/agent_k/evals/evaluators.py",
+    "line": 42,
+    "character": 7
+  }
+}

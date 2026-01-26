@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.protocols:PlatformAdapter.submit",
+  "type": "method",
+  "summary": "Submit solution to competition.",
+  "source": "backend/agent_k/core/protocols.py",
+  "line": 137,
+  "path": "backend/agent_k/core/protocols.py",
+  "location": {
+    "path": "backend/agent_k/core/protocols.py",
+    "line": 137,
+    "character": 11
+  }
+}

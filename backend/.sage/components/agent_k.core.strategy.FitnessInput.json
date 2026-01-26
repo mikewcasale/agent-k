@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.strategy:FitnessInput",
+  "line": 146,
+  "notice": "Input payload for fitness scoring.",
+  "pattern": {
+    "name": "fitness-input",
+    "rationale": "Captures evaluation signals for scoring.",
+    "violations": "Ad-hoc inputs drift across fitness logic."
+  },
+  "similar": null,
+  "source": "agent_k/core/strategy.py",
+  "summary": "Input payload for fitness scoring.",
+  "type": "class"
+}

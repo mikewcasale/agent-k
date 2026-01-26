@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.exceptions:AuthenticationError",
+  "type": "class",
+  "summary": "Raised when platform authentication fails.",
+  "notice": "Raised when platform authentication fails.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: exception-specific\n    rationale: \"Non-recoverable authentication failure.\"",
+  "source": "backend/agent_k/core/exceptions.py",
+  "line": 213,
+  "path": "backend/agent_k/core/exceptions.py",
+  "location": {
+    "path": "backend/agent_k/core/exceptions.py",
+    "line": 213,
+    "character": 7
+  }
+}

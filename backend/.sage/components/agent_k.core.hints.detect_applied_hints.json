@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Matches explicit hint comments, code snippet signatures, and\npattern-based detection for each hint type.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.hints:detect_applied_hints",
+  "line": 976,
+  "notice": "Returns hint IDs that appear to be applied in the given code.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/hints.py",
+  "summary": "Detect which hints were applied based on solution code patterns.",
+  "type": "function"
+}

@@ -56,20 +56,26 @@ __all__ = ("BaseAgentMixin", "MemoryMixin", "AgentDeps", "prepare_output_tools_s
 class AgentDeps:
     """Base dependency container for all agents.
 
-    Per spec Section 7.1, dependencies are injected via dataclass containers.
+        Per spec Section 7.1, dependencies are injected via dataclass containers.
 
-    @pattern:
-        name: dependency-container
-        rationale: "Standardizes injected services for agent runs."
-        violations: "Ad-hoc deps hide runtime requirements."
+    @notice: |
+        Base dependency container for all agents.
 
-    @collaborators:
-        required:
-            - httpx:AsyncClient
-        optional:
-            - agent_k.ui.agui:EventEmitter
-        injection: constructor
-        lifecycle: "Allocated per agent run."
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: dependency-container
+            rationale: "Standardizes injected services for agent runs."
+            violations: "Ad-hoc deps hide runtime requirements."
+
+        @collaborators:
+            required:
+                - httpx:AsyncClient
+            optional:
+                - agent_k.ui.agui:EventEmitter
+            injection: constructor
+            lifecycle: "Allocated per agent run."
     """
 
     http_client: httpx.AsyncClient
@@ -80,17 +86,23 @@ class AgentDeps:
 class BaseAgentMixin(ABC, Generic[AgentDepsT, OutputT]):
     """Base mixin providing common agent functionality.
 
-    Per spec Section 3.2, class structure follows visibility-based ordering.
+        Per spec Section 3.2, class structure follows visibility-based ordering.
 
-    @pattern:
-        name: agent-base
-        rationale: "Shared behavior for agent wrappers around pydantic-ai Agents."
-        violations: "Duplicated run logic across agents."
+    @notice: |
+        Base mixin providing common agent functionality.
 
-    @concurrency:
-        model: asyncio
-        safe: false
-        reason: "Subclasses typically manage shared state per instance."
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: agent-base
+            rationale: "Shared behavior for agent wrappers around pydantic-ai Agents."
+            violations: "Duplicated run logic across agents."
+
+        @concurrency:
+            model: asyncio
+            safe: false
+            reason: "Subclasses typically manage shared state per instance."
     """
 
     _default_model: str = "anthropic:claude-sonnet-4-5"
@@ -136,15 +148,21 @@ class BaseAgentMixin(ABC, Generic[AgentDepsT, OutputT]):
 class MemoryMixin:
     """Mixin providing memory backend initialization for agents.
 
-    @pattern:
-        name: mixin
-        rationale: "Shares memory initialization across agents without inheritance chains."
-        violations: "Duplicating memory setup logic in each agent."
+    @notice: |
+        Mixin providing memory backend initialization for agents.
 
-    @concurrency:
-        model: asyncio
-        safe: false
-        reason: "Mutates agent instance state during setup."
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: mixin
+            rationale: "Shares memory initialization across agents without inheritance chains."
+            violations: "Duplicating memory setup logic in each agent."
+
+        @concurrency:
+            model: asyncio
+            safe: false
+            reason: "Mutates agent instance state during setup."
     """
 
     _memory_backend: AgentKMemoryTool | None

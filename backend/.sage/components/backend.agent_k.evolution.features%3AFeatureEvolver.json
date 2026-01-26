@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.evolution.features:FeatureEvolver",
+  "type": "class",
+  "summary": "Evolve feature engineering pipelines with mutation and crossover.",
+  "notice": "Evolve feature engineering pipelines with mutation and crossover.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: evolver\n    rationale: \"Coordinates evolutionary search over feature genomes.\"",
+  "source": "backend/agent_k/evolution/features.py",
+  "line": 201,
+  "path": "backend/agent_k/evolution/features.py",
+  "location": {
+    "path": "backend/agent_k/evolution/features.py",
+    "line": 201,
+    "character": 7
+  }
+}

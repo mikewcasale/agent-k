@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.evolution.framework:Individual.with_genome",
+  "type": "method",
+  "summary": "Create a child individual while updating lineage.",
+  "source": "backend/agent_k/evolution/framework.py",
+  "line": 87,
+  "path": "backend/agent_k/evolution/framework.py",
+  "location": {
+    "path": "backend/agent_k/evolution/framework.py",
+    "line": 87,
+    "character": 11
+  }
+}

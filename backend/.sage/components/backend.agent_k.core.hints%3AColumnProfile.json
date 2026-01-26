@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.hints:ColumnProfile",
+  "type": "class",
+  "summary": "Profile statistics for a single column.",
+  "notice": "Profile statistics for a single column.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: value-object\n    rationale: \"Frozen dataclass for immutable column statistics.\"",
+  "source": "backend/agent_k/core/hints.py",
+  "line": 193,
+  "path": "backend/agent_k/core/hints.py",
+  "location": {
+    "path": "backend/agent_k/core/hints.py",
+    "line": 193,
+    "character": 7
+  }
+}

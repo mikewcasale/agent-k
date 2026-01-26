@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.deps:KaggleDeps.platform_adapter",
+  "type": "method",
+  "summary": "Expose the Kaggle adapter as a platform adapter.",
+  "source": "backend/agent_k/core/deps.py",
+  "line": 103,
+  "path": "backend/agent_k/core/deps.py",
+  "location": {
+    "path": "backend/agent_k/core/deps.py",
+    "line": 103,
+    "character": 11
+  }
+}

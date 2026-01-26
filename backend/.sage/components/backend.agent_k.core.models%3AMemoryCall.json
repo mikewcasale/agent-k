@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.models:MemoryCall",
+  "type": "class",
+  "summary": "Memory operation tool call.",
+  "notice": "Memory operation tool call.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: specialization\n    rationale: \"Extends ToolCall with memory operation specific fields.\"",
+  "source": "backend/agent_k/core/models.py",
+  "line": 369,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 369,
+    "character": 7
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_baseline:TestPredictionValue",
+  "type": "class",
+  "summary": "Tests for prediction helpers.",
+  "source": "backend/tests/mission/test_baseline.py",
+  "line": 31,
+  "path": "backend/tests/mission/test_baseline.py",
+  "location": {
+    "path": "backend/tests/mission/test_baseline.py",
+    "line": 31,
+    "character": 7
+  }
+}

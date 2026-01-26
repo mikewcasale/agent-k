@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_lycurgus:TestLycurgusAsyncContextManager.test_async_context_manager",
+  "type": "method",
+  "summary": "Orchestrator should work as async context manager.",
+  "source": "backend/tests/agents/test_lycurgus.py",
+  "line": 228,
+  "path": "backend/tests/agents/test_lycurgus.py",
+  "location": {
+    "path": "backend/tests/agents/test_lycurgus.py",
+    "line": 228,
+    "character": 11
+  }
+}

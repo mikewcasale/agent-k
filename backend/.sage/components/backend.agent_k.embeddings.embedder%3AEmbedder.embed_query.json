@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.embeddings.embedder:Embedder.embed_query",
+  "type": "method",
+  "summary": "Embed a single query string.",
+  "notice": "Embed a single query string.",
+  "dev": "See module for behavior details and invariants.",
+  "source": "backend/agent_k/embeddings/embedder.py",
+  "line": 82,
+  "path": "backend/agent_k/embeddings/embedder.py",
+  "location": {
+    "path": "backend/agent_k/embeddings/embedder.py",
+    "line": 82,
+    "character": 11
+  }
+}

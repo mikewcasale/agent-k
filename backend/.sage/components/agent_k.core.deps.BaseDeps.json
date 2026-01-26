@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.deps:BaseDeps",
+  "line": 47,
+  "notice": "Base dependencies shared across agents.",
+  "pattern": {
+    "name": "dependency-container",
+    "rationale": "Shared DI container for agent executions.",
+    "violations": "Hidden globals make runs nondeterministic."
+  },
+  "similar": null,
+  "source": "agent_k/core/deps.py",
+  "summary": "Base dependencies shared across agents.",
+  "type": "class"
+}

@@ -1,0 +1,35 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.infra.config as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "id": "agent_k.infra.config",
+    "pattern": "config",
+    "provides": [
+      "agent_k.infra.config"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.infra.config",
+  "line": 1,
+  "notice": "Configuration management for AGENT-K.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/config.py",
+  "summary": "Configuration management for AGENT-K.",
+  "type": "module"
+}

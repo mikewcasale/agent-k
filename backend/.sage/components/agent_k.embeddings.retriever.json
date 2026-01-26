@@ -1,0 +1,36 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.embeddings.retriever as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "id": "agent_k.embeddings.retriever",
+    "pattern": "retriever",
+    "provides": [
+      "agent_k.embeddings.retriever:RAGRetriever",
+      "agent_k.embeddings.retriever:RetrievalResult"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.embeddings.retriever",
+  "line": 1,
+  "notice": "RAG retrieval patterns.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/embeddings/retriever.py",
+  "summary": "RAG retrieval patterns.",
+  "type": "module"
+}

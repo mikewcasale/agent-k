@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:AgentKEvent.to_sse",
+  "line": 303,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Convert to Server-Sent Events format.",
+  "type": "method"
+}

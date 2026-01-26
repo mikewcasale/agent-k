@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.tracking:HintEffectivenessTracker.amplify_hint",
+  "type": "method",
+  "summary": "Amplify a hint to boost its prompt priority.",
+  "source": "backend/agent_k/core/tracking.py",
+  "line": 809,
+  "path": "backend/agent_k/core/tracking.py",
+  "location": {
+    "path": "backend/agent_k/core/tracking.py",
+    "line": 809,
+    "character": 11
+  }
+}

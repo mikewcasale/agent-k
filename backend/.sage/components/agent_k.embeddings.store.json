@@ -1,0 +1,37 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.embeddings.store as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "id": "agent_k.embeddings.store",
+    "pattern": "embedding-store",
+    "provides": [
+      "agent_k.embeddings.store:VectorStore",
+      "agent_k.embeddings.store:VectorRecord",
+      "agent_k.embeddings.store:InMemoryVectorStore"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.embeddings.store",
+  "line": 1,
+  "notice": "Vector store abstractions.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/embeddings/store.py",
+  "summary": "Vector store abstractions.",
+  "type": "module"
+}

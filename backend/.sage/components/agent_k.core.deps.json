@@ -1,0 +1,36 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.core.deps as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "id": "agent_k.core.deps",
+    "pattern": "dependency-container",
+    "provides": [
+      "agent_k.core.deps:BaseDeps",
+      "agent_k.core.deps:KaggleDeps"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.core.deps",
+  "line": 1,
+  "notice": "Shared dependency containers.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/deps.py",
+  "summary": "Shared dependency containers.",
+  "type": "module"
+}

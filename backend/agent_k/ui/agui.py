@@ -217,9 +217,15 @@ type EventType = Literal[
 class MissionRequest(BaseModel):
     """Request to start a new mission.
 
-    @pattern:
-        name: request-model
-        rationale: "Frozen Pydantic model for mission start requests."
+    @notice: |
+        Request to start a new mission.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: request-model
+            rationale: "Frozen Pydantic model for mission start requests."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -236,9 +242,15 @@ class MissionRequest(BaseModel):
 class CompetitionSearchRequest(BaseModel):
     """Request payload for competition search.
 
-    @pattern:
-        name: request-model
-        rationale: "Frozen Pydantic model for competition search requests."
+    @notice: |
+        Request payload for competition search.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: request-model
+            rationale: "Frozen Pydantic model for competition search requests."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -252,9 +264,15 @@ class CompetitionSearchRequest(BaseModel):
 class CompetitionFetchRequest(BaseModel):
     """Request payload for fetching competition details by URL.
 
-    @pattern:
-        name: request-model
-        rationale: "Frozen Pydantic model for competition fetch requests."
+    @notice: |
+        Request payload for fetching competition details by URL.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: request-model
+            rationale: "Frozen Pydantic model for competition fetch requests."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -264,9 +282,15 @@ class CompetitionFetchRequest(BaseModel):
 class AgentKEvent(BaseModel):
     """Event to be streamed to the frontend.
 
-    @pattern:
-        name: event-model
-        rationale: "Frozen Pydantic model for SSE event streaming."
+    @notice: |
+        Event to be streamed to the frontend.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: event-model
+            rationale: "Frozen Pydantic model for SSE event streaming."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -307,23 +331,29 @@ intent_agent: Final[Agent[None, MissionIntentOutput]] = Agent(
 class EventEmitter:
     """Emitter for AG-UI events.
 
-    Provides methods for emitting various event types during mission execution.
-    Events are queued and streamed to the frontend via SSE.
+        Provides methods for emitting various event types during mission execution.
+        Events are queued and streamed to the frontend via SSE.
 
-    Per spec Section 8, all emissions are traced via Logfire.
+        Per spec Section 8, all emissions are traced via Logfire.
 
-    @pattern:
-        name: event-emitter
-        rationale: "Centralizes event streaming for the UI."
-        violations: "Direct SSE writes bypass buffering and tracing."
+    @notice: |
+        Emitter for AG-UI events.
 
-    @concurrency:
-        model: asyncio
-        safe: false
-        reason: "Mutates internal queue and closed state."
+    @dev: |
+        See module for implementation details and extension points.
 
-    @invariants:
-        - "Events are only enqueued when not closed."
+        @pattern:
+            name: event-emitter
+            rationale: "Centralizes event streaming for the UI."
+            violations: "Direct SSE writes bypass buffering and tracing."
+
+        @concurrency:
+            model: asyncio
+            safe: false
+            reason: "Mutates internal queue and closed state."
+
+        @invariants:
+            - "Events are only enqueued when not closed."
     """
 
     _queue: asyncio.Queue[AgentKEvent] = field(default_factory=asyncio.Queue)
@@ -515,16 +545,22 @@ class EventEmitter:
 class TaskEmissionContext:
     """Context manager for task-scoped event emission.
 
-    Automatically emits task-start and task-complete events.
+        Automatically emits task-start and task-complete events.
 
-    @pattern:
-        name: context-model
-        rationale: "Async context manager for task lifecycle events."
+    @notice: |
+        Context manager for task-scoped event emission.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: context-model
+            rationale: "Async context manager for task lifecycle events."
 
     Example:
-        async with TaskEmissionContext(emitter, 'task_1', 'discovery', 'Search') as ctx:
-            # Do task work
-            await ctx.emit_progress(0.5, 'Halfway done')
+            async with TaskEmissionContext(emitter, 'task_1', 'discovery', 'Search') as ctx:
+                # Do task work
+                await ctx.emit_progress(0.5, 'Halfway done')
     """
 
     def __init__(self, emitter: EventEmitter, task_id: str, phase: str, name: str) -> None:
@@ -556,9 +592,15 @@ class TaskEmissionContext:
 class MissionIntentResult:
     """Result of mission intent parsing.
 
-    @pattern:
-        name: result-model
-        rationale: "Dataclass for intent classification result."
+    @notice: |
+        Result of mission intent parsing.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: result-model
+            rationale: "Dataclass for intent classification result."
     """
 
     is_mission: bool
@@ -569,9 +611,15 @@ class MissionIntentResult:
 class IntentClassifier:
     """Classify whether a message requests a mission.
 
-    @pattern:
-        name: classifier
-        rationale: "Dataclass for LLM-backed intent classification."
+    @notice: |
+        Classify whether a message requests a mission.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: classifier
+            rationale: "Dataclass for LLM-backed intent classification."
     """
 
     agent: Agent[None, MissionIntentOutput] = field(default_factory=lambda: intent_agent)
@@ -618,9 +666,15 @@ Extract mission criteria if this is a mission request."""
 class MissionCriteriaParser:
     """Parse mission criteria from intent output.
 
-    @pattern:
-        name: parser
-        rationale: "Dataclass for extracting mission criteria from intent."
+    @notice: |
+        Parse mission criteria from intent output.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: parser
+            rationale: "Dataclass for extracting mission criteria from intent."
     """
 
     def parse(self, message: str, intent: MissionIntentResult) -> MissionCriteria | None:
@@ -644,9 +698,15 @@ class MissionCriteriaParser:
 class ChatHandler:
     """Handle chat requests for mission and non-mission modes.
 
-    @pattern:
-        name: handler
-        rationale: "Dataclass coordinating intent classification and parsing."
+    @notice: |
+        Handle chat requests for mission and non-mission modes.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: handler
+            rationale: "Dataclass coordinating intent classification and parsing."
     """
 
     classifier: IntentClassifier
@@ -803,7 +863,14 @@ What would you like to do?"""
 
 
 async def parse_mission_intent(messages: list[dict[str, Any]]) -> MissionCriteria | None:
-    """Parse chat messages to detect mission intent and extract criteria."""
+    """Parse chat messages to detect mission intent and extract criteria.
+
+    @notice: |
+        Parse chat messages to detect mission intent and extract criteria.
+
+    @dev: |
+        See module for behavior details and invariants.
+    """
     handler = ChatHandler(IntentClassifier(), MissionCriteriaParser())
     return await handler.parse_mission_criteria(messages)
 
@@ -821,6 +888,12 @@ async def transform_to_vercel_stream(emitter: EventEmitter) -> AsyncIterator[str
 
     Yields:
         Vercel AI formatted event strings.
+
+    @notice: |
+        Transform EventEmitter output to Vercel AI Data Stream format.
+
+    @dev: |
+        See module for behavior details and invariants.
     """
     try:
         async for event_str in emitter.stream():
@@ -862,13 +935,19 @@ async def transform_to_vercel_stream(emitter: EventEmitter) -> AsyncIterator[str
 async def stream_text_response(text: str) -> AsyncIterator[str]:
     """Stream a simple text response in Vercel AI format.
 
-    Used for chat mode (non-mission) responses.
+        Used for chat mode (non-mission) responses.
 
     Args:
-        text: Text content to stream.
+            text: Text content to stream.
 
     Yields:
-        Vercel AI formatted text deltas.
+            Vercel AI formatted text deltas.
+
+    @notice: |
+        Stream a simple text response in Vercel AI format.
+
+    @dev: |
+        See module for behavior details and invariants.
     """
     # Stream text in chunks for better UX
     chunk_size = 50
@@ -927,19 +1006,22 @@ async def _load_persisted_status(mission_id: str) -> dict[str, Any] | None:
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application.
 
-    @notice: |
-        Constructs the FastAPI app with routes and middleware.
+    @dev: |
+        See module for behavior details and invariants.
 
-    @factory-for:
-        id: fastapi:FastAPI
-        rationale: "Centralizes AG-UI app wiring."
-        singleton: false
-        cache-key: "app"
+        @notice: |
+            Constructs the FastAPI app with routes and middleware.
 
-    @canonical-home:
-        for:
-            - "AG-UI application construction"
-        notes: "Use create_app to initialize the FastAPI server."
+        @factory-for:
+            id: fastapi:FastAPI
+            rationale: "Centralizes AG-UI app wiring."
+            singleton: false
+            cache-key: "app"
+
+        @canonical-home:
+            for:
+                - "AG-UI application construction"
+            notes: "Use create_app to initialize the FastAPI server."
     """
     configure_instrumentation()
     app = FastAPI(title="AGENT-K", description="Multi-agent Kaggle competition system", version=APP_VERSION)
@@ -1681,7 +1763,14 @@ app: Final = create_app()
 
 
 def main() -> None:
-    """Run the AG-UI server."""
+    """Run the AG-UI server.
+
+    @notice: |
+        Run the AG-UI server.
+
+    @dev: |
+        See module for behavior details and invariants.
+    """
     import uvicorn
 
     port = int(os.environ.get("PORT", str(DEFAULT_PORT)))

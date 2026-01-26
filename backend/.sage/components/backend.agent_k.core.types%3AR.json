@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.types:R",
+  "type": "attribute",
+  "summary": "Type variable for decorator return values.",
+  "source": "backend/agent_k/core/types.py",
+  "line": 56,
+  "path": "backend/agent_k/core/types.py",
+  "location": {
+    "path": "backend/agent_k/core/types.py",
+    "line": 56,
+    "character": 3
+  }
+}

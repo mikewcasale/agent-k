@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.toolsets:DepsT",
+  "type": "attribute",
+  "summary": "Type variable for toolset dependencies.",
+  "source": "backend/agent_k/toolsets/__init__.py",
+  "line": 59,
+  "path": "backend/agent_k/toolsets/__init__.py",
+  "location": {
+    "path": "backend/agent_k/toolsets/__init__.py",
+    "line": 59,
+    "character": 3
+  }
+}

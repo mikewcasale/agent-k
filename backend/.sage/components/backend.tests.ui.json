@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.ui",
+  "type": "module",
+  "summary": "UI tests.",
+  "source": "backend/tests/ui/__init__.py",
+  "line": 0,
+  "path": "backend/tests/ui/__init__.py",
+  "location": {
+    "path": "backend/tests/ui/__init__.py",
+    "line": 0,
+    "character": 3
+  }
+}

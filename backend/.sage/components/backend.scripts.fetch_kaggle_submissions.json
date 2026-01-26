@@ -1,0 +1,13 @@
+{
+  "id": "backend.scripts.fetch_kaggle_submissions",
+  "type": "module",
+  "summary": "Fetch Kaggle submission metadata for a competition.",
+  "source": "backend/scripts/fetch_kaggle_submissions.py",
+  "line": 0,
+  "path": "backend/scripts/fetch_kaggle_submissions.py",
+  "location": {
+    "path": "backend/scripts/fetch_kaggle_submissions.py",
+    "line": 0,
+    "character": 3
+  }
+}

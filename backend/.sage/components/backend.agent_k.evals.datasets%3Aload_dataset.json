@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.evals.datasets:load_dataset",
+  "type": "function",
+  "summary": "Load dataset from YAML file.",
+  "notice": "Load dataset from YAML file.",
+  "dev": "See module for behavior details and invariants.",
+  "source": "backend/agent_k/evals/datasets.py",
+  "line": 40,
+  "path": "backend/agent_k/evals/datasets.py",
+  "location": {
+    "path": "backend/agent_k/evals/datasets.py",
+    "line": 40,
+    "character": 7
+  }
+}

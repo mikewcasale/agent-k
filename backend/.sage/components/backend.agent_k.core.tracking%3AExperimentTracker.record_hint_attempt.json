@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.tracking:ExperimentTracker.record_hint_attempt",
+  "type": "method",
+  "summary": "Persist a preprocessing hint attempt record.",
+  "source": "backend/agent_k/core/tracking.py",
+  "line": 424,
+  "path": "backend/agent_k/core/tracking.py",
+  "location": {
+    "path": "backend/agent_k/core/tracking.py",
+    "line": 424,
+    "character": 11
+  }
+}

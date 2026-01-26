@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:MissionRequest",
+  "line": 218,
+  "notice": "Request to start a new mission.",
+  "pattern": {
+    "name": "request-model",
+    "rationale": "Frozen Pydantic model for mission start requests."
+  },
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Request to start a new mission.",
+  "type": "class"
+}

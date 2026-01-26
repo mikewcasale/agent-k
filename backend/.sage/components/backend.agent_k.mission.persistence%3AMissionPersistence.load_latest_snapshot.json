@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.mission.persistence:MissionPersistence.load_latest_snapshot",
+  "type": "method",
+  "summary": "Load the most recent snapshot.",
+  "source": "backend/agent_k/mission/persistence.py",
+  "line": 127,
+  "path": "backend/agent_k/mission/persistence.py",
+  "location": {
+    "path": "backend/agent_k/mission/persistence.py",
+    "line": 127,
+    "character": 11
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.conftest:TestEnv.remove",
+  "type": "method",
+  "summary": "Remove an environment variable, saving the original value.",
+  "source": "backend/tests/conftest.py",
+  "line": 63,
+  "path": "backend/tests/conftest.py",
+  "location": {
+    "path": "backend/tests/conftest.py",
+    "line": 63,
+    "character": 11
+  }
+}

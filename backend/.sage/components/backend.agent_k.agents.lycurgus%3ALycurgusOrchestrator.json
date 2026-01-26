@@ -1,0 +1,20 @@
+{
+  "id": "backend.agent_k.agents.lycurgus:LycurgusOrchestrator",
+  "type": "class",
+  "summary": "Orchestration agent coordinating the multi-agent Kaggle competition system.",
+  "notice": "Coordinates discovery, research, prototype, evolution, and submission phases.",
+  "dev": "Uses pydantic-graph nodes to drive mission lifecycle.",
+  "pattern": {
+    "name": "orchestrator",
+    "rationale": "Centralized coordinator for multi-agent mission state.",
+    "violations": "Decentralized orchestration leads to inconsistent transitions."
+  },
+  "source": "backend/agent_k/agents/lycurgus.py",
+  "line": 196,
+  "path": "backend/agent_k/agents/lycurgus.py",
+  "location": {
+    "path": "backend/agent_k/agents/lycurgus.py",
+    "line": 196,
+    "character": 7
+  }
+}

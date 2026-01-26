@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_evolver_mutations:TestStructuralMutation",
+  "type": "class",
+  "summary": "Tests for structural mutation helpers.",
+  "source": "backend/tests/agents/test_evolver_mutations.py",
+  "line": 89,
+  "path": "backend/tests/agents/test_evolver_mutations.py",
+  "location": {
+    "path": "backend/tests/agents/test_evolver_mutations.py",
+    "line": 89,
+    "character": 7
+  }
+}

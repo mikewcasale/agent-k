@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:IntentClassifier",
+  "line": 612,
+  "notice": "Classify whether a message requests a mission.",
+  "pattern": {
+    "name": "classifier",
+    "rationale": "Dataclass for LLM-backed intent classification."
+  },
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Classify whether a message requests a mission.",
+  "type": "class"
+}

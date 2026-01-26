@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.download_data",
+  "type": "method",
+  "summary": "Generate local data files for the competition.",
+  "source": "backend/agent_k/adapters/openevolve.py",
+  "line": 573,
+  "path": "backend/agent_k/adapters/openevolve.py",
+  "location": {
+    "path": "backend/agent_k/adapters/openevolve.py",
+    "line": 573,
+    "character": 11
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.examples.competition:SubmissionRateLimiter",
+  "type": "class",
+  "summary": "Rate limiter enforcing Kaggle submission caps.",
+  "source": "backend/examples/competition.py",
+  "line": 52,
+  "path": "backend/examples/competition.py",
+  "location": {
+    "path": "backend/examples/competition.py",
+    "line": 52,
+    "character": 7
+  }
+}

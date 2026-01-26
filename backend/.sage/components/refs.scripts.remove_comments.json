@@ -1,0 +1,13 @@
+{
+  "id": "refs.scripts.remove_comments",
+  "type": "module",
+  "summary": "utility to remove excessive inline comments",
+  "source": "refs/scripts/remove_comments.py",
+  "line": 0,
+  "path": "refs/scripts/remove_comments.py",
+  "location": {
+    "path": "refs/scripts/remove_comments.py",
+    "line": 0,
+    "character": 3
+  }
+}

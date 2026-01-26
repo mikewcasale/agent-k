@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.adapters.kaggle:KaggleSettings.api_key",
+  "type": "attribute",
+  "summary": "Kaggle API key for authentication.",
+  "source": "backend/agent_k/adapters/kaggle.py",
+  "line": 98,
+  "path": "backend/agent_k/adapters/kaggle.py",
+  "location": {
+    "path": "backend/agent_k/adapters/kaggle.py",
+    "line": 98,
+    "character": 7
+  }
+}

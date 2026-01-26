@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.mission.nodes:DiscoveryNode.run",
+  "type": "method",
+  "summary": "Execute discovery phase.",
+  "source": "backend/agent_k/mission/nodes.py",
+  "line": 155,
+  "path": "backend/agent_k/mission/nodes.py",
+  "location": {
+    "path": "backend/agent_k/mission/nodes.py",
+    "line": 155,
+    "character": 11
+  }
+}

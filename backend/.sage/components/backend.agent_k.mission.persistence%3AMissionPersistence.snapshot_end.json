@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.mission.persistence:MissionPersistence.snapshot_end",
+  "type": "method",
+  "summary": "Persist the end snapshot and a checkpointed state.",
+  "source": "backend/agent_k/mission/persistence.py",
+  "line": 109,
+  "path": "backend/agent_k/mission/persistence.py",
+  "location": {
+    "path": "backend/agent_k/mission/persistence.py",
+    "line": 109,
+    "character": 11
+  }
+}

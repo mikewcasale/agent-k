@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.exceptions:EvolutionError",
+  "type": "class",
+  "summary": "Base exception for evolution-related errors.",
+  "notice": "Base exception for evolution-related errors.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: exception-category\n    rationale: \"Category base for evolutionary algorithm errors.\"",
+  "source": "backend/agent_k/core/exceptions.py",
+  "line": 362,
+  "path": "backend/agent_k/core/exceptions.py",
+  "location": {
+    "path": "backend/agent_k/core/exceptions.py",
+    "line": 362,
+    "character": 7
+  }
+}

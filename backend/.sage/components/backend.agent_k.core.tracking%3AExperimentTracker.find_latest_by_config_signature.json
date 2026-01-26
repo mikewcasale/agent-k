@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.tracking:ExperimentTracker.find_latest_by_config_signature",
+  "type": "method",
+  "summary": "Return the most recent record for a config signature.",
+  "source": "backend/agent_k/core/tracking.py",
+  "line": 579,
+  "path": "backend/agent_k/core/tracking.py",
+  "location": {
+    "path": "backend/agent_k/core/tracking.py",
+    "line": 579,
+    "character": 11
+  }
+}

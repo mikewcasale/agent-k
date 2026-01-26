@@ -73,12 +73,18 @@ _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/comp
 class KaggleSettings(BaseSettings):
     """Settings for Kaggle adapter.
 
-    Environment variables are prefixed with KAGGLE_.
+        Environment variables are prefixed with KAGGLE_.
 
-    @pattern:
-        name: settings
-        rationale: "Centralizes Kaggle adapter configuration."
-        violations: "Ad-hoc config makes auth inconsistent."
+    @notice: |
+        Settings for Kaggle adapter.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: settings
+            rationale: "Centralizes Kaggle adapter configuration."
+            violations: "Ad-hoc config makes auth inconsistent."
     """
 
     model_config = SettingsConfigDict(env_prefix="KAGGLE_", env_file=".env", extra="ignore", validate_default=True)

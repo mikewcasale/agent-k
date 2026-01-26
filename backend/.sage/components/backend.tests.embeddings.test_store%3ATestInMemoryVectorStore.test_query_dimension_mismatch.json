@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.embeddings.test_store:TestInMemoryVectorStore.test_query_dimension_mismatch",
+  "type": "method",
+  "summary": "Query should reject vectors with mismatched dimensions.",
+  "source": "backend/tests/embeddings/test_store.py",
+  "line": 19,
+  "path": "backend/tests/embeddings/test_store.py",
+  "location": {
+    "path": "backend/tests/embeddings/test_store.py",
+    "line": 19,
+    "character": 11
+  }
+}

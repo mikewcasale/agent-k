@@ -1,0 +1,35 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.evolution.loss as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "id": "agent_k.evolution.loss",
+    "pattern": "loss-functions",
+    "provides": [
+      "agent_k.evolution.loss"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.evolution.loss",
+  "line": 1,
+  "notice": "Loss function evolution for LightGBM objectives.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Loss function evolution for LightGBM objectives.",
+  "type": "module"
+}

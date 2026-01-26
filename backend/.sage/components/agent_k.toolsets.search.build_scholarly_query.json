@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.search:build_scholarly_query",
+  "line": 79,
+  "notice": "Adds site restrictions for scholarly sources.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/search.py",
+  "summary": "Build a web search query for academic sources.",
+  "type": "function"
+}

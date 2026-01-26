@@ -20,8 +20,8 @@
     consumes:
         - agent_k.core.protocols:PlatformAdapter
         - agent_k.toolsets.kaggle:kaggle_toolset
-        - agent_k.toolsets.search:search_toolset
-        - agent_k.toolsets.browser:browser_toolset
+        - agent_k.toolsets.search:prepare_web_search
+        - agent_k.toolsets.search:prepare_web_fetch
     pattern: agent-singleton
 
 @similar:
@@ -163,10 +163,16 @@ _MISSING_VALUE_TOKENS: Final[frozenset[str]] = frozenset({"", "na", "nan", "null
 class ScientistSettings(BaseSettings):
     """Configuration for the Scientist agent.
 
-    @pattern:
-        name: settings
-        rationale: "Centralizes research agent configuration."
-        violations: "Per-run overrides lead to inconsistent outputs."
+    @notice: |
+        Configuration for the Scientist agent.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: settings
+            rationale: "Centralizes research agent configuration."
+            violations: "Per-run overrides lead to inconsistent outputs."
     """
 
     model_config = SettingsConfigDict(env_prefix="SCIENTIST_", env_file=".env", extra="ignore", validate_default=True)
@@ -188,20 +194,26 @@ class ScientistSettings(BaseSettings):
 class ScientistDeps:
     """Dependencies for the Scientist agent.
 
-    @pattern:
-        name: dependency-container
-        rationale: "Groups runtime services for research tools."
-        violations: "Hidden globals make research runs nondeterministic."
+    @notice: |
+        Dependencies for the Scientist agent.
 
-    @collaborators:
-        required:
-            - httpx:AsyncClient
-            - agent_k.core.protocols:PlatformAdapter
-            - agent_k.core.models:Competition
-        optional:
-            - agent_k.core.models:LeaderboardEntry
-        injection: constructor
-        lifecycle: "Allocated per agent run."
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: dependency-container
+            rationale: "Groups runtime services for research tools."
+            violations: "Hidden globals make research runs nondeterministic."
+
+        @collaborators:
+            required:
+                - httpx:AsyncClient
+                - agent_k.core.protocols:PlatformAdapter
+                - agent_k.core.models:Competition
+            optional:
+                - agent_k.core.models:LeaderboardEntry
+            injection: constructor
+            lifecycle: "Allocated per agent run."
     """
 
     http_client: httpx.AsyncClient
@@ -228,10 +240,16 @@ class ScientistDeps:
 class ResearchFinding(BaseModel):
     """Individual research finding.
 
-    @pattern:
-        name: output-model
-        rationale: "Consistent schema for research findings."
-        violations: "Ad-hoc dicts are hard to validate."
+    @notice: |
+        Individual research finding.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: output-model
+            rationale: "Consistent schema for research findings."
+            violations: "Ad-hoc dicts are hard to validate."
     """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
@@ -246,10 +264,16 @@ class ResearchFinding(BaseModel):
 class LeaderboardAnalysis(BaseModel):
     """Analysis of competition leaderboard.
 
-    @pattern:
-        name: output-model
-        rationale: "Stable schema for leaderboard summaries."
-        violations: "Inconsistent shapes break downstream synthesis."
+    @notice: |
+        Analysis of competition leaderboard.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: output-model
+            rationale: "Stable schema for leaderboard summaries."
+            violations: "Inconsistent shapes break downstream synthesis."
     """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
@@ -264,10 +288,16 @@ class LeaderboardAnalysis(BaseModel):
 class ResearchReport(BaseModel):
     """Complete research report for a competition.
 
-    @pattern:
-        name: output-model
-        rationale: "Aggregates research findings into a stable schema."
-        violations: "Free-form outputs hinder automation."
+    @notice: |
+        Complete research report for a competition.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: output-model
+            rationale: "Aggregates research findings into a stable schema."
+            violations: "Free-form outputs hinder automation."
     """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)

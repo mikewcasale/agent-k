@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:EvolutionResult",
+  "line": 501,
+  "notice": "Result of evolution process.",
+  "pattern": {
+    "name": "output-model",
+    "rationale": "Stable schema for successful evolution outputs.",
+    "violations": "Free-form outputs hinder submission automation."
+  },
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Result of evolution process.",
+  "type": "class"
+}

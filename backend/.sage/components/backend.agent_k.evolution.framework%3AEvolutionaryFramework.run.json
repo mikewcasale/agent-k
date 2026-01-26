@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.evolution.framework:EvolutionaryFramework.run",
+  "type": "method",
+  "summary": "Run one coordinated evolution loop across available components.",
+  "source": "backend/agent_k/evolution/framework.py",
+  "line": 406,
+  "path": "backend/agent_k/evolution/framework.py",
+  "location": {
+    "path": "backend/agent_k/evolution/framework.py",
+    "line": 406,
+    "character": 11
+  }
+}

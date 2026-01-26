@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:DiscoveryNode._elapsed_ms",
+  "line": 267,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Calculate elapsed milliseconds.",
+  "type": "method"
+}

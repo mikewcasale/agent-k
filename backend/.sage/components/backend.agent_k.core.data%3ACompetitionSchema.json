@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.data:CompetitionSchema",
+  "type": "class",
+  "summary": "Schema details inferred from competition data files.",
+  "notice": "Schema details inferred from competition data files.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: schema-model\n    rationale: \"Captures inferred column layout for downstream steps.\"\n    violations: \"Ad-hoc dicts drift from actual data shape.\"",
+  "source": "backend/agent_k/core/data.py",
+  "line": 47,
+  "path": "backend/agent_k/core/data.py",
+  "location": {
+    "path": "backend/agent_k/core/data.py",
+    "line": 47,
+    "character": 7
+  }
+}

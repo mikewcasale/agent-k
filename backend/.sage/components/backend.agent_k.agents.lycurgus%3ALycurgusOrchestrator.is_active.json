@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.is_active",
+  "type": "method",
+  "summary": "Whether the orchestrator has an active mission.",
+  "source": "backend/agent_k/agents/lycurgus.py",
+  "line": 360,
+  "path": "backend/agent_k/agents/lycurgus.py",
+  "location": {
+    "path": "backend/agent_k/agents/lycurgus.py",
+    "line": 360,
+    "character": 11
+  }
+}

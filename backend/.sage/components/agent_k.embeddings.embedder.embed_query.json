@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.embeddings.embedder:embed_query",
+  "line": 129,
+  "notice": "Returns a single embedding vector for the query.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/embeddings/embedder.py",
+  "summary": "Embed query for similarity search.",
+  "type": "function"
+}

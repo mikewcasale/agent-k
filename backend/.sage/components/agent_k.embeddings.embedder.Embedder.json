@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.embeddings.embedder:Embedder",
+  "line": 61,
+  "notice": null,
+  "pattern": {
+    "name": "protocol-interface",
+    "rationale": "Standard contract for embedding providers.",
+    "violations": "Embedder implementations without this contract diverge."
+  },
+  "similar": null,
+  "source": "agent_k/embeddings/embedder.py",
+  "summary": "Protocol for embedding providers.",
+  "type": "class"
+}

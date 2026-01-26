@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.evolution.framework:MapElitesArchive.add",
+  "type": "method",
+  "summary": "Add an individual if it improves its descriptor cell.",
+  "source": "backend/agent_k/evolution/framework.py",
+  "line": 117,
+  "path": "backend/agent_k/evolution/framework.py",
+  "location": {
+    "path": "backend/agent_k/evolution/framework.py",
+    "line": 117,
+    "character": 11
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.ui.agui:AgentKEvent",
+  "type": "class",
+  "summary": "Event to be streamed to the frontend.",
+  "notice": "Event to be streamed to the frontend.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: event-model\n    rationale: \"Frozen Pydantic model for SSE event streaming.\"",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 282,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 282,
+    "character": 7
+  }
+}

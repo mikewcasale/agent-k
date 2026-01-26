@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.adapters.test_kaggle_adapter:TestKaggleSettings.test_config_creation",
+  "type": "method",
+  "summary": "Config should be created with credentials.",
+  "source": "backend/tests/adapters/test_kaggle_adapter.py",
+  "line": 24,
+  "path": "backend/tests/adapters/test_kaggle_adapter.py",
+  "location": {
+    "path": "backend/tests/adapters/test_kaggle_adapter.py",
+    "line": 24,
+    "character": 11
+  }
+}

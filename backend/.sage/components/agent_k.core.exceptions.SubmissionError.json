@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.exceptions:SubmissionError",
+  "line": 316,
+  "notice": "Raised when submission fails.",
+  "pattern": {
+    "name": "exception-specific",
+    "rationale": "Captures submission context for retry logic."
+  },
+  "similar": null,
+  "source": "agent_k/core/exceptions.py",
+  "summary": "Raised when submission fails.",
+  "type": "class"
+}

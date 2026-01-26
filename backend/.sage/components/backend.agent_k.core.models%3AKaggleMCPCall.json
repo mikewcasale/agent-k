@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.models:KaggleMCPCall",
+  "type": "class",
+  "summary": "Kaggle MCP tool call.",
+  "notice": "Kaggle MCP tool call.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: specialization\n    rationale: \"Extends ToolCall with Kaggle API specific fields.\"",
+  "source": "backend/agent_k/core/models.py",
+  "line": 328,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 328,
+    "character": 7
+  }
+}

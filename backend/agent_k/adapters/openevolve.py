@@ -91,12 +91,18 @@ _LEADERBOARD_SIZE: Final[int] = 25
 class OpenEvolveSettings(BaseSettings):
     """Settings for OpenEvolve adapter.
 
-    Environment variables are prefixed with OPENEVOLVE_.
+        Environment variables are prefixed with OPENEVOLVE_.
 
-    @pattern:
-        name: settings
-        rationale: "Centralizes OpenEvolve adapter configuration."
-        violations: "Ad-hoc config makes adapter behavior inconsistent."
+    @notice: |
+        Settings for OpenEvolve adapter.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: settings
+            rationale: "Centralizes OpenEvolve adapter configuration."
+            violations: "Ad-hoc config makes adapter behavior inconsistent."
     """
 
     model_config = SettingsConfigDict(env_prefix="OPENEVOLVE_", env_file=".env", extra="ignore", validate_default=True)
@@ -113,10 +119,16 @@ class OpenEvolveSettings(BaseSettings):
 class OpenEvolveJobState(StrEnum):
     """Lifecycle state for an OpenEvolve job.
 
-    @pattern:
-        name: enumeration
-        rationale: "StrEnum for OpenEvolve job lifecycle states."
-        violations: "String literals drift across job state handling."
+    @notice: |
+        Lifecycle state for an OpenEvolve job.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: enumeration
+            rationale: "StrEnum for OpenEvolve job lifecycle states."
+            violations: "String literals drift across job state handling."
     """
 
     QUEUED = "queued"
@@ -128,10 +140,16 @@ class OpenEvolveJobState(StrEnum):
 class OpenEvolveEvolutionConfig(BaseModel):
     """Evolution configuration for OpenEvolve jobs.
 
-    @pattern:
-        name: config-model
-        rationale: "Captures evolution hyperparameters in a schema."
-        violations: "Loose dicts make validation brittle."
+    @notice: |
+        Evolution configuration for OpenEvolve jobs.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: config-model
+            rationale: "Captures evolution hyperparameters in a schema."
+            violations: "Loose dicts make validation brittle."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -146,10 +164,16 @@ class OpenEvolveEvolutionConfig(BaseModel):
 class OpenEvolveJobStatus(BaseModel):
     """Status snapshot for an OpenEvolve evolution job.
 
-    @pattern:
-        name: output-model
-        rationale: "Stable status payload for job monitoring."
-        violations: "Ad-hoc status dicts break tooling."
+    @notice: |
+        Status snapshot for an OpenEvolve evolution job.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: output-model
+            rationale: "Stable status payload for job monitoring."
+            violations: "Ad-hoc status dicts break tooling."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -167,10 +191,16 @@ class OpenEvolveJobStatus(BaseModel):
 class OpenEvolveSolution(BaseModel):
     """Best solution produced by an OpenEvolve job.
 
-    @pattern:
-        name: output-model
-        rationale: "Stable schema for OpenEvolve solutions."
-        violations: "Free-form outputs hinder integration."
+    @notice: |
+        Best solution produced by an OpenEvolve job.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: output-model
+            rationale: "Stable schema for OpenEvolve solutions."
+            violations: "Free-form outputs hinder integration."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -192,16 +222,22 @@ _DEFAULT_VALIDATION_SPLIT: Final[float] = 0.2
 class OpenEvolveRunner:
     """Runner for OpenEvolve evolutionary optimization.
 
-    @pattern:
-        name: adapter-runner
-        rationale: "Encapsulates OpenEvolve execution behavior."
-        violations: "Scattered runner logic complicates evolution flow."
+    @notice: |
+        Runner for OpenEvolve evolutionary optimization.
 
-    @collaborators:
-        required:
-            - openevolve:OpenEvolve
-        injection: constructor
-        lifecycle: "Scoped per OpenEvolve run."
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: adapter-runner
+            rationale: "Encapsulates OpenEvolve execution behavior."
+            violations: "Scattered runner logic complicates evolution flow."
+
+        @collaborators:
+            required:
+                - openevolve:OpenEvolve
+            injection: constructor
+            lifecycle: "Scoped per OpenEvolve run."
     """
 
     config_path: Path | None = None
@@ -398,33 +434,36 @@ class _OpenEvolveJob:
 class OpenEvolveAdapter(PlatformAdapter):
     """In-memory adapter for OpenEvolve integration.
 
-    @notice: |
-        Provides a PlatformAdapter facade for OpenEvolve runs.
+    @dev: |
+        See module for implementation details and extension points.
 
-    @pattern:
-        name: adapter
-        rationale: "Encapsulates OpenEvolve-specific behaviors."
-        violations: "Direct OpenEvolve use bypasses PlatformAdapter contract."
+        @notice: |
+            Provides a PlatformAdapter facade for OpenEvolve runs.
 
-    @implements:
-        - agent_k.core.protocols:PlatformAdapter
+        @pattern:
+            name: adapter
+            rationale: "Encapsulates OpenEvolve-specific behaviors."
+            violations: "Direct OpenEvolve use bypasses PlatformAdapter contract."
 
-    @inheritdoc:
-        - agent_k.core.protocols:PlatformAdapter
+        @implements:
+            - agent_k.core.protocols:PlatformAdapter
 
-    @collaborators:
-        required:
-            - agent_k.adapters.openevolve:OpenEvolveRunner
-        injection: constructor
-        lifecycle: "Long-lived adapter per mission."
+        @inheritdoc:
+            - agent_k.core.protocols:PlatformAdapter
 
-    @concurrency:
-        model: asyncio
-        safe: false
-        reason: "Mutates in-memory job state."
+        @collaborators:
+            required:
+                - agent_k.adapters.openevolve:OpenEvolveRunner
+            injection: constructor
+            lifecycle: "Long-lived adapter per mission."
 
-    @invariants:
-        - "self._evolution_jobs retains active jobs until pruned."
+        @concurrency:
+            model: asyncio
+            safe: false
+            reason: "Mutates in-memory job state."
+
+        @invariants:
+            - "self._evolution_jobs retains active jobs until pruned."
     """
 
     config: OpenEvolveSettings = field(default_factory=OpenEvolveSettings)

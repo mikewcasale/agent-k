@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.exceptions:EvolutionError",
+  "line": 363,
+  "notice": "Base exception for evolution-related errors.",
+  "pattern": {
+    "name": "exception-category",
+    "rationale": "Category base for evolutionary algorithm errors."
+  },
+  "similar": null,
+  "source": "agent_k/core/exceptions.py",
+  "summary": "Base exception for evolution-related errors.",
+  "type": "class"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.ui.test_ag_ui:TestMissionStatusEndpoint.test_status_after_start",
+  "type": "method",
+  "summary": "Should return status for started mission.",
+  "source": "backend/tests/ui/test_ag_ui.py",
+  "line": 101,
+  "path": "backend/tests/ui/test_ag_ui.py",
+  "location": {
+    "path": "backend/tests/ui/test_ag_ui.py",
+    "line": 101,
+    "character": 11
+  }
+}

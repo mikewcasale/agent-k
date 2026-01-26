@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.settings:AgentKSettings",
+  "type": "class",
+  "summary": "Base settings with shared environment defaults.",
+  "notice": "Base settings with shared environment defaults.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: settings-model\n    rationale: \"Centralizes shared environment defaults.\"\n    violations: \"Scattered env lookups drift across modules.\"",
+  "source": "backend/agent_k/core/settings.py",
+  "line": 41,
+  "path": "backend/agent_k/core/settings.py",
+  "location": {
+    "path": "backend/agent_k/core/settings.py",
+    "line": 41,
+    "character": 7
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "backend.agent_k.agents.evolver:EvolutionArchiveEntry",
+  "type": "class",
+  "summary": "Tracked candidate for MAP-Elites-style sampling.",
+  "pattern": {
+    "name": "archive-entry",
+    "rationale": "Encapsulates elite metadata for sampling.",
+    "violations": "Unstructured elites make selection brittle."
+  },
+  "source": "backend/agent_k/agents/evolver.py",
+  "line": 316,
+  "path": "backend/agent_k/agents/evolver.py",
+  "location": {
+    "path": "backend/agent_k/agents/evolver.py",
+    "line": 316,
+    "character": 7
+  }
+}

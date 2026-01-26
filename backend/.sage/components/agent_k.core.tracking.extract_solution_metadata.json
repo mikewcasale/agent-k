@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.tracking:extract_solution_metadata",
+  "line": 883,
+  "notice": "Extract model and feature metadata from solution code.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/tracking.py",
+  "summary": "Extract model and feature metadata from solution code.",
+  "type": "function"
+}

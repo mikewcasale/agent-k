@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_nodes:TestSubmissionNode.test_node_creation",
+  "type": "method",
+  "summary": "Node should be creatable.",
+  "source": "backend/tests/mission/test_nodes.py",
+  "line": 67,
+  "path": "backend/tests/mission/test_nodes.py",
+  "location": {
+    "path": "backend/tests/mission/test_nodes.py",
+    "line": 67,
+    "character": 11
+  }
+}

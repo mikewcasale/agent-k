@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.state:MissionResult",
+  "line": 113,
+  "notice": "Final result of mission execution.",
+  "pattern": {
+    "name": "output-model",
+    "rationale": "Stable schema for mission results.",
+    "violations": "Ad-hoc outputs hinder UI/reporting."
+  },
+  "similar": null,
+  "source": "agent_k/mission/state.py",
+  "summary": "Final result of mission execution.",
+  "type": "class"
+}

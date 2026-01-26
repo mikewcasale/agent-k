@@ -98,10 +98,16 @@ SCHEMA_VERSION: Final[str] = "1.0.0"
 class LycurgusSettings(BaseSettings):
     """Settings for the Lycurgus orchestrator.
 
-    @pattern:
-        name: settings
-        rationale: "Centralizes orchestration configuration."
-        violations: "Per-run overrides lead to inconsistent missions."
+    @notice: |
+        Settings for the Lycurgus orchestrator.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: settings
+            rationale: "Centralizes orchestration configuration."
+            violations: "Per-run overrides lead to inconsistent missions."
     """
 
     model_config = SettingsConfigDict(env_prefix="LYCURGUS_", env_file=".env", extra="ignore", validate_default=True)
@@ -140,18 +146,24 @@ class LycurgusSettings(BaseSettings):
 class LycurgusDeps:
     """Dependencies for the Lycurgus orchestrator.
 
-    @pattern:
-        name: dependency-container
-        rationale: "Groups runtime services for orchestration."
-        violations: "Hidden globals make orchestration brittle."
+    @notice: |
+        Dependencies for the Lycurgus orchestrator.
 
-    @collaborators:
-        required:
-            - agent_k.ui.agui:EventEmitter
-            - httpx:AsyncClient
-            - agent_k.core.protocols:PlatformAdapter
-        injection: constructor
-        lifecycle: "Allocated per orchestrator run."
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: dependency-container
+            rationale: "Groups runtime services for orchestration."
+            violations: "Hidden globals make orchestration brittle."
+
+        @collaborators:
+            required:
+                - agent_k.ui.agui:EventEmitter
+                - httpx:AsyncClient
+                - agent_k.core.protocols:PlatformAdapter
+            injection: constructor
+            lifecycle: "Allocated per orchestrator run."
     """
 
     event_emitter: EventEmitter
@@ -163,10 +175,16 @@ class LycurgusDeps:
 class MissionStatus:
     """Mission status snapshot.
 
-    @pattern:
-        name: output-model
-        rationale: "Stable status payload for UI updates."
-        violations: "Ad-hoc status dicts hinder UI consumers."
+    @notice: |
+        Mission status snapshot.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: output-model
+            rationale: "Stable status payload for UI updates."
+            violations: "Ad-hoc status dicts hinder UI consumers."
     """
 
     phase: str
@@ -690,12 +708,15 @@ async def orchestrate(
 ) -> MissionResult:
     """Convenience helper to execute a mission.
 
-    @notice: |
-        Executes a mission end-to-end using the orchestrator.
+    @dev: |
+        See module for behavior details and invariants.
 
-    @effects:
-        io:
-            - Kaggle API requests
+        @notice: |
+            Executes a mission end-to-end using the orchestrator.
+
+        @effects:
+            io:
+                - Kaggle API requests
     """
     return await orchestrator.execute_mission(competition_id, criteria=criteria)
 
@@ -703,7 +724,10 @@ async def orchestrate(
 def validate_mission_result(result: Annotated[MissionResult, Doc("Mission result payload.")]) -> MissionResult:
     """Validate mission result payload.
 
-    @notice: |
-        Passthrough validator for mission results.
+    @dev: |
+        See module for behavior details and invariants.
+
+        @notice: |
+            Passthrough validator for mission results.
     """
     return result

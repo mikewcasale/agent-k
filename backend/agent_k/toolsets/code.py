@@ -52,8 +52,11 @@ code_toolset: FunctionToolset[Any] = FunctionToolset(id="code")
 def create_code_execution_tool() -> CodeExecutionTool:
     """Create a CodeExecutionTool instance.
 
-    @notice: |
-        Returns a configured code execution tool.
+    @dev: |
+        See module for behavior details and invariants.
+
+        @notice: |
+            Returns a configured code execution tool.
     """
     return CodeExecutionTool()
 
@@ -63,8 +66,11 @@ async def prepare_code_execution_tool(
 ) -> CodeExecutionTool | None:
     """Enable CodeExecutionTool only for supported providers.
 
-    @notice: |
-        Returns a tool only for OpenAI-compatible providers.
+    @dev: |
+        See module for behavior details and invariants.
+
+        @notice: |
+            Returns a tool only for OpenAI-compatible providers.
     """
     if ctx.model.system != "openai":
         return None

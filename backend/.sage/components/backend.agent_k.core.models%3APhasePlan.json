@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.models:PhasePlan",
+  "type": "class",
+  "summary": "Plan for a mission phase.",
+  "notice": "Plan for a mission phase.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: immutable-entity\n    rationale: \"Frozen Pydantic model for phase-level planning.\"",
+  "source": "backend/agent_k/core/models.py",
+  "line": 423,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 423,
+    "character": 7
+  }
+}

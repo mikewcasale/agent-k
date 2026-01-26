@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.feedback:SubmissionOrchestrator.analyze_changes",
+  "type": "method",
+  "summary": "Analyze which mutation tags are producing improvements.",
+  "source": "backend/agent_k/core/feedback.py",
+  "line": 219,
+  "path": "backend/agent_k/core/feedback.py",
+  "location": {
+    "path": "backend/agent_k/core/feedback.py",
+    "line": 219,
+    "character": 11
+  }
+}

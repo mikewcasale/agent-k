@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.tracking:ExperimentSummary",
+  "type": "class",
+  "summary": "Lightweight summary of a stored experiment.",
+  "notice": "Lightweight summary of a stored experiment.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: summary-model\n    rationale: \"Frozen Pydantic model for experiment listing.\"",
+  "source": "backend/agent_k/core/tracking.py",
+  "line": 194,
+  "path": "backend/agent_k/core/tracking.py",
+  "location": {
+    "path": "backend/agent_k/core/tracking.py",
+    "line": 194,
+    "character": 7
+  }
+}

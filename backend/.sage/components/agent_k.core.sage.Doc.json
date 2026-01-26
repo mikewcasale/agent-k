@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.sage:Doc",
+  "line": 43,
+  "notice": "Human-facing parameter description.",
+  "pattern": {
+    "name": "doc-metadata",
+    "rationale": "Co-locates parameter docs with type hints.",
+    "violations": "Out-of-band docs drift from signatures."
+  },
+  "similar": null,
+  "source": "agent_k/core/sage.py",
+  "summary": "Human-facing parameter description.",
+  "type": "class"
+}

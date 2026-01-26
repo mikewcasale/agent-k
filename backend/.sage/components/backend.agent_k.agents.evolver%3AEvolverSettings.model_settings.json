@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.agents.evolver:EvolverSettings.model_settings",
+  "type": "method",
+  "summary": "Build ModelSettings from configuration.",
+  "source": "backend/agent_k/agents/evolver.py",
+  "line": 423,
+  "path": "backend/agent_k/agents/evolver.py",
+  "location": {
+    "path": "backend/agent_k/agents/evolver.py",
+    "line": 423,
+    "character": 11
+  }
+}

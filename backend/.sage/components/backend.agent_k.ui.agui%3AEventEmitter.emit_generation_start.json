@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:EventEmitter.emit_generation_start",
+  "type": "method",
+  "summary": "Emit generation start event.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 448,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 448,
+    "character": 11
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.tracking:HintEffectivenessTracker.suppressed_hints",
+  "type": "method",
+  "summary": "Return all suppressed hint ids across competitions.",
+  "source": "backend/agent_k/core/tracking.py",
+  "line": 755,
+  "path": "backend/agent_k/core/tracking.py",
+  "location": {
+    "path": "backend/agent_k/core/tracking.py",
+    "line": 755,
+    "character": 11
+  }
+}

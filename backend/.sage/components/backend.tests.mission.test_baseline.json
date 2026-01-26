@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_baseline",
+  "type": "module",
+  "summary": "Tests for baseline scoring helpers.",
+  "source": "backend/tests/mission/test_baseline.py",
+  "line": 0,
+  "path": "backend/tests/mission/test_baseline.py",
+  "location": {
+    "path": "backend/tests/mission/test_baseline.py",
+    "line": 0,
+    "character": 3
+  }
+}

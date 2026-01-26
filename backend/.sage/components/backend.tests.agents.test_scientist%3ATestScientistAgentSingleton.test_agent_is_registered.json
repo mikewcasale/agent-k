@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_scientist:TestScientistAgentSingleton.test_agent_is_registered",
+  "type": "method",
+  "summary": "Agent should be registered in the registry.",
+  "source": "backend/tests/agents/test_scientist.py",
+  "line": 23,
+  "path": "backend/tests/agents/test_scientist.py",
+  "location": {
+    "path": "backend/tests/agents/test_scientist.py",
+    "line": 23,
+    "character": 11
+  }
+}

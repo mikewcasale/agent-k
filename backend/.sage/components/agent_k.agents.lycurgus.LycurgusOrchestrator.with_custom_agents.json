@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.lycurgus:LycurgusOrchestrator.with_custom_agents",
+  "line": 335,
+  "notice": "Injects custom agent instances for orchestration.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/lycurgus.py",
+  "summary": "Create orchestrator with custom agent implementations.",
+  "type": "method"
+}

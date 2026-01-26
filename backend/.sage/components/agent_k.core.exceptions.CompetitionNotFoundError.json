@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.exceptions:CompetitionNotFoundError",
+  "line": 271,
+  "notice": "Raised when competition does not exist.",
+  "pattern": {
+    "name": "exception-specific",
+    "rationale": "Non-recoverable missing competition."
+  },
+  "similar": null,
+  "source": "agent_k/core/exceptions.py",
+  "summary": "Raised when competition does not exist.",
+  "type": "class"
+}

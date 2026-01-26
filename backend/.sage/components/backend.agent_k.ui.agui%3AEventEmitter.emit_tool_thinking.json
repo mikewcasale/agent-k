@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:EventEmitter.emit_tool_thinking",
+  "type": "method",
+  "summary": "Emit thinking stream chunk.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 434,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 434,
+    "character": 11
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.ui.test_ag_ui:TestChatEndpoint",
+  "type": "class",
+  "summary": "Tests for the /agentic_generative_ui/ chat endpoint.",
+  "source": "backend/tests/ui/test_ag_ui.py",
+  "line": 157,
+  "path": "backend/tests/ui/test_ag_ui.py",
+  "location": {
+    "path": "backend/tests/ui/test_ag_ui.py",
+    "line": 157,
+    "character": 7
+  }
+}

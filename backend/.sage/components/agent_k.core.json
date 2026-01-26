@@ -1,0 +1,35 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.core as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "id": "agent_k.core",
+    "pattern": "core-facade",
+    "provides": [
+      "agent_k.core"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.core",
+  "line": 1,
+  "notice": "Core domain primitives, models, and protocols for AGENT-K.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/__init__.py",
+  "summary": "Core domain primitives, models, and protocols for AGENT-K.",
+  "type": "module"
+}

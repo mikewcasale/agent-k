@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.tracking:HintEffectivenessTracker.load",
+  "type": "method",
+  "summary": "Load hint statistics from disk.",
+  "source": "backend/agent_k/core/tracking.py",
+  "line": 836,
+  "path": "backend/agent_k/core/tracking.py",
+  "location": {
+    "path": "backend/agent_k/core/tracking.py",
+    "line": 836,
+    "character": 11
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.ui.agui:CompetitionFetchRequest",
+  "type": "class",
+  "summary": "Request payload for fetching competition details by URL.",
+  "notice": "Request payload for fetching competition details by URL.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: request-model\n    rationale: \"Frozen Pydantic model for competition fetch requests.\"",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 264,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 264,
+    "character": 7
+  }
+}

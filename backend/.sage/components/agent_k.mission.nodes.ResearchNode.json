@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:ResearchNode",
+  "line": 273,
+  "notice": "Research phase node.",
+  "pattern": {
+    "name": "graph-node",
+    "rationale": "Encapsulates research phase logic in the mission graph.",
+    "violations": "Research logic outside nodes causes transition drift."
+  },
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Research phase node.",
+  "type": "class"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.adapters.kaggle:KaggleAdapter.get_competition_by_url",
+  "type": "method",
+  "summary": "Get competition details from a Kaggle competition URL.",
+  "source": "backend/agent_k/adapters/kaggle.py",
+  "line": 263,
+  "path": "backend/agent_k/adapters/kaggle.py",
+  "location": {
+    "path": "backend/agent_k/adapters/kaggle.py",
+    "line": 263,
+    "character": 11
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.agents.lobbyist:LobbyistSettings.model_settings",
+  "type": "method",
+  "summary": "Build ModelSettings for the configured model.",
+  "source": "backend/agent_k/agents/lobbyist.py",
+  "line": 105,
+  "path": "backend/agent_k/agents/lobbyist.py",
+  "location": {
+    "path": "backend/agent_k/agents/lobbyist.py",
+    "line": 105,
+    "character": 11
+  }
+}

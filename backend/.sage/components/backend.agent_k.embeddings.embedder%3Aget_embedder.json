@@ -1,0 +1,14 @@
+{
+  "id": "backend.agent_k.embeddings.embedder:get_embedder",
+  "type": "function",
+  "summary": "Get cached embedder instance.",
+  "dev": "See module for behavior details and invariants.\n\n@notice: |\n    Returns a cached Embedder instance for the model.",
+  "source": "backend/agent_k/embeddings/embedder.py",
+  "line": 95,
+  "path": "backend/agent_k/embeddings/embedder.py",
+  "location": {
+    "path": "backend/agent_k/embeddings/embedder.py",
+    "line": 95,
+    "character": 7
+  }
+}

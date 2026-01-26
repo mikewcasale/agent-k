@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.feedback:SubmissionOrchestrator",
+  "line": 97,
+  "notice": "Manage the submission feedback loop across iterations.",
+  "pattern": {
+    "name": "orchestrator",
+    "rationale": "Coordinates submission feedback loops with tracker."
+  },
+  "similar": null,
+  "source": "agent_k/core/feedback.py",
+  "summary": "Manage the submission feedback loop across iterations.",
+  "type": "class"
+}

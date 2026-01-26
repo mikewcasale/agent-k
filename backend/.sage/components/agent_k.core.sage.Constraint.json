@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.sage:Constraint",
+  "line": 62,
+  "notice": "Machine-readable parameter constraint.",
+  "pattern": {
+    "name": "doc-metadata",
+    "rationale": "Captures validation rules without custom parsers.",
+    "violations": "Opaque constraints make automated checks brittle."
+  },
+  "similar": null,
+  "source": "agent_k/core/sage.py",
+  "summary": "Machine-readable parameter constraint.",
+  "type": "class"
+}

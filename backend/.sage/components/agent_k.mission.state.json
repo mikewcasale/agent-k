@@ -1,0 +1,42 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.mission.state as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "id": "agent_k.mission.state",
+    "pattern": "mission-state",
+    "provides": [
+      "agent_k.mission.state:MissionState",
+      "agent_k.mission.state:MissionResult",
+      "agent_k.mission.state:GraphContext"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.mission.state",
+  "line": 1,
+  "notice": "Mission state for pydantic-graph.",
+  "pattern": null,
+  "similar": [
+    {
+      "id": "agent_k.mission.nodes",
+      "when": "Nodes drive phase transitions; this module holds state."
+    }
+  ],
+  "source": "agent_k/mission/state.py",
+  "summary": "Mission state for pydantic-graph.",
+  "type": "module"
+}

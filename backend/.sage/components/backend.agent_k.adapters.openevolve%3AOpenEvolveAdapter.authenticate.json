@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.authenticate",
+  "type": "method",
+  "summary": "Authenticate the adapter (no-op for in-memory implementation).",
+  "source": "backend/agent_k/adapters/openevolve.py",
+  "line": 490,
+  "path": "backend/agent_k/adapters/openevolve.py",
+  "location": {
+    "path": "backend/agent_k/adapters/openevolve.py",
+    "line": 490,
+    "character": 11
+  }
+}

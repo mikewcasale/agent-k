@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.ui.test_ag_ui:TestMissionStreamEndpoint.test_stream_nonexistent_mission",
+  "type": "method",
+  "summary": "Should return error for nonexistent mission.",
+  "source": "backend/tests/ui/test_ag_ui.py",
+  "line": 148,
+  "path": "backend/tests/ui/test_ag_ui.py",
+  "location": {
+    "path": "backend/tests/ui/test_ag_ui.py",
+    "line": 148,
+    "character": 11
+  }
+}

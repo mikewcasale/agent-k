@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.protocols:PlatformAdapter.get_submission_status",
+  "type": "method",
+  "summary": "Get status of a submission.",
+  "source": "backend/agent_k/core/protocols.py",
+  "line": 155,
+  "path": "backend/agent_k/core/protocols.py",
+  "location": {
+    "path": "backend/agent_k/core/protocols.py",
+    "line": 155,
+    "character": 11
+  }
+}

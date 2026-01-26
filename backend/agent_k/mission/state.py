@@ -59,19 +59,25 @@ SCHEMA_VERSION: Final[str] = "1.0.0"
 class MissionState(BaseModel):
     """State flowing through the mission graph.
 
-    @pattern:
-        name: mission-state
-        rationale: "Single source of truth for mission progression."
-        violations: "Phase-specific state stored elsewhere causes drift."
+    @notice: |
+        State flowing through the mission graph.
 
-    @concurrency:
-        model: asyncio
-        safe: false
-        reason: "Mutable state shared across graph nodes."
+    @dev: |
+        See module for implementation details and extension points.
 
-    @invariants:
-        - "current_phase reflects the latest active phase."
-        - "phases_completed is append-only."
+        @pattern:
+            name: mission-state
+            rationale: "Single source of truth for mission progression."
+            violations: "Phase-specific state stored elsewhere causes drift."
+
+        @concurrency:
+            model: asyncio
+            safe: false
+            reason: "Mutable state shared across graph nodes."
+
+        @invariants:
+            - "current_phase reflects the latest active phase."
+            - "phases_completed is append-only."
     """
 
     model_config = ConfigDict(validate_assignment=True, arbitrary_types_allowed=True)
@@ -106,10 +112,16 @@ class MissionState(BaseModel):
 class MissionResult(BaseModel):
     """Final result of mission execution.
 
-    @pattern:
-        name: output-model
-        rationale: "Stable schema for mission results."
-        violations: "Ad-hoc outputs hinder UI/reporting."
+    @notice: |
+        Final result of mission execution.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: output-model
+            rationale: "Stable schema for mission results."
+            violations: "Ad-hoc outputs hinder UI/reporting."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -130,10 +142,16 @@ class MissionResult(BaseModel):
 class GraphContext:
     """Context passed to graph execution.
 
-    @pattern:
-        name: dependency-container
-        rationale: "Bundles runtime services for graph execution."
-        violations: "Hidden globals make graph runs brittle."
+    @notice: |
+        Context passed to graph execution.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: dependency-container
+            rationale: "Bundles runtime services for graph execution."
+            violations: "Hidden globals make graph runs brittle."
     """
 
     event_emitter: EventEmitter | None = None

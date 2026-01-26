@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.ui.agui:IntentClassifier",
+  "type": "class",
+  "summary": "Classify whether a message requests a mission.",
+  "notice": "Classify whether a message requests a mission.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: classifier\n    rationale: \"Dataclass for LLM-backed intent classification.\"",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 611,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 611,
+    "character": 7
+  }
+}

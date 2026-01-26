@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.agents.evolver:EvolverAgent.agent",
+  "type": "method",
+  "summary": "Return the underlying pydantic-ai Agent.",
+  "source": "backend/agent_k/agents/evolver.py",
+  "line": 621,
+  "path": "backend/agent_k/agents/evolver.py",
+  "location": {
+    "path": "backend/agent_k/agents/evolver.py",
+    "line": 621,
+    "character": 11
+  }
+}

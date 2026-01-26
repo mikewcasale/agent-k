@@ -1,0 +1,14 @@
+{
+  "id": "backend.agent_k.infra.providers:is_devstral_model",
+  "type": "function",
+  "summary": "Check if a model specification refers to Devstral.",
+  "dev": "See module for behavior details and invariants.\n\n@notice: |\n    Returns true when the model spec targets Devstral.",
+  "source": "backend/agent_k/infra/providers.py",
+  "line": 188,
+  "path": "backend/agent_k/infra/providers.py",
+  "location": {
+    "path": "backend/agent_k/infra/providers.py",
+    "line": 188,
+    "character": 7
+  }
+}

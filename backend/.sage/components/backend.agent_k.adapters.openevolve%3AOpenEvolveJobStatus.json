@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.adapters.openevolve:OpenEvolveJobStatus",
+  "type": "class",
+  "summary": "Status snapshot for an OpenEvolve evolution job.",
+  "notice": "Status snapshot for an OpenEvolve evolution job.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: output-model\n    rationale: \"Stable status payload for job monitoring.\"\n    violations: \"Ad-hoc status dicts break tooling.\"",
+  "source": "backend/agent_k/adapters/openevolve.py",
+  "line": 164,
+  "path": "backend/agent_k/adapters/openevolve.py",
+  "location": {
+    "path": "backend/agent_k/adapters/openevolve.py",
+    "line": 164,
+    "character": 7
+  }
+}

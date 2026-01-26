@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_lobbyist:TestDiscoveryResult.test_empty_result",
+  "type": "method",
+  "summary": "Empty result should have default values.",
+  "source": "backend/tests/agents/test_lobbyist.py",
+  "line": 48,
+  "path": "backend/tests/agents/test_lobbyist.py",
+  "location": {
+    "path": "backend/tests/agents/test_lobbyist.py",
+    "line": 48,
+    "character": 11
+  }
+}

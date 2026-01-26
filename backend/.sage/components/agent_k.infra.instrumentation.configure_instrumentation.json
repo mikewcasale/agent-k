@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Call once at startup. Instruments pydantic-ai, httpx, and asyncio.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.instrumentation:configure_instrumentation",
+  "line": 107,
+  "notice": "Initializes Logfire and instruments common libraries.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/instrumentation.py",
+  "summary": "Configure global instrumentation settings.",
+  "type": "function"
+}

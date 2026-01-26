@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_lycurgus:TestLycurgusOrchestrator.test_initialization_with_config",
+  "type": "method",
+  "summary": "Orchestrator should accept custom config.",
+  "source": "backend/tests/agents/test_lycurgus.py",
+  "line": 99,
+  "path": "backend/tests/agents/test_lycurgus.py",
+  "location": {
+    "path": "backend/tests/agents/test_lycurgus.py",
+    "line": 99,
+    "character": 11
+  }
+}

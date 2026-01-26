@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:TaskEmissionContext.emit_progress",
+  "type": "method",
+  "summary": "Emit progress within the task.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 586,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 586,
+    "character": 11
+  }
+}

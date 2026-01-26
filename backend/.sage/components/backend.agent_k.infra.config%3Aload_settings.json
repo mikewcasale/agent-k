@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.infra.config:load_settings",
+  "type": "function",
+  "summary": "Load settings from environment.",
+  "notice": "Creates a Settings instance from environment variables.",
+  "dev": "Currently only reads ENVIRONMENT variable. Extend as needed.",
+  "source": "backend/agent_k/infra/config.py",
+  "line": 57,
+  "path": "backend/agent_k/infra/config.py",
+  "location": {
+    "path": "backend/agent_k/infra/config.py",
+    "line": 57,
+    "character": 7
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.infra.instrumentation:R",
+  "type": "attribute",
+  "summary": "Type variable for traced return values.",
+  "source": "backend/agent_k/infra/instrumentation.py",
+  "line": 48,
+  "path": "backend/agent_k/infra/instrumentation.py",
+  "location": {
+    "path": "backend/agent_k/infra/instrumentation.py",
+    "line": 48,
+    "character": 3
+  }
+}

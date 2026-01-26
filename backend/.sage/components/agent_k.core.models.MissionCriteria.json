@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.models:MissionCriteria",
+  "line": 713,
+  "notice": "Criteria constraining mission execution.",
+  "pattern": {
+    "name": "immutable-entity",
+    "rationale": "Frozen Pydantic model for mission execution constraints."
+  },
+  "similar": null,
+  "source": "agent_k/core/models.py",
+  "summary": "Criteria constraining mission execution.",
+  "type": "class"
+}

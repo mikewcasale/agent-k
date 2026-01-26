@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.tracking:HintAttemptRecord",
+  "type": "class",
+  "summary": "Track preprocessing hint usage and outcomes.",
+  "notice": "Track preprocessing hint usage and outcomes.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: record-model\n    rationale: \"Pydantic model for hint effectiveness tracking.\"",
+  "source": "backend/agent_k/core/tracking.py",
+  "line": 249,
+  "path": "backend/agent_k/core/tracking.py",
+  "location": {
+    "path": "backend/agent_k/core/tracking.py",
+    "line": 249,
+    "character": 7
+  }
+}

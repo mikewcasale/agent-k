@@ -1,0 +1,38 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use Doc/Constraint/Range/Default in Annotated parameters."
+    ],
+    "do_not": [
+      "Add custom metadata helpers outside this module."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "These helpers are used with typing.Annotated to co-locate parameter docs\nand machine-readable constraints. Keep them lightweight and immutable.",
+  "graph": {
+    "id": "agent_k.core.sage",
+    "pattern": "doc-metadata",
+    "provides": [
+      "agent_k.core.sage:Doc",
+      "agent_k.core.sage:Constraint",
+      "agent_k.core.sage:Range",
+      "agent_k.core.sage:Default"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.core.sage",
+  "line": 1,
+  "notice": "Typed metadata helpers for SAGE parameter annotations.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/sage.py",
+  "summary": "SAGE docstring metadata helpers for AGENT-K.",
+  "type": "module"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.embeddings.store:VectorRecord",
+  "type": "class",
+  "summary": "Single vector record.",
+  "notice": "Single vector record.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: output-model\n    rationale: \"Stable schema for vector records.\"\n    violations: \"Unstructured records complicate retrieval.\"",
+  "source": "backend/agent_k/embeddings/store.py",
+  "line": 44,
+  "path": "backend/agent_k/embeddings/store.py",
+  "location": {
+    "path": "backend/agent_k/embeddings/store.py",
+    "line": 44,
+    "character": 7
+  }
+}

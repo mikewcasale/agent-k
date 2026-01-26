@@ -1,0 +1,13 @@
+{
+  "id": "refs.scripts.remove_attr_blank_lines:is_attribute_line",
+  "type": "function",
+  "summary": "Return True when line is a class-level attribute assignment.",
+  "source": "refs/scripts/remove_attr_blank_lines.py",
+  "line": 27,
+  "path": "refs/scripts/remove_attr_blank_lines.py",
+  "location": {
+    "path": "refs/scripts/remove_attr_blank_lines.py",
+    "line": 27,
+    "character": 7
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.evolution.features:FeatureSelector.evolve",
+  "type": "method",
+  "summary": "Evolve feature selections while maintaining Pareto front.",
+  "source": "backend/agent_k/evolution/features.py",
+  "line": 325,
+  "path": "backend/agent_k/evolution/features.py",
+  "location": {
+    "path": "backend/agent_k/evolution/features.py",
+    "line": 325,
+    "character": 11
+  }
+}

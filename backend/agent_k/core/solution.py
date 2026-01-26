@@ -81,10 +81,16 @@ _CODE_EXECUTION_AGENT_CACHE: dict[str, Agent[None, str]] = {}
 class ExecutionResult:
     """Result of executing a solution script.
 
-    @pattern:
-        name: execution-result
-        rationale: "Standardizes subprocess outputs for solution runs."
-        violations: "Tuple returns drop context for debugging."
+    @notice: |
+        Result of executing a solution script.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: execution-result
+            rationale: "Standardizes subprocess outputs for solution runs."
+            violations: "Tuple returns drop context for debugging."
     """
 
     returncode: int

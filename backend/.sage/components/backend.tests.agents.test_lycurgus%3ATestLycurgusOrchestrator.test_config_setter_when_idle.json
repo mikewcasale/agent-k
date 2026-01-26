@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_lycurgus:TestLycurgusOrchestrator.test_config_setter_when_idle",
+  "type": "method",
+  "summary": "Config should be settable when idle.",
+  "source": "backend/tests/agents/test_lycurgus.py",
+  "line": 175,
+  "path": "backend/tests/agents/test_lycurgus.py",
+  "location": {
+    "path": "backend/tests/agents/test_lycurgus.py",
+    "line": 175,
+    "character": 11
+  }
+}

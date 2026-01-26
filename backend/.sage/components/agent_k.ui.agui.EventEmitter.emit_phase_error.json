@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:EventEmitter.emit_phase_error",
+  "line": 409,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Emit phase error event.",
+  "type": "method"
+}

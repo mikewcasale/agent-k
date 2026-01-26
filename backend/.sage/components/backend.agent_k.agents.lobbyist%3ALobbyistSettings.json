@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.agents.lobbyist:LobbyistSettings",
+  "type": "class",
+  "summary": "Configuration for the Lobbyist agent.",
+  "notice": "Configuration for the Lobbyist agent.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: settings\n    rationale: \"Centralizes discovery agent configuration.\"\n    violations: \"Ad-hoc per-run overrides lead to inconsistent behavior.\"",
+  "source": "backend/agent_k/agents/lobbyist.py",
+  "line": 81,
+  "path": "backend/agent_k/agents/lobbyist.py",
+  "location": {
+    "path": "backend/agent_k/agents/lobbyist.py",
+    "line": 81,
+    "character": 7
+  }
+}

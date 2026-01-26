@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Wraps HTTP calls with retry/backoff and normalizes responses.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.adapters.kaggle:KaggleAdapter",
+  "line": 114,
+  "notice": "Async adapter for Kaggle competition APIs.",
+  "pattern": {
+    "name": "adapter",
+    "rationale": "Encapsulates Kaggle-specific API behavior.",
+    "violations": "Direct HTTP use scatters auth/rate-limit logic."
+  },
+  "similar": null,
+  "source": "agent_k/adapters/kaggle.py",
+  "summary": "Kaggle platform adapter.",
+  "type": "class"
+}

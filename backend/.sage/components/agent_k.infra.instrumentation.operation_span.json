@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Yields the span for manual status/attribute updates.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.instrumentation:operation_span",
+  "line": 224,
+  "notice": "Creates a tracing span for a code block with custom attributes.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/instrumentation.py",
+  "summary": "Context manager for custom operation spans.",
+  "type": "function"
+}

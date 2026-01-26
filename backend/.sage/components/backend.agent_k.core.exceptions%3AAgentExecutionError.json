@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.exceptions:AgentExecutionError",
+  "type": "class",
+  "summary": "Raised when agent execution fails.",
+  "notice": "Raised when agent execution fails.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: exception-specific\n    rationale: \"Captures agent name and cause for debugging.\"",
+  "source": "backend/agent_k/core/exceptions.py",
+  "line": 108,
+  "path": "backend/agent_k/core/exceptions.py",
+  "location": {
+    "path": "backend/agent_k/core/exceptions.py",
+    "line": 108,
+    "character": 7
+  }
+}

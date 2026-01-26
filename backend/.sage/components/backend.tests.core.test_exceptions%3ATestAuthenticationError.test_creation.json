@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.core.test_exceptions:TestAuthenticationError.test_creation",
+  "type": "method",
+  "summary": "Error should be created with platform info.",
+  "source": "backend/tests/core/test_exceptions.py",
+  "line": 95,
+  "path": "backend/tests/core/test_exceptions.py",
+  "location": {
+    "path": "backend/tests/core/test_exceptions.py",
+    "line": 95,
+    "character": 11
+  }
+}

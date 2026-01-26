@@ -1,0 +1,35 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.core.protocols as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "id": "agent_k.core.protocols",
+    "pattern": "protocols",
+    "provides": [
+      "agent_k.core.protocols"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.core.protocols",
+  "line": 1,
+  "notice": "Protocol definitions for platform adapters.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/protocols.py",
+  "summary": "Protocol definitions for platform adapters.",
+  "type": "module"
+}

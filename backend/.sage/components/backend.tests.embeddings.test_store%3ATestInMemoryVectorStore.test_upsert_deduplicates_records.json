@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.embeddings.test_store:TestInMemoryVectorStore.test_upsert_deduplicates_records",
+  "type": "method",
+  "summary": "Upsert should overwrite records with the same id.",
+  "source": "backend/tests/embeddings/test_store.py",
+  "line": 27,
+  "path": "backend/tests/embeddings/test_store.py",
+  "location": {
+    "path": "backend/tests/embeddings/test_store.py",
+    "line": 27,
+    "character": 11
+  }
+}

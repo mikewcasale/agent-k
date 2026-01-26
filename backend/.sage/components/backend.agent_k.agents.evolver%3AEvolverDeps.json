@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.agents.evolver:EvolverDeps",
+  "type": "class",
+  "summary": "Dependencies for the Evolver agent.",
+  "notice": "Dependencies for the Evolver agent.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: dependency-container\n    rationale: \"Groups runtime services and evolution state.\"\n    violations: \"Scattered state makes evolution hard to resume.\"\n\n@collaborators:\n    required:\n        - agent_k.core.protocols:PlatformAdapter\n        - agent_k.ui.agui:EventEmitter\n        - agent_k.core.models:Competition\n    optional:\n        - agent_k.core.tracking:ExperimentTracker\n        - agent_k.core.hints:HintEffectivenessTracker\n    injection: constructor\n    lifecycle: \"Allocated per evolution run.\"\n\n@invariants:\n    - \"population_size >= 1\"\n    - \"max_generations >= min_generations\"",
+  "source": "backend/agent_k/agents/evolver.py",
+  "line": 435,
+  "path": "backend/agent_k/agents/evolver.py",
+  "location": {
+    "path": "backend/agent_k/agents/evolver.py",
+    "line": 435,
+    "character": 7
+  }
+}

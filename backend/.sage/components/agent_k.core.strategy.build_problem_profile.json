@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Infers problem type (tabular/vision/text, classification/regression)\nfrom competition tags and evaluation metric.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.strategy:build_problem_profile",
+  "line": 192,
+  "notice": "Creates a ProblemProfile from competition metadata and data schema.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/strategy.py",
+  "summary": "Infer a generic ML task profile from competition metadata and schema.",
+  "type": "function"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.embeddings.test_store",
+  "type": "module",
+  "summary": "Tests for vector store utilities.",
+  "source": "backend/tests/embeddings/test_store.py",
+  "line": 0,
+  "path": "backend/tests/embeddings/test_store.py",
+  "location": {
+    "path": "backend/tests/embeddings/test_store.py",
+    "line": 0,
+    "character": 3
+  }
+}

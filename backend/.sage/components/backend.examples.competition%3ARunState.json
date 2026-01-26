@@ -1,0 +1,13 @@
+{
+  "id": "backend.examples.competition:RunState",
+  "type": "class",
+  "summary": "Persisted run metadata for the competition loop.",
+  "source": "backend/examples/competition.py",
+  "line": 45,
+  "path": "backend/examples/competition.py",
+  "location": {
+    "path": "backend/examples/competition.py",
+    "line": 45,
+    "character": 7
+  }
+}

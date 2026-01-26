@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.infra.test_models:TestCreateDevstralModel.test_custom_base_url",
+  "type": "method",
+  "summary": "Should accept custom base URL.",
+  "source": "backend/tests/infra/test_models.py",
+  "line": 47,
+  "path": "backend/tests/infra/test_models.py",
+  "location": {
+    "path": "backend/tests/infra/test_models.py",
+    "line": 47,
+    "character": 11
+  }
+}

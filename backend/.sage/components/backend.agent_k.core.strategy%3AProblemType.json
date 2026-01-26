@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.strategy:ProblemType",
+  "type": "class",
+  "summary": "Supported ML problem types for policy selection.",
+  "notice": "Supported ML problem types for policy selection.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: enumeration\n    rationale: \"StrEnum for ML problem taxonomy.\"\n    violations: \"String literals drift across policy logic.\"",
+  "source": "backend/agent_k/core/strategy.py",
+  "line": 67,
+  "path": "backend/agent_k/core/strategy.py",
+  "location": {
+    "path": "backend/agent_k/core/strategy.py",
+    "line": 67,
+    "character": 7
+  }
+}

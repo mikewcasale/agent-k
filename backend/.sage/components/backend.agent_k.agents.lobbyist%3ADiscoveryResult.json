@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.agents.lobbyist:DiscoveryResult",
+  "type": "class",
+  "summary": "Result of competition discovery.",
+  "notice": "Result of competition discovery.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: output-model\n    rationale: \"Stable schema for discovery outputs.\"\n    violations: \"Ad-hoc dict outputs are hard to validate.\"",
+  "source": "backend/agent_k/agents/lobbyist.py",
+  "line": 142,
+  "path": "backend/agent_k/agents/lobbyist.py",
+  "location": {
+    "path": "backend/agent_k/agents/lobbyist.py",
+    "line": 142,
+    "character": 7
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Initializes memory backend, toolset, and pydantic-ai Agent.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:EvolverAgent.__init__",
+  "line": 598,
+  "notice": "Builds the agent singleton and registers tools.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Initialize the Evolver agent.",
+  "type": "method"
+}

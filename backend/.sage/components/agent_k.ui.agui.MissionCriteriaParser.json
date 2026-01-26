@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:MissionCriteriaParser",
+  "line": 667,
+  "notice": "Parse mission criteria from intent output.",
+  "pattern": {
+    "name": "parser",
+    "rationale": "Dataclass for extracting mission criteria from intent."
+  },
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Parse mission criteria from intent output.",
+  "type": "class"
+}

@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Registers research tools and synthesizes outputs into ResearchReport.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.scientist:ScientistAgent",
+  "line": 319,
+  "notice": "Performs leaderboard, literature, and notebook analysis.\nUse the module-level scientist_agent or agent registry.",
+  "pattern": {
+    "name": "agent-singleton",
+    "rationale": "Single instance keeps memory/tool registration consistent.",
+    "violations": "Multiple instances duplicate tool registrations."
+  },
+  "similar": null,
+  "source": "agent_k/agents/scientist.py",
+  "summary": "Scientist agent encapsulating research and analysis functionality.",
+  "type": "class"
+}

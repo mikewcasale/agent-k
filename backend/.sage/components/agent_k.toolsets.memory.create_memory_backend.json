@@ -1,0 +1,22 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": {
+    "for": [
+      "memory backend construction"
+    ],
+    "notes": "Use create_memory_backend to ensure defaults."
+  },
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.memory:create_memory_backend",
+  "line": 243,
+  "notice": "Creates a file-backed memory tool for Anthropic providers.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/memory.py",
+  "summary": "Create an Anthropic-compatible memory backend.",
+  "type": "function"
+}

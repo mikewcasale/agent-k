@@ -1,0 +1,17 @@
+{
+  "id": "backend.agent_k.ui.agui:MissionIntentOutput",
+  "type": "class",
+  "summary": "Structured output for intent detection.",
+  "pattern": {
+    "name": "output-model",
+    "rationale": "Frozen Pydantic model for agent structured output."
+  },
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 307,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 307,
+    "character": 7
+  }
+}

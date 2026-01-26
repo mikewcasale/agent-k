@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.evolution.features:FeatureGenome",
+  "type": "class",
+  "summary": "Complete feature engineering genome.",
+  "notice": "Complete feature engineering genome.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: genome-model\n    rationale: \"Mutable dataclass aggregating feature engineering genes.\"",
+  "source": "backend/agent_k/evolution/features.py",
+  "line": 155,
+  "path": "backend/agent_k/evolution/features.py",
+  "location": {
+    "path": "backend/agent_k/evolution/features.py",
+    "line": 155,
+    "character": 7
+  }
+}

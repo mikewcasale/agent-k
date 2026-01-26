@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.infra.test_models:TestDevstralConstants.test_devstral_base_url_default",
+  "type": "method",
+  "summary": "Default base URL should be LM Studio.",
+  "source": "backend/tests/infra/test_models.py",
+  "line": 33,
+  "path": "backend/tests/infra/test_models.py",
+  "location": {
+    "path": "backend/tests/infra/test_models.py",
+    "line": 33,
+    "character": 11
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.tracking:tracking_list_experiments",
+  "line": 74,
+  "notice": "Returns summarized experiment records.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/tracking.py",
+  "summary": "List recent experiments for a competition.",
+  "type": "function"
+}

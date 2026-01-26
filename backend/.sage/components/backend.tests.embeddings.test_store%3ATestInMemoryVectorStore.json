@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.embeddings.test_store:TestInMemoryVectorStore",
+  "type": "class",
+  "summary": "Tests for InMemoryVectorStore behavior.",
+  "source": "backend/tests/embeddings/test_store.py",
+  "line": 16,
+  "path": "backend/tests/embeddings/test_store.py",
+  "location": {
+    "path": "backend/tests/embeddings/test_store.py",
+    "line": 16,
+    "character": 7
+  }
+}

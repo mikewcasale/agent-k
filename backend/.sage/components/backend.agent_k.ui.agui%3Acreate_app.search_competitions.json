@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:create_app.search_competitions",
+  "type": "function",
+  "summary": "Search for competitions that match the requested criteria.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 1267,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 1267,
+    "character": 11
+  }
+}

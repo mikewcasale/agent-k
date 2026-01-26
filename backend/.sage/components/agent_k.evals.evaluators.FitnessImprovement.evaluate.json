@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evals.evaluators:FitnessImprovement.evaluate",
+  "line": 85,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evals/evaluators.py",
+  "summary": "Check fitness improvement.",
+  "type": "method"
+}

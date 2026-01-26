@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.models:ToolCall",
+  "type": "class",
+  "summary": "Base model for tool invocation tracking.",
+  "notice": "Base model for tool invocation tracking.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: immutable-entity\n    rationale: \"Base frozen model for tool call telemetry.\"",
+  "source": "backend/agent_k/core/models.py",
+  "line": 280,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 280,
+    "character": 7
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.exceptions:CompetitionError",
+  "type": "class",
+  "summary": "Base exception for competition-related errors.",
+  "notice": "Base exception for competition-related errors.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: exception-category\n    rationale: \"Category base for Kaggle competition errors.\"",
+  "source": "backend/agent_k/core/exceptions.py",
+  "line": 255,
+  "path": "backend/agent_k/core/exceptions.py",
+  "location": {
+    "path": "backend/agent_k/core/exceptions.py",
+    "line": 255,
+    "character": 7
+  }
+}

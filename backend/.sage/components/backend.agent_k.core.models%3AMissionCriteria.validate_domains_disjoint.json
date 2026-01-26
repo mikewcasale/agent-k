@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.models:MissionCriteria.validate_domains_disjoint",
+  "type": "method",
+  "summary": "Ensure target and exclude domains don't overlap.",
+  "source": "backend/agent_k/core/models.py",
+  "line": 751,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 751,
+    "character": 11
+  }
+}

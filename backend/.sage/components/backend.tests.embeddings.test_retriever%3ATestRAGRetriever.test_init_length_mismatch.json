@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.embeddings.test_retriever:TestRAGRetriever.test_init_length_mismatch",
+  "type": "method",
+  "summary": "Constructor should reject mismatched lengths.",
+  "source": "backend/tests/embeddings/test_retriever.py",
+  "line": 22,
+  "path": "backend/tests/embeddings/test_retriever.py",
+  "location": {
+    "path": "backend/tests/embeddings/test_retriever.py",
+    "line": 22,
+    "character": 11
+  }
+}

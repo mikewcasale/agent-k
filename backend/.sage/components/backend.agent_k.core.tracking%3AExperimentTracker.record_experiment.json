@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.tracking:ExperimentTracker.record_experiment",
+  "type": "method",
+  "summary": "Persist a record to the tracker.",
+  "source": "backend/agent_k/core/tracking.py",
+  "line": 313,
+  "path": "backend/agent_k/core/tracking.py",
+  "location": {
+    "path": "backend/agent_k/core/tracking.py",
+    "line": 313,
+    "character": 11
+  }
+}

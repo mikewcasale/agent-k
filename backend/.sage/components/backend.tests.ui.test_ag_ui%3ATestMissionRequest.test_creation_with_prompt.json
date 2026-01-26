@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.ui.test_ag_ui:TestMissionRequest.test_creation_with_prompt",
+  "type": "method",
+  "summary": "Request should accept user prompt.",
+  "source": "backend/tests/ui/test_ag_ui.py",
+  "line": 37,
+  "path": "backend/tests/ui/test_ag_ui.py",
+  "location": {
+    "path": "backend/tests/ui/test_ag_ui.py",
+    "line": 37,
+    "character": 11
+  }
+}

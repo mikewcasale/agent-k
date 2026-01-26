@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.conftest:TestEnv.reset",
+  "type": "method",
+  "summary": "Reset all modified environment variables to original values.",
+  "source": "backend/tests/conftest.py",
+  "line": 67,
+  "path": "backend/tests/conftest.py",
+  "location": {
+    "path": "backend/tests/conftest.py",
+    "line": 67,
+    "character": 11
+  }
+}

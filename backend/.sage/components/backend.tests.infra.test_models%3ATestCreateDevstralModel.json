@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.infra.test_models:TestCreateDevstralModel",
+  "type": "class",
+  "summary": "Tests for create_devstral_model function.",
+  "source": "backend/tests/infra/test_models.py",
+  "line": 38,
+  "path": "backend/tests/infra/test_models.py",
+  "location": {
+    "path": "backend/tests/infra/test_models.py",
+    "line": 38,
+    "character": 7
+  }
+}

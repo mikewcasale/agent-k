@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.evolution.features:TransformGene",
+  "type": "class",
+  "summary": "Single-variable transformation gene.",
+  "notice": "Single-variable transformation gene.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: gene-model\n    rationale: \"Frozen dataclass representing a transformation gene.\"",
+  "source": "backend/agent_k/evolution/features.py",
+  "line": 59,
+  "path": "backend/agent_k/evolution/features.py",
+  "location": {
+    "path": "backend/agent_k/evolution/features.py",
+    "line": 59,
+    "character": 7
+  }
+}

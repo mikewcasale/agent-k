@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.features:FeatureSelector",
+  "line": 303,
+  "notice": "Maintain a Pareto front for feature selection trade-offs.",
+  "pattern": {
+    "name": "selector",
+    "rationale": "Pareto-based feature selection with population evolution."
+  },
+  "similar": null,
+  "source": "agent_k/evolution/features.py",
+  "summary": "Maintain a Pareto front for feature selection trade-offs.",
+  "type": "class"
+}

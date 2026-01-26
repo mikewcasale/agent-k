@@ -1,0 +1,22 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": {
+    "for": [
+      "experiment tracker construction"
+    ],
+    "notes": "Use create_experiment_tracker to ensure defaults."
+  },
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.tracking:create_experiment_tracker",
+  "line": 860,
+  "notice": "Returns a tracker configured with the default database path.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/tracking.py",
+  "summary": "Factory for ExperimentTracker instances.",
+  "type": "function"
+}

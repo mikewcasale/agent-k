@@ -1,0 +1,13 @@
+{
+  "id": "backend.scripts.fetch_kaggle_submissions:SubmissionRow",
+  "type": "class",
+  "summary": "Normalized Kaggle submission entry for reporting.",
+  "source": "backend/scripts/fetch_kaggle_submissions.py",
+  "line": 27,
+  "path": "backend/scripts/fetch_kaggle_submissions.py",
+  "location": {
+    "path": "backend/scripts/fetch_kaggle_submissions.py",
+    "line": 27,
+    "character": 7
+  }
+}

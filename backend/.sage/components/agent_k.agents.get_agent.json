@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Raises if the agent name is unknown to avoid silent misconfiguration.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents:get_agent",
+  "line": 103,
+  "notice": "Retrieves a registered agent singleton.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/__init__.py",
+  "summary": "Return a registered agent by name.",
+  "type": "function"
+}

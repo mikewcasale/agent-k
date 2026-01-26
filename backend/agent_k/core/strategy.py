@@ -67,10 +67,16 @@ type FitnessFunction = Callable[["FitnessInput"], float]
 class ProblemType(StrEnum):
     """Supported ML problem types for policy selection.
 
-    @pattern:
-        name: enumeration
-        rationale: "StrEnum for ML problem taxonomy."
-        violations: "String literals drift across policy logic."
+    @notice: |
+        Supported ML problem types for policy selection.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: enumeration
+            rationale: "StrEnum for ML problem taxonomy."
+            violations: "String literals drift across policy logic."
     """
 
     TABULAR_REGRESSION = "tabular_regression"
@@ -86,10 +92,16 @@ class ProblemType(StrEnum):
 class ProblemProfile:
     """Profile describing the ML task for a competition.
 
-    @pattern:
-        name: profile-model
-        rationale: "Bundles task metadata for downstream policies."
-        violations: "Implicit profiles make policy decisions inconsistent."
+    @notice: |
+        Profile describing the ML task for a competition.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: profile-model
+            rationale: "Bundles task metadata for downstream policies."
+            violations: "Implicit profiles make policy decisions inconsistent."
     """
 
     problem_type: ProblemType
@@ -106,10 +118,16 @@ class ProblemProfile:
 class TechniquePolicy:
     """Generic technique policy for solution enforcement.
 
-    @pattern:
-        name: policy-model
-        rationale: "Encodes technique constraints for evolution."
-        violations: "Inline tuning fragments policy definitions."
+    @notice: |
+        Generic technique policy for solution enforcement.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: policy-model
+            rationale: "Encodes technique constraints for evolution."
+            violations: "Inline tuning fragments policy definitions."
     """
 
     problem_type: ProblemType
@@ -127,10 +145,16 @@ class TechniquePolicy:
 class FitnessInput:
     """Input payload for fitness scoring.
 
-    @pattern:
-        name: fitness-input
-        rationale: "Captures evaluation signals for scoring."
-        violations: "Ad-hoc inputs drift across fitness logic."
+    @notice: |
+        Input payload for fitness scoring.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: fitness-input
+            rationale: "Captures evaluation signals for scoring."
+            violations: "Ad-hoc inputs drift across fitness logic."
     """
 
     cv_score: float
@@ -145,10 +169,16 @@ class FitnessInput:
 class FitnessPolicy:
     """Policy controlling fitness adjustments.
 
-    @pattern:
-        name: policy-model
-        rationale: "Encodes penalty tuning for fitness scoring."
-        violations: "Inline penalties drift across runs."
+    @notice: |
+        Policy controlling fitness adjustments.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: policy-model
+            rationale: "Encodes penalty tuning for fitness scoring."
+            violations: "Inline penalties drift across runs."
     """
 
     metric_direction: MetricDirection

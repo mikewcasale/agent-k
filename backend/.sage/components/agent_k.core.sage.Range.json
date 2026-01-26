@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.sage:Range",
+  "line": 81,
+  "notice": "Numeric range constraint for parameters.",
+  "pattern": {
+    "name": "doc-metadata",
+    "rationale": "Encodes min/max bounds for tooling and agents.",
+    "violations": "Hidden bounds lead to invalid parameter choices."
+  },
+  "similar": null,
+  "source": "agent_k/core/sage.py",
+  "summary": "Numeric range constraint for parameters.",
+  "type": "class"
+}

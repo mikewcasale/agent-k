@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.adapters.kaggle:KaggleSettings.username",
+  "type": "attribute",
+  "summary": "Kaggle API username for authentication.",
+  "source": "backend/agent_k/adapters/kaggle.py",
+  "line": 91,
+  "path": "backend/agent_k/adapters/kaggle.py",
+  "location": {
+    "path": "backend/agent_k/adapters/kaggle.py",
+    "line": 91,
+    "character": 7
+  }
+}

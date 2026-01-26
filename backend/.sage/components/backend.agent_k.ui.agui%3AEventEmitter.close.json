@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:EventEmitter.close",
+  "type": "method",
+  "summary": "Close the event stream.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 396,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 396,
+    "character": 11
+  }
+}

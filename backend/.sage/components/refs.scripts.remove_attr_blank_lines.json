@@ -1,0 +1,13 @@
+{
+  "id": "refs.scripts.remove_attr_blank_lines",
+  "type": "module",
+  "summary": "Utility to remove blank lines between consecutive class attributes.",
+  "source": "refs/scripts/remove_attr_blank_lines.py",
+  "line": 0,
+  "path": "refs/scripts/remove_attr_blank_lines.py",
+  "location": {
+    "path": "refs/scripts/remove_attr_blank_lines.py",
+    "line": 0,
+    "character": 3
+  }
+}

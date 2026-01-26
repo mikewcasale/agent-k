@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.toolsets.memory:AgentKMemoryTool.insert",
+  "type": "method",
+  "summary": "Insert text at a specified line in a file.",
+  "source": "backend/agent_k/toolsets/memory.py",
+  "line": 168,
+  "path": "backend/agent_k/toolsets/memory.py",
+  "location": {
+    "path": "backend/agent_k/toolsets/memory.py",
+    "line": 168,
+    "character": 11
+  }
+}

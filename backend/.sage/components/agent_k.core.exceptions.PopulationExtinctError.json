@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.exceptions:PopulationExtinctError",
+  "line": 402,
+  "notice": "Raised when all population members fail fitness evaluation.",
+  "pattern": {
+    "name": "exception-specific",
+    "rationale": "Non-recoverable population extinction."
+  },
+  "similar": null,
+  "source": "agent_k/core/exceptions.py",
+  "summary": "Raised when all population members fail fitness evaluation.",
+  "type": "class"
+}

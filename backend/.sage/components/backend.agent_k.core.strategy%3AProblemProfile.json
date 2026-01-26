@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.strategy:ProblemProfile",
+  "type": "class",
+  "summary": "Profile describing the ML task for a competition.",
+  "notice": "Profile describing the ML task for a competition.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: profile-model\n    rationale: \"Bundles task metadata for downstream policies.\"\n    violations: \"Implicit profiles make policy decisions inconsistent.\"",
+  "source": "backend/agent_k/core/strategy.py",
+  "line": 92,
+  "path": "backend/agent_k/core/strategy.py",
+  "location": {
+    "path": "backend/agent_k/core/strategy.py",
+    "line": 92,
+    "character": 7
+  }
+}

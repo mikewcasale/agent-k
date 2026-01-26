@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.instrumentation:_serialize_result",
+  "line": 265,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/instrumentation.py",
+  "summary": "Serialize function result for logging.",
+  "type": "function"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.data:infer_competition_schema",
+  "type": "function",
+  "summary": "Infer competition schema from train/test/sample submission files.",
+  "notice": "Analyzes CSV headers to determine ID column and target columns.",
+  "dev": "Compares train vs test headers to identify target columns.\nFalls back to sample submission columns if no difference found.",
+  "source": "backend/agent_k/core/data.py",
+  "line": 67,
+  "path": "backend/agent_k/core/data.py",
+  "location": {
+    "path": "backend/agent_k/core/data.py",
+    "line": 67,
+    "character": 7
+  }
+}

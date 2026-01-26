@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.exceptions:PhaseTimeoutError",
+  "type": "class",
+  "summary": "Raised when a phase exceeds its timeout.",
+  "notice": "Raised when a phase exceeds its timeout.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: exception-specific\n    rationale: \"Captures timing metrics for timeout analysis.\"",
+  "source": "backend/agent_k/core/exceptions.py",
+  "line": 548,
+  "path": "backend/agent_k/core/exceptions.py",
+  "location": {
+    "path": "backend/agent_k/core/exceptions.py",
+    "line": 548,
+    "character": 7
+  }
+}

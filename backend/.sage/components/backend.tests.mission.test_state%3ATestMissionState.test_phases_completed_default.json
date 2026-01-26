@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_state:TestMissionState.test_phases_completed_default",
+  "type": "method",
+  "summary": "Phases completed should default to empty list.",
+  "source": "backend/tests/mission/test_state.py",
+  "line": 56,
+  "path": "backend/tests/mission/test_state.py",
+  "location": {
+    "path": "backend/tests/mission/test_state.py",
+    "line": 56,
+    "character": 11
+  }
+}

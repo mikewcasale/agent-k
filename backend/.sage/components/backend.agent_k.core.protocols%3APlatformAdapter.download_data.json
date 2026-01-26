@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.protocols:PlatformAdapter.download_data",
+  "type": "method",
+  "summary": "Download competition data files.",
+  "source": "backend/agent_k/core/protocols.py",
+  "line": 168,
+  "path": "backend/agent_k/core/protocols.py",
+  "location": {
+    "path": "backend/agent_k/core/protocols.py",
+    "line": 168,
+    "character": 11
+  }
+}

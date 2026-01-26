@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.toolsets.test_kaggle:test_toolset_id",
+  "type": "function",
+  "summary": "Toolset should have the expected id.",
+  "source": "backend/tests/toolsets/test_kaggle.py",
+  "line": 21,
+  "path": "backend/tests/toolsets/test_kaggle.py",
+  "location": {
+    "path": "backend/tests/toolsets/test_kaggle.py",
+    "line": 21,
+    "character": 7
+  }
+}

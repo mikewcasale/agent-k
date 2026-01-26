@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.agents.scientist:ResearchReport",
+  "type": "class",
+  "summary": "Complete research report for a competition.",
+  "notice": "Complete research report for a competition.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: output-model\n    rationale: \"Aggregates research findings into a stable schema.\"\n    violations: \"Free-form outputs hinder automation.\"",
+  "source": "backend/agent_k/agents/scientist.py",
+  "line": 288,
+  "path": "backend/agent_k/agents/scientist.py",
+  "location": {
+    "path": "backend/agent_k/agents/scientist.py",
+    "line": 288,
+    "character": 7
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_evolver_mutations:TestStructuralMutation.test_structural_mutation_injects_fillna",
+  "type": "method",
+  "summary": "Structural mutation should inject fillna when applicable.",
+  "source": "backend/tests/agents/test_evolver_mutations.py",
+  "line": 101,
+  "path": "backend/tests/agents/test_evolver_mutations.py",
+  "location": {
+    "path": "backend/tests/agents/test_evolver_mutations.py",
+    "line": 101,
+    "character": 11
+  }
+}

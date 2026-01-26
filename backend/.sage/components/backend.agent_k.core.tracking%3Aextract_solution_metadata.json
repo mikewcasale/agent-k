@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.tracking:extract_solution_metadata",
+  "type": "function",
+  "summary": "Extract model and feature metadata from solution code.",
+  "notice": "Extract model and feature metadata from solution code.",
+  "dev": "See module for behavior details and invariants.",
+  "source": "backend/agent_k/core/tracking.py",
+  "line": 882,
+  "path": "backend/agent_k/core/tracking.py",
+  "location": {
+    "path": "backend/agent_k/core/tracking.py",
+    "line": 882,
+    "character": 7
+  }
+}

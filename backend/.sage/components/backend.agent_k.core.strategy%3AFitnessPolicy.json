@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.strategy:FitnessPolicy",
+  "type": "class",
+  "summary": "Policy controlling fitness adjustments.",
+  "notice": "Policy controlling fitness adjustments.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: policy-model\n    rationale: \"Encodes penalty tuning for fitness scoring.\"\n    violations: \"Inline penalties drift across runs.\"",
+  "source": "backend/agent_k/core/strategy.py",
+  "line": 169,
+  "path": "backend/agent_k/core/strategy.py",
+  "location": {
+    "path": "backend/agent_k/core/strategy.py",
+    "line": 169,
+    "character": 7
+  }
+}

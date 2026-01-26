@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.hints:DistributionStats.to_dict",
+  "type": "method",
+  "summary": "Serialize to a JSON-ready dictionary.",
+  "source": "backend/agent_k/core/hints.py",
+  "line": 264,
+  "path": "backend/agent_k/core/hints.py",
+  "location": {
+    "path": "backend/agent_k/core/hints.py",
+    "line": 264,
+    "character": 11
+  }
+}

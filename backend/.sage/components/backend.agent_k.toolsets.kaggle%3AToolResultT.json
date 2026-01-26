@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.toolsets.kaggle:ToolResultT",
+  "type": "attribute",
+  "summary": "Type variable for tool result payloads.",
+  "source": "backend/agent_k/toolsets/kaggle.py",
+  "line": 60,
+  "path": "backend/agent_k/toolsets/kaggle.py",
+  "location": {
+    "path": "backend/agent_k/toolsets/kaggle.py",
+    "line": 60,
+    "character": 3
+  }
+}

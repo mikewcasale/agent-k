@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.agents.base:BaseAgentMixin",
+  "type": "class",
+  "summary": "Base mixin providing common agent functionality.",
+  "notice": "Base mixin providing common agent functionality.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: agent-base\n    rationale: \"Shared behavior for agent wrappers around pydantic-ai Agents.\"\n    violations: \"Duplicated run logic across agents.\"\n\n@concurrency:\n    model: asyncio\n    safe: false\n    reason: \"Subclasses typically manage shared state per instance.\"",
+  "source": "backend/agent_k/agents/base.py",
+  "line": 86,
+  "path": "backend/agent_k/agents/base.py",
+  "location": {
+    "path": "backend/agent_k/agents/base.py",
+    "line": 86,
+    "character": 7
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "backend.agent_k.adapters.kaggle:KaggleAdapter",
+  "type": "class",
+  "summary": "Kaggle platform adapter.",
+  "notice": "Async adapter for Kaggle competition APIs.",
+  "dev": "Wraps HTTP calls with retry/backoff and normalizes responses.",
+  "pattern": {
+    "name": "adapter",
+    "rationale": "Encapsulates Kaggle-specific API behavior.",
+    "violations": "Direct HTTP use scatters auth/rate-limit logic."
+  },
+  "source": "backend/agent_k/adapters/kaggle.py",
+  "line": 113,
+  "path": "backend/agent_k/adapters/kaggle.py",
+  "location": {
+    "path": "backend/agent_k/adapters/kaggle.py",
+    "line": 113,
+    "character": 7
+  }
+}

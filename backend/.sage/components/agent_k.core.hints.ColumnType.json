@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.hints:ColumnType",
+  "line": 94,
+  "notice": "Detected column semantic type.",
+  "pattern": {
+    "name": "enumeration",
+    "rationale": "StrEnum for semantic column type classification."
+  },
+  "similar": null,
+  "source": "agent_k/core/hints.py",
+  "summary": "Detected column semantic type.",
+  "type": "class"
+}

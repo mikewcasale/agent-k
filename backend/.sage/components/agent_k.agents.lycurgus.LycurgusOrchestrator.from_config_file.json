@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.lycurgus:LycurgusOrchestrator.from_config_file",
+  "line": 323,
+  "notice": "Builds an orchestrator from a JSON config file.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/lycurgus.py",
+  "summary": "Create orchestrator from configuration file.",
+  "type": "method"
+}

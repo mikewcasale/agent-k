@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.framework:Individual.with_genome",
+  "line": 88,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/framework.py",
+  "summary": "Create a child individual while updating lineage.",
+  "type": "method"
+}

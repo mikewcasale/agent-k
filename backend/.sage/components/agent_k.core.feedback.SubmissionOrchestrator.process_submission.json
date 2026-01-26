@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.feedback:SubmissionOrchestrator.process_submission",
+  "line": 185,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/feedback.py",
+  "summary": "Process a submission outcome and update evolution weights.",
+  "type": "method"
+}

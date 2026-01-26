@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:EventEmitter.emit_task_progress",
+  "type": "method",
+  "summary": "Emit task progress update.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 416,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 416,
+    "character": 11
+  }
+}

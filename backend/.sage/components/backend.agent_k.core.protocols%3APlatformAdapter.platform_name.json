@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.protocols:PlatformAdapter.platform_name",
+  "type": "method",
+  "summary": "Unique identifier for the platform.",
+  "source": "backend/agent_k/core/protocols.py",
+  "line": 71,
+  "path": "backend/agent_k/core/protocols.py",
+  "location": {
+    "path": "backend/agent_k/core/protocols.py",
+    "line": 71,
+    "character": 11
+  }
+}

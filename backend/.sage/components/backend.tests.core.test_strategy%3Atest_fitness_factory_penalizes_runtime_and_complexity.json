@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.core.test_strategy:test_fitness_factory_penalizes_runtime_and_complexity",
+  "type": "function",
+  "summary": "Penalize fitness when runtime or complexity exceeds thresholds.",
+  "source": "backend/tests/core/test_strategy.py",
+  "line": 61,
+  "path": "backend/tests/core/test_strategy.py",
+  "location": {
+    "path": "backend/tests/core/test_strategy.py",
+    "line": 61,
+    "character": 7
+  }
+}

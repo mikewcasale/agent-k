@@ -1,0 +1,37 @@
+{
+  "id": "agent_k.tools.sageextract",
+  "type": "module",
+  "summary": "SAGE docstring extractor and validator.",
+  "notice": "Extracts SAGE tags from docstrings and emits artifacts for the SAGE VS Code extension.",
+  "dev": "Parses Python source with AST, ignores fenced code blocks, and validates\ntag grammar (no hybrid scalar+block). Emits JSON artifacts in .sage/ including:\n- index.json: Full component index with metadata\n- components.json: CRG component graph (legacy, kept for compatibility)\n- canonical-homes.json: Canonical home mappings\n- graph.json: CRG visualization data\n- agent-guidance.json: Aggregated @agent-guidance tags\n- patterns.json: Pattern catalog from @pattern tags\n- anti-patterns.json: Anti-pattern warnings\n- errors.json: Validation errors\n- components/: Per-component JSON payloads (spec-aligned)\n- similar/: Per-component similar reference summaries",
+  "graph": {
+    "id": "agent_k.tools.sageextract",
+    "provides": [
+      "agent_k.tools.sageextract:run",
+      "agent_k.tools.sageextract:main"
+    ],
+    "pattern": "tooling"
+  },
+  "agent_guidance": {
+    "do": [
+      "Use this script to validate SAGE docstrings before release."
+    ],
+    "do_not": [
+      "Hand-edit .sage artifacts; regenerate instead."
+    ]
+  },
+  "human_review": {
+    "last-verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "source": "backend/tools/sageextract.py",
+  "line": 0,
+  "path": "backend/tools/sageextract.py",
+  "location": {
+    "path": "backend/tools/sageextract.py",
+    "line": 0,
+    "character": 3
+  }
+}

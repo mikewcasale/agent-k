@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:EvolverSettings",
+  "line": 363,
+  "notice": "Configuration for the Evolver agent.",
+  "pattern": {
+    "name": "settings",
+    "rationale": "Centralizes evolutionary optimization configuration.",
+    "violations": "Ad-hoc overrides lead to unstable evolution runs."
+  },
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Configuration for the Evolver agent.",
+  "type": "class"
+}

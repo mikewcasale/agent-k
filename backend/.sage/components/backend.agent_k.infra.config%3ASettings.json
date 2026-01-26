@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.infra.config:Settings",
+  "type": "class",
+  "summary": "Runtime configuration settings.",
+  "notice": "Runtime configuration settings.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: settings-model\n    rationale: \"Captures runtime configuration defaults.\"\n    violations: \"Scattered env access increases drift.\"",
+  "source": "backend/agent_k/infra/config.py",
+  "line": 39,
+  "path": "backend/agent_k/infra/config.py",
+  "location": {
+    "path": "backend/agent_k/infra/config.py",
+    "line": 39,
+    "character": 7
+  }
+}

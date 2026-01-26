@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.models:LeaderboardSubmission",
+  "type": "class",
+  "summary": "Record of a submission to the competition leaderboard.",
+  "notice": "Record of a submission to the competition leaderboard.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: immutable-entity\n    rationale: \"Frozen Pydantic model for leaderboard submission records.\"",
+  "source": "backend/agent_k/core/models.py",
+  "line": 505,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 505,
+    "character": 7
+  }
+}

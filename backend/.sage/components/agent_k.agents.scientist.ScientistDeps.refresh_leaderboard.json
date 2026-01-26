@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.scientist:ScientistDeps.refresh_leaderboard",
+  "line": 226,
+  "notice": "Updates the cached leaderboard in-place.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/scientist.py",
+  "summary": "Refresh leaderboard from the platform.",
+  "type": "method"
+}

@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:MissionIntentOutput",
+  "line": 308,
+  "notice": null,
+  "pattern": {
+    "name": "output-model",
+    "rationale": "Frozen Pydantic model for agent structured output."
+  },
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Structured output for intent detection.",
+  "type": "class"
+}

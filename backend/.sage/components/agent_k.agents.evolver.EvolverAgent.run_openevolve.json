@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:EvolverAgent.run_openevolve",
+  "line": 637,
+  "notice": "Delegates mutation and evaluation to OpenEvolve when enabled.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Run OpenEvolve-backed evolution for a prototype solution.",
+  "type": "method"
+}

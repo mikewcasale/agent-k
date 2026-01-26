@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:EventEmitter.emit_checkpoint_created",
+  "type": "method",
+  "summary": "Emit checkpoint creation.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 513,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 513,
+    "character": 11
+  }
+}

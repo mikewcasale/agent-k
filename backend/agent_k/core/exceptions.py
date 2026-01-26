@@ -66,16 +66,22 @@ __all__ = (
 class AgentKError(Exception):
     """Base exception for all AGENT-K errors.
 
-    All exceptions in the system inherit from this class, enabling
-    catch-all handling at application boundaries.
+        All exceptions in the system inherit from this class, enabling
+        catch-all handling at application boundaries.
 
-    @pattern:
-        name: exception-base
-        rationale: "Root exception with context and recoverability metadata."
+    @notice: |
+        Base exception for all AGENT-K errors.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-base
+            rationale: "Root exception with context and recoverability metadata."
 
     Attributes:
-        context: Additional context for debugging.
-        recoverable: Whether the error can potentially be recovered.
+            context: Additional context for debugging.
+            recoverable: Whether the error can potentially be recovered.
     """
 
     def __init__(self, message: str, *, context: dict[str, Any] | None = None, recoverable: bool = True) -> None:
@@ -87,18 +93,30 @@ class AgentKError(Exception):
 class AgentError(AgentKError):
     """Base exception for agent-related errors.
 
-    @pattern:
-        name: exception-category
-        rationale: "Category base for agent execution errors."
+    @notice: |
+        Base exception for agent-related errors.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-category
+            rationale: "Category base for agent execution errors."
     """
 
 
 class AgentExecutionError(AgentError):
     """Raised when agent execution fails.
 
-    @pattern:
-        name: exception-specific
-        rationale: "Captures agent name and cause for debugging."
+    @notice: |
+        Raised when agent execution fails.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-specific
+            rationale: "Captures agent name and cause for debugging."
     """
 
     def __init__(
@@ -116,9 +134,15 @@ class AgentExecutionError(AgentError):
 class ToolExecutionError(AgentError):
     """Raised when a tool execution fails.
 
-    @pattern:
-        name: exception-specific
-        rationale: "Captures tool name and arguments for debugging."
+    @notice: |
+        Raised when a tool execution fails.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-specific
+            rationale: "Captures tool name and arguments for debugging."
     """
 
     def __init__(self, tool_name: str, message: str, *, args: dict[str, Any] | None = None) -> None:
@@ -132,9 +156,15 @@ class ToolExecutionError(AgentError):
 class OutputValidationError(AgentError):
     """Raised when agent output fails validation.
 
-    @pattern:
-        name: exception-specific
-        rationale: "Captures validation errors for structured output failures."
+    @notice: |
+        Raised when agent output fails validation.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-specific
+            rationale: "Captures validation errors for structured output failures."
     """
 
     def __init__(self, agent_name: str, validation_errors: list[str]) -> None:
@@ -149,18 +179,30 @@ class OutputValidationError(AgentError):
 class AdapterError(AgentKError):
     """Base exception for adapter-related errors.
 
-    @pattern:
-        name: exception-category
-        rationale: "Category base for platform adapter errors."
+    @notice: |
+        Base exception for adapter-related errors.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-category
+            rationale: "Category base for platform adapter errors."
     """
 
 
 class PlatformConnectionError(AdapterError):
     """Raised when connection to platform fails.
 
-    @pattern:
-        name: exception-specific
-        rationale: "Captures platform name for connection failures."
+    @notice: |
+        Raised when connection to platform fails.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-specific
+            rationale: "Captures platform name for connection failures."
     """
 
     def __init__(self, platform: str, message: str) -> None:
@@ -171,9 +213,15 @@ class PlatformConnectionError(AdapterError):
 class AuthenticationError(AdapterError):
     """Raised when platform authentication fails.
 
-    @pattern:
-        name: exception-specific
-        rationale: "Non-recoverable authentication failure."
+    @notice: |
+        Raised when platform authentication fails.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-specific
+            rationale: "Non-recoverable authentication failure."
     """
 
     def __init__(self, platform: str, message: str = "Authentication failed") -> None:
@@ -184,12 +232,18 @@ class AuthenticationError(AdapterError):
 class RateLimitError(AdapterError):
     """Raised when platform rate limit is exceeded.
 
-    @pattern:
-        name: exception-specific
-        rationale: "Recoverable with retry_after hint for backoff."
+    @notice: |
+        Raised when platform rate limit is exceeded.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-specific
+            rationale: "Recoverable with retry_after hint for backoff."
 
     Attributes:
-        retry_after: Seconds to wait before retry.
+            retry_after: Seconds to wait before retry.
     """
 
     def __init__(self, platform: str, message: str, *, retry_after: int | None = None) -> None:
@@ -201,18 +255,30 @@ class RateLimitError(AdapterError):
 class CompetitionError(AgentKError):
     """Base exception for competition-related errors.
 
-    @pattern:
-        name: exception-category
-        rationale: "Category base for Kaggle competition errors."
+    @notice: |
+        Base exception for competition-related errors.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-category
+            rationale: "Category base for Kaggle competition errors."
     """
 
 
 class CompetitionNotFoundError(CompetitionError):
     """Raised when competition does not exist.
 
-    @pattern:
-        name: exception-specific
-        rationale: "Non-recoverable missing competition."
+    @notice: |
+        Raised when competition does not exist.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-specific
+            rationale: "Non-recoverable missing competition."
     """
 
     def __init__(self, competition_id: str) -> None:
@@ -225,9 +291,15 @@ class CompetitionNotFoundError(CompetitionError):
 class CompetitionRulesNotAcceptedError(CompetitionError):
     """Raised when competition rules have not been accepted.
 
-    @pattern:
-        name: exception-specific
-        rationale: "Non-recoverable until user accepts rules manually."
+    @notice: |
+        Raised when competition rules have not been accepted.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-specific
+            rationale: "Non-recoverable until user accepts rules manually."
     """
 
     def __init__(self, competition_id: str) -> None:
@@ -243,9 +315,15 @@ class CompetitionRulesNotAcceptedError(CompetitionError):
 class SubmissionError(CompetitionError):
     """Raised when submission fails.
 
-    @pattern:
-        name: exception-specific
-        rationale: "Captures submission context for retry logic."
+    @notice: |
+        Raised when submission fails.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-specific
+            rationale: "Captures submission context for retry logic."
     """
 
     def __init__(self, competition_id: str, message: str, *, submission_id: str | None = None) -> None:
@@ -260,9 +338,15 @@ class SubmissionError(CompetitionError):
 class DeadlinePassedError(CompetitionError):
     """Raised when competition deadline has passed.
 
-    @pattern:
-        name: exception-specific
-        rationale: "Non-recoverable deadline expiration."
+    @notice: |
+        Raised when competition deadline has passed.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-specific
+            rationale: "Non-recoverable deadline expiration."
     """
 
     def __init__(self, competition_id: str, deadline: str) -> None:
@@ -278,18 +362,30 @@ class DeadlinePassedError(CompetitionError):
 class EvolutionError(AgentKError):
     """Base exception for evolution-related errors.
 
-    @pattern:
-        name: exception-category
-        rationale: "Category base for evolutionary algorithm errors."
+    @notice: |
+        Base exception for evolution-related errors.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-category
+            rationale: "Category base for evolutionary algorithm errors."
     """
 
 
 class ConvergenceError(EvolutionError):
     """Raised when evolution fails to converge within limits.
 
-    @pattern:
-        name: exception-specific
-        rationale: "Captures evolution progress for analysis."
+    @notice: |
+        Raised when evolution fails to converge within limits.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-specific
+            rationale: "Captures evolution progress for analysis."
     """
 
     def __init__(self, generations_completed: int, best_fitness: float, reason: str) -> None:
@@ -305,9 +401,15 @@ class ConvergenceError(EvolutionError):
 class PopulationExtinctError(EvolutionError):
     """Raised when all population members fail fitness evaluation.
 
-    @pattern:
-        name: exception-specific
-        rationale: "Non-recoverable population extinction."
+    @notice: |
+        Raised when all population members fail fitness evaluation.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-specific
+            rationale: "Non-recoverable population extinction."
     """
 
     def __init__(self, generation: int, last_error: str) -> None:
@@ -323,9 +425,15 @@ class PopulationExtinctError(EvolutionError):
 class FitnessEvaluationError(EvolutionError):
     """Raised when fitness evaluation fails.
 
-    @pattern:
-        name: exception-specific
-        rationale: "Captures solution and execution context for debugging."
+    @notice: |
+        Raised when fitness evaluation fails.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-specific
+            rationale: "Captures solution and execution context for debugging."
     """
 
     def __init__(self, solution_id: str, message: str, *, execution_error: str | None = None) -> None:
@@ -340,18 +448,30 @@ class FitnessEvaluationError(EvolutionError):
 class MemoryError(AgentKError):
     """Base exception for memory-related errors.
 
-    @pattern:
-        name: exception-category
-        rationale: "Category base for memory and checkpoint errors."
+    @notice: |
+        Base exception for memory-related errors.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-category
+            rationale: "Category base for memory and checkpoint errors."
     """
 
 
 class CheckpointError(MemoryError):
     """Raised when checkpoint operations fail.
 
-    @pattern:
-        name: exception-specific
-        rationale: "Captures checkpoint name and operation for debugging."
+    @notice: |
+        Raised when checkpoint operations fail.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-specific
+            rationale: "Captures checkpoint name and operation for debugging."
     """
 
     def __init__(self, checkpoint_name: str, operation: str, message: str) -> None:
@@ -366,9 +486,15 @@ class CheckpointError(MemoryError):
 class MemoryCapacityError(MemoryError):
     """Raised when memory capacity is exceeded.
 
-    @pattern:
-        name: exception-specific
-        rationale: "Captures size metrics for capacity planning."
+    @notice: |
+        Raised when memory capacity is exceeded.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-specific
+            rationale: "Captures size metrics for capacity planning."
     """
 
     def __init__(self, current_size: int, max_size: int) -> None:
@@ -383,18 +509,30 @@ class MemoryCapacityError(MemoryError):
 class GraphError(AgentKError):
     """Base exception for graph-related errors.
 
-    @pattern:
-        name: exception-category
-        rationale: "Category base for state machine errors."
+    @notice: |
+        Base exception for graph-related errors.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-category
+            rationale: "Category base for state machine errors."
     """
 
 
 class StateTransitionError(GraphError):
     """Raised when state transition is invalid.
 
-    @pattern:
-        name: exception-specific
-        rationale: "Captures transition context for state machine debugging."
+    @notice: |
+        Raised when state transition is invalid.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-specific
+            rationale: "Captures transition context for state machine debugging."
     """
 
     def __init__(self, from_state: str, to_state: str, reason: str) -> None:
@@ -410,9 +548,15 @@ class StateTransitionError(GraphError):
 class PhaseTimeoutError(GraphError):
     """Raised when a phase exceeds its timeout.
 
-    @pattern:
-        name: exception-specific
-        rationale: "Captures timing metrics for timeout analysis."
+    @notice: |
+        Raised when a phase exceeds its timeout.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: exception-specific
+            rationale: "Captures timing metrics for timeout analysis."
     """
 
     def __init__(self, phase: str, timeout_seconds: int, elapsed_seconds: float) -> None:

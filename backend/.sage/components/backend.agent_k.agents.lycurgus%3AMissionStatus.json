@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.agents.lycurgus:MissionStatus",
+  "type": "class",
+  "summary": "Mission status snapshot.",
+  "notice": "Mission status snapshot.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: output-model\n    rationale: \"Stable status payload for UI updates.\"\n    violations: \"Ad-hoc status dicts hinder UI consumers.\"",
+  "source": "backend/agent_k/agents/lycurgus.py",
+  "line": 175,
+  "path": "backend/agent_k/agents/lycurgus.py",
+  "location": {
+    "path": "backend/agent_k/agents/lycurgus.py",
+    "line": 175,
+    "character": 7
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.framework:Population.evolve_generation",
+  "line": 209,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/framework.py",
+  "summary": "Advance the population by one generation.",
+  "type": "method"
+}

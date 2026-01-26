@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_evolver_mutations:TestHyperparameterMutation",
+  "type": "class",
+  "summary": "Tests for hyperparameter mutation behavior.",
+  "source": "backend/tests/agents/test_evolver_mutations.py",
+  "line": 66,
+  "path": "backend/tests/agents/test_evolver_mutations.py",
+  "location": {
+    "path": "backend/tests/agents/test_evolver_mutations.py",
+    "line": 66,
+    "character": 7
+  }
+}

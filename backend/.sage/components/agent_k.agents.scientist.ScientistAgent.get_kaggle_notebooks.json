@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.scientist:ScientistAgent.get_kaggle_notebooks",
+  "line": 426,
+  "notice": "Retrieves competition notebooks ordered by vote count or freshness.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/scientist.py",
+  "summary": "Get top notebooks for the competition.",
+  "type": "method"
+}

@@ -362,10 +362,16 @@ class EvolutionArchiveEntry:
 class EvolverSettings(BaseSettings):
     """Configuration for the Evolver agent.
 
-    @pattern:
-        name: settings
-        rationale: "Centralizes evolutionary optimization configuration."
-        violations: "Ad-hoc overrides lead to unstable evolution runs."
+    @notice: |
+        Configuration for the Evolver agent.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: settings
+            rationale: "Centralizes evolutionary optimization configuration."
+            violations: "Ad-hoc overrides lead to unstable evolution runs."
     """
 
     model_config = SettingsConfigDict(env_prefix="EVOLVER_", env_file=".env", extra="ignore", validate_default=True)
@@ -429,25 +435,31 @@ class EvolverSettings(BaseSettings):
 class EvolverDeps:
     """Dependencies for the Evolver agent.
 
-    @pattern:
-        name: dependency-container
-        rationale: "Groups runtime services and evolution state."
-        violations: "Scattered state makes evolution hard to resume."
+    @notice: |
+        Dependencies for the Evolver agent.
 
-    @collaborators:
-        required:
-            - agent_k.core.protocols:PlatformAdapter
-            - agent_k.ui.agui:EventEmitter
-            - agent_k.core.models:Competition
-        optional:
-            - agent_k.core.tracking:ExperimentTracker
-            - agent_k.core.hints:HintEffectivenessTracker
-        injection: constructor
-        lifecycle: "Allocated per evolution run."
+    @dev: |
+        See module for implementation details and extension points.
 
-    @invariants:
-        - "population_size >= 1"
-        - "max_generations >= min_generations"
+        @pattern:
+            name: dependency-container
+            rationale: "Groups runtime services and evolution state."
+            violations: "Scattered state makes evolution hard to resume."
+
+        @collaborators:
+            required:
+                - agent_k.core.protocols:PlatformAdapter
+                - agent_k.ui.agui:EventEmitter
+                - agent_k.core.models:Competition
+            optional:
+                - agent_k.core.tracking:ExperimentTracker
+                - agent_k.core.hints:HintEffectivenessTracker
+            injection: constructor
+            lifecycle: "Allocated per evolution run."
+
+        @invariants:
+            - "population_size >= 1"
+            - "max_generations >= min_generations"
     """
 
     competition: Competition
@@ -488,10 +500,16 @@ class EvolverDeps:
 class EvolutionResult(BaseModel):
     """Result of evolution process.
 
-    @pattern:
-        name: output-model
-        rationale: "Stable schema for successful evolution outputs."
-        violations: "Free-form outputs hinder submission automation."
+    @notice: |
+        Result of evolution process.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: output-model
+            rationale: "Stable schema for successful evolution outputs."
+            violations: "Free-form outputs hinder submission automation."
     """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
@@ -507,10 +525,16 @@ class EvolutionResult(BaseModel):
 class EvolutionFailure(BaseModel):
     """Failure result for evolution process.
 
-    @pattern:
-        name: output-model
-        rationale: "Stable schema for failed evolution outputs."
-        violations: "Opaque errors make recovery harder."
+    @notice: |
+        Failure result for evolution process.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: output-model
+            rationale: "Stable schema for failed evolution outputs."
+            violations: "Opaque errors make recovery harder."
     """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)

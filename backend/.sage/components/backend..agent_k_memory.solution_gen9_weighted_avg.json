@@ -1,0 +1,13 @@
+{
+  "id": "backend..agent_k_memory.solution_gen9_weighted_avg",
+  "type": "module",
+  "summary": "Evolved Solution for House Prices - Advanced Regression Techniques",
+  "source": "backend/.agent_k_memory/solution_gen9_weighted_avg.py",
+  "line": 0,
+  "path": "backend/.agent_k_memory/solution_gen9_weighted_avg.py",
+  "location": {
+    "path": "backend/.agent_k_memory/solution_gen9_weighted_avg.py",
+    "line": 0,
+    "character": 3
+  }
+}

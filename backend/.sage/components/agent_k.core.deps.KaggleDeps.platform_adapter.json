@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.deps:KaggleDeps.platform_adapter",
+  "line": 104,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/deps.py",
+  "summary": "Expose the Kaggle adapter as a platform adapter.",
+  "type": "method"
+}

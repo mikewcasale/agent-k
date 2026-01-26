@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.agents.scientist:ScientistAgent.settings",
+  "type": "method",
+  "summary": "Return current settings.",
+  "source": "backend/agent_k/agents/scientist.py",
+  "line": 382,
+  "path": "backend/agent_k/agents/scientist.py",
+  "location": {
+    "path": "backend/agent_k/agents/scientist.py",
+    "line": 382,
+    "character": 11
+  }
+}

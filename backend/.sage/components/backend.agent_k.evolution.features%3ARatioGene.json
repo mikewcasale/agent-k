@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.evolution.features:RatioGene",
+  "type": "class",
+  "summary": "Ratio feature gene (feature_a / feature_b).",
+  "notice": "Ratio feature gene (feature_a / feature_b).",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: gene-model\n    rationale: \"Frozen dataclass representing a ratio feature gene.\"",
+  "source": "backend/agent_k/evolution/features.py",
+  "line": 97,
+  "path": "backend/agent_k/evolution/features.py",
+  "location": {
+    "path": "backend/agent_k/evolution/features.py",
+    "line": 97,
+    "character": 7
+  }
+}

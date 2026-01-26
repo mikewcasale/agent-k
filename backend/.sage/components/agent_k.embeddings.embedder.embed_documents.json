@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.embeddings.embedder:embed_documents",
+  "line": 112,
+  "notice": "Returns embeddings aligned to the input document order.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/embeddings/embedder.py",
+  "summary": "Embed multiple documents for indexing.",
+  "type": "function"
+}

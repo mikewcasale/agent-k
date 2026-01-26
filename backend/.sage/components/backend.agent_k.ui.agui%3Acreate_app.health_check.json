@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:create_app.health_check",
+  "type": "function",
+  "summary": "Health check endpoint for Render.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 1155,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 1155,
+    "character": 11
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.lycurgus:validate_mission_result",
+  "line": 725,
+  "notice": "Passthrough validator for mission results.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/lycurgus.py",
+  "summary": "Validate mission result payload.",
+  "type": "function"
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.framework:MapElitesArchive.add",
+  "line": 118,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/framework.py",
+  "summary": "Add an individual if it improves its descriptor cell.",
+  "type": "method"
+}

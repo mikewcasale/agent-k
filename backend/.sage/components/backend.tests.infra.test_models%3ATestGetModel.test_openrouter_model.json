@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.infra.test_models:TestGetModel.test_openrouter_model",
+  "type": "method",
+  "summary": "OpenRouter model spec should return OpenAIChatModel.",
+  "source": "backend/tests/infra/test_models.py",
+  "line": 106,
+  "path": "backend/tests/infra/test_models.py",
+  "location": {
+    "path": "backend/tests/infra/test_models.py",
+    "line": 106,
+    "character": 11
+  }
+}

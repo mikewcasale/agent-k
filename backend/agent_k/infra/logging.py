@@ -35,5 +35,12 @@ __all__ = ("get_logger",)
 
 
 def get_logger(component: str) -> logfire.Logfire:
-    """Return a component-specific logger."""
+    """Return a component-specific logger.
+
+    @notice: |
+        Return a component-specific logger.
+
+    @dev: |
+        See module for behavior details and invariants.
+    """
     return logfire.with_settings(tags=[f"component:{component}"])

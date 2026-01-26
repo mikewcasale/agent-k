@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.base:BaseAgentMixin._get_agent_name",
+  "line": 144,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/base.py",
+  "summary": "Return agent name for logging.",
+  "type": "method"
+}

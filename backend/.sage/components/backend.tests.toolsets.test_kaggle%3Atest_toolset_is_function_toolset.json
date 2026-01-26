@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.toolsets.test_kaggle:test_toolset_is_function_toolset",
+  "type": "function",
+  "summary": "Toolset should be a FunctionToolset instance.",
+  "source": "backend/tests/toolsets/test_kaggle.py",
+  "line": 16,
+  "path": "backend/tests/toolsets/test_kaggle.py",
+  "location": {
+    "path": "backend/tests/toolsets/test_kaggle.py",
+    "line": 16,
+    "character": 7
+  }
+}

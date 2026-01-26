@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.features:RatioGene",
+  "line": 98,
+  "notice": "Ratio feature gene (feature_a / feature_b).",
+  "pattern": {
+    "name": "gene-model",
+    "rationale": "Frozen dataclass representing a ratio feature gene."
+  },
+  "similar": null,
+  "source": "agent_k/evolution/features.py",
+  "summary": "Ratio feature gene (feature_a / feature_b).",
+  "type": "class"
+}

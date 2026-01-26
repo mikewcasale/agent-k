@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:EventEmitter",
+  "line": 332,
+  "notice": "Emitter for AG-UI events.",
+  "pattern": {
+    "name": "event-emitter",
+    "rationale": "Centralizes event streaming for the UI.",
+    "violations": "Direct SSE writes bypass buffering and tracing."
+  },
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Emitter for AG-UI events.",
+  "type": "class"
+}

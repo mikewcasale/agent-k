@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.toolsets.test_search",
+  "type": "module",
+  "summary": "Tests for the search tool helpers.",
+  "source": "backend/tests/toolsets/test_search.py",
+  "line": 0,
+  "path": "backend/tests/toolsets/test_search.py",
+  "location": {
+    "path": "backend/tests/toolsets/test_search.py",
+    "line": 0,
+    "character": 3
+  }
+}

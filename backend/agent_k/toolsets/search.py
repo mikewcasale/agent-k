@@ -63,8 +63,11 @@ __all__ = (
 def build_kaggle_search_query(query: Annotated[str, Doc("Search query text.")]) -> str:
     """Build a Kaggle-scoped web search query.
 
-    @notice: |
-        Prefixes the query with site restrictions for Kaggle.
+    @dev: |
+        See module for behavior details and invariants.
+
+        @notice: |
+            Prefixes the query with site restrictions for Kaggle.
     """
     return f"site:kaggle.com {query}".strip()
 
@@ -75,8 +78,11 @@ def build_scholarly_query(
 ) -> str:
     """Build a web search query for academic sources.
 
-    @notice: |
-        Adds site restrictions for scholarly sources.
+    @dev: |
+        See module for behavior details and invariants.
+
+        @notice: |
+            Adds site restrictions for scholarly sources.
     """
     if source == "arxiv":
         return f"site:arxiv.org {topic}".strip()
@@ -95,8 +101,11 @@ def create_web_search_tool(
 ) -> WebSearchTool:
     """Create a WebSearchTool with explicit configuration.
 
-    @notice: |
-        Builds a configured WebSearchTool instance.
+    @dev: |
+        See module for behavior details and invariants.
+
+        @notice: |
+            Builds a configured WebSearchTool instance.
     """
     return WebSearchTool(
         search_context_size=search_context_size,
@@ -112,8 +121,11 @@ async def prepare_web_search(
 ) -> WebSearchTool | None:
     """Prepare WebSearchTool dynamically based on RunContext.
 
-    @notice: |
-        Returns a WebSearchTool when provider and deps allow.
+    @dev: |
+        See module for behavior details and invariants.
+
+        @notice: |
+            Returns a WebSearchTool when provider and deps allow.
     """
     if ctx.model.system not in {"anthropic", "openai", "google", "groq"}:
         return None
@@ -142,8 +154,11 @@ def create_web_fetch_tool(
 ) -> WebFetchTool:
     """Create a WebFetchTool with explicit configuration.
 
-    @notice: |
-        Builds a configured WebFetchTool instance.
+    @dev: |
+        See module for behavior details and invariants.
+
+        @notice: |
+            Builds a configured WebFetchTool instance.
     """
     return WebFetchTool(
         allowed_domains=allowed_domains,
@@ -159,8 +174,11 @@ async def prepare_web_fetch(
 ) -> WebFetchTool | None:
     """Prepare WebFetchTool dynamically based on RunContext.
 
-    @notice: |
-        Returns a WebFetchTool when provider and deps allow.
+    @dev: |
+        See module for behavior details and invariants.
+
+        @notice: |
+            Returns a WebFetchTool when provider and deps allow.
     """
     if ctx.model.system not in {"anthropic", "google"}:
         return None

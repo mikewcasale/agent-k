@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_baseline:TestComputeBaselineScore.test_compute_baseline_score_multiple_columns",
+  "type": "method",
+  "summary": "Baseline score should average per-column metrics.",
+  "source": "backend/tests/mission/test_baseline.py",
+  "line": 94,
+  "path": "backend/tests/mission/test_baseline.py",
+  "location": {
+    "path": "backend/tests/mission/test_baseline.py",
+    "line": 94,
+    "character": 11
+  }
+}

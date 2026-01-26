@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.conftest:mock_leaderboard",
+  "type": "function",
+  "summary": "Provide mock leaderboard data for testing.",
+  "source": "backend/tests/conftest.py",
+  "line": 229,
+  "path": "backend/tests/conftest.py",
+  "location": {
+    "path": "backend/tests/conftest.py",
+    "line": 229,
+    "character": 7
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "refs.scripts.rename_files:update_imports_in_file",
+  "type": "function",
+  "summary": "Update all import statements in a single file.",
+  "source": "refs/scripts/rename_files.py",
+  "line": 152,
+  "path": "refs/scripts/rename_files.py",
+  "location": {
+    "path": "refs/scripts/rename_files.py",
+    "line": 152,
+    "character": 7
+  }
+}

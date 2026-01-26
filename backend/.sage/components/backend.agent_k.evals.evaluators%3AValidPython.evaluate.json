@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.evals.evaluators:ValidPython.evaluate",
+  "type": "method",
+  "summary": "Check if output parses as valid Python.",
+  "source": "backend/agent_k/evals/evaluators.py",
+  "line": 57,
+  "path": "backend/agent_k/evals/evaluators.py",
+  "location": {
+    "path": "backend/agent_k/evals/evaluators.py",
+    "line": 57,
+    "character": 11
+  }
+}

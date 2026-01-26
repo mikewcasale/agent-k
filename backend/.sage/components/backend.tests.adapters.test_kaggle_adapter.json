@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.adapters.test_kaggle_adapter",
+  "type": "module",
+  "summary": "Tests for the Kaggle API adapter.",
+  "source": "backend/tests/adapters/test_kaggle_adapter.py",
+  "line": 0,
+  "path": "backend/tests/adapters/test_kaggle_adapter.py",
+  "location": {
+    "path": "backend/tests/adapters/test_kaggle_adapter.py",
+    "line": 0,
+    "character": 3
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.exceptions:classify_error",
+  "type": "function",
+  "summary": "Classify errors into recovery categories and strategies.",
+  "notice": "Maps exceptions to error categories and recovery strategies.",
+  "dev": "Used by error handlers to determine retry vs abort behavior.\nReturns (category, strategy) tuple for the exception type.",
+  "source": "backend/agent_k/core/exceptions.py",
+  "line": 572,
+  "path": "backend/agent_k/core/exceptions.py",
+  "location": {
+    "path": "backend/agent_k/core/exceptions.py",
+    "line": 572,
+    "character": 7
+  }
+}

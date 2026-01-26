@@ -94,12 +94,15 @@ def compose_toolsets(
 ) -> AbstractToolset:
     """Compose multiple toolsets into one.
 
-    @notice: |
-        Combines toolsets and optionally prefixes tool names.
+    @dev: |
+        See module for behavior details and invariants.
 
-    @errors:
-        terminal:
-            - KeyError
+        @notice: |
+            Combines toolsets and optionally prefixes tool names.
+
+        @errors:
+            terminal:
+                - KeyError
     """
     toolsets: list[AbstractToolset] = []
     for name in names:
@@ -121,21 +124,27 @@ def create_production_toolset(
 ) -> AbstractToolset[DepsT]:
     """Create production-ready toolset with wrappers.
 
-    Applies:
-    - Prefixing for namespace isolation
-    - Approval requirements for selected tools
-    - Strict mode for OpenAI tool calls
+        Applies:
+        - Prefixing for namespace isolation
+        - Approval requirements for selected tools
+        - Strict mode for OpenAI tool calls
 
-    @factory-for:
-        id: agent_k.toolsets:CombinedToolset
-        rationale: "Centralizes production wrapper policy."
-        singleton: false
-        cache-key: prefix
+    @notice: |
+        Create production-ready toolset with wrappers.
 
-    @canonical-home:
-        for:
-            - "production toolset composition"
-        notes: "Use create_production_toolset for standardized behavior."
+    @dev: |
+        See module for behavior details and invariants.
+
+        @factory-for:
+            id: agent_k.toolsets:CombinedToolset
+            rationale: "Centralizes production wrapper policy."
+            singleton: false
+            cache-key: prefix
+
+        @canonical-home:
+            for:
+                - "production toolset composition"
+            notes: "Use create_production_toolset for standardized behavior."
     """
     combined: AbstractToolset[DepsT] = CombinedToolset(toolsets)
 

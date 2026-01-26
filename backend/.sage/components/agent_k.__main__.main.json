@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Entry point for `python -m agent_k` invocation.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.__main__:main",
+  "line": 38,
+  "notice": "Prints the current AGENT-K version to stdout.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/__main__.py",
+  "summary": "Simple CLI entry that reports the package version.",
+  "type": "function"
+}

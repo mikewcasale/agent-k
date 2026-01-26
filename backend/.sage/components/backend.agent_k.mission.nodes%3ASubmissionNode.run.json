@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.mission.nodes:SubmissionNode.run",
+  "type": "method",
+  "summary": "Execute submission phase.",
+  "source": "backend/agent_k/mission/nodes.py",
+  "line": 1641,
+  "path": "backend/agent_k/mission/nodes.py",
+  "location": {
+    "path": "backend/agent_k/mission/nodes.py",
+    "line": 1641,
+    "character": 11
+  }
+}

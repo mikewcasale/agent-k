@@ -1,0 +1,13 @@
+{
+  "id": "refs.scripts.remove_attr_blank_lines:process_file",
+  "type": "function",
+  "summary": "Process a single file, returning True if it changed.",
+  "source": "refs/scripts/remove_attr_blank_lines.py",
+  "line": 94,
+  "path": "refs/scripts/remove_attr_blank_lines.py",
+  "location": {
+    "path": "refs/scripts/remove_attr_blank_lines.py",
+    "line": 94,
+    "character": 7
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.models:EvolutionState",
+  "type": "class",
+  "summary": "State of the evolution process.",
+  "notice": "State of the evolution process.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: immutable-entity\n    rationale: \"Frozen Pydantic model for evolution state tracking.\"",
+  "source": "backend/agent_k/core/models.py",
+  "line": 531,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 531,
+    "character": 7
+  }
+}

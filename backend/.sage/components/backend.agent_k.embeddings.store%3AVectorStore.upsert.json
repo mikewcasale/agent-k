@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.embeddings.store:VectorStore.upsert",
+  "type": "method",
+  "summary": "Insert or update vector records.",
+  "source": "backend/agent_k/embeddings/store.py",
+  "line": 79,
+  "path": "backend/agent_k/embeddings/store.py",
+  "location": {
+    "path": "backend/agent_k/embeddings/store.py",
+    "line": 79,
+    "character": 11
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.cli",
+  "type": "module",
+  "summary": "CLI entry point for AGENT-K FastAPI server.",
+  "source": "backend/cli.py",
+  "line": 0,
+  "path": "backend/cli.py",
+  "location": {
+    "path": "backend/cli.py",
+    "line": 0,
+    "character": 3
+  }
+}

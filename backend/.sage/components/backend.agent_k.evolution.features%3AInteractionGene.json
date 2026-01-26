@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.evolution.features:InteractionGene",
+  "type": "class",
+  "summary": "Polynomial interaction gene.",
+  "notice": "Polynomial interaction gene.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: gene-model\n    rationale: \"Frozen dataclass representing an interaction gene.\"",
+  "source": "backend/agent_k/evolution/features.py",
+  "line": 78,
+  "path": "backend/agent_k/evolution/features.py",
+  "location": {
+    "path": "backend/agent_k/evolution/features.py",
+    "line": 78,
+    "character": 7
+  }
+}

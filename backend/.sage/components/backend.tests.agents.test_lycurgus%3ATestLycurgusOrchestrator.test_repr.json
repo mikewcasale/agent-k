@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_lycurgus:TestLycurgusOrchestrator.test_repr",
+  "type": "method",
+  "summary": "Repr should show useful information.",
+  "source": "backend/tests/agents/test_lycurgus.py",
+  "line": 120,
+  "path": "backend/tests/agents/test_lycurgus.py",
+  "location": {
+    "path": "backend/tests/agents/test_lycurgus.py",
+    "line": 120,
+    "character": 11
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.ui.agui:MissionCriteriaParser",
+  "type": "class",
+  "summary": "Parse mission criteria from intent output.",
+  "notice": "Parse mission criteria from intent output.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: parser\n    rationale: \"Dataclass for extracting mission criteria from intent.\"",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 666,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 666,
+    "character": 7
+  }
+}

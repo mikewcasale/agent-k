@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.exceptions:RateLimitError",
+  "type": "class",
+  "summary": "Raised when platform rate limit is exceeded.",
+  "notice": "Raised when platform rate limit is exceeded.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: exception-specific\n    rationale: \"Recoverable with retry_after hint for backoff.\"",
+  "source": "backend/agent_k/core/exceptions.py",
+  "line": 232,
+  "path": "backend/agent_k/core/exceptions.py",
+  "location": {
+    "path": "backend/agent_k/core/exceptions.py",
+    "line": 232,
+    "character": 7
+  }
+}

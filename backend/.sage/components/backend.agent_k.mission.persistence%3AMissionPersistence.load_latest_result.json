@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.mission.persistence:MissionPersistence.load_latest_result",
+  "type": "method",
+  "summary": "Load the mission result if the run already ended.",
+  "source": "backend/agent_k/mission/persistence.py",
+  "line": 138,
+  "path": "backend/agent_k/mission/persistence.py",
+  "location": {
+    "path": "backend/agent_k/mission/persistence.py",
+    "line": 138,
+    "character": 11
+  }
+}

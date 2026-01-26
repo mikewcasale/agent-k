@@ -1,0 +1,21 @@
+{
+  "id": "backend.agent_k.infra.providers:get_model",
+  "type": "function",
+  "summary": "Get a model instance based on specification string.",
+  "notice": "Resolves model specs into provider-specific model objects when needed.",
+  "dev": "Returns a string for standard pydantic-ai model specs.",
+  "canonical_home": {
+    "for": [
+      "model resolution"
+    ],
+    "notes": "Use get_model to normalize model specs."
+  },
+  "source": "backend/agent_k/infra/providers.py",
+  "line": 139,
+  "path": "backend/agent_k/infra/providers.py",
+  "location": {
+    "path": "backend/agent_k/infra/providers.py",
+    "line": 139,
+    "character": 7
+  }
+}

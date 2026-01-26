@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:stream_text_response",
+  "line": 936,
+  "notice": "Stream a simple text response in Vercel AI format.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Stream a simple text response in Vercel AI format.",
+  "type": "function"
+}

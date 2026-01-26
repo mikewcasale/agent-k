@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.agents.lycurgus:LycurgusDeps",
+  "type": "class",
+  "summary": "Dependencies for the Lycurgus orchestrator.",
+  "notice": "Dependencies for the Lycurgus orchestrator.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: dependency-container\n    rationale: \"Groups runtime services for orchestration.\"\n    violations: \"Hidden globals make orchestration brittle.\"\n\n@collaborators:\n    required:\n        - agent_k.ui.agui:EventEmitter\n        - httpx:AsyncClient\n        - agent_k.core.protocols:PlatformAdapter\n    injection: constructor\n    lifecycle: \"Allocated per orchestrator run.\"",
+  "source": "backend/agent_k/agents/lycurgus.py",
+  "line": 146,
+  "path": "backend/agent_k/agents/lycurgus.py",
+  "location": {
+    "path": "backend/agent_k/agents/lycurgus.py",
+    "line": 146,
+    "character": 7
+  }
+}

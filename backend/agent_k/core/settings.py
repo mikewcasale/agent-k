@@ -41,10 +41,16 @@ SCHEMA_VERSION: Final[str] = "1.0.0"
 class AgentKSettings(BaseSettings):
     """Base settings with shared environment defaults.
 
-    @pattern:
-        name: settings-model
-        rationale: "Centralizes shared environment defaults."
-        violations: "Scattered env lookups drift across modules."
+    @notice: |
+        Base settings with shared environment defaults.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: settings-model
+            rationale: "Centralizes shared environment defaults."
+            violations: "Scattered env lookups drift across modules."
     """
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore", validate_default=True)

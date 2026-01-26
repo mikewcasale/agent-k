@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.agents.scientist:ScientistSettings",
+  "type": "class",
+  "summary": "Configuration for the Scientist agent.",
+  "notice": "Configuration for the Scientist agent.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: settings\n    rationale: \"Centralizes research agent configuration.\"\n    violations: \"Per-run overrides lead to inconsistent outputs.\"",
+  "source": "backend/agent_k/agents/scientist.py",
+  "line": 163,
+  "path": "backend/agent_k/agents/scientist.py",
+  "location": {
+    "path": "backend/agent_k/agents/scientist.py",
+    "line": 163,
+    "character": 7
+  }
+}

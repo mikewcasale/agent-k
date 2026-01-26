@@ -46,10 +46,16 @@ __all__ = ("RAGRetriever", "RetrievalResult")
 class RetrievalResult:
     """Single retrieval result.
 
-    @pattern:
-        name: output-model
-        rationale: "Stable retrieval payload for RAG consumption."
-        violations: "Ad-hoc dicts make ranking hard to interpret."
+    @notice: |
+        Single retrieval result.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: output-model
+            rationale: "Stable retrieval payload for RAG consumption."
+            violations: "Ad-hoc dicts make ranking hard to interpret."
     """
 
     content: str
@@ -60,10 +66,16 @@ class RetrievalResult:
 class RAGRetriever:
     """Simple RAG retriever with cosine similarity.
 
-    @pattern:
-        name: retriever
-        rationale: "Encapsulates retrieval logic for RAG flows."
-        violations: "Scattered retrieval logic leads to inconsistent ranking."
+    @notice: |
+        Simple RAG retriever with cosine similarity.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: retriever
+            rationale: "Encapsulates retrieval logic for RAG flows."
+            violations: "Scattered retrieval logic leads to inconsistent ranking."
     """
 
     def __init__(

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.conftest:assets_path",
+  "type": "function",
+  "summary": "Path to test assets directory.",
+  "source": "backend/tests/conftest.py",
+  "line": 162,
+  "path": "backend/tests/conftest.py",
+  "location": {
+    "path": "backend/tests/conftest.py",
+    "line": 162,
+    "character": 7
+  }
+}

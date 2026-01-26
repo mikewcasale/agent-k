@@ -1,0 +1,14 @@
+{
+  "id": "backend.agent_k.agents.lycurgus:validate_mission_result",
+  "type": "function",
+  "summary": "Validate mission result payload.",
+  "dev": "See module for behavior details and invariants.\n\n@notice: |\n    Passthrough validator for mission results.",
+  "source": "backend/agent_k/agents/lycurgus.py",
+  "line": 724,
+  "path": "backend/agent_k/agents/lycurgus.py",
+  "location": {
+    "path": "backend/agent_k/agents/lycurgus.py",
+    "line": 724,
+    "character": 7
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.agents.lobbyist:LobbyistDeps",
+  "type": "class",
+  "summary": "Dependencies for the Lobbyist agent.",
+  "notice": "Dependencies for the Lobbyist agent.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: dependency-container\n    rationale: \"Groups runtime services for discovery tools.\"\n    violations: \"Hidden globals make tests and tooling brittle.\"\n\n@collaborators:\n    required:\n        - httpx:AsyncClient\n        - agent_k.core.protocols:PlatformAdapter\n        - agent_k.ui.agui:EventEmitter\n    optional:\n        - agent_k.toolsets.memory:AgentKMemoryTool\n    injection: constructor\n    lifecycle: \"Allocated per agent run.\"",
+  "source": "backend/agent_k/agents/lobbyist.py",
+  "line": 111,
+  "path": "backend/agent_k/agents/lobbyist.py",
+  "location": {
+    "path": "backend/agent_k/agents/lobbyist.py",
+    "line": 111,
+    "character": 7
+  }
+}

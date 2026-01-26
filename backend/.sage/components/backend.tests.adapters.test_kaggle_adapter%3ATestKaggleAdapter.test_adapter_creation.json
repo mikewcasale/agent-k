@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.adapters.test_kaggle_adapter:TestKaggleAdapter.test_adapter_creation",
+  "type": "method",
+  "summary": "Adapter should be created with config.",
+  "source": "backend/tests/adapters/test_kaggle_adapter.py",
+  "line": 41,
+  "path": "backend/tests/adapters/test_kaggle_adapter.py",
+  "location": {
+    "path": "backend/tests/adapters/test_kaggle_adapter.py",
+    "line": 41,
+    "character": 11
+  }
+}

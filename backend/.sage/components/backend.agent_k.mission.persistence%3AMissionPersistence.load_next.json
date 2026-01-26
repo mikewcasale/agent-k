@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.mission.persistence:MissionPersistence.load_next",
+  "type": "method",
+  "summary": "Load the next resumable snapshot, falling back to stalled nodes.",
+  "source": "backend/agent_k/mission/persistence.py",
+  "line": 115,
+  "path": "backend/agent_k/mission/persistence.py",
+  "location": {
+    "path": "backend/agent_k/mission/persistence.py",
+    "line": 115,
+    "character": 11
+  }
+}

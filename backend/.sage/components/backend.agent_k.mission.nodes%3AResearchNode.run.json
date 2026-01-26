@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.mission.nodes:ResearchNode.run",
+  "type": "method",
+  "summary": "Execute research phase.",
+  "source": "backend/agent_k/mission/nodes.py",
+  "line": 313,
+  "path": "backend/agent_k/mission/nodes.py",
+  "location": {
+    "path": "backend/agent_k/mission/nodes.py",
+    "line": 313,
+    "character": 11
+  }
+}

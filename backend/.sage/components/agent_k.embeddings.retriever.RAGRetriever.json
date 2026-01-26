@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.embeddings.retriever:RAGRetriever",
+  "line": 67,
+  "notice": "Simple RAG retriever with cosine similarity.",
+  "pattern": {
+    "name": "retriever",
+    "rationale": "Encapsulates retrieval logic for RAG flows.",
+    "violations": "Scattered retrieval logic leads to inconsistent ranking."
+  },
+  "similar": null,
+  "source": "agent_k/embeddings/retriever.py",
+  "summary": "Simple RAG retriever with cosine similarity.",
+  "type": "class"
+}

@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evals.evaluators:CompetitionSelected",
+  "line": 93,
+  "notice": "Evaluate if a valid competition was selected.",
+  "pattern": {
+    "name": "evaluator",
+    "rationale": "Encapsulates competition selection checks.",
+    "violations": "Repeated checks drift across evals."
+  },
+  "similar": null,
+  "source": "agent_k/evals/evaluators.py",
+  "summary": "Evaluate if a valid competition was selected.",
+  "type": "class"
+}

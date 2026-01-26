@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.models:LeaderboardEntry",
+  "line": 232,
+  "notice": "Entry in competition leaderboard.",
+  "pattern": {
+    "name": "immutable-entity",
+    "rationale": "Frozen Pydantic model for leaderboard row data."
+  },
+  "similar": null,
+  "source": "agent_k/core/models.py",
+  "summary": "Entry in competition leaderboard.",
+  "type": "class"
+}

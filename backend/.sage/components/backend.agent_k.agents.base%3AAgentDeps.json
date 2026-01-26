@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.agents.base:AgentDeps",
+  "type": "class",
+  "summary": "Base dependency container for all agents.",
+  "notice": "Base dependency container for all agents.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: dependency-container\n    rationale: \"Standardizes injected services for agent runs.\"\n    violations: \"Ad-hoc deps hide runtime requirements.\"\n\n@collaborators:\n    required:\n        - httpx:AsyncClient\n    optional:\n        - agent_k.ui.agui:EventEmitter\n    injection: constructor\n    lifecycle: \"Allocated per agent run.\"",
+  "source": "backend/agent_k/agents/base.py",
+  "line": 56,
+  "path": "backend/agent_k/agents/base.py",
+  "location": {
+    "path": "backend/agent_k/agents/base.py",
+    "line": 56,
+    "character": 7
+  }
+}

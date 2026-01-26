@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.ui.agui:EventEmitter",
+  "type": "class",
+  "summary": "Emitter for AG-UI events.",
+  "notice": "Emitter for AG-UI events.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: event-emitter\n    rationale: \"Centralizes event streaming for the UI.\"\n    violations: \"Direct SSE writes bypass buffering and tracing.\"\n\n@concurrency:\n    model: asyncio\n    safe: false\n    reason: \"Mutates internal queue and closed state.\"\n\n@invariants:\n    - \"Events are only enqueued when not closed.\"",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 331,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 331,
+    "character": 7
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": {
+    "for": [
+      "devstral model creation"
+    ],
+    "notes": "Use create_devstral_model for local Devstral endpoints."
+  },
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.providers:create_devstral_model",
+  "line": 80,
+  "notice": "Creates an OpenAIChatModel configured for Devstral.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/providers.py",
+  "summary": "Create a Devstral model instance for local LM Studio server.",
+  "type": "function"
+}

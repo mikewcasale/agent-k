@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:EventEmitter.stream",
+  "type": "method",
+  "summary": "Stream events as SSE.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 382,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 382,
+    "character": 11
+  }
+}

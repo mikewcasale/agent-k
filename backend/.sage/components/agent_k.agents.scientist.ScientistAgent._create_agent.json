@@ -1,0 +1,22 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": {
+    "for": [
+      "scientist agent construction"
+    ],
+    "notes": "Use ScientistAgent() or module singleton."
+  },
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.scientist:ScientistAgent._create_agent",
+  "line": 656,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/scientist.py",
+  "summary": "Create the underlying pydantic-ai agent.",
+  "type": "method"
+}

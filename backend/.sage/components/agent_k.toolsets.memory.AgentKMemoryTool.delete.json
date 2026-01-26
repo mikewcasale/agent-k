@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.memory:AgentKMemoryTool.delete",
+  "line": 194,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/memory.py",
+  "summary": "Delete a file or directory.",
+  "type": "method"
+}

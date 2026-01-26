@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.submit",
+  "type": "method",
+  "summary": "Submit a file payload to the in-memory competition.",
+  "source": "backend/agent_k/adapters/openevolve.py",
+  "line": 531,
+  "path": "backend/agent_k/adapters/openevolve.py",
+  "location": {
+    "path": "backend/agent_k/adapters/openevolve.py",
+    "line": 531,
+    "character": 11
+  }
+}

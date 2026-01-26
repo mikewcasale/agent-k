@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.agents.evolver:EvolverSettings.validate_evolution_params",
+  "type": "method",
+  "summary": "Validate cross-field evolution configuration.",
+  "source": "backend/agent_k/agents/evolver.py",
+  "line": 412,
+  "path": "backend/agent_k/agents/evolver.py",
+  "location": {
+    "path": "backend/agent_k/agents/evolver.py",
+    "line": 412,
+    "character": 11
+  }
+}

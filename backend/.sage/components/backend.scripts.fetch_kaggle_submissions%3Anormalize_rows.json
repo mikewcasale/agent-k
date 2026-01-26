@@ -1,0 +1,13 @@
+{
+  "id": "backend.scripts.fetch_kaggle_submissions:normalize_rows",
+  "type": "function",
+  "summary": "Normalize Kaggle payload rows into a stable reporting structure.",
+  "source": "backend/scripts/fetch_kaggle_submissions.py",
+  "line": 101,
+  "path": "backend/scripts/fetch_kaggle_submissions.py",
+  "location": {
+    "path": "backend/scripts/fetch_kaggle_submissions.py",
+    "line": 101,
+    "character": 7
+  }
+}

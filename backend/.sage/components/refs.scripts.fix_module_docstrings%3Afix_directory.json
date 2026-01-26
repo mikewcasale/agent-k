@@ -1,0 +1,13 @@
+{
+  "id": "refs.scripts.fix_module_docstrings:fix_directory",
+  "type": "function",
+  "summary": "Fix all Python files in a directory.",
+  "source": "refs/scripts/fix_module_docstrings.py",
+  "line": 153,
+  "path": "refs/scripts/fix_module_docstrings.py",
+  "location": {
+    "path": "refs/scripts/fix_module_docstrings.py",
+    "line": 153,
+    "character": 7
+  }
+}

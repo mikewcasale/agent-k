@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.models:LeaderboardEntry",
+  "type": "class",
+  "summary": "Entry in competition leaderboard.",
+  "notice": "Entry in competition leaderboard.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: immutable-entity\n    rationale: \"Frozen Pydantic model for leaderboard row data.\"",
+  "source": "backend/agent_k/core/models.py",
+  "line": 231,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 231,
+    "character": 7
+  }
+}

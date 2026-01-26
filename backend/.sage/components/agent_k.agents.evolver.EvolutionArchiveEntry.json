@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:EvolutionArchiveEntry",
+  "line": 317,
+  "notice": null,
+  "pattern": {
+    "name": "archive-entry",
+    "rationale": "Encapsulates elite metadata for sampling.",
+    "violations": "Unstructured elites make selection brittle."
+  },
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Tracked candidate for MAP-Elites-style sampling.",
+  "type": "class"
+}

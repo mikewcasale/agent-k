@@ -1,0 +1,13 @@
+{
+  "id": "refs.scripts.check_module_docstrings:check_directory",
+  "type": "function",
+  "summary": "Check all Python files in a directory for docstring compliance.",
+  "source": "refs/scripts/check_module_docstrings.py",
+  "line": 92,
+  "path": "refs/scripts/check_module_docstrings.py",
+  "location": {
+    "path": "refs/scripts/check_module_docstrings.py",
+    "line": 92,
+    "character": 7
+  }
+}

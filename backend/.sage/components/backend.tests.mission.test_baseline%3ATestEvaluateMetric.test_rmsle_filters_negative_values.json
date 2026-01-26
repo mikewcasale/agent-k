@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_baseline:TestEvaluateMetric.test_rmsle_filters_negative_values",
+  "type": "method",
+  "summary": "RMSLE should ignore negative values.",
+  "source": "backend/tests/mission/test_baseline.py",
+  "line": 79,
+  "path": "backend/tests/mission/test_baseline.py",
+  "location": {
+    "path": "backend/tests/mission/test_baseline.py",
+    "line": 79,
+    "character": 11
+  }
+}

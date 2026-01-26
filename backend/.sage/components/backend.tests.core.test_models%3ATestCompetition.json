@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.core.test_models:TestCompetition",
+  "type": "class",
+  "summary": "Tests for the Competition model.",
+  "source": "backend/tests/core/test_models.py",
+  "line": 64,
+  "path": "backend/tests/core/test_models.py",
+  "location": {
+    "path": "backend/tests/core/test_models.py",
+    "line": 64,
+    "character": 7
+  }
+}

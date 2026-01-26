@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:IntentClassifier.classify",
+  "type": "method",
+  "summary": "Classify a message and extract mission intent.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 629,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 629,
+    "character": 11
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.platform_name",
+  "type": "method",
+  "summary": "Return the platform identifier.",
+  "source": "backend/agent_k/adapters/openevolve.py",
+  "line": 486,
+  "path": "backend/agent_k/adapters/openevolve.py",
+  "location": {
+    "path": "backend/agent_k/adapters/openevolve.py",
+    "line": 486,
+    "character": 11
+  }
+}

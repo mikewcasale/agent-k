@@ -1,0 +1,50 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.mission.nodes as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "consumes": [
+      "agent_k.mission.state:MissionState",
+      "agent_k.agents.lobbyist:LobbyistAgent",
+      "agent_k.agents.scientist:ScientistAgent",
+      "agent_k.agents.evolver:EvolverAgent"
+    ],
+    "id": "agent_k.mission.nodes",
+    "pattern": "graph-state-machine",
+    "provides": [
+      "agent_k.mission.nodes:DiscoveryNode",
+      "agent_k.mission.nodes:ResearchNode",
+      "agent_k.mission.nodes:PrototypeNode",
+      "agent_k.mission.nodes:EvolutionNode",
+      "agent_k.mission.nodes:SubmissionNode"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.mission.nodes",
+  "line": 1,
+  "notice": "State machine nodes for AGENT-K mission graph.",
+  "pattern": null,
+  "similar": [
+    {
+      "id": "agent_k.agents.lycurgus",
+      "when": "Lycurgus orchestrates nodes; this module defines node behavior."
+    }
+  ],
+  "source": "agent_k/mission/nodes.py",
+  "summary": "State machine nodes for AGENT-K mission graph.",
+  "type": "module"
+}

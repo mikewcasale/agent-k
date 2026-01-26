@@ -1,0 +1,14 @@
+{
+  "id": "backend.agent_k.infra.providers:create_openrouter_model",
+  "type": "function",
+  "summary": "Create a model instance using OpenRouter.",
+  "dev": "See module for behavior details and invariants.\n\n@notice: |\n    Creates an OpenAIChatModel configured for OpenRouter.\n\n@factory-for:\n    id: pydantic_ai.models.openai:OpenAIChatModel\n    rationale: \"Centralizes OpenRouter provider configuration.\"\n    singleton: false\n    cache-key: model_id\n\n@canonical-home:\n    for:\n        - \"openrouter model creation\"\n    notes: \"Use create_openrouter_model for OpenRouter endpoints.\"",
+  "source": "backend/agent_k/infra/providers.py",
+  "line": 113,
+  "path": "backend/agent_k/infra/providers.py",
+  "location": {
+    "path": "backend/agent_k/infra/providers.py",
+    "line": 113,
+    "character": 7
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.adapters.openevolve:OpenEvolveJobState",
+  "type": "class",
+  "summary": "Lifecycle state for an OpenEvolve job.",
+  "notice": "Lifecycle state for an OpenEvolve job.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: enumeration\n    rationale: \"StrEnum for OpenEvolve job lifecycle states.\"\n    violations: \"String literals drift across job state handling.\"",
+  "source": "backend/agent_k/adapters/openevolve.py",
+  "line": 119,
+  "path": "backend/agent_k/adapters/openevolve.py",
+  "location": {
+    "path": "backend/agent_k/adapters/openevolve.py",
+    "line": 119,
+    "character": 7
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.embeddings.embedder:Embedder.embed_query",
+  "line": 83,
+  "notice": "Embed a single query string.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/embeddings/embedder.py",
+  "summary": "Embed a single query string.",
+  "type": "method"
+}

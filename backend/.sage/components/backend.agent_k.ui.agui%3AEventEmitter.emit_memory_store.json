@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:EventEmitter.emit_memory_store",
+  "type": "method",
+  "summary": "Emit memory store operation.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 505,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 505,
+    "character": 11
+  }
+}

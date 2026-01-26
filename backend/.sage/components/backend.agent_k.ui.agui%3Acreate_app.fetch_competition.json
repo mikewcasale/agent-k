@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:create_app.fetch_competition",
+  "type": "function",
+  "summary": "Fetch a competition by its Kaggle URL.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 1280,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 1280,
+    "character": 11
+  }
+}

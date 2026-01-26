@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.strategy:FitnessInput",
+  "type": "class",
+  "summary": "Input payload for fitness scoring.",
+  "notice": "Input payload for fitness scoring.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: fitness-input\n    rationale: \"Captures evaluation signals for scoring.\"\n    violations: \"Ad-hoc inputs drift across fitness logic.\"",
+  "source": "backend/agent_k/core/strategy.py",
+  "line": 145,
+  "path": "backend/agent_k/core/strategy.py",
+  "location": {
+    "path": "backend/agent_k/core/strategy.py",
+    "line": 145,
+    "character": 7
+  }
+}

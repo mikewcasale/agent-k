@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.exceptions:RateLimitError",
+  "line": 233,
+  "notice": "Raised when platform rate limit is exceeded.",
+  "pattern": {
+    "name": "exception-specific",
+    "rationale": "Recoverable with retry_after hint for backoff."
+  },
+  "similar": null,
+  "source": "agent_k/core/exceptions.py",
+  "summary": "Raised when platform rate limit is exceeded.",
+  "type": "class"
+}

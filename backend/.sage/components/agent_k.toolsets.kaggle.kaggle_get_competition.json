@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.kaggle:kaggle_get_competition",
+  "line": 244,
+  "notice": "Fetches competition metadata and caches results.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/kaggle.py",
+  "summary": "Get detailed information about a specific Kaggle competition.",
+  "type": "function"
+}

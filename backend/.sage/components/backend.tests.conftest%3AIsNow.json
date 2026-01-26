@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.conftest:IsNow",
+  "type": "function",
+  "summary": "IsNow with increased delta for test stability.",
+  "source": "backend/tests/conftest.py",
+  "line": 40,
+  "path": "backend/tests/conftest.py",
+  "location": {
+    "path": "backend/tests/conftest.py",
+    "line": 40,
+    "character": 11
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.examples.competition:prepare_competition_data",
+  "type": "function",
+  "summary": "Download and stage competition data for preprocessing.",
+  "source": "backend/examples/competition.py",
+  "line": 137,
+  "path": "backend/examples/competition.py",
+  "location": {
+    "path": "backend/examples/competition.py",
+    "line": 137,
+    "character": 7
+  }
+}

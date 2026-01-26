@@ -1,0 +1,13 @@
+{
+  "id": "refs.scripts.remove_attr_blank_lines:iter_python_files",
+  "type": "function",
+  "summary": "Collect Python files under a root directory.",
+  "source": "refs/scripts/remove_attr_blank_lines.py",
+  "line": 106,
+  "path": "refs/scripts/remove_attr_blank_lines.py",
+  "location": {
+    "path": "refs/scripts/remove_attr_blank_lines.py",
+    "line": 106,
+    "character": 7
+  }
+}

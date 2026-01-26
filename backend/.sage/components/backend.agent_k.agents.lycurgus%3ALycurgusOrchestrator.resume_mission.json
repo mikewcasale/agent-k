@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.resume_mission",
+  "type": "method",
+  "summary": "Resume a previously paused mission.",
+  "source": "backend/agent_k/agents/lycurgus.py",
+  "line": 578,
+  "path": "backend/agent_k/agents/lycurgus.py",
+  "location": {
+    "path": "backend/agent_k/agents/lycurgus.py",
+    "line": 578,
+    "character": 11
+  }
+}

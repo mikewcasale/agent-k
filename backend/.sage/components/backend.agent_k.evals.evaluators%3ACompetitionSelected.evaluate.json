@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.evals.evaluators:CompetitionSelected.evaluate",
+  "type": "method",
+  "summary": "Check competition selection output.",
+  "source": "backend/agent_k/evals/evaluators.py",
+  "line": 107,
+  "path": "backend/agent_k/evals/evaluators.py",
+  "location": {
+    "path": "backend/agent_k/evals/evaluators.py",
+    "line": 107,
+    "character": 11
+  }
+}

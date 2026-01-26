@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.evolution.framework:MapElitesArchive",
+  "type": "class",
+  "summary": "MAP-Elites archive for diversity-aware preservation.",
+  "notice": "MAP-Elites archive for diversity-aware preservation.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: archive-model\n    rationale: \"Generic archive for MAP-Elites diversity preservation.\"",
+  "source": "backend/agent_k/evolution/framework.py",
+  "line": 93,
+  "path": "backend/agent_k/evolution/framework.py",
+  "location": {
+    "path": "backend/agent_k/evolution/framework.py",
+    "line": 93,
+    "character": 7
+  }
+}

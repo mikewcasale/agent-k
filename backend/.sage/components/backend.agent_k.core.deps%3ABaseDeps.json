@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.deps:BaseDeps",
+  "type": "class",
+  "summary": "Base dependencies shared across agents.",
+  "notice": "Base dependencies shared across agents.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: dependency-container\n    rationale: \"Shared DI container for agent executions.\"\n    violations: \"Hidden globals make runs nondeterministic.\"\n\n@collaborators:\n    required:\n        - agent_k.ui.agui:EventEmitter\n    optional:\n        - httpx:AsyncClient\n    injection: constructor\n    lifecycle: \"Allocated per agent run.\"",
+  "source": "backend/agent_k/core/deps.py",
+  "line": 46,
+  "path": "backend/agent_k/core/deps.py",
+  "location": {
+    "path": "backend/agent_k/core/deps.py",
+    "line": 46,
+    "character": 7
+  }
+}

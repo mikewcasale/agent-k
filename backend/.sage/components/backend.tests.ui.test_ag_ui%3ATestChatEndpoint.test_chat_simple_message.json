@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.ui.test_ag_ui:TestChatEndpoint.test_chat_simple_message",
+  "type": "method",
+  "summary": "Should respond to simple chat messages.",
+  "source": "backend/tests/ui/test_ag_ui.py",
+  "line": 160,
+  "path": "backend/tests/ui/test_ag_ui.py",
+  "location": {
+    "path": "backend/tests/ui/test_ag_ui.py",
+    "line": 160,
+    "character": 11
+  }
+}

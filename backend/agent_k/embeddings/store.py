@@ -44,10 +44,16 @@ __all__ = ("InMemoryVectorStore", "VectorRecord", "VectorStore")
 class VectorRecord:
     """Single vector record.
 
-    @pattern:
-        name: output-model
-        rationale: "Stable schema for vector records."
-        violations: "Unstructured records complicate retrieval."
+    @notice: |
+        Single vector record.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: output-model
+            rationale: "Stable schema for vector records."
+            violations: "Unstructured records complicate retrieval."
     """
 
     record_id: str
@@ -58,10 +64,16 @@ class VectorRecord:
 class VectorStore(Protocol):
     """Protocol for vector stores.
 
-    @pattern:
-        name: protocol-interface
-        rationale: "Standard contract for vector storage."
-        violations: "Stores without this interface diverge in behavior."
+    @notice: |
+        Protocol for vector stores.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: protocol-interface
+            rationale: "Standard contract for vector storage."
+            violations: "Stores without this interface diverge in behavior."
     """
 
     def upsert(self, records: Annotated[list[VectorRecord], Doc("Vector records to upsert.")]) -> None:
@@ -80,10 +92,16 @@ class VectorStore(Protocol):
 class InMemoryVectorStore:
     """Simple in-memory vector store with cosine similarity.
 
-    @pattern:
-        name: embedding-store
-        rationale: "Provides a lightweight in-memory vector index."
-        violations: "Ad-hoc retrieval logic leads to inconsistencies."
+    @notice: |
+        Simple in-memory vector store with cosine similarity.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: embedding-store
+            rationale: "Provides a lightweight in-memory vector index."
+            violations: "Ad-hoc retrieval logic leads to inconsistencies."
     """
 
     def __init__(self) -> None:

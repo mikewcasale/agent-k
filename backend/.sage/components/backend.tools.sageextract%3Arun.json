@@ -1,0 +1,15 @@
+{
+  "id": "backend.tools.sageextract:run",
+  "type": "function",
+  "summary": "Run SAGE extraction and validation.",
+  "notice": "Main entry point for SAGE artifact generation and validation.",
+  "dev": "Collects docblocks from all Python files, extracts tags, validates grammar,\nand emits JSON artifacts for the VS Code extension.",
+  "source": "backend/tools/sageextract.py",
+  "line": 122,
+  "path": "backend/tools/sageextract.py",
+  "location": {
+    "path": "backend/tools/sageextract.py",
+    "line": 122,
+    "character": 7
+  }
+}

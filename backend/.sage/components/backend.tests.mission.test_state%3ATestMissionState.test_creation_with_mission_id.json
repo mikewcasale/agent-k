@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_state:TestMissionState.test_creation_with_mission_id",
+  "type": "method",
+  "summary": "State should be created with mission ID.",
+  "source": "backend/tests/mission/test_state.py",
+  "line": 26,
+  "path": "backend/tests/mission/test_state.py",
+  "location": {
+    "path": "backend/tests/mission/test_state.py",
+    "line": 26,
+    "character": 11
+  }
+}

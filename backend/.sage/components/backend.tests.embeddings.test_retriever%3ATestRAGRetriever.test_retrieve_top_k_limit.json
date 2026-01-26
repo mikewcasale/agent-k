@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.embeddings.test_retriever:TestRAGRetriever.test_retrieve_top_k_limit",
+  "type": "method",
+  "summary": "Retriever should respect top_k limits.",
+  "source": "backend/tests/embeddings/test_retriever.py",
+  "line": 62,
+  "path": "backend/tests/embeddings/test_retriever.py",
+  "location": {
+    "path": "backend/tests/embeddings/test_retriever.py",
+    "line": 62,
+    "character": 11
+  }
+}

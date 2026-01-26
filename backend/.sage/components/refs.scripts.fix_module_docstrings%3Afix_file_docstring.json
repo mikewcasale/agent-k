@@ -1,0 +1,13 @@
+{
+  "id": "refs.scripts.fix_module_docstrings:fix_file_docstring",
+  "type": "function",
+  "summary": "Fix the docstring in a single Python file.",
+  "source": "refs/scripts/fix_module_docstrings.py",
+  "line": 104,
+  "path": "refs/scripts/fix_module_docstrings.py",
+  "location": {
+    "path": "refs/scripts/fix_module_docstrings.py",
+    "line": 104,
+    "character": 7
+  }
+}

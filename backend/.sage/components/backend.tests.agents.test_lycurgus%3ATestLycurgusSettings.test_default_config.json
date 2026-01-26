@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_lycurgus:TestLycurgusSettings.test_default_config",
+  "type": "method",
+  "summary": "Config should have sensible defaults.",
+  "source": "backend/tests/agents/test_lycurgus.py",
+  "line": 27,
+  "path": "backend/tests/agents/test_lycurgus.py",
+  "location": {
+    "path": "backend/tests/agents/test_lycurgus.py",
+    "line": 27,
+    "character": 11
+  }
+}

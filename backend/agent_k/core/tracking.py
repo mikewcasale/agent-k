@@ -133,9 +133,15 @@ _TARGET_TRANSFORM_PATTERNS: Final[tuple[tuple[str, re.Pattern[str]], ...]] = (
 class ExperimentMetadata(BaseModel):
     """Structured metadata extracted from a solution.
 
-    @pattern:
-        name: metadata-model
-        rationale: "Frozen Pydantic model for solution metadata extraction."
+    @notice: |
+        Structured metadata extracted from a solution.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: metadata-model
+            rationale: "Frozen Pydantic model for solution metadata extraction."
     """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True)
@@ -150,9 +156,15 @@ class ExperimentMetadata(BaseModel):
 class ExperimentRecord(BaseModel):
     """Persistent record of an experiment or submission.
 
-    @pattern:
-        name: record-model
-        rationale: "Pydantic model for experiment persistence."
+    @notice: |
+        Persistent record of an experiment or submission.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: record-model
+            rationale: "Pydantic model for experiment persistence."
     """
 
     model_config = ConfigDict(str_strip_whitespace=True, validate_default=True)
@@ -182,9 +194,15 @@ class ExperimentRecord(BaseModel):
 class ExperimentSummary(BaseModel):
     """Lightweight summary of a stored experiment.
 
-    @pattern:
-        name: summary-model
-        rationale: "Frozen Pydantic model for experiment listing."
+    @notice: |
+        Lightweight summary of a stored experiment.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: summary-model
+            rationale: "Frozen Pydantic model for experiment listing."
     """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True)
@@ -203,9 +221,15 @@ class ExperimentSummary(BaseModel):
 class KaggleSubmissionRecord(BaseModel):
     """Persistent record of a Kaggle submission and leaderboard scores.
 
-    @pattern:
-        name: record-model
-        rationale: "Pydantic model for Kaggle submission persistence."
+    @notice: |
+        Persistent record of a Kaggle submission and leaderboard scores.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: record-model
+            rationale: "Pydantic model for Kaggle submission persistence."
     """
 
     model_config = ConfigDict(str_strip_whitespace=True, validate_default=True)
@@ -225,9 +249,15 @@ class KaggleSubmissionRecord(BaseModel):
 class HintAttemptRecord(BaseModel):
     """Track preprocessing hint usage and outcomes.
 
-    @pattern:
-        name: record-model
-        rationale: "Pydantic model for hint effectiveness tracking."
+    @notice: |
+        Track preprocessing hint usage and outcomes.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: record-model
+            rationale: "Pydantic model for hint effectiveness tracking."
     """
 
     model_config = ConfigDict(str_strip_whitespace=True, validate_default=True)
@@ -246,18 +276,24 @@ class HintAttemptRecord(BaseModel):
 class ExperimentTracker:
     """SQLite-backed tracker for experiments and submissions.
 
-    @pattern:
-        name: tracking-store
-        rationale: "Centralized persistence for experiment metadata."
-        violations: "Distributed tracking logic causes inconsistent history."
+    @notice: |
+        SQLite-backed tracker for experiments and submissions.
 
-    @concurrency:
-        model: asyncio
-        safe: false
-        reason: "Uses SQLite connections without cross-process locking."
+    @dev: |
+        See module for implementation details and extension points.
 
-    @invariants:
-        - "Database schema is initialized before writes."
+        @pattern:
+            name: tracking-store
+            rationale: "Centralized persistence for experiment metadata."
+            violations: "Distributed tracking logic causes inconsistent history."
+
+        @concurrency:
+            model: asyncio
+            safe: false
+            reason: "Uses SQLite connections without cross-process locking."
+
+        @invariants:
+            - "Database schema is initialized before writes."
     """
 
     _table_name: Final[str] = "experiments"
@@ -691,10 +727,16 @@ class ExperimentTracker:
 class HintEffectivenessTracker:
     """Track and aggregate hint performance across generations.
 
-    @pattern:
-        name: tracking-service
-        rationale: "Centralizes hint success tracking and suppression."
-        violations: "Distributed tracking makes suppression inconsistent."
+    @notice: |
+        Track and aggregate hint performance across generations.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: tracking-service
+            rationale: "Centralizes hint success tracking and suppression."
+            violations: "Distributed tracking makes suppression inconsistent."
     """
 
     _HINT_TRACKER_PATH: Final[Path] = Path("~/.agent_k/hint_tracker.json").expanduser()
@@ -817,25 +859,35 @@ def create_experiment_tracker(
 ) -> ExperimentTracker:
     """Factory for ExperimentTracker instances.
 
-    @notice: |
-        Returns a tracker configured with the default database path.
+    @dev: |
+        See module for behavior details and invariants.
 
-    @factory-for:
-        id: agent_k.core.tracking:ExperimentTracker
-        rationale: "Centralizes tracker defaults and storage path."
-        singleton: false
-        cache-key: db_path
+        @notice: |
+            Returns a tracker configured with the default database path.
 
-    @canonical-home:
-        for:
-            - "experiment tracker construction"
-        notes: "Use create_experiment_tracker to ensure defaults."
+        @factory-for:
+            id: agent_k.core.tracking:ExperimentTracker
+            rationale: "Centralizes tracker defaults and storage path."
+            singleton: false
+            cache-key: db_path
+
+        @canonical-home:
+            for:
+                - "experiment tracker construction"
+            notes: "Use create_experiment_tracker to ensure defaults."
     """
     return ExperimentTracker(db_path=db_path)
 
 
 def extract_solution_metadata(solution_code: str) -> ExperimentMetadata:
-    """Extract model and feature metadata from solution code."""
+    """Extract model and feature metadata from solution code.
+
+    @notice: |
+        Extract model and feature metadata from solution code.
+
+    @dev: |
+        See module for behavior details and invariants.
+    """
     model_name, model_family = _detect_model(solution_code)
     hyperparameters = _extract_hyperparameters(solution_code)
     feature_set = _extract_feature_set(solution_code)

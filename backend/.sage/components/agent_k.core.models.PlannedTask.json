@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.models:PlannedTask",
+  "line": 390,
+  "notice": "A planned task within a phase.",
+  "pattern": {
+    "name": "immutable-entity",
+    "rationale": "Frozen Pydantic model for task planning and tracking."
+  },
+  "similar": null,
+  "source": "agent_k/core/models.py",
+  "summary": "A planned task within a phase.",
+  "type": "class"
+}

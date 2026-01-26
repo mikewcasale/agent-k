@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.features:TransformGene",
+  "line": 60,
+  "notice": "Single-variable transformation gene.",
+  "pattern": {
+    "name": "gene-model",
+    "rationale": "Frozen dataclass representing a transformation gene."
+  },
+  "similar": null,
+  "source": "agent_k/evolution/features.py",
+  "summary": "Single-variable transformation gene.",
+  "type": "class"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.agents.scientist:ScientistDeps",
+  "type": "class",
+  "summary": "Dependencies for the Scientist agent.",
+  "notice": "Dependencies for the Scientist agent.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: dependency-container\n    rationale: \"Groups runtime services for research tools.\"\n    violations: \"Hidden globals make research runs nondeterministic.\"\n\n@collaborators:\n    required:\n        - httpx:AsyncClient\n        - agent_k.core.protocols:PlatformAdapter\n        - agent_k.core.models:Competition\n    optional:\n        - agent_k.core.models:LeaderboardEntry\n    injection: constructor\n    lifecycle: \"Allocated per agent run.\"",
+  "source": "backend/agent_k/agents/scientist.py",
+  "line": 194,
+  "path": "backend/agent_k/agents/scientist.py",
+  "location": {
+    "path": "backend/agent_k/agents/scientist.py",
+    "line": 194,
+    "character": 7
+  }
+}

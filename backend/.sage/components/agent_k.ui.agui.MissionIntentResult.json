@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:MissionIntentResult",
+  "line": 593,
+  "notice": "Result of mission intent parsing.",
+  "pattern": {
+    "name": "result-model",
+    "rationale": "Dataclass for intent classification result."
+  },
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Result of mission intent parsing.",
+  "type": "class"
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Use for component-specific logging with automatic tagging.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.instrumentation:get_logger",
+  "line": 135,
+  "notice": "Returns a Logfire instance tagged with the component name.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/instrumentation.py",
+  "summary": "Get a logger with component-specific settings.",
+  "type": "function"
+}

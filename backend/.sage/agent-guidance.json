@@ -1,0 +1,656 @@
+{
+  "count": 59,
+  "entries": [
+    {
+      "component": "agent_k",
+      "do": [
+        "Use agent_k as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/__init__.py"
+    },
+    {
+      "component": "agent_k.__main__",
+      "do": [
+        "Use agent_k.__main__ as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/__main__.py"
+    },
+    {
+      "component": "agent_k._version",
+      "do": [
+        "Use agent_k._version as the canonical version source."
+      ],
+      "do_not": [
+        "Duplicate version constants elsewhere."
+      ],
+      "line": 1,
+      "source": "agent_k/_version.py"
+    },
+    {
+      "component": "agent_k.adapters",
+      "do": [
+        "Use agent_k.adapters as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/adapters/__init__.py"
+    },
+    {
+      "component": "agent_k.adapters.kaggle",
+      "do": [
+        "Use agent_k.adapters.kaggle as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/adapters/kaggle.py"
+    },
+    {
+      "component": "agent_k.adapters.openevolve",
+      "do": [
+        "Use agent_k.adapters.openevolve as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/adapters/openevolve.py"
+    },
+    {
+      "component": "agent_k.agents",
+      "do": [
+        "Use agent_k.agents as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/agents/__init__.py"
+    },
+    {
+      "component": "agent_k.agents.base",
+      "do": [
+        "Use agent_k.agents.base as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/agents/base.py"
+    },
+    {
+      "component": "agent_k.agents.evolver",
+      "do": [
+        "Use agent_k.agents.evolver as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/agents/evolver.py"
+    },
+    {
+      "component": "agent_k.agents.lobbyist",
+      "do": [
+        "Use agent_k.agents.lobbyist as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/agents/lobbyist.py"
+    },
+    {
+      "component": "agent_k.agents.lycurgus",
+      "do": [
+        "Use agent_k.agents.lycurgus as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/agents/lycurgus.py"
+    },
+    {
+      "component": "agent_k.agents.prompts",
+      "do": [
+        "Use agent_k.agents.prompts as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/agents/prompts.py"
+    },
+    {
+      "component": "agent_k.agents.scientist",
+      "do": [
+        "Use agent_k.agents.scientist as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/agents/scientist.py"
+    },
+    {
+      "component": "agent_k.core",
+      "do": [
+        "Use agent_k.core as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/core/__init__.py"
+    },
+    {
+      "component": "agent_k.core.constants",
+      "do": [
+        "Use agent_k.core.constants as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/core/constants.py"
+    },
+    {
+      "component": "agent_k.core.data",
+      "do": [
+        "Use agent_k.core.data as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/core/data.py"
+    },
+    {
+      "component": "agent_k.core.deps",
+      "do": [
+        "Use agent_k.core.deps as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/core/deps.py"
+    },
+    {
+      "component": "agent_k.core.exceptions",
+      "do": [
+        "Use agent_k.core.exceptions as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/core/exceptions.py"
+    },
+    {
+      "component": "agent_k.core.feedback",
+      "do": [
+        "Use agent_k.core.feedback as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/core/feedback.py"
+    },
+    {
+      "component": "agent_k.core.hints",
+      "do": [
+        "Use agent_k.core.hints as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/core/hints.py"
+    },
+    {
+      "component": "agent_k.core.models",
+      "do": [
+        "Use agent_k.core.models as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/core/models.py"
+    },
+    {
+      "component": "agent_k.core.protocols",
+      "do": [
+        "Use agent_k.core.protocols as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/core/protocols.py"
+    },
+    {
+      "component": "agent_k.core.sage",
+      "do": [
+        "Use Doc/Constraint/Range/Default in Annotated parameters."
+      ],
+      "do_not": [
+        "Add custom metadata helpers outside this module."
+      ],
+      "line": 1,
+      "source": "agent_k/core/sage.py"
+    },
+    {
+      "component": "agent_k.core.settings",
+      "do": [
+        "Use agent_k.core.settings as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/core/settings.py"
+    },
+    {
+      "component": "agent_k.core.solution",
+      "do": [
+        "Use agent_k.core.solution as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/core/solution.py"
+    },
+    {
+      "component": "agent_k.core.strategy",
+      "do": [
+        "Use agent_k.core.strategy as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/core/strategy.py"
+    },
+    {
+      "component": "agent_k.core.tracking",
+      "do": [
+        "Use agent_k.core.tracking as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/core/tracking.py"
+    },
+    {
+      "component": "agent_k.core.types",
+      "do": [
+        "Use agent_k.core.types as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/core/types.py"
+    },
+    {
+      "component": "agent_k.embeddings",
+      "do": [
+        "Use agent_k.embeddings as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/embeddings/__init__.py"
+    },
+    {
+      "component": "agent_k.embeddings.embedder",
+      "do": [
+        "Use agent_k.embeddings.embedder as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/embeddings/embedder.py"
+    },
+    {
+      "component": "agent_k.embeddings.retriever",
+      "do": [
+        "Use agent_k.embeddings.retriever as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/embeddings/retriever.py"
+    },
+    {
+      "component": "agent_k.embeddings.store",
+      "do": [
+        "Use agent_k.embeddings.store as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/embeddings/store.py"
+    },
+    {
+      "component": "agent_k.evals",
+      "do": [
+        "Use agent_k.evals as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/evals/__init__.py"
+    },
+    {
+      "component": "agent_k.evals.datasets",
+      "do": [
+        "Use agent_k.evals.datasets as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/evals/datasets.py"
+    },
+    {
+      "component": "agent_k.evals.evaluators",
+      "do": [
+        "Use agent_k.evals.evaluators as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/evals/evaluators.py"
+    },
+    {
+      "component": "agent_k.evolution",
+      "do": [
+        "Use agent_k.evolution as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/evolution/__init__.py"
+    },
+    {
+      "component": "agent_k.evolution.evaluator",
+      "do": [
+        "Use agent_k.evolution.evaluator as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/evolution/evaluator.py"
+    },
+    {
+      "component": "agent_k.evolution.features",
+      "do": [
+        "Use agent_k.evolution.features as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/evolution/features.py"
+    },
+    {
+      "component": "agent_k.evolution.framework",
+      "do": [
+        "Use agent_k.evolution.framework as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/evolution/framework.py"
+    },
+    {
+      "component": "agent_k.evolution.loss",
+      "do": [
+        "Use agent_k.evolution.loss as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/evolution/loss.py"
+    },
+    {
+      "component": "agent_k.infra",
+      "do": [
+        "Use agent_k.infra as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/infra/__init__.py"
+    },
+    {
+      "component": "agent_k.infra.config",
+      "do": [
+        "Use agent_k.infra.config as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/infra/config.py"
+    },
+    {
+      "component": "agent_k.infra.instrumentation",
+      "do": [
+        "Use agent_k.infra.instrumentation as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/infra/instrumentation.py"
+    },
+    {
+      "component": "agent_k.infra.logging",
+      "do": [
+        "Use agent_k.infra.logging as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/infra/logging.py"
+    },
+    {
+      "component": "agent_k.infra.providers",
+      "do": [
+        "Use agent_k.infra.providers as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/infra/providers.py"
+    },
+    {
+      "component": "agent_k.mission",
+      "do": [
+        "Use agent_k.mission as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/mission/__init__.py"
+    },
+    {
+      "component": "agent_k.mission.nodes",
+      "do": [
+        "Use agent_k.mission.nodes as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/mission/nodes.py"
+    },
+    {
+      "component": "agent_k.mission.persistence",
+      "do": [
+        "Use agent_k.mission.persistence as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/mission/persistence.py"
+    },
+    {
+      "component": "agent_k.mission.state",
+      "do": [
+        "Use agent_k.mission.state as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/mission/state.py"
+    },
+    {
+      "component": "agent_k.toolsets",
+      "do": [
+        "Use agent_k.toolsets as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/toolsets/__init__.py"
+    },
+    {
+      "component": "agent_k.toolsets.browser",
+      "do": [
+        "Use agent_k.toolsets.browser as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/toolsets/browser.py"
+    },
+    {
+      "component": "agent_k.toolsets.code",
+      "do": [
+        "Use agent_k.toolsets.code as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/toolsets/code.py"
+    },
+    {
+      "component": "agent_k.toolsets.kaggle",
+      "do": [
+        "Use agent_k.toolsets.kaggle as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/toolsets/kaggle.py"
+    },
+    {
+      "component": "agent_k.toolsets.memory",
+      "do": [
+        "Use agent_k.toolsets.memory as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/toolsets/memory.py"
+    },
+    {
+      "component": "agent_k.toolsets.scholarly",
+      "do": [
+        "Use agent_k.toolsets.scholarly as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/toolsets/scholarly.py"
+    },
+    {
+      "component": "agent_k.toolsets.search",
+      "do": [
+        "Use agent_k.toolsets.search as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/toolsets/search.py"
+    },
+    {
+      "component": "agent_k.toolsets.tracking",
+      "do": [
+        "Use agent_k.toolsets.tracking as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/toolsets/tracking.py"
+    },
+    {
+      "component": "agent_k.ui",
+      "do": [
+        "Use agent_k.ui as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/ui/__init__.py"
+    },
+    {
+      "component": "agent_k.ui.agui",
+      "do": [
+        "Use agent_k.ui.agui as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/ui/agui.py"
+    }
+  ],
+  "generated": "2026-01-26T12:50:04.843517+00:00",
+  "version": "1.3.6"
+}

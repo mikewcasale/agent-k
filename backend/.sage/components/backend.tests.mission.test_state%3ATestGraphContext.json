@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_state:TestGraphContext",
+  "type": "class",
+  "summary": "Tests for the GraphContext model.",
+  "source": "backend/tests/mission/test_state.py",
+  "line": 95,
+  "path": "backend/tests/mission/test_state.py",
+  "location": {
+    "path": "backend/tests/mission/test_state.py",
+    "line": 95,
+    "character": 7
+  }
+}

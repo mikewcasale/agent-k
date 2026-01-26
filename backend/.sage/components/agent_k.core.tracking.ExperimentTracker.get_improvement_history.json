@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.tracking:ExperimentTracker.get_improvement_history",
+  "line": 486,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/tracking.py",
+  "summary": "Analyze leaderboard score progression over time.",
+  "type": "method"
+}

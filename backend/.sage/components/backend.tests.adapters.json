@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.adapters",
+  "type": "module",
+  "summary": "Adapter tests.",
+  "source": "backend/tests/adapters/__init__.py",
+  "line": 0,
+  "path": "backend/tests/adapters/__init__.py",
+  "location": {
+    "path": "backend/tests/adapters/__init__.py",
+    "line": 0,
+    "character": 3
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.embeddings.embedder:Embedder.embed_documents",
+  "line": 72,
+  "notice": "Embed multiple documents.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/embeddings/embedder.py",
+  "summary": "Embed multiple documents.",
+  "type": "method"
+}

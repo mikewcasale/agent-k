@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.state",
+  "type": "method",
+  "summary": "Current mission state, or None if no mission active.",
+  "source": "backend/agent_k/agents/lycurgus.py",
+  "line": 355,
+  "path": "backend/agent_k/agents/lycurgus.py",
+  "location": {
+    "path": "backend/agent_k/agents/lycurgus.py",
+    "line": 355,
+    "character": 11
+  }
+}

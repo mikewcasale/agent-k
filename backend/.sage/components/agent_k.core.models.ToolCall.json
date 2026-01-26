@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.models:ToolCall",
+  "line": 281,
+  "notice": "Base model for tool invocation tracking.",
+  "pattern": {
+    "name": "immutable-entity",
+    "rationale": "Base frozen model for tool call telemetry."
+  },
+  "similar": null,
+  "source": "agent_k/core/models.py",
+  "summary": "Base model for tool invocation tracking.",
+  "type": "class"
+}

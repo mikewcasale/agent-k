@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.conftest:env",
+  "type": "function",
+  "summary": "Fixture for managing environment variables in tests.",
+  "source": "backend/tests/conftest.py",
+  "line": 77,
+  "path": "backend/tests/conftest.py",
+  "location": {
+    "path": "backend/tests/conftest.py",
+    "line": 77,
+    "character": 7
+  }
+}

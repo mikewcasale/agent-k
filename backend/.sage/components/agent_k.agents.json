@@ -1,0 +1,48 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.agents as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "consumes": [
+      "agent_k.agents.evolver:EvolverAgent",
+      "agent_k.agents.lobbyist:LobbyistAgent",
+      "agent_k.agents.scientist:ScientistAgent",
+      "agent_k.agents.lycurgus:LycurgusOrchestrator"
+    ],
+    "id": "agent_k.agents",
+    "pattern": "agent-registry",
+    "provides": [
+      "agent_k.agents:AGENT_REGISTRY",
+      "agent_k.agents:register_agent",
+      "agent_k.agents:get_agent"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.agents",
+  "line": 1,
+  "notice": "Agent registry and exports.",
+  "pattern": null,
+  "similar": [
+    {
+      "id": "agent_k.mission.nodes",
+      "when": "Mission nodes orchestrate phases; this module only registers agents."
+    }
+  ],
+  "source": "agent_k/agents/__init__.py",
+  "summary": "Agent registry and exports.",
+  "type": "module"
+}

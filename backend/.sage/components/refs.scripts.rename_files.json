@@ -1,0 +1,13 @@
+{
+  "id": "refs.scripts.rename_files",
+  "type": "module",
+  "summary": "Script to rename Python files from snake_case to lowercase concatenated names.",
+  "source": "refs/scripts/rename_files.py",
+  "line": 1,
+  "path": "refs/scripts/rename_files.py",
+  "location": {
+    "path": "refs/scripts/rename_files.py",
+    "line": 1,
+    "character": 3
+  }
+}

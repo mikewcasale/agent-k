@@ -1,0 +1,13 @@
+{
+  "id": "refs.scripts.remove_attr_blank_lines:main",
+  "type": "function",
+  "summary": "Run the blank-line cleanup across a target path.",
+  "source": "refs/scripts/remove_attr_blank_lines.py",
+  "line": 112,
+  "path": "refs/scripts/remove_attr_blank_lines.py",
+  "location": {
+    "path": "refs/scripts/remove_attr_blank_lines.py",
+    "line": 112,
+    "character": 7
+  }
+}

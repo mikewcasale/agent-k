@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.core.test_models:TestEvolutionState.test_default_creation",
+  "type": "method",
+  "summary": "State should be created with defaults.",
+  "source": "backend/tests/core/test_models.py",
+  "line": 192,
+  "path": "backend/tests/core/test_models.py",
+  "location": {
+    "path": "backend/tests/core/test_models.py",
+    "line": 192,
+    "character": 11
+  }
+}

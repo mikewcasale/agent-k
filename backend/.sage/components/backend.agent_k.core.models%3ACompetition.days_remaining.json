@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.models:Competition.days_remaining",
+  "type": "method",
+  "summary": "Days until deadline (negative if passed).",
+  "source": "backend/agent_k/core/models.py",
+  "line": 225,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 225,
+    "character": 11
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "id": "backend.agent_k.toolsets.code:create_code_execution_tool",
+  "type": "function",
+  "summary": "Create a CodeExecutionTool instance.",
+  "dev": "See module for behavior details and invariants.\n\n@notice: |\n    Returns a configured code execution tool.",
+  "source": "backend/agent_k/toolsets/code.py",
+  "line": 52,
+  "path": "backend/agent_k/toolsets/code.py",
+  "location": {
+    "path": "backend/agent_k/toolsets/code.py",
+    "line": 52,
+    "character": 7
+  }
+}

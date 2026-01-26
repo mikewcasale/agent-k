@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:ChatHandler.parse_mission_criteria",
+  "type": "method",
+  "summary": "Parse mission criteria from chat messages.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 715,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 715,
+    "character": 11
+  }
+}

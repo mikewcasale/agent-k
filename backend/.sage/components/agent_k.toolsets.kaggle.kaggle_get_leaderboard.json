@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.kaggle:kaggle_get_leaderboard",
+  "line": 274,
+  "notice": "Returns leaderboard entries ordered by rank.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/kaggle.py",
+  "summary": "Get the current leaderboard for a competition.",
+  "type": "function"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:create_app.get_mission_status",
+  "type": "function",
+  "summary": "Get current mission status.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 1326,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 1326,
+    "character": 11
+  }
+}

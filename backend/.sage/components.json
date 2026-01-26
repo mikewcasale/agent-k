@@ -1,0 +1,705 @@
+[
+  {
+    "consumes": [],
+    "id": "agent_k",
+    "line": 1,
+    "pattern": "package-entry",
+    "provides": [
+      "agent_k"
+    ],
+    "source": "agent_k/__init__.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.__main__",
+    "line": 1,
+    "pattern": "cli-entrypoint",
+    "provides": [
+      "agent_k.__main__"
+    ],
+    "source": "agent_k/__main__.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k._version",
+    "line": 1,
+    "pattern": "versioning",
+    "provides": [
+      "agent_k._version:__version__"
+    ],
+    "source": "agent_k/_version.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.adapters",
+    "line": 1,
+    "pattern": "adapter-package",
+    "provides": [
+      "agent_k.adapters"
+    ],
+    "source": "agent_k/adapters/__init__.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.adapters.kaggle",
+    "line": 1,
+    "pattern": "adapter",
+    "provides": [
+      "agent_k.adapters.kaggle:KaggleAdapter",
+      "agent_k.adapters.kaggle:KaggleSettings"
+    ],
+    "source": "agent_k/adapters/kaggle.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.adapters.openevolve",
+    "line": 1,
+    "pattern": "adapter",
+    "provides": [
+      "agent_k.adapters.openevolve:OpenEvolveAdapter",
+      "agent_k.adapters.openevolve:OpenEvolveRunner",
+      "agent_k.adapters.openevolve:OpenEvolveSettings",
+      "agent_k.adapters.openevolve:OpenEvolveEvolutionConfig"
+    ],
+    "source": "agent_k/adapters/openevolve.py"
+  },
+  {
+    "consumes": [
+      "agent_k.agents.evolver:EvolverAgent",
+      "agent_k.agents.lobbyist:LobbyistAgent",
+      "agent_k.agents.scientist:ScientistAgent",
+      "agent_k.agents.lycurgus:LycurgusOrchestrator"
+    ],
+    "id": "agent_k.agents",
+    "line": 1,
+    "pattern": "agent-registry",
+    "provides": [
+      "agent_k.agents:AGENT_REGISTRY",
+      "agent_k.agents:register_agent",
+      "agent_k.agents:get_agent"
+    ],
+    "source": "agent_k/agents/__init__.py"
+  },
+  {
+    "consumes": [
+      "agent_k.toolsets.memory:AgentKMemoryTool",
+      "agent_k.toolsets.memory:create_memory_backend",
+      "agent_k.toolsets.memory:register_memory_tool"
+    ],
+    "id": "agent_k.agents.base",
+    "line": 1,
+    "pattern": "agent-base",
+    "provides": [
+      "agent_k.agents.base:AgentDeps",
+      "agent_k.agents.base:BaseAgentMixin",
+      "agent_k.agents.base:MemoryMixin",
+      "agent_k.agents.base:universal_tool_preparation",
+      "agent_k.agents.base:prepare_output_tools_strict"
+    ],
+    "source": "agent_k/agents/base.py"
+  },
+  {
+    "consumes": [
+      "agent_k.core.protocols:PlatformAdapter",
+      "agent_k.ui.agui:EventEmitter",
+      "agent_k.adapters.openevolve:OpenEvolveRunner",
+      "agent_k.toolsets.code:code_toolset"
+    ],
+    "id": "agent_k.agents.evolver",
+    "line": 1,
+    "pattern": "agent-singleton",
+    "provides": [
+      "agent_k.agents.evolver:EvolverAgent",
+      "agent_k.agents.evolver:EvolverDeps",
+      "agent_k.agents.evolver:EvolverSettings",
+      "agent_k.agents.evolver:EvolutionResult",
+      "agent_k.agents.evolver:EvolutionFailure",
+      "agent_k.agents.evolver:EVOLUTION_OUTPUT_TYPE",
+      "agent_k.agents.evolver:evolver_agent"
+    ],
+    "source": "agent_k/agents/evolver.py"
+  },
+  {
+    "consumes": [
+      "agent_k.core.protocols:PlatformAdapter",
+      "agent_k.ui.agui:EventEmitter",
+      "agent_k.toolsets.kaggle:kaggle_toolset"
+    ],
+    "id": "agent_k.agents.lobbyist",
+    "line": 1,
+    "pattern": "agent-singleton",
+    "provides": [
+      "agent_k.agents.lobbyist:LobbyistAgent",
+      "agent_k.agents.lobbyist:LobbyistDeps",
+      "agent_k.agents.lobbyist:LobbyistSettings",
+      "agent_k.agents.lobbyist:DiscoveryResult",
+      "agent_k.agents.lobbyist:lobbyist_agent"
+    ],
+    "source": "agent_k/agents/lobbyist.py"
+  },
+  {
+    "consumes": [
+      "agent_k.mission.nodes:DiscoveryNode",
+      "agent_k.mission.nodes:ResearchNode",
+      "agent_k.mission.nodes:PrototypeNode",
+      "agent_k.mission.nodes:EvolutionNode",
+      "agent_k.mission.nodes:SubmissionNode",
+      "agent_k.ui.agui:EventEmitter"
+    ],
+    "id": "agent_k.agents.lycurgus",
+    "line": 1,
+    "pattern": "orchestrator",
+    "provides": [
+      "agent_k.agents.lycurgus:LycurgusOrchestrator",
+      "agent_k.agents.lycurgus:LycurgusSettings",
+      "agent_k.agents.lycurgus:LycurgusDeps",
+      "agent_k.agents.lycurgus:MissionStatus",
+      "agent_k.agents.lycurgus:orchestrate",
+      "agent_k.agents.lycurgus:validate_mission_result"
+    ],
+    "source": "agent_k/agents/lycurgus.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.agents.prompts",
+    "line": 1,
+    "pattern": "prompt-catalog",
+    "provides": [
+      "agent_k.agents.prompts"
+    ],
+    "source": "agent_k/agents/prompts.py"
+  },
+  {
+    "consumes": [
+      "agent_k.core.protocols:PlatformAdapter",
+      "agent_k.toolsets.kaggle:kaggle_toolset",
+      "agent_k.toolsets.search:prepare_web_search",
+      "agent_k.toolsets.search:prepare_web_fetch"
+    ],
+    "id": "agent_k.agents.scientist",
+    "line": 1,
+    "pattern": "agent-singleton",
+    "provides": [
+      "agent_k.agents.scientist:ScientistAgent",
+      "agent_k.agents.scientist:ScientistDeps",
+      "agent_k.agents.scientist:ScientistSettings",
+      "agent_k.agents.scientist:ResearchReport",
+      "agent_k.agents.scientist:ResearchFinding",
+      "agent_k.agents.scientist:LeaderboardAnalysis",
+      "agent_k.agents.scientist:get_external_data_policy",
+      "agent_k.agents.scientist:scientist_agent"
+    ],
+    "source": "agent_k/agents/scientist.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.core",
+    "line": 1,
+    "pattern": "core-facade",
+    "provides": [
+      "agent_k.core"
+    ],
+    "source": "agent_k/core/__init__.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.core.constants",
+    "line": 1,
+    "pattern": "constants",
+    "provides": [
+      "agent_k.core.constants"
+    ],
+    "source": "agent_k/core/constants.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.core.data",
+    "line": 1,
+    "pattern": "data-access",
+    "provides": [
+      "agent_k.core.data"
+    ],
+    "source": "agent_k/core/data.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.core.deps",
+    "line": 1,
+    "pattern": "dependency-container",
+    "provides": [
+      "agent_k.core.deps:BaseDeps",
+      "agent_k.core.deps:KaggleDeps"
+    ],
+    "source": "agent_k/core/deps.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.core.exceptions",
+    "line": 1,
+    "pattern": "exception-hierarchy",
+    "provides": [
+      "agent_k.core.exceptions"
+    ],
+    "source": "agent_k/core/exceptions.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.core.feedback",
+    "line": 1,
+    "pattern": "feedback-models",
+    "provides": [
+      "agent_k.core.feedback"
+    ],
+    "source": "agent_k/core/feedback.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.core.hints",
+    "line": 1,
+    "pattern": "analysis-hints",
+    "provides": [
+      "agent_k.core.hints"
+    ],
+    "source": "agent_k/core/hints.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.core.models",
+    "line": 1,
+    "pattern": "domain-models",
+    "provides": [
+      "agent_k.core.models"
+    ],
+    "source": "agent_k/core/models.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.core.protocols",
+    "line": 1,
+    "pattern": "protocols",
+    "provides": [
+      "agent_k.core.protocols"
+    ],
+    "source": "agent_k/core/protocols.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.core.sage",
+    "line": 1,
+    "pattern": "doc-metadata",
+    "provides": [
+      "agent_k.core.sage:Doc",
+      "agent_k.core.sage:Constraint",
+      "agent_k.core.sage:Range",
+      "agent_k.core.sage:Default"
+    ],
+    "source": "agent_k/core/sage.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.core.settings",
+    "line": 1,
+    "pattern": "settings",
+    "provides": [
+      "agent_k.core.settings"
+    ],
+    "source": "agent_k/core/settings.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.core.solution",
+    "line": 1,
+    "pattern": "solution-models",
+    "provides": [
+      "agent_k.core.solution"
+    ],
+    "source": "agent_k/core/solution.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.core.strategy",
+    "line": 1,
+    "pattern": "strategy",
+    "provides": [
+      "agent_k.core.strategy"
+    ],
+    "source": "agent_k/core/strategy.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.core.tracking",
+    "line": 1,
+    "pattern": "tracking-store",
+    "provides": [
+      "agent_k.core.tracking:ExperimentTracker",
+      "agent_k.core.tracking:create_experiment_tracker",
+      "agent_k.core.tracking:ExperimentRecord",
+      "agent_k.core.tracking:HintEffectivenessTracker"
+    ],
+    "source": "agent_k/core/tracking.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.core.types",
+    "line": 1,
+    "pattern": "type-definitions",
+    "provides": [
+      "agent_k.core.types"
+    ],
+    "source": "agent_k/core/types.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.embeddings",
+    "line": 1,
+    "pattern": "embeddings-package",
+    "provides": [
+      "agent_k.embeddings"
+    ],
+    "source": "agent_k/embeddings/__init__.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.embeddings.embedder",
+    "line": 1,
+    "pattern": "embedder",
+    "provides": [
+      "agent_k.embeddings.embedder:Embedder",
+      "agent_k.embeddings.embedder:get_embedder",
+      "agent_k.embeddings.embedder:embed_documents",
+      "agent_k.embeddings.embedder:embed_query"
+    ],
+    "source": "agent_k/embeddings/embedder.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.embeddings.retriever",
+    "line": 1,
+    "pattern": "retriever",
+    "provides": [
+      "agent_k.embeddings.retriever:RAGRetriever",
+      "agent_k.embeddings.retriever:RetrievalResult"
+    ],
+    "source": "agent_k/embeddings/retriever.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.embeddings.store",
+    "line": 1,
+    "pattern": "embedding-store",
+    "provides": [
+      "agent_k.embeddings.store:VectorStore",
+      "agent_k.embeddings.store:VectorRecord",
+      "agent_k.embeddings.store:InMemoryVectorStore"
+    ],
+    "source": "agent_k/embeddings/store.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.evals",
+    "line": 1,
+    "pattern": "evals-package",
+    "provides": [
+      "agent_k.evals"
+    ],
+    "source": "agent_k/evals/__init__.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.evals.datasets",
+    "line": 1,
+    "pattern": "evaluation-datasets",
+    "provides": [
+      "agent_k.evals.datasets"
+    ],
+    "source": "agent_k/evals/datasets.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.evals.evaluators",
+    "line": 1,
+    "pattern": "evaluation",
+    "provides": [
+      "agent_k.evals.evaluators"
+    ],
+    "source": "agent_k/evals/evaluators.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.evolution",
+    "line": 1,
+    "pattern": "evolution-package",
+    "provides": [
+      "agent_k.evolution"
+    ],
+    "source": "agent_k/evolution/__init__.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.evolution.evaluator",
+    "line": 1,
+    "pattern": "evolution-evaluator",
+    "provides": [
+      "agent_k.evolution.evaluator"
+    ],
+    "source": "agent_k/evolution/evaluator.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.evolution.features",
+    "line": 1,
+    "pattern": "feature-engineering",
+    "provides": [
+      "agent_k.evolution.features"
+    ],
+    "source": "agent_k/evolution/features.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.evolution.framework",
+    "line": 1,
+    "pattern": "evolution-framework",
+    "provides": [
+      "agent_k.evolution.framework"
+    ],
+    "source": "agent_k/evolution/framework.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.evolution.loss",
+    "line": 1,
+    "pattern": "loss-functions",
+    "provides": [
+      "agent_k.evolution.loss"
+    ],
+    "source": "agent_k/evolution/loss.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.infra",
+    "line": 1,
+    "pattern": "infra-package",
+    "provides": [
+      "agent_k.infra"
+    ],
+    "source": "agent_k/infra/__init__.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.infra.config",
+    "line": 1,
+    "pattern": "config",
+    "provides": [
+      "agent_k.infra.config"
+    ],
+    "source": "agent_k/infra/config.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.infra.instrumentation",
+    "line": 1,
+    "pattern": "instrumentation",
+    "provides": [
+      "agent_k.infra.instrumentation"
+    ],
+    "source": "agent_k/infra/instrumentation.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.infra.logging",
+    "line": 1,
+    "pattern": "logging",
+    "provides": [
+      "agent_k.infra.logging"
+    ],
+    "source": "agent_k/infra/logging.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.infra.providers",
+    "line": 1,
+    "pattern": "model-factory",
+    "provides": [
+      "agent_k.infra.providers:get_model",
+      "agent_k.infra.providers:create_devstral_model",
+      "agent_k.infra.providers:create_openrouter_model",
+      "agent_k.infra.providers:is_devstral_model",
+      "agent_k.infra.providers:DEVSTRAL_MODEL_ID",
+      "agent_k.infra.providers:DEVSTRAL_BASE_URL"
+    ],
+    "source": "agent_k/infra/providers.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.mission",
+    "line": 1,
+    "pattern": "mission-package",
+    "provides": [
+      "agent_k.mission"
+    ],
+    "source": "agent_k/mission/__init__.py"
+  },
+  {
+    "consumes": [
+      "agent_k.mission.state:MissionState",
+      "agent_k.agents.lobbyist:LobbyistAgent",
+      "agent_k.agents.scientist:ScientistAgent",
+      "agent_k.agents.evolver:EvolverAgent"
+    ],
+    "id": "agent_k.mission.nodes",
+    "line": 1,
+    "pattern": "graph-state-machine",
+    "provides": [
+      "agent_k.mission.nodes:DiscoveryNode",
+      "agent_k.mission.nodes:ResearchNode",
+      "agent_k.mission.nodes:PrototypeNode",
+      "agent_k.mission.nodes:EvolutionNode",
+      "agent_k.mission.nodes:SubmissionNode"
+    ],
+    "source": "agent_k/mission/nodes.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.mission.persistence",
+    "line": 1,
+    "pattern": "state-persistence",
+    "provides": [
+      "agent_k.mission.persistence:MissionPersistence",
+      "agent_k.mission.persistence:create_persistence",
+      "agent_k.mission.persistence:CHECKPOINT_DIR"
+    ],
+    "source": "agent_k/mission/persistence.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.mission.state",
+    "line": 1,
+    "pattern": "mission-state",
+    "provides": [
+      "agent_k.mission.state:MissionState",
+      "agent_k.mission.state:MissionResult",
+      "agent_k.mission.state:GraphContext"
+    ],
+    "source": "agent_k/mission/state.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.toolsets",
+    "line": 1,
+    "pattern": "toolset-registry",
+    "provides": [
+      "agent_k.toolsets:TOOLSET_REGISTRY",
+      "agent_k.toolsets:compose_toolsets",
+      "agent_k.toolsets:create_production_toolset"
+    ],
+    "source": "agent_k/toolsets/__init__.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.toolsets.browser",
+    "line": 1,
+    "pattern": "toolset",
+    "provides": [
+      "agent_k.toolsets.browser"
+    ],
+    "source": "agent_k/toolsets/browser.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.toolsets.code",
+    "line": 1,
+    "pattern": "toolset",
+    "provides": [
+      "agent_k.toolsets.code:code_toolset",
+      "agent_k.toolsets.code:create_code_execution_tool",
+      "agent_k.toolsets.code:prepare_code_execution_tool"
+    ],
+    "source": "agent_k/toolsets/code.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.toolsets.kaggle",
+    "line": 1,
+    "pattern": "toolset",
+    "provides": [
+      "agent_k.toolsets.kaggle:kaggle_toolset",
+      "agent_k.toolsets.kaggle:kaggle_search_competitions",
+      "agent_k.toolsets.kaggle:kaggle_get_competition",
+      "agent_k.toolsets.kaggle:kaggle_get_leaderboard",
+      "agent_k.toolsets.kaggle:kaggle_list_datasets"
+    ],
+    "source": "agent_k/toolsets/kaggle.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.toolsets.memory",
+    "line": 1,
+    "pattern": "toolset",
+    "provides": [
+      "agent_k.toolsets.memory:AgentKMemoryTool",
+      "agent_k.toolsets.memory:create_memory_backend",
+      "agent_k.toolsets.memory:prepare_memory_tool",
+      "agent_k.toolsets.memory:register_memory_tool"
+    ],
+    "source": "agent_k/toolsets/memory.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.toolsets.scholarly",
+    "line": 1,
+    "pattern": "toolset",
+    "provides": [
+      "agent_k.toolsets.scholarly"
+    ],
+    "source": "agent_k/toolsets/scholarly.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.toolsets.search",
+    "line": 1,
+    "pattern": "toolset",
+    "provides": [
+      "agent_k.toolsets.search:build_kaggle_search_query",
+      "agent_k.toolsets.search:build_scholarly_query",
+      "agent_k.toolsets.search:create_web_search_tool",
+      "agent_k.toolsets.search:prepare_web_search",
+      "agent_k.toolsets.search:create_web_fetch_tool",
+      "agent_k.toolsets.search:prepare_web_fetch"
+    ],
+    "source": "agent_k/toolsets/search.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.toolsets.tracking",
+    "line": 1,
+    "pattern": "toolset",
+    "provides": [
+      "agent_k.toolsets.tracking:tracking_toolset",
+      "agent_k.toolsets.tracking:tracking_record_experiment",
+      "agent_k.toolsets.tracking:tracking_list_experiments",
+      "agent_k.toolsets.tracking:tracking_best_experiment"
+    ],
+    "source": "agent_k/toolsets/tracking.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.ui",
+    "line": 1,
+    "pattern": "ui-package",
+    "provides": [
+      "agent_k.ui"
+    ],
+    "source": "agent_k/ui/__init__.py"
+  },
+  {
+    "consumes": [],
+    "id": "agent_k.ui.agui",
+    "line": 1,
+    "pattern": "ui-api",
+    "provides": [
+      "agent_k.ui.agui:EventEmitter",
+      "agent_k.ui.agui:create_app"
+    ],
+    "source": "agent_k/ui/agui.py"
+  }
+]

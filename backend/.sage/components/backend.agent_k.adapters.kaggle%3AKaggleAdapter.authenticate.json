@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.adapters.kaggle:KaggleAdapter.authenticate",
+  "type": "method",
+  "summary": "Authenticate with Kaggle API.",
+  "source": "backend/agent_k/adapters/kaggle.py",
+  "line": 183,
+  "path": "backend/agent_k/adapters/kaggle.py",
+  "location": {
+    "path": "backend/agent_k/adapters/kaggle.py",
+    "line": 183,
+    "character": 11
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.protocols:PlatformAdapter.platform_name",
+  "line": 72,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/protocols.py",
+  "summary": "Unique identifier for the platform.",
+  "type": "method"
+}

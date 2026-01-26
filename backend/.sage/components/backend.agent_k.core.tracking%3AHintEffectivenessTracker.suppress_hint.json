@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.tracking:HintEffectivenessTracker.suppress_hint",
+  "type": "method",
+  "summary": "Suppress a hint for a competition.",
+  "source": "backend/agent_k/core/tracking.py",
+  "line": 802,
+  "path": "backend/agent_k/core/tracking.py",
+  "location": {
+    "path": "backend/agent_k/core/tracking.py",
+    "line": 802,
+    "character": 11
+  }
+}

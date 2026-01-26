@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_evolver_mutations:TestSeededRng.test_seeded_rng_is_deterministic",
+  "type": "method",
+  "summary": "Same inputs should yield identical RNG state.",
+  "source": "backend/tests/agents/test_evolver_mutations.py",
+  "line": 40,
+  "path": "backend/tests/agents/test_evolver_mutations.py",
+  "location": {
+    "path": "backend/tests/agents/test_evolver_mutations.py",
+    "line": 40,
+    "character": 11
+  }
+}

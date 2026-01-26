@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_lycurgus:TestLycurgusSettings.test_from_file",
+  "type": "method",
+  "summary": "Config should load from JSON file.",
+  "source": "backend/tests/agents/test_lycurgus.py",
+  "line": 53,
+  "path": "backend/tests/agents/test_lycurgus.py",
+  "location": {
+    "path": "backend/tests/agents/test_lycurgus.py",
+    "line": 53,
+    "character": 11
+  }
+}

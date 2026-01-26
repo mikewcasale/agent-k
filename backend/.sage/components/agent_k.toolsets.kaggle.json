@@ -1,0 +1,44 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.toolsets.kaggle as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "id": "agent_k.toolsets.kaggle",
+    "pattern": "toolset",
+    "provides": [
+      "agent_k.toolsets.kaggle:kaggle_toolset",
+      "agent_k.toolsets.kaggle:kaggle_search_competitions",
+      "agent_k.toolsets.kaggle:kaggle_get_competition",
+      "agent_k.toolsets.kaggle:kaggle_get_leaderboard",
+      "agent_k.toolsets.kaggle:kaggle_list_datasets"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.toolsets.kaggle",
+  "line": 1,
+  "notice": "Kaggle toolset for AGENT-K agents.",
+  "pattern": null,
+  "similar": [
+    {
+      "id": "agent_k.adapters.kaggle",
+      "when": "Adapter implementation backing these tools."
+    }
+  ],
+  "source": "agent_k/toolsets/kaggle.py",
+  "summary": "Kaggle toolset for AGENT-K agents.",
+  "type": "module"
+}

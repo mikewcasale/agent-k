@@ -1,0 +1,38 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.embeddings.embedder as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "id": "agent_k.embeddings.embedder",
+    "pattern": "embedder",
+    "provides": [
+      "agent_k.embeddings.embedder:Embedder",
+      "agent_k.embeddings.embedder:get_embedder",
+      "agent_k.embeddings.embedder:embed_documents",
+      "agent_k.embeddings.embedder:embed_query"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.embeddings.embedder",
+  "line": 1,
+  "notice": "Embedding utilities.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/embeddings/embedder.py",
+  "summary": "Embedding utilities.",
+  "type": "module"
+}

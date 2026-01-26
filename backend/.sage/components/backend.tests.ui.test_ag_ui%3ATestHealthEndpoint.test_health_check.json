@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.ui.test_ag_ui:TestHealthEndpoint.test_health_check",
+  "type": "method",
+  "summary": "Health endpoint should return healthy status.",
+  "source": "backend/tests/ui/test_ag_ui.py",
+  "line": 59,
+  "path": "backend/tests/ui/test_ag_ui.py",
+  "location": {
+    "path": "backend/tests/ui/test_ag_ui.py",
+    "line": 59,
+    "character": 11
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.hints:MissingPattern",
+  "type": "class",
+  "summary": "Missingness pattern classification.",
+  "notice": "Missingness pattern classification.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: enumeration\n    rationale: \"StrEnum for MCAR/MAR/MNAR classification.\"",
+  "source": "backend/agent_k/core/hints.py",
+  "line": 122,
+  "path": "backend/agent_k/core/hints.py",
+  "location": {
+    "path": "backend/agent_k/core/hints.py",
+    "line": 122,
+    "character": 7
+  }
+}

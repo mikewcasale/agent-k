@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.tracking:HintEffectivenessTracker.is_amplified",
+  "type": "method",
+  "summary": "Check if a hint is amplified for a competition.",
+  "source": "backend/agent_k/core/tracking.py",
+  "line": 817,
+  "path": "backend/agent_k/core/tracking.py",
+  "location": {
+    "path": "backend/agent_k/core/tracking.py",
+    "line": 817,
+    "character": 11
+  }
+}

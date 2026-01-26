@@ -1,0 +1,13 @@
+{
+  "id": "backend..agent_k_memory.best_solution_gen0",
+  "type": "module",
+  "summary": "BEST SOLUTION - Generation 0",
+  "source": "backend/.agent_k_memory/best_solution_gen0.py",
+  "line": 0,
+  "path": "backend/.agent_k_memory/best_solution_gen0.py",
+  "location": {
+    "path": "backend/.agent_k_memory/best_solution_gen0.py",
+    "line": 0,
+    "character": 3
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.embeddings.test_retriever:TestRAGRetriever.test_query_dimension_mismatch",
+  "type": "method",
+  "summary": "Query embeddings must match stored dimensions.",
+  "source": "backend/tests/embeddings/test_retriever.py",
+  "line": 32,
+  "path": "backend/tests/embeddings/test_retriever.py",
+  "location": {
+    "path": "backend/tests/embeddings/test_retriever.py",
+    "line": 32,
+    "character": 11
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.models:EvolutionState",
+  "line": 532,
+  "notice": "State of the evolution process.",
+  "pattern": {
+    "name": "immutable-entity",
+    "rationale": "Frozen Pydantic model for evolution state tracking."
+  },
+  "similar": null,
+  "source": "agent_k/core/models.py",
+  "summary": "State of the evolution process.",
+  "type": "class"
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Applies success boost, recency penalty, and amplification factors.\nReturns 0.0 if hint is suppressed.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.hints:compute_hint_priority",
+  "line": 951,
+  "notice": "Adjusts hint priority using success rates and recency from the tracker.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/hints.py",
+  "summary": "Compute dynamic priority based on historical effectiveness.",
+  "type": "function"
+}

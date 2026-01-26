@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_state:TestGraphContext.test_context_with_emitter",
+  "type": "method",
+  "summary": "Context should accept event emitter.",
+  "source": "backend/tests/mission/test_state.py",
+  "line": 106,
+  "path": "backend/tests/mission/test_state.py",
+  "location": {
+    "path": "backend/tests/mission/test_state.py",
+    "line": 106,
+    "character": 11
+  }
+}

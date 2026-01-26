@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.infra.test_models:TestIsDevstralModel.test_openrouter_not_devstral",
+  "type": "method",
+  "summary": "OpenRouter models should not be identified as Devstral.",
+  "source": "backend/tests/infra/test_models.py",
+  "line": 135,
+  "path": "backend/tests/infra/test_models.py",
+  "location": {
+    "path": "backend/tests/infra/test_models.py",
+    "line": 135,
+    "character": 11
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.agents.lobbyist:LobbyistAgent.agent",
+  "type": "method",
+  "summary": "Return the underlying pydantic-ai Agent.",
+  "source": "backend/agent_k/agents/lobbyist.py",
+  "line": 223,
+  "path": "backend/agent_k/agents/lobbyist.py",
+  "location": {
+    "path": "backend/agent_k/agents/lobbyist.py",
+    "line": 223,
+    "character": 11
+  }
+}

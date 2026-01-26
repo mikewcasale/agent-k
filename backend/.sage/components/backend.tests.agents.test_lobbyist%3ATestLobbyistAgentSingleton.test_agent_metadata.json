@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_lobbyist:TestLobbyistAgentSingleton.test_agent_metadata",
+  "type": "method",
+  "summary": "Agent should be configured with a name.",
+  "source": "backend/tests/agents/test_lobbyist.py",
+  "line": 90,
+  "path": "backend/tests/agents/test_lobbyist.py",
+  "location": {
+    "path": "backend/tests/agents/test_lobbyist.py",
+    "line": 90,
+    "character": 11
+  }
+}

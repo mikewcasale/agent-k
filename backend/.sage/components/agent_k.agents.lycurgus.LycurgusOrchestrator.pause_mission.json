@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.lycurgus:LycurgusOrchestrator.pause_mission",
+  "line": 560,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/lycurgus.py",
+  "summary": "Pause the current mission for later resumption.",
+  "type": "method"
+}

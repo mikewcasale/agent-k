@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.agents:get_agent",
+  "type": "function",
+  "summary": "Return a registered agent by name.",
+  "notice": "Retrieves a registered agent singleton.",
+  "dev": "Raises if the agent name is unknown to avoid silent misconfiguration.",
+  "source": "backend/agent_k/agents/__init__.py",
+  "line": 102,
+  "path": "backend/agent_k/agents/__init__.py",
+  "location": {
+    "path": "backend/agent_k/agents/__init__.py",
+    "line": 102,
+    "character": 7
+  }
+}

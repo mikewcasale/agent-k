@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.ui.agui:MissionRequest",
+  "type": "class",
+  "summary": "Request to start a new mission.",
+  "notice": "Request to start a new mission.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: request-model\n    rationale: \"Frozen Pydantic model for mission start requests.\"",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 217,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 217,
+    "character": 7
+  }
+}

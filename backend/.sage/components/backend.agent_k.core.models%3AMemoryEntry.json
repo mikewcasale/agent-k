@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.models:MemoryEntry",
+  "type": "class",
+  "summary": "Entry in the memory store.",
+  "notice": "Entry in the memory store.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: immutable-entity\n    rationale: \"Frozen Pydantic model for memory store entries.\"",
+  "source": "backend/agent_k/core/models.py",
+  "line": 564,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 564,
+    "character": 7
+  }
+}

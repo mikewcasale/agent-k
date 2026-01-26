@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.instrumentation:Metrics",
+  "line": 55,
+  "notice": "Centralized metrics recording.",
+  "pattern": {
+    "name": "metrics-recorder",
+    "rationale": "Centralizes Logfire metric emission.",
+    "violations": "Ad-hoc logging fragments telemetry signals."
+  },
+  "similar": null,
+  "source": "agent_k/infra/instrumentation.py",
+  "summary": "Centralized metrics recording.",
+  "type": "class"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.exceptions:PlatformConnectionError",
+  "type": "class",
+  "summary": "Raised when connection to platform fails.",
+  "notice": "Raised when connection to platform fails.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: exception-specific\n    rationale: \"Captures platform name for connection failures.\"",
+  "source": "backend/agent_k/core/exceptions.py",
+  "line": 194,
+  "path": "backend/agent_k/core/exceptions.py",
+  "location": {
+    "path": "backend/agent_k/core/exceptions.py",
+    "line": 194,
+    "character": 7
+  }
+}

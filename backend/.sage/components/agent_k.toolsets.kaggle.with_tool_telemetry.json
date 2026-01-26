@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.kaggle:with_tool_telemetry",
+  "line": 103,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/kaggle.py",
+  "summary": "Wrap a tool function with standard telemetry and error handling.",
+  "type": "function"
+}

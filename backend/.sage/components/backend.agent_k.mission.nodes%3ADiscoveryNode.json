@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.mission.nodes:DiscoveryNode",
+  "type": "class",
+  "summary": "Discovery phase node.",
+  "notice": "Discovery phase node.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: graph-node\n    rationale: \"Encapsulates discovery phase logic in the mission graph.\"\n    violations: \"Discovery logic outside nodes causes transition drift.\"\n\n@collaborators:\n    required:\n        - agent_k.agents.lobbyist:LobbyistAgent\n        - agent_k.ui.agui:EventEmitter\n    optional:\n        - httpx:AsyncClient\n        - agent_k.core.protocols:PlatformAdapter\n    injection: GraphContext\n    lifecycle: \"Instantiated per graph run.\"\n\n@concurrency:\n    model: asyncio\n    safe: false\n    reason: \"Mutates mission state during execution.\"\n\n@invariants:\n    - \"timeout > 0\"",
+  "source": "backend/agent_k/mission/nodes.py",
+  "line": 114,
+  "path": "backend/agent_k/mission/nodes.py",
+  "location": {
+    "path": "backend/agent_k/mission/nodes.py",
+    "line": 114,
+    "character": 7
+  }
+}

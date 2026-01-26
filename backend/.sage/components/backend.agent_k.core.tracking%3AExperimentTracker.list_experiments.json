@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.tracking:ExperimentTracker.list_experiments",
+  "type": "method",
+  "summary": "Return most recent experiment records for a competition.",
+  "source": "backend/agent_k/core/tracking.py",
+  "line": 372,
+  "path": "backend/agent_k/core/tracking.py",
+  "location": {
+    "path": "backend/agent_k/core/tracking.py",
+    "line": 372,
+    "character": 11
+  }
+}

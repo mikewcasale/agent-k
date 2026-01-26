@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.feedback:SubmissionOrchestrator.mutation_weights",
+  "type": "method",
+  "summary": "Return the current mutation weight map.",
+  "source": "backend/agent_k/core/feedback.py",
+  "line": 149,
+  "path": "backend/agent_k/core/feedback.py",
+  "location": {
+    "path": "backend/agent_k/core/feedback.py",
+    "line": 149,
+    "character": 11
+  }
+}

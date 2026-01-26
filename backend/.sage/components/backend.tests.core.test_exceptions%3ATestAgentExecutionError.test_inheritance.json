@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.core.test_exceptions:TestAgentExecutionError.test_inheritance",
+  "type": "method",
+  "summary": "Should inherit from AgentKError.",
+  "source": "backend/tests/core/test_exceptions.py",
+  "line": 48,
+  "path": "backend/tests/core/test_exceptions.py",
+  "location": {
+    "path": "backend/tests/core/test_exceptions.py",
+    "line": 48,
+    "character": 11
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.adapters.openevolve as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "id": "agent_k.adapters.openevolve",
+    "pattern": "adapter",
+    "provides": [
+      "agent_k.adapters.openevolve:OpenEvolveAdapter",
+      "agent_k.adapters.openevolve:OpenEvolveRunner",
+      "agent_k.adapters.openevolve:OpenEvolveSettings",
+      "agent_k.adapters.openevolve:OpenEvolveEvolutionConfig"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.adapters.openevolve",
+  "line": 1,
+  "notice": "OpenEvolve integration adapter.",
+  "pattern": null,
+  "similar": [
+    {
+      "id": "agent_k.evolution.framework",
+      "when": "Evolution utilities outside adapter context."
+    }
+  ],
+  "source": "agent_k/adapters/openevolve.py",
+  "summary": "OpenEvolve integration adapter.",
+  "type": "module"
+}

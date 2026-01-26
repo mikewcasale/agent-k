@@ -1,0 +1,13 @@
+{
+  "id": "backend..agent_k_memory.fast_weighted_ensemble",
+  "type": "module",
+  "summary": "FAST WEIGHTED ENSEMBLE - For Evolution Speed",
+  "source": "backend/.agent_k_memory/fast_weighted_ensemble.py",
+  "line": 0,
+  "path": "backend/.agent_k_memory/fast_weighted_ensemble.py",
+  "location": {
+    "path": "backend/.agent_k_memory/fast_weighted_ensemble.py",
+    "line": 0,
+    "character": 3
+  }
+}

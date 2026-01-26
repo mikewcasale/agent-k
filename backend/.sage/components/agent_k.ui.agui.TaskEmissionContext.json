@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:TaskEmissionContext",
+  "line": 546,
+  "notice": "Context manager for task-scoped event emission.",
+  "pattern": {
+    "name": "context-model",
+    "rationale": "Async context manager for task lifecycle events."
+  },
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Context manager for task-scoped event emission.",
+  "type": "class"
+}

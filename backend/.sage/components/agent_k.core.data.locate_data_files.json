@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Automatically extracts ZIP files and searches for files by name pattern.\nRaises FileNotFoundError if required files are not found.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.data:locate_data_files",
+  "line": 97,
+  "notice": "Finds train, test, and sample submission files from a list of paths.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/data.py",
+  "summary": "Locate train/test/sample files from downloaded data.",
+  "type": "function"
+}

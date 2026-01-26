@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_lycurgus:TestLycurgusSettings.test_with_devstral_custom_url",
+  "type": "method",
+  "summary": "with_devstral should accept custom base URL.",
+  "source": "backend/tests/agents/test_lycurgus.py",
+  "line": 47,
+  "path": "backend/tests/agents/test_lycurgus.py",
+  "location": {
+    "path": "backend/tests/agents/test_lycurgus.py",
+    "line": 47,
+    "character": 11
+  }
+}

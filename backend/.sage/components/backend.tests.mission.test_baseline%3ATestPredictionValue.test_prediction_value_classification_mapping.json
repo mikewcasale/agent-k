@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_baseline:TestPredictionValue.test_prediction_value_classification_mapping",
+  "type": "method",
+  "summary": "Classification metrics should use the majority label.",
+  "source": "backend/tests/mission/test_baseline.py",
+  "line": 41,
+  "path": "backend/tests/mission/test_baseline.py",
+  "location": {
+    "path": "backend/tests/mission/test_baseline.py",
+    "line": 41,
+    "character": 11
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.evals.evaluators:FitnessImprovement.evaluate",
+  "type": "method",
+  "summary": "Check fitness improvement.",
+  "source": "backend/agent_k/evals/evaluators.py",
+  "line": 84,
+  "path": "backend/agent_k/evals/evaluators.py",
+  "location": {
+    "path": "backend/agent_k/evals/evaluators.py",
+    "line": 84,
+    "character": 11
+  }
+}

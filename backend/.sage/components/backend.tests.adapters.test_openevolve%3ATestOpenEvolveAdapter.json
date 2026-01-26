@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.adapters.test_openevolve:TestOpenEvolveAdapter",
+  "type": "class",
+  "summary": "Tests for the OpenEvolveAdapter class.",
+  "source": "backend/tests/adapters/test_openevolve.py",
+  "line": 20,
+  "path": "backend/tests/adapters/test_openevolve.py",
+  "location": {
+    "path": "backend/tests/adapters/test_openevolve.py",
+    "line": 20,
+    "character": 7
+  }
+}

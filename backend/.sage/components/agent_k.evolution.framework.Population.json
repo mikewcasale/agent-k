@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.framework:Population",
+  "line": 154,
+  "notice": "Population container with selection, crossover, and mutation helpers.",
+  "pattern": {
+    "name": "population-model",
+    "rationale": "Generic container for evolutionary population management."
+  },
+  "similar": null,
+  "source": "agent_k/evolution/framework.py",
+  "summary": "Population container with selection, crossover, and mutation helpers.",
+  "type": "class"
+}

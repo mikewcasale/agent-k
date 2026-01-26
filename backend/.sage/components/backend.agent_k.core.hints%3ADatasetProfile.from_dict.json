@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.hints:DatasetProfile.from_dict",
+  "type": "method",
+  "summary": "Hydrate from a serialized payload.",
+  "source": "backend/agent_k/core/hints.py",
+  "line": 322,
+  "path": "backend/agent_k/core/hints.py",
+  "location": {
+    "path": "backend/agent_k/core/hints.py",
+    "line": 322,
+    "character": 11
+  }
+}

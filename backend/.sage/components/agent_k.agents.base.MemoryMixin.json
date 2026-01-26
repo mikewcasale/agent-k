@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.base:MemoryMixin",
+  "line": 149,
+  "notice": "Mixin providing memory backend initialization for agents.",
+  "pattern": {
+    "name": "mixin",
+    "rationale": "Shares memory initialization across agents without inheritance chains.",
+    "violations": "Duplicating memory setup logic in each agent."
+  },
+  "similar": null,
+  "source": "agent_k/agents/base.py",
+  "summary": "Mixin providing memory backend initialization for agents.",
+  "type": "class"
+}

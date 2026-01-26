@@ -1,0 +1,22 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": {
+    "for": [
+      "openrouter model creation"
+    ],
+    "notes": "Use create_openrouter_model for OpenRouter endpoints."
+  },
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.providers:create_openrouter_model",
+  "line": 114,
+  "notice": "Creates an OpenAIChatModel configured for OpenRouter.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/providers.py",
+  "summary": "Create a model instance using OpenRouter.",
+  "type": "function"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tools.sageextract:ModuleInfo",
+  "type": "class",
+  "summary": "Module metadata for validation.",
+  "source": "backend/tools/sageextract.py",
+  "line": 80,
+  "path": "backend/tools/sageextract.py",
+  "location": {
+    "path": "backend/tools/sageextract.py",
+    "line": 80,
+    "character": 7
+  }
+}

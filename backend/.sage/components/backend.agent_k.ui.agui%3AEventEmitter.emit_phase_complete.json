@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:EventEmitter.emit_phase_complete",
+  "type": "method",
+  "summary": "Emit phase completion event.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 404,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 404,
+    "character": 11
+  }
+}

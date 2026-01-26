@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.adapters.openevolve:OpenEvolveAdapter",
+  "line": 435,
+  "notice": "Provides a PlatformAdapter facade for OpenEvolve runs.",
+  "pattern": {
+    "name": "adapter",
+    "rationale": "Encapsulates OpenEvolve-specific behaviors.",
+    "violations": "Direct OpenEvolve use bypasses PlatformAdapter contract."
+  },
+  "similar": null,
+  "source": "agent_k/adapters/openevolve.py",
+  "summary": "In-memory adapter for OpenEvolve integration.",
+  "type": "class"
+}

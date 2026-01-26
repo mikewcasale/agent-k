@@ -57,24 +57,30 @@ CHECKPOINT_PREFIX: Final[str] = "checkpoint_"
 class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
     """Mission-specific persistence with checkpoint rotation and resumability.
 
-    @pattern:
-        name: state-persistence
-        rationale: "Stores mission snapshots for resumption and auditability."
-        violations: "Ad-hoc persistence complicates recovery."
+    @notice: |
+        Mission-specific persistence with checkpoint rotation and resumability.
 
-    @collaborators:
-        required:
-            - pydantic_graph.persistence.file:FileStatePersistence
-        injection: constructor
-        lifecycle: "Scoped per mission."
+    @dev: |
+        See module for implementation details and extension points.
 
-    @concurrency:
-        model: asyncio
-        safe: false
-        reason: "Mutates on-disk checkpoints and in-memory snapshots."
+        @pattern:
+            name: state-persistence
+            rationale: "Stores mission snapshots for resumption and auditability."
+            violations: "Ad-hoc persistence complicates recovery."
 
-    @invariants:
-        - "mission_dir exists before persistence operations."
+        @collaborators:
+            required:
+                - pydantic_graph.persistence.file:FileStatePersistence
+            injection: constructor
+            lifecycle: "Scoped per mission."
+
+        @concurrency:
+            model: asyncio
+            safe: false
+            reason: "Mutates on-disk checkpoints and in-memory snapshots."
+
+        @invariants:
+            - "mission_dir exists before persistence operations."
     """
 
     def __init__(
@@ -178,18 +184,21 @@ def create_persistence(
 ) -> MissionPersistence:
     """Factory for mission persistence.
 
-    @notice: |
-        Creates a MissionPersistence instance for the given mission.
+    @dev: |
+        See module for behavior details and invariants.
 
-    @factory-for:
-        id: agent_k.mission.persistence:MissionPersistence
-        rationale: "Centralizes checkpoint path defaults."
-        singleton: false
-        cache-key: mission_id
+        @notice: |
+            Creates a MissionPersistence instance for the given mission.
 
-    @canonical-home:
-        for:
-            - "mission persistence construction"
-        notes: "Use create_persistence to ensure defaults."
+        @factory-for:
+            id: agent_k.mission.persistence:MissionPersistence
+            rationale: "Centralizes checkpoint path defaults."
+            singleton: false
+            cache-key: mission_id
+
+        @canonical-home:
+            for:
+                - "mission persistence construction"
+            notes: "Use create_persistence to ensure defaults."
     """
     return MissionPersistence(mission_id)

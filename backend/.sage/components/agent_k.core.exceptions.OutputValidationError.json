@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.exceptions:OutputValidationError",
+  "line": 157,
+  "notice": "Raised when agent output fails validation.",
+  "pattern": {
+    "name": "exception-specific",
+    "rationale": "Captures validation errors for structured output failures."
+  },
+  "similar": null,
+  "source": "agent_k/core/exceptions.py",
+  "summary": "Raised when agent output fails validation.",
+  "type": "class"
+}

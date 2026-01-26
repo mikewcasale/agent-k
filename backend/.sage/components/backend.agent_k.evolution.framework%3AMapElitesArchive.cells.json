@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.evolution.framework:MapElitesArchive.cells",
+  "type": "method",
+  "summary": "Return the current archive cells.",
+  "source": "backend/agent_k/evolution/framework.py",
+  "line": 113,
+  "path": "backend/agent_k/evolution/framework.py",
+  "location": {
+    "path": "backend/agent_k/evolution/framework.py",
+    "line": 113,
+    "character": 11
+  }
+}

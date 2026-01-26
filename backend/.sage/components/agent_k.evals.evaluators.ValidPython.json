@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evals.evaluators:ValidPython",
+  "line": 43,
+  "notice": "Evaluate if output is valid Python code.",
+  "pattern": {
+    "name": "evaluator",
+    "rationale": "Encapsulates evaluation logic for pydantic-evals.",
+    "violations": "Inline checks are harder to reuse and test."
+  },
+  "similar": null,
+  "source": "agent_k/evals/evaluators.py",
+  "summary": "Evaluate if output is valid Python code.",
+  "type": "class"
+}

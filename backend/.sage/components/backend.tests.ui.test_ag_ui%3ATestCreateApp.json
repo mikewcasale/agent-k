@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.ui.test_ag_ui:TestCreateApp",
+  "type": "class",
+  "summary": "Tests for the create_app factory function.",
+  "source": "backend/tests/ui/test_ag_ui.py",
+  "line": 44,
+  "path": "backend/tests/ui/test_ag_ui.py",
+  "location": {
+    "path": "backend/tests/ui/test_ag_ui.py",
+    "line": 44,
+    "character": 7
+  }
+}

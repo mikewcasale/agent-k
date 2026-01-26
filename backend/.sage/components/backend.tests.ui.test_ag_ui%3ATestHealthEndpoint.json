@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.ui.test_ag_ui:TestHealthEndpoint",
+  "type": "class",
+  "summary": "Tests for the /health endpoint.",
+  "source": "backend/tests/ui/test_ag_ui.py",
+  "line": 56,
+  "path": "backend/tests/ui/test_ag_ui.py",
+  "location": {
+    "path": "backend/tests/ui/test_ag_ui.py",
+    "line": 56,
+    "character": 7
+  }
+}

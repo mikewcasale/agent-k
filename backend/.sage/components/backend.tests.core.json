@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.core",
+  "type": "module",
+  "summary": "Core module tests.",
+  "source": "backend/tests/core/__init__.py",
+  "line": 0,
+  "path": "backend/tests/core/__init__.py",
+  "location": {
+    "path": "backend/tests/core/__init__.py",
+    "line": 0,
+    "character": 3
+  }
+}

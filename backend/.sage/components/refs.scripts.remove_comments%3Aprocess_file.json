@@ -1,0 +1,13 @@
+{
+  "id": "refs.scripts.remove_comments:process_file",
+  "type": "function",
+  "summary": "Process a single Python file to remove all hash comments.",
+  "source": "refs/scripts/remove_comments.py",
+  "line": 64,
+  "path": "refs/scripts/remove_comments.py",
+  "location": {
+    "path": "refs/scripts/remove_comments.py",
+    "line": 64,
+    "character": 7
+  }
+}

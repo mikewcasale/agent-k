@@ -1,0 +1,14 @@
+{
+  "id": "backend.agent_k.ui.agui:create_app",
+  "type": "function",
+  "summary": "Create and configure the FastAPI application.",
+  "dev": "See module for behavior details and invariants.\n\n@notice: |\n    Constructs the FastAPI app with routes and middleware.\n\n@factory-for:\n    id: fastapi:FastAPI\n    rationale: \"Centralizes AG-UI app wiring.\"\n    singleton: false\n    cache-key: \"app\"\n\n@canonical-home:\n    for:\n        - \"AG-UI application construction\"\n    notes: \"Use create_app to initialize the FastAPI server.\"",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 1006,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 1006,
+    "character": 7
+  }
+}

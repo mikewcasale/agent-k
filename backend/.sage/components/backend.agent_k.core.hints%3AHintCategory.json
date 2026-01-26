@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.hints:HintCategory",
+  "type": "class",
+  "summary": "Hint category tags for prompt grouping.",
+  "notice": "Hint category tags for prompt grouping.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: enumeration\n    rationale: \"StrEnum for grouping preprocessing hints by category.\"",
+  "source": "backend/agent_k/core/hints.py",
+  "line": 141,
+  "path": "backend/agent_k/core/hints.py",
+  "location": {
+    "path": "backend/agent_k/core/hints.py",
+    "line": 141,
+    "character": 7
+  }
+}

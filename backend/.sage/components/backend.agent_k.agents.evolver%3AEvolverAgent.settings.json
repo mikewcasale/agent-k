@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.agents.evolver:EvolverAgent.settings",
+  "type": "method",
+  "summary": "Return current settings.",
+  "source": "backend/agent_k/agents/evolver.py",
+  "line": 626,
+  "path": "backend/agent_k/agents/evolver.py",
+  "location": {
+    "path": "backend/agent_k/agents/evolver.py",
+    "line": 626,
+    "character": 11
+  }
+}

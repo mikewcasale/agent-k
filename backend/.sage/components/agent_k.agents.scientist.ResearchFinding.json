@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.scientist:ResearchFinding",
+  "line": 241,
+  "notice": "Individual research finding.",
+  "pattern": {
+    "name": "output-model",
+    "rationale": "Consistent schema for research findings.",
+    "violations": "Ad-hoc dicts are hard to validate."
+  },
+  "similar": null,
+  "source": "agent_k/agents/scientist.py",
+  "summary": "Individual research finding.",
+  "type": "class"
+}

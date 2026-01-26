@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_lycurgus:TestLycurgusOrchestrator.test_initialization_default",
+  "type": "method",
+  "summary": "Orchestrator should initialize with devstral model.",
+  "source": "backend/tests/agents/test_lycurgus.py",
+  "line": 87,
+  "path": "backend/tests/agents/test_lycurgus.py",
+  "location": {
+    "path": "backend/tests/agents/test_lycurgus.py",
+    "line": 87,
+    "character": 11
+  }
+}

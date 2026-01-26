@@ -81,10 +81,16 @@ SCHEMA_VERSION: Final[str] = "1.0.0"
 class LobbyistSettings(BaseSettings):
     """Configuration for the Lobbyist agent.
 
-    @pattern:
-        name: settings
-        rationale: "Centralizes discovery agent configuration."
-        violations: "Ad-hoc per-run overrides lead to inconsistent behavior."
+    @notice: |
+        Configuration for the Lobbyist agent.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: settings
+            rationale: "Centralizes discovery agent configuration."
+            violations: "Ad-hoc per-run overrides lead to inconsistent behavior."
     """
 
     model_config = SettingsConfigDict(env_prefix="LOBBYIST_", env_file=".env", extra="ignore", validate_default=True)
@@ -105,20 +111,26 @@ class LobbyistSettings(BaseSettings):
 class LobbyistDeps:
     """Dependencies for the Lobbyist agent.
 
-    @pattern:
-        name: dependency-container
-        rationale: "Groups runtime services for discovery tools."
-        violations: "Hidden globals make tests and tooling brittle."
+    @notice: |
+        Dependencies for the Lobbyist agent.
 
-    @collaborators:
-        required:
-            - httpx:AsyncClient
-            - agent_k.core.protocols:PlatformAdapter
-            - agent_k.ui.agui:EventEmitter
-        optional:
-            - agent_k.toolsets.memory:AgentKMemoryTool
-        injection: constructor
-        lifecycle: "Allocated per agent run."
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: dependency-container
+            rationale: "Groups runtime services for discovery tools."
+            violations: "Hidden globals make tests and tooling brittle."
+
+        @collaborators:
+            required:
+                - httpx:AsyncClient
+                - agent_k.core.protocols:PlatformAdapter
+                - agent_k.ui.agui:EventEmitter
+            optional:
+                - agent_k.toolsets.memory:AgentKMemoryTool
+            injection: constructor
+            lifecycle: "Allocated per agent run."
     """
 
     http_client: httpx.AsyncClient
@@ -130,10 +142,16 @@ class LobbyistDeps:
 class DiscoveryResult(BaseModel):
     """Result of competition discovery.
 
-    @pattern:
-        name: output-model
-        rationale: "Stable schema for discovery outputs."
-        violations: "Ad-hoc dict outputs are hard to validate."
+    @notice: |
+        Result of competition discovery.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: output-model
+            rationale: "Stable schema for discovery outputs."
+            violations: "Ad-hoc dict outputs are hard to validate."
     """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)

@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.hints:PreprocessingHint.from_dict",
+  "type": "method",
+  "summary": "Hydrate from a serialized payload.",
+  "source": "backend/agent_k/core/hints.py",
+  "line": 427,
+  "path": "backend/agent_k/core/hints.py",
+  "location": {
+    "path": "backend/agent_k/core/hints.py",
+    "line": 427,
+    "character": 11
+  }
+}

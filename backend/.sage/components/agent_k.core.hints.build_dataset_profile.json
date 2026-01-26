@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Samples up to MAX_PROFILE_ROWS, infers column types, detects missing\npatterns, and computes target correlations.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.hints:build_dataset_profile",
+  "line": 465,
+  "notice": "Builds a comprehensive profile of dataset columns for hint generation.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/hints.py",
+  "summary": "Profile dataset columns for preprocessing hints.",
+  "type": "function"
+}

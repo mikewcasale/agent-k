@@ -1,0 +1,45 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.toolsets.search as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "id": "agent_k.toolsets.search",
+    "pattern": "toolset",
+    "provides": [
+      "agent_k.toolsets.search:build_kaggle_search_query",
+      "agent_k.toolsets.search:build_scholarly_query",
+      "agent_k.toolsets.search:create_web_search_tool",
+      "agent_k.toolsets.search:prepare_web_search",
+      "agent_k.toolsets.search:create_web_fetch_tool",
+      "agent_k.toolsets.search:prepare_web_fetch"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.toolsets.search",
+  "line": 1,
+  "notice": "Search tool helpers for AGENT-K agents.",
+  "pattern": null,
+  "similar": [
+    {
+      "id": "agent_k.toolsets.browser",
+      "when": "Use for browsing fetched pages rather than constructing queries."
+    }
+  ],
+  "source": "agent_k/toolsets/search.py",
+  "summary": "Search tool helpers for AGENT-K agents.",
+  "type": "module"
+}

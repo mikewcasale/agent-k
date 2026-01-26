@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.framework:HyperparamSpace",
+  "line": 235,
+  "notice": "Search space definition for hyperparameter evolution.",
+  "pattern": {
+    "name": "search-space",
+    "rationale": "Dataclass defining continuous, integer, categorical bounds."
+  },
+  "similar": null,
+  "source": "agent_k/evolution/framework.py",
+  "summary": "Search space definition for hyperparameter evolution.",
+  "type": "class"
+}

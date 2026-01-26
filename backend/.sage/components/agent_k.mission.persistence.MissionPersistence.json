@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.persistence:MissionPersistence",
+  "line": 58,
+  "notice": "Mission-specific persistence with checkpoint rotation and resumability.",
+  "pattern": {
+    "name": "state-persistence",
+    "rationale": "Stores mission snapshots for resumption and auditability.",
+    "violations": "Ad-hoc persistence complicates recovery."
+  },
+  "similar": null,
+  "source": "agent_k/mission/persistence.py",
+  "summary": "Mission-specific persistence with checkpoint rotation and resumability.",
+  "type": "class"
+}

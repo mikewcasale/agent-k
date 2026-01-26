@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.solution:ExecutionResult",
+  "line": 82,
+  "notice": "Result of executing a solution script.",
+  "pattern": {
+    "name": "execution-result",
+    "rationale": "Standardizes subprocess outputs for solution runs.",
+    "violations": "Tuple returns drop context for debugging."
+  },
+  "similar": null,
+  "source": "agent_k/core/solution.py",
+  "summary": "Result of executing a solution script.",
+  "type": "class"
+}

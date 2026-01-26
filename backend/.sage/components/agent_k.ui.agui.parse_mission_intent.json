@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:parse_mission_intent",
+  "line": 866,
+  "notice": "Parse chat messages to detect mission intent and extract criteria.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Parse chat messages to detect mission intent and extract criteria.",
+  "type": "function"
+}

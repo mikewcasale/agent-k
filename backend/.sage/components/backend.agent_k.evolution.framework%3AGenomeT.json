@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.evolution.framework:GenomeT",
+  "type": "attribute",
+  "summary": "Type variable for genomes.",
+  "source": "backend/agent_k/evolution/framework.py",
+  "line": 39,
+  "path": "backend/agent_k/evolution/framework.py",
+  "location": {
+    "path": "backend/agent_k/evolution/framework.py",
+    "line": 39,
+    "character": 3
+  }
+}

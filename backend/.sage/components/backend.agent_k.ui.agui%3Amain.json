@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.ui.agui:main",
+  "type": "function",
+  "summary": "Run the AG-UI server.",
+  "notice": "Run the AG-UI server.",
+  "dev": "See module for behavior details and invariants.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 1765,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 1765,
+    "character": 7
+  }
+}

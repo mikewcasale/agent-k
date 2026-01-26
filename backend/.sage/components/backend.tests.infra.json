@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.infra",
+  "type": "module",
+  "summary": "Infrastructure tests.",
+  "source": "backend/tests/infra/__init__.py",
+  "line": 0,
+  "path": "backend/tests/infra/__init__.py",
+  "location": {
+    "path": "backend/tests/infra/__init__.py",
+    "line": 0,
+    "character": 3
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.toolsets.tracking as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "id": "agent_k.toolsets.tracking",
+    "pattern": "toolset",
+    "provides": [
+      "agent_k.toolsets.tracking:tracking_toolset",
+      "agent_k.toolsets.tracking:tracking_record_experiment",
+      "agent_k.toolsets.tracking:tracking_list_experiments",
+      "agent_k.toolsets.tracking:tracking_best_experiment"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.toolsets.tracking",
+  "line": 1,
+  "notice": "Experiment tracking toolset for AGENT-K.",
+  "pattern": null,
+  "similar": [
+    {
+      "id": "agent_k.core.tracking",
+      "when": "Core tracking storage APIs; this module exposes tool wrappers."
+    }
+  ],
+  "source": "agent_k/toolsets/tracking.py",
+  "summary": "Experiment tracking toolset for AGENT-K.",
+  "type": "module"
+}

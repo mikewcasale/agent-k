@@ -1,0 +1,44 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.agents.base as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "consumes": [
+      "agent_k.toolsets.memory:AgentKMemoryTool",
+      "agent_k.toolsets.memory:create_memory_backend",
+      "agent_k.toolsets.memory:register_memory_tool"
+    ],
+    "id": "agent_k.agents.base",
+    "pattern": "agent-base",
+    "provides": [
+      "agent_k.agents.base:AgentDeps",
+      "agent_k.agents.base:BaseAgentMixin",
+      "agent_k.agents.base:MemoryMixin",
+      "agent_k.agents.base:universal_tool_preparation",
+      "agent_k.agents.base:prepare_output_tools_strict"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.agents.base",
+  "line": 1,
+  "notice": "Base agent patterns for AGENT-K.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/base.py",
+  "summary": "Base agent patterns for AGENT-K.",
+  "type": "module"
+}

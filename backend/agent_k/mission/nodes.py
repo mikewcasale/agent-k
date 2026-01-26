@@ -114,34 +114,40 @@ _DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = (
 class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
     """Discovery phase node.
 
-    Executes the LOBBYIST agent to discover competitions matching criteria.
+        Executes the LOBBYIST agent to discover competitions matching criteria.
 
-    Transitions:
-        - Success → ResearchNode
-        - Failure → End(failure)
+        Transitions:
+            - Success → ResearchNode
+            - Failure → End(failure)
 
-    @pattern:
-        name: graph-node
-        rationale: "Encapsulates discovery phase logic in the mission graph."
-        violations: "Discovery logic outside nodes causes transition drift."
+    @notice: |
+        Discovery phase node.
 
-    @collaborators:
-        required:
-            - agent_k.agents.lobbyist:LobbyistAgent
-            - agent_k.ui.agui:EventEmitter
-        optional:
-            - httpx:AsyncClient
-            - agent_k.core.protocols:PlatformAdapter
-        injection: GraphContext
-        lifecycle: "Instantiated per graph run."
+    @dev: |
+        See module for implementation details and extension points.
 
-    @concurrency:
-        model: asyncio
-        safe: false
-        reason: "Mutates mission state during execution."
+        @pattern:
+            name: graph-node
+            rationale: "Encapsulates discovery phase logic in the mission graph."
+            violations: "Discovery logic outside nodes causes transition drift."
 
-    @invariants:
-        - "timeout > 0"
+        @collaborators:
+            required:
+                - agent_k.agents.lobbyist:LobbyistAgent
+                - agent_k.ui.agui:EventEmitter
+            optional:
+                - httpx:AsyncClient
+                - agent_k.core.protocols:PlatformAdapter
+            injection: GraphContext
+            lifecycle: "Instantiated per graph run."
+
+        @concurrency:
+            model: asyncio
+            safe: false
+            reason: "Mutates mission state during execution."
+
+        @invariants:
+            - "timeout > 0"
     """
 
     timeout: int = DISCOVERY_TIMEOUT_SECONDS
@@ -266,34 +272,40 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
 class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
     """Research phase node.
 
-    Executes the SCIENTIST agent to analyze the competition.
+        Executes the SCIENTIST agent to analyze the competition.
 
-    Transitions:
-        - Success → PrototypeNode
-        - Failure → End(failure)
+        Transitions:
+            - Success → PrototypeNode
+            - Failure → End(failure)
 
-    @pattern:
-        name: graph-node
-        rationale: "Encapsulates research phase logic in the mission graph."
-        violations: "Research logic outside nodes causes transition drift."
+    @notice: |
+        Research phase node.
 
-    @collaborators:
-        required:
-            - agent_k.agents.scientist:ScientistAgent
-            - agent_k.ui.agui:EventEmitter
-        optional:
-            - httpx:AsyncClient
-            - agent_k.core.protocols:PlatformAdapter
-        injection: GraphContext
-        lifecycle: "Instantiated per graph run."
+    @dev: |
+        See module for implementation details and extension points.
 
-    @concurrency:
-        model: asyncio
-        safe: false
-        reason: "Mutates mission state during execution."
+        @pattern:
+            name: graph-node
+            rationale: "Encapsulates research phase logic in the mission graph."
+            violations: "Research logic outside nodes causes transition drift."
 
-    @invariants:
-        - "timeout > 0"
+        @collaborators:
+            required:
+                - agent_k.agents.scientist:ScientistAgent
+                - agent_k.ui.agui:EventEmitter
+            optional:
+                - httpx:AsyncClient
+                - agent_k.core.protocols:PlatformAdapter
+            injection: GraphContext
+            lifecycle: "Instantiated per graph run."
+
+        @concurrency:
+            model: asyncio
+            safe: false
+            reason: "Mutates mission state during execution."
+
+        @invariants:
+            - "timeout > 0"
     """
 
     timeout: int = RESEARCH_TIMEOUT_SECONDS
@@ -406,33 +418,39 @@ class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
 class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
     """Prototype phase node.
 
-    Generates initial baseline solution.
+        Generates initial baseline solution.
 
-    Transitions:
-        - Success → EvolutionNode
-        - Failure → End(failure)
+        Transitions:
+            - Success → EvolutionNode
+            - Failure → End(failure)
 
-    @pattern:
-        name: graph-node
-        rationale: "Encapsulates prototype phase logic in the mission graph."
-        violations: "Prototype logic outside nodes causes transition drift."
+    @notice: |
+        Prototype phase node.
 
-    @collaborators:
-        required:
-            - agent_k.core.solution:execute_solution
-            - agent_k.ui.agui:EventEmitter
-        optional:
-            - agent_k.core.protocols:PlatformAdapter
-        injection: GraphContext
-        lifecycle: "Instantiated per graph run."
+    @dev: |
+        See module for implementation details and extension points.
 
-    @concurrency:
-        model: asyncio
-        safe: false
-        reason: "Mutates mission state during execution."
+        @pattern:
+            name: graph-node
+            rationale: "Encapsulates prototype phase logic in the mission graph."
+            violations: "Prototype logic outside nodes causes transition drift."
 
-    @invariants:
-        - "timeout > 0"
+        @collaborators:
+            required:
+                - agent_k.core.solution:execute_solution
+                - agent_k.ui.agui:EventEmitter
+            optional:
+                - agent_k.core.protocols:PlatformAdapter
+            injection: GraphContext
+            lifecycle: "Instantiated per graph run."
+
+        @concurrency:
+            model: asyncio
+            safe: false
+            reason: "Mutates mission state during execution."
+
+        @invariants:
+            - "timeout > 0"
     """
 
     timeout: int = PROTOTYPE_TIMEOUT_SECONDS
@@ -881,33 +899,39 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
 class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
     """Evolution phase node.
 
-    Executes the EVOLVER agent to optimize the solution.
+        Executes the EVOLVER agent to optimize the solution.
 
-    Transitions:
-        - Success → SubmissionNode
-        - Failure → End(failure with best solution)
+        Transitions:
+            - Success → SubmissionNode
+            - Failure → End(failure with best solution)
 
-    @pattern:
-        name: graph-node
-        rationale: "Encapsulates evolution phase logic in the mission graph."
-        violations: "Evolution logic outside nodes causes transition drift."
+    @notice: |
+        Evolution phase node.
 
-    @collaborators:
-        required:
-            - agent_k.agents.evolver:EvolverAgent
-            - agent_k.ui.agui:EventEmitter
-        optional:
-            - agent_k.core.protocols:PlatformAdapter
-        injection: GraphContext
-        lifecycle: "Instantiated per graph run."
+    @dev: |
+        See module for implementation details and extension points.
 
-    @concurrency:
-        model: asyncio
-        safe: false
-        reason: "Mutates mission state during execution."
+        @pattern:
+            name: graph-node
+            rationale: "Encapsulates evolution phase logic in the mission graph."
+            violations: "Evolution logic outside nodes causes transition drift."
 
-    @invariants:
-        - "timeout > 0"
+        @collaborators:
+            required:
+                - agent_k.agents.evolver:EvolverAgent
+                - agent_k.ui.agui:EventEmitter
+            optional:
+                - agent_k.core.protocols:PlatformAdapter
+            injection: GraphContext
+            lifecycle: "Instantiated per graph run."
+
+        @concurrency:
+            model: asyncio
+            safe: false
+            reason: "Mutates mission state during execution."
+
+        @invariants:
+            - "timeout > 0"
     """
 
     timeout: int = EVOLUTION_TIMEOUT_SECONDS
@@ -1577,33 +1601,39 @@ Model rotation segment {segment_index} using {model_spec}."""
 class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
     """Submission phase node.
 
-    Final submission of best solution.
+        Final submission of best solution.
 
-    Transitions:
-        - Success → End(success)
-        - Failure → End(failure)
+        Transitions:
+            - Success → End(success)
+            - Failure → End(failure)
 
-    @pattern:
-        name: graph-node
-        rationale: "Encapsulates submission phase logic in the mission graph."
-        violations: "Submission logic outside nodes causes transition drift."
+    @notice: |
+        Submission phase node.
 
-    @collaborators:
-        required:
-            - agent_k.core.protocols:PlatformAdapter
-            - agent_k.ui.agui:EventEmitter
-        optional:
-            - agent_k.agents.evolver:EvolverAgent
-        injection: GraphContext
-        lifecycle: "Instantiated per graph run."
+    @dev: |
+        See module for implementation details and extension points.
 
-    @concurrency:
-        model: asyncio
-        safe: false
-        reason: "Mutates mission state during execution."
+        @pattern:
+            name: graph-node
+            rationale: "Encapsulates submission phase logic in the mission graph."
+            violations: "Submission logic outside nodes causes transition drift."
 
-    @invariants:
-        - "timeout > 0"
+        @collaborators:
+            required:
+                - agent_k.core.protocols:PlatformAdapter
+                - agent_k.ui.agui:EventEmitter
+            optional:
+                - agent_k.agents.evolver:EvolverAgent
+            injection: GraphContext
+            lifecycle: "Instantiated per graph run."
+
+        @concurrency:
+            model: asyncio
+            safe: false
+            reason: "Mutates mission state during execution."
+
+        @invariants:
+            - "timeout > 0"
     """
 
     timeout: int = SUBMISSION_TIMEOUT_SECONDS

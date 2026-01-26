@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_evolver_mutations:TestCrossover.test_crossover_merges_imports",
+  "type": "method",
+  "summary": "Crossover should merge imports without duplicates.",
+  "source": "backend/tests/agents/test_evolver_mutations.py",
+  "line": 112,
+  "path": "backend/tests/agents/test_evolver_mutations.py",
+  "location": {
+    "path": "backend/tests/agents/test_evolver_mutations.py",
+    "line": 112,
+    "character": 11
+  }
+}

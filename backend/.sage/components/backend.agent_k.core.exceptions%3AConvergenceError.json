@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.exceptions:ConvergenceError",
+  "type": "class",
+  "summary": "Raised when evolution fails to converge within limits.",
+  "notice": "Raised when evolution fails to converge within limits.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: exception-specific\n    rationale: \"Captures evolution progress for analysis.\"",
+  "source": "backend/agent_k/core/exceptions.py",
+  "line": 377,
+  "path": "backend/agent_k/core/exceptions.py",
+  "location": {
+    "path": "backend/agent_k/core/exceptions.py",
+    "line": 377,
+    "character": 7
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.adapters.test_openevolve:TestOpenEvolveAdapter.test_adapter_creation",
+  "type": "method",
+  "summary": "Adapter should be created as a dataclass.",
+  "source": "backend/tests/adapters/test_openevolve.py",
+  "line": 23,
+  "path": "backend/tests/adapters/test_openevolve.py",
+  "location": {
+    "path": "backend/tests/adapters/test_openevolve.py",
+    "line": 23,
+    "character": 11
+  }
+}

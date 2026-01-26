@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.adapters.kaggle:KaggleAdapter.submit",
+  "type": "method",
+  "summary": "Submit solution to Kaggle competition.",
+  "source": "backend/agent_k/adapters/kaggle.py",
+  "line": 308,
+  "path": "backend/agent_k/adapters/kaggle.py",
+  "location": {
+    "path": "backend/agent_k/adapters/kaggle.py",
+    "line": 308,
+    "character": 11
+  }
+}

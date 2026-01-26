@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.models:WebSearchCall",
+  "type": "class",
+  "summary": "Web search tool call.",
+  "notice": "Web search tool call.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: specialization\n    rationale: \"Extends ToolCall with web search specific fields.\"",
+  "source": "backend/agent_k/core/models.py",
+  "line": 308,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 308,
+    "character": 7
+  }
+}

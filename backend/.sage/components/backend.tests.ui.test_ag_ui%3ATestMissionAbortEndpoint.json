@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.ui.test_ag_ui:TestMissionAbortEndpoint",
+  "type": "class",
+  "summary": "Tests for the /api/mission/{mission_id}/abort endpoint.",
+  "source": "backend/tests/ui/test_ag_ui.py",
+  "line": 120,
+  "path": "backend/tests/ui/test_ag_ui.py",
+  "location": {
+    "path": "backend/tests/ui/test_ag_ui.py",
+    "line": 120,
+    "character": 7
+  }
+}

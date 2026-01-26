@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.tracking:tracking_record_experiment",
+  "line": 56,
+  "notice": "Validates and stores the experiment record.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/tracking.py",
+  "summary": "Record an experiment to the persistent tracker.",
+  "type": "function"
+}

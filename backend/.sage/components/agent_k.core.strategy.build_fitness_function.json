@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Returns a closure that scores FitnessInput based on policy thresholds.\nInvalid inputs return 0.0; penalties applied for runtime/complexity.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.strategy:build_fitness_function",
+  "line": 296,
+  "notice": "Creates a callable fitness function from a FitnessPolicy.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/strategy.py",
+  "summary": "Build a fitness function from policy.",
+  "type": "function"
+}

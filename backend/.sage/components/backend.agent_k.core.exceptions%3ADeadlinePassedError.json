@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.exceptions:DeadlinePassedError",
+  "type": "class",
+  "summary": "Raised when competition deadline has passed.",
+  "notice": "Raised when competition deadline has passed.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: exception-specific\n    rationale: \"Non-recoverable deadline expiration.\"",
+  "source": "backend/agent_k/core/exceptions.py",
+  "line": 338,
+  "path": "backend/agent_k/core/exceptions.py",
+  "location": {
+    "path": "backend/agent_k/core/exceptions.py",
+    "line": 338,
+    "character": 7
+  }
+}

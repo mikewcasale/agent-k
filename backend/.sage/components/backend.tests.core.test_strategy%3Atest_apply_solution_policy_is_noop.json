@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.core.test_strategy:test_apply_solution_policy_is_noop",
+  "type": "function",
+  "summary": "Policy injection is disabled; apply_solution_policy returns code unchanged.",
+  "source": "backend/tests/core/test_strategy.py",
+  "line": 76,
+  "path": "backend/tests/core/test_strategy.py",
+  "location": {
+    "path": "backend/tests/core/test_strategy.py",
+    "line": 76,
+    "character": 7
+  }
+}

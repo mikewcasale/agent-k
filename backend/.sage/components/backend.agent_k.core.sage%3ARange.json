@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.sage:Range",
+  "type": "class",
+  "summary": "Numeric range constraint for parameters.",
+  "notice": "Numeric range constraint for parameters.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: doc-metadata\n    rationale: \"Encodes min/max bounds for tooling and agents.\"\n    violations: \"Hidden bounds lead to invalid parameter choices.\"",
+  "source": "backend/agent_k/core/sage.py",
+  "line": 80,
+  "path": "backend/agent_k/core/sage.py",
+  "location": {
+    "path": "backend/agent_k/core/sage.py",
+    "line": 80,
+    "character": 7
+  }
+}

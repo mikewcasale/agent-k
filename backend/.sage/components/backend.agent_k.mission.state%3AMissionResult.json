@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.mission.state:MissionResult",
+  "type": "class",
+  "summary": "Final result of mission execution.",
+  "notice": "Final result of mission execution.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: output-model\n    rationale: \"Stable schema for mission results.\"\n    violations: \"Ad-hoc outputs hinder UI/reporting.\"",
+  "source": "backend/agent_k/mission/state.py",
+  "line": 112,
+  "path": "backend/agent_k/mission/state.py",
+  "location": {
+    "path": "backend/agent_k/mission/state.py",
+    "line": 112,
+    "character": 7
+  }
+}

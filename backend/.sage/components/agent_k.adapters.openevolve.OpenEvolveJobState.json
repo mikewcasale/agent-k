@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.adapters.openevolve:OpenEvolveJobState",
+  "line": 120,
+  "notice": "Lifecycle state for an OpenEvolve job.",
+  "pattern": {
+    "name": "enumeration",
+    "rationale": "StrEnum for OpenEvolve job lifecycle states.",
+    "violations": "String literals drift across job state handling."
+  },
+  "similar": null,
+  "source": "agent_k/adapters/openevolve.py",
+  "summary": "Lifecycle state for an OpenEvolve job.",
+  "type": "class"
+}

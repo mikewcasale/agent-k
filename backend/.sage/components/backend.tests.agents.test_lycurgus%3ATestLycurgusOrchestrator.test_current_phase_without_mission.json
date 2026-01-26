@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_lycurgus:TestLycurgusOrchestrator.test_current_phase_without_mission",
+  "type": "method",
+  "summary": "current_phase should be None without mission.",
+  "source": "backend/tests/agents/test_lycurgus.py",
+  "line": 153,
+  "path": "backend/tests/agents/test_lycurgus.py",
+  "location": {
+    "path": "backend/tests/agents/test_lycurgus.py",
+    "line": 153,
+    "character": 11
+  }
+}

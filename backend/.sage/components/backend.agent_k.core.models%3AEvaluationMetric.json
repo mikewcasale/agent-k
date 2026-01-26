@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.models:EvaluationMetric",
+  "type": "class",
+  "summary": "Standard evaluation metrics for competitions.",
+  "notice": "Standard evaluation metrics for competitions.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: enumeration\n    rationale: \"StrEnum for standard ML evaluation metrics.\"",
+  "source": "backend/agent_k/core/models.py",
+  "line": 139,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 139,
+    "character": 7
+  }
+}

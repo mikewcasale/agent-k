@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_evolver_mutations:TestPointMutation",
+  "type": "class",
+  "summary": "Tests for point mutation behavior.",
+  "source": "backend/tests/agents/test_evolver_mutations.py",
+  "line": 50,
+  "path": "backend/tests/agents/test_evolver_mutations.py",
+  "location": {
+    "path": "backend/tests/agents/test_evolver_mutations.py",
+    "line": 50,
+    "character": 7
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_state:TestMissionState.test_discovered_competitions_default",
+  "type": "method",
+  "summary": "Discovered competitions should default to empty list.",
+  "source": "backend/tests/mission/test_state.py",
+  "line": 62,
+  "path": "backend/tests/mission/test_state.py",
+  "location": {
+    "path": "backend/tests/mission/test_state.py",
+    "line": 62,
+    "character": 11
+  }
+}

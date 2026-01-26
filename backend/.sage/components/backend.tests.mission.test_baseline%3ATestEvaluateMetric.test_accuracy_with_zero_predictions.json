@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_baseline:TestEvaluateMetric.test_accuracy_with_zero_predictions",
+  "type": "method",
+  "summary": "Accuracy should reflect zeros in the predictions.",
+  "source": "backend/tests/mission/test_baseline.py",
+  "line": 61,
+  "path": "backend/tests/mission/test_baseline.py",
+  "location": {
+    "path": "backend/tests/mission/test_baseline.py",
+    "line": 61,
+    "character": 11
+  }
+}

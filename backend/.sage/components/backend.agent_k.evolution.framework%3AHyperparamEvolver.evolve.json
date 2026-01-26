@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.evolution.framework:HyperparamEvolver.evolve",
+  "type": "method",
+  "summary": "Run hyperparameter evolution for a fixed number of generations.",
+  "source": "backend/agent_k/evolution/framework.py",
+  "line": 311,
+  "path": "backend/agent_k/evolution/framework.py",
+  "location": {
+    "path": "backend/agent_k/evolution/framework.py",
+    "line": 311,
+    "character": 11
+  }
+}

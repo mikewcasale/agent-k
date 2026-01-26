@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.scientist:ScientistAgent.analyze_top_kernels",
+  "line": 457,
+  "notice": "Downloads and summarizes kernel code to identify techniques.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/scientist.py",
+  "summary": "Analyze top Kaggle kernels for techniques and patterns.",
+  "type": "method"
+}

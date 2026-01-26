@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Sets strict mode for OpenAI tool calls and applies timeouts to risky tools.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.base:universal_tool_preparation",
+  "line": 188,
+  "notice": "Normalizes tool definitions for strictness and timeouts.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/base.py",
+  "summary": "Apply universal tool configuration across agents.",
+  "type": "function"
+}

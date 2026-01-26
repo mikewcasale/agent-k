@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.mission.state:GraphContext",
+  "type": "class",
+  "summary": "Context passed to graph execution.",
+  "notice": "Context passed to graph execution.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: dependency-container\n    rationale: \"Bundles runtime services for graph execution.\"\n    violations: \"Hidden globals make graph runs brittle.\"",
+  "source": "backend/agent_k/mission/state.py",
+  "line": 142,
+  "path": "backend/agent_k/mission/state.py",
+  "location": {
+    "path": "backend/agent_k/mission/state.py",
+    "line": 142,
+    "character": 7
+  }
+}

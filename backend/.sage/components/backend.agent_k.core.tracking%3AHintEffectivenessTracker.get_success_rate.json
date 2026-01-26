@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.tracking:HintEffectivenessTracker.get_success_rate",
+  "type": "method",
+  "summary": "Return success rate for a hint within a competition.",
+  "source": "backend/agent_k/core/tracking.py",
+  "line": 778,
+  "path": "backend/agent_k/core/tracking.py",
+  "location": {
+    "path": "backend/agent_k/core/tracking.py",
+    "line": 778,
+    "character": 11
+  }
+}

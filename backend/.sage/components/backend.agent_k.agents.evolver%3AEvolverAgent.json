@@ -1,0 +1,20 @@
+{
+  "id": "backend.agent_k.agents.evolver:EvolverAgent",
+  "type": "class",
+  "summary": "Evolver agent encapsulating evolutionary optimization functionality.",
+  "notice": "Optimizes prototype solutions via evolutionary search.\nUse the module-level evolver_agent or agent registry.",
+  "dev": "Registers evolution tools and coordinates mutation/evaluation cycles.",
+  "pattern": {
+    "name": "agent-singleton",
+    "rationale": "Single instance keeps memory/tool registration consistent.",
+    "violations": "Multiple instances duplicate tool registrations."
+  },
+  "source": "backend/agent_k/agents/evolver.py",
+  "line": 555,
+  "path": "backend/agent_k/agents/evolver.py",
+  "location": {
+    "path": "backend/agent_k/agents/evolver.py",
+    "line": 555,
+    "character": 7
+  }
+}

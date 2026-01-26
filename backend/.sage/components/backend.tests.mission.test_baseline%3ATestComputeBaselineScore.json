@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_baseline:TestComputeBaselineScore",
+  "type": "class",
+  "summary": "Tests for baseline score computation.",
+  "source": "backend/tests/mission/test_baseline.py",
+  "line": 91,
+  "path": "backend/tests/mission/test_baseline.py",
+  "location": {
+    "path": "backend/tests/mission/test_baseline.py",
+    "line": 91,
+    "character": 7
+  }
+}

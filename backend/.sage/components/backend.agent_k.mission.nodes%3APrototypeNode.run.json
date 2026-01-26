@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.mission.nodes:PrototypeNode.run",
+  "type": "method",
+  "summary": "Execute prototype phase.",
+  "source": "backend/agent_k/mission/nodes.py",
+  "line": 458,
+  "path": "backend/agent_k/mission/nodes.py",
+  "location": {
+    "path": "backend/agent_k/mission/nodes.py",
+    "line": 458,
+    "character": 11
+  }
+}

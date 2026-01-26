@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.embeddings.test_store:TestInMemoryVectorStore.test_query_zero_norm_vector",
+  "type": "method",
+  "summary": "Zero-norm vectors should not crash similarity scoring.",
+  "source": "backend/tests/embeddings/test_store.py",
+  "line": 55,
+  "path": "backend/tests/embeddings/test_store.py",
+  "location": {
+    "path": "backend/tests/embeddings/test_store.py",
+    "line": 55,
+    "character": 11
+  }
+}

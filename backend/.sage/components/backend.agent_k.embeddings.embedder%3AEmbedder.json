@@ -1,0 +1,18 @@
+{
+  "id": "backend.agent_k.embeddings.embedder:Embedder",
+  "type": "class",
+  "summary": "Protocol for embedding providers.",
+  "pattern": {
+    "name": "protocol-interface",
+    "rationale": "Standard contract for embedding providers.",
+    "violations": "Embedder implementations without this contract diverge."
+  },
+  "source": "backend/agent_k/embeddings/embedder.py",
+  "line": 60,
+  "path": "backend/agent_k/embeddings/embedder.py",
+  "location": {
+    "path": "backend/agent_k/embeddings/embedder.py",
+    "line": 60,
+    "character": 7
+  }
+}

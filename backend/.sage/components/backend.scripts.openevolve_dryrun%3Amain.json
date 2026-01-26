@@ -1,0 +1,13 @@
+{
+  "id": "backend.scripts.openevolve_dryrun:main",
+  "type": "function",
+  "summary": "Entry point for CLI execution.",
+  "source": "backend/scripts/openevolve_dryrun.py",
+  "line": 290,
+  "path": "backend/scripts/openevolve_dryrun.py",
+  "location": {
+    "path": "backend/scripts/openevolve_dryrun.py",
+    "line": 290,
+    "character": 7
+  }
+}

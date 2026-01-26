@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_lobbyist:TestLobbyistAgentSingleton",
+  "type": "class",
+  "summary": "Tests for the Lobbyist agent singleton.",
+  "source": "backend/tests/agents/test_lobbyist.py",
+  "line": 83,
+  "path": "backend/tests/agents/test_lobbyist.py",
+  "location": {
+    "path": "backend/tests/agents/test_lobbyist.py",
+    "line": 83,
+    "character": 7
+  }
+}

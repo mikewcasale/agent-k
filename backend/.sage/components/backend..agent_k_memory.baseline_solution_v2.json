@@ -1,0 +1,13 @@
+{
+  "id": "backend..agent_k_memory.baseline_solution_v2",
+  "type": "module",
+  "summary": "Baseline Solution for House Prices - Advanced Regression Techniques",
+  "source": "backend/.agent_k_memory/baseline_solution_v2.py",
+  "line": 0,
+  "path": "backend/.agent_k_memory/baseline_solution_v2.py",
+  "location": {
+    "path": "backend/.agent_k_memory/baseline_solution_v2.py",
+    "line": 0,
+    "character": 3
+  }
+}

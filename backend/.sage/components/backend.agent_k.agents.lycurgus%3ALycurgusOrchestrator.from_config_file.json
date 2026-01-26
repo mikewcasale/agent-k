@@ -1,0 +1,14 @@
+{
+  "id": "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.from_config_file",
+  "type": "method",
+  "summary": "Create orchestrator from configuration file.",
+  "notice": "Builds an orchestrator from a JSON config file.",
+  "source": "backend/agent_k/agents/lycurgus.py",
+  "line": 322,
+  "path": "backend/agent_k/agents/lycurgus.py",
+  "location": {
+    "path": "backend/agent_k/agents/lycurgus.py",
+    "line": 322,
+    "character": 11
+  }
+}

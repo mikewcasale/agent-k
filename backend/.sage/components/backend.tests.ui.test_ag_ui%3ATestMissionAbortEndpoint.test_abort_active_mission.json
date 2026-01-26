@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.ui.test_ag_ui:TestMissionAbortEndpoint.test_abort_active_mission",
+  "type": "method",
+  "summary": "Should abort an active mission.",
+  "source": "backend/tests/ui/test_ag_ui.py",
+  "line": 131,
+  "path": "backend/tests/ui/test_ag_ui.py",
+  "location": {
+    "path": "backend/tests/ui/test_ag_ui.py",
+    "line": 131,
+    "character": 11
+  }
+}

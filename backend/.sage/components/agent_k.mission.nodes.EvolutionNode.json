@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:EvolutionNode",
+  "line": 900,
+  "notice": "Evolution phase node.",
+  "pattern": {
+    "name": "graph-node",
+    "rationale": "Encapsulates evolution phase logic in the mission graph.",
+    "violations": "Evolution logic outside nodes causes transition drift."
+  },
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Evolution phase node.",
+  "type": "class"
+}

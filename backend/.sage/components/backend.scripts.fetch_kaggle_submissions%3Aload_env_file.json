@@ -1,0 +1,13 @@
+{
+  "id": "backend.scripts.fetch_kaggle_submissions:load_env_file",
+  "type": "function",
+  "summary": "Load a minimal KEY=VALUE env file.",
+  "source": "backend/scripts/fetch_kaggle_submissions.py",
+  "line": 38,
+  "path": "backend/scripts/fetch_kaggle_submissions.py",
+  "location": {
+    "path": "backend/scripts/fetch_kaggle_submissions.py",
+    "line": 38,
+    "character": 7
+  }
+}

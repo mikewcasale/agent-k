@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.models:ErrorEvent",
+  "line": 634,
+  "notice": "Record of an error event.",
+  "pattern": {
+    "name": "immutable-entity",
+    "rationale": "Frozen Pydantic model for error event records."
+  },
+  "similar": null,
+  "source": "agent_k/core/models.py",
+  "summary": "Record of an error event.",
+  "type": "class"
+}

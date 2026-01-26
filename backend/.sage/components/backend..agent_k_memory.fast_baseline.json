@@ -1,0 +1,13 @@
+{
+  "id": "backend..agent_k_memory.fast_baseline",
+  "type": "module",
+  "summary": "FAST BASELINE SOLUTION - Generation 0",
+  "source": "backend/.agent_k_memory/fast_baseline.py",
+  "line": 0,
+  "path": "backend/.agent_k_memory/fast_baseline.py",
+  "location": {
+    "path": "backend/.agent_k_memory/fast_baseline.py",
+    "line": 0,
+    "character": 3
+  }
+}

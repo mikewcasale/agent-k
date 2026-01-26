@@ -46,18 +46,24 @@ __all__ = ("BaseDeps", "KaggleDeps")
 class BaseDeps:
     """Base dependencies shared across agents.
 
-    @pattern:
-        name: dependency-container
-        rationale: "Shared DI container for agent executions."
-        violations: "Hidden globals make runs nondeterministic."
+    @notice: |
+        Base dependencies shared across agents.
 
-    @collaborators:
-        required:
-            - agent_k.ui.agui:EventEmitter
-        optional:
-            - httpx:AsyncClient
-        injection: constructor
-        lifecycle: "Allocated per agent run."
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: dependency-container
+            rationale: "Shared DI container for agent executions."
+            violations: "Hidden globals make runs nondeterministic."
+
+        @collaborators:
+            required:
+                - agent_k.ui.agui:EventEmitter
+            optional:
+                - httpx:AsyncClient
+            injection: constructor
+            lifecycle: "Allocated per agent run."
     """
 
     event_emitter: EventEmitter
@@ -69,19 +75,25 @@ class BaseDeps:
 class KaggleDeps(BaseDeps):
     """Dependencies for Kaggle toolsets.
 
-    @pattern:
-        name: dependency-container
-        rationale: "Groups Kaggle adapter and toolset settings."
-        violations: "Direct adapter access bypasses shared settings."
+    @notice: |
+        Dependencies for Kaggle toolsets.
 
-    @collaborators:
-        required:
-            - agent_k.adapters.kaggle:KaggleAdapter
-            - agent_k.ui.agui:EventEmitter
-        optional:
-            - httpx:AsyncClient
-        injection: constructor
-        lifecycle: "Allocated per agent run."
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: dependency-container
+            rationale: "Groups Kaggle adapter and toolset settings."
+            violations: "Direct adapter access bypasses shared settings."
+
+        @collaborators:
+            required:
+                - agent_k.adapters.kaggle:KaggleAdapter
+                - agent_k.ui.agui:EventEmitter
+            optional:
+                - httpx:AsyncClient
+            injection: constructor
+            lifecycle: "Allocated per agent run."
     """
 
     kaggle_adapter: KaggleAdapter

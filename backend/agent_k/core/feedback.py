@@ -52,9 +52,15 @@ __all__ = ("SubmissionCandidate", "SubmissionFeedback", "SubmissionOrchestrator"
 class SubmissionCandidate:
     """Candidate configuration for submission feedback loops.
 
-    @pattern:
-        name: value-object
-        rationale: "Dataclass for candidate submission configuration."
+    @notice: |
+        Candidate configuration for submission feedback loops.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: value-object
+            rationale: "Dataclass for candidate submission configuration."
     """
 
     model_config_hash: str
@@ -68,9 +74,15 @@ class SubmissionCandidate:
 class SubmissionFeedback:
     """Feedback summary for a processed submission.
 
-    @pattern:
-        name: value-object
-        rationale: "Dataclass for submission result feedback."
+    @notice: |
+        Feedback summary for a processed submission.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: value-object
+            rationale: "Dataclass for submission result feedback."
     """
 
     submission_id: str
@@ -84,9 +96,15 @@ class SubmissionFeedback:
 class SubmissionOrchestrator:
     """Manage the submission feedback loop across iterations.
 
-    @pattern:
-        name: orchestrator
-        rationale: "Coordinates submission feedback loops with tracker."
+    @notice: |
+        Manage the submission feedback loop across iterations.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: orchestrator
+            rationale: "Coordinates submission feedback loops with tracker."
     """
 
     _default_mutations: Final[tuple[str, ...]] = (

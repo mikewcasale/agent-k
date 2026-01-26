@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.strategy:ProblemType",
+  "line": 68,
+  "notice": "Supported ML problem types for policy selection.",
+  "pattern": {
+    "name": "enumeration",
+    "rationale": "StrEnum for ML problem taxonomy.",
+    "violations": "String literals drift across policy logic."
+  },
+  "similar": null,
+  "source": "agent_k/core/strategy.py",
+  "summary": "Supported ML problem types for policy selection.",
+  "type": "class"
+}

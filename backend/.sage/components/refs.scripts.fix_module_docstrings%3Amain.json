@@ -1,0 +1,13 @@
+{
+  "id": "refs.scripts.fix_module_docstrings:main",
+  "type": "function",
+  "summary": "Main function to fix module docstrings.",
+  "source": "refs/scripts/fix_module_docstrings.py",
+  "line": 253,
+  "path": "refs/scripts/fix_module_docstrings.py",
+  "location": {
+    "path": "refs/scripts/fix_module_docstrings.py",
+    "line": 253,
+    "character": 7
+  }
+}

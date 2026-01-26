@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k:__getattr__",
+  "line": 46,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/__init__.py",
+  "summary": "Lazy import agents to avoid requiring API keys at import time.",
+  "type": "function"
+}

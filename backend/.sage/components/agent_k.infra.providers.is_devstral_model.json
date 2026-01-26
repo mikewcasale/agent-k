@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.providers:is_devstral_model",
+  "line": 189,
+  "notice": "Returns true when the model spec targets Devstral.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/providers.py",
+  "summary": "Check if a model specification refers to Devstral.",
+  "type": "function"
+}

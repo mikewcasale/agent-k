@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.ui.test_ag_ui:TestMissionStartEndpoint.test_start_mission_basic",
+  "type": "method",
+  "summary": "Should start a mission and return ID.",
+  "source": "backend/tests/ui/test_ag_ui.py",
+  "line": 70,
+  "path": "backend/tests/ui/test_ag_ui.py",
+  "location": {
+    "path": "backend/tests/ui/test_ag_ui.py",
+    "line": 70,
+    "character": 11
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_lycurgus:TestLycurgusAsyncContextManager",
+  "type": "class",
+  "summary": "Tests for the async context manager functionality.",
+  "source": "backend/tests/agents/test_lycurgus.py",
+  "line": 225,
+  "path": "backend/tests/agents/test_lycurgus.py",
+  "location": {
+    "path": "backend/tests/agents/test_lycurgus.py",
+    "line": 225,
+    "character": 7
+  }
+}

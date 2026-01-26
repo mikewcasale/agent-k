@@ -76,15 +76,21 @@ _DEFAULT_MEMORY_DIR = Path(os.getenv("AGENT_K_MEMORY_DIR", ".agent_k_memory"))
 class AgentKMemoryTool(_MemoryBase):  # pragma: no cover - optional dependency
     """File-backed memory implementation for Anthropic MemoryTool.
 
-    @pattern:
-        name: memory-tool
-        rationale: "Provides a file-backed memory interface for agents."
-        violations: "Bypassing this tool breaks memory consistency."
+    @notice: |
+        File-backed memory implementation for Anthropic MemoryTool.
 
-    @concurrency:
-        model: asyncio
-        safe: false
-        reason: "Performs filesystem mutations without locks."
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: memory-tool
+            rationale: "Provides a file-backed memory interface for agents."
+            violations: "Bypassing this tool breaks memory consistency."
+
+        @concurrency:
+            model: asyncio
+            safe: false
+            reason: "Performs filesystem mutations without locks."
     """
 
     def __init__(self, base_path: Annotated[Path | None, Doc("Base path for memory storage.")] = None) -> None:
@@ -236,19 +242,22 @@ def create_memory_backend(
 ) -> AgentKMemoryTool:
     """Create an Anthropic-compatible memory backend.
 
-    @notice: |
-        Creates a file-backed memory tool for Anthropic providers.
+    @dev: |
+        See module for behavior details and invariants.
 
-    @factory-for:
-        id: agent_k.toolsets.memory:AgentKMemoryTool
-        rationale: "Centralizes default storage path behavior."
-        singleton: false
-        cache-key: storage_path
+        @notice: |
+            Creates a file-backed memory tool for Anthropic providers.
 
-    @canonical-home:
-        for:
-            - "memory backend construction"
-        notes: "Use create_memory_backend to ensure defaults."
+        @factory-for:
+            id: agent_k.toolsets.memory:AgentKMemoryTool
+            rationale: "Centralizes default storage path behavior."
+            singleton: false
+            cache-key: storage_path
+
+        @canonical-home:
+            for:
+                - "memory backend construction"
+            notes: "Use create_memory_backend to ensure defaults."
     """
     return AgentKMemoryTool(base_path=storage_path)
 
@@ -258,8 +267,11 @@ async def prepare_memory_tool(
 ) -> MemoryTool | None:
     """Dynamically enable MemoryTool only for supported providers.
 
-    @notice: |
-        Returns MemoryTool only for Anthropic models.
+    @dev: |
+        See module for behavior details and invariants.
+
+        @notice: |
+            Returns MemoryTool only for Anthropic models.
     """
     return None if ctx.model.system != "anthropic" else MemoryTool()
 
@@ -270,12 +282,15 @@ def register_memory_tool(
 ) -> None:
     """Register the Anthropic MemoryTool handler on an agent.
 
-    @notice: |
-        Attaches the memory tool to the agent with a plain tool handler.
+    @dev: |
+        See module for behavior details and invariants.
 
-    @effects:
-        state:
-            - agent tool registry
+        @notice: |
+            Attaches the memory tool to the agent with a plain tool handler.
+
+        @effects:
+            state:
+                - agent tool registry
     """
 
     @agent.tool_plain(name="memory", prepare=_prepare_memory_definition)

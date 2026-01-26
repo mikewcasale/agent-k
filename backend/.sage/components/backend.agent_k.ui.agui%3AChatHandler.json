@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.ui.agui:ChatHandler",
+  "type": "class",
+  "summary": "Handle chat requests for mission and non-mission modes.",
+  "notice": "Handle chat requests for mission and non-mission modes.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: handler\n    rationale: \"Dataclass coordinating intent classification and parsing.\"",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 698,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 698,
+    "character": 7
+  }
+}

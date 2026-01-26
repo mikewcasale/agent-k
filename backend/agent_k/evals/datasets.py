@@ -41,10 +41,16 @@ def load_dataset(name: str) -> Dataset:
     """Load dataset from YAML file.
 
     Args:
-        name: Dataset name (without extension).
+            name: Dataset name (without extension).
 
     Returns:
-        Loaded Dataset instance.
+            Loaded Dataset instance.
+
+    @notice: |
+        Load dataset from YAML file.
+
+    @dev: |
+        See module for behavior details and invariants.
     """
     path = Path(__file__).parent / f"{name}.yaml"
     return Dataset.from_file(path)

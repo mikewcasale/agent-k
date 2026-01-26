@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Uses simple heuristics and caches results when provided.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.scientist:get_external_data_policy",
+  "line": 887,
+  "notice": "Retrieves competition rules and infers external data allowance.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/scientist.py",
+  "summary": "Fetch and parse competition rules for external data usage.",
+  "type": "function"
+}

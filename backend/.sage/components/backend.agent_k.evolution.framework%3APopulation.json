@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.evolution.framework:Population",
+  "type": "class",
+  "summary": "Population container with selection, crossover, and mutation helpers.",
+  "notice": "Population container with selection, crossover, and mutation helpers.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: population-model\n    rationale: \"Generic container for evolutionary population management.\"",
+  "source": "backend/agent_k/evolution/framework.py",
+  "line": 153,
+  "path": "backend/agent_k/evolution/framework.py",
+  "location": {
+    "path": "backend/agent_k/evolution/framework.py",
+    "line": 153,
+    "character": 7
+  }
+}

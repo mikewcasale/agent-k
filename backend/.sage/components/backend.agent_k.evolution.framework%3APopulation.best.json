@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.evolution.framework:Population.best",
+  "type": "method",
+  "summary": "Return the current best individual.",
+  "source": "backend/agent_k/evolution/framework.py",
+  "line": 187,
+  "path": "backend/agent_k/evolution/framework.py",
+  "location": {
+    "path": "backend/agent_k/evolution/framework.py",
+    "line": 187,
+    "character": 11
+  }
+}

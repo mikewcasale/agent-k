@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_state:TestMissionState.test_phase_results_none_by_default",
+  "type": "method",
+  "summary": "Phase results should be None by default.",
+  "source": "backend/tests/mission/test_state.py",
+  "line": 68,
+  "path": "backend/tests/mission/test_state.py",
+  "location": {
+    "path": "backend/tests/mission/test_state.py",
+    "line": 68,
+    "character": 11
+  }
+}

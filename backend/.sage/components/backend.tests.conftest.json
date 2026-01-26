@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.conftest",
+  "type": "module",
+  "summary": "Shared test fixtures and helpers for AGENT-K tests.",
+  "source": "backend/tests/conftest.py",
+  "line": 0,
+  "path": "backend/tests/conftest.py",
+  "location": {
+    "path": "backend/tests/conftest.py",
+    "line": 0,
+    "character": 3
+  }
+}

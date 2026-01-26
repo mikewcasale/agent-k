@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.lycurgus:LycurgusDeps",
+  "line": 147,
+  "notice": "Dependencies for the Lycurgus orchestrator.",
+  "pattern": {
+    "name": "dependency-container",
+    "rationale": "Groups runtime services for orchestration.",
+    "violations": "Hidden globals make orchestration brittle."
+  },
+  "similar": null,
+  "source": "agent_k/agents/lycurgus.py",
+  "summary": "Dependencies for the Lycurgus orchestrator.",
+  "type": "class"
+}

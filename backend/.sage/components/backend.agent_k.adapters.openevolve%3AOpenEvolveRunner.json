@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.adapters.openevolve:OpenEvolveRunner",
+  "type": "class",
+  "summary": "Runner for OpenEvolve evolutionary optimization.",
+  "notice": "Runner for OpenEvolve evolutionary optimization.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: adapter-runner\n    rationale: \"Encapsulates OpenEvolve execution behavior.\"\n    violations: \"Scattered runner logic complicates evolution flow.\"\n\n@collaborators:\n    required:\n        - openevolve:OpenEvolve\n    injection: constructor\n    lifecycle: \"Scoped per OpenEvolve run.\"",
+  "source": "backend/agent_k/adapters/openevolve.py",
+  "line": 222,
+  "path": "backend/agent_k/adapters/openevolve.py",
+  "location": {
+    "path": "backend/agent_k/adapters/openevolve.py",
+    "line": 222,
+    "character": 7
+  }
+}

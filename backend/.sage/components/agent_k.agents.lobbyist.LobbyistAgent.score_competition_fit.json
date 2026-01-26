@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Returns a structured dict with score and reasoning.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.lobbyist:LobbyistAgent.score_competition_fit",
+  "line": 304,
+  "notice": "Computes a heuristic fit score from cached competition metadata.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/lobbyist.py",
+  "summary": "Score how well a competition fits the mission criteria.",
+  "type": "method"
+}

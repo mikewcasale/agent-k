@@ -1,0 +1,22 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": {
+    "for": [
+      "evolver agent construction"
+    ],
+    "notes": "Use EvolverAgent() or module singleton."
+  },
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:EvolverAgent._create_agent",
+  "line": 1052,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Create the underlying pydantic-ai agent.",
+  "type": "method"
+}

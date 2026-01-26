@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.lycurgus:LycurgusOrchestrator.validate_competition_id",
+  "line": 346,
+  "notice": "Returns true for lowercase alphanumeric slugs with dashes.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/lycurgus.py",
+  "summary": "Validate Kaggle competition identifier format.",
+  "type": "method"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.hints:PreprocessingHint.to_dict",
+  "type": "method",
+  "summary": "Serialize to a JSON-ready dictionary.",
+  "source": "backend/agent_k/core/hints.py",
+  "line": 412,
+  "path": "backend/agent_k/core/hints.py",
+  "location": {
+    "path": "backend/agent_k/core/hints.py",
+    "line": 412,
+    "character": 11
+  }
+}

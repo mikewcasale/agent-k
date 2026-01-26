@@ -1,0 +1,57 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.agents.scientist as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "consumes": [
+      "agent_k.core.protocols:PlatformAdapter",
+      "agent_k.toolsets.kaggle:kaggle_toolset",
+      "agent_k.toolsets.search:prepare_web_search",
+      "agent_k.toolsets.search:prepare_web_fetch"
+    ],
+    "id": "agent_k.agents.scientist",
+    "pattern": "agent-singleton",
+    "provides": [
+      "agent_k.agents.scientist:ScientistAgent",
+      "agent_k.agents.scientist:ScientistDeps",
+      "agent_k.agents.scientist:ScientistSettings",
+      "agent_k.agents.scientist:ResearchReport",
+      "agent_k.agents.scientist:ResearchFinding",
+      "agent_k.agents.scientist:LeaderboardAnalysis",
+      "agent_k.agents.scientist:get_external_data_policy",
+      "agent_k.agents.scientist:scientist_agent"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.agents.scientist",
+  "line": 1,
+  "notice": "Scientist agent - research and analysis for AGENT-K.",
+  "pattern": null,
+  "similar": [
+    {
+      "id": "agent_k.agents.lobbyist",
+      "when": "Use for competition discovery rather than research synthesis."
+    },
+    {
+      "id": "agent_k.agents.evolver",
+      "when": "Use for solution optimization rather than research."
+    }
+  ],
+  "source": "agent_k/agents/scientist.py",
+  "summary": "Scientist agent - research and analysis for AGENT-K.",
+  "type": "module"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.adapters.test_kaggle_adapter:TestKaggleSettings.test_config_defaults",
+  "type": "method",
+  "summary": "Config should have sensible defaults.",
+  "source": "backend/tests/adapters/test_kaggle_adapter.py",
+  "line": 31,
+  "path": "backend/tests/adapters/test_kaggle_adapter.py",
+  "location": {
+    "path": "backend/tests/adapters/test_kaggle_adapter.py",
+    "line": 31,
+    "character": 11
+  }
+}

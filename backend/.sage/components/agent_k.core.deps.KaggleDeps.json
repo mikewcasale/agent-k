@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.deps:KaggleDeps",
+  "line": 76,
+  "notice": "Dependencies for Kaggle toolsets.",
+  "pattern": {
+    "name": "dependency-container",
+    "rationale": "Groups Kaggle adapter and toolset settings.",
+    "violations": "Direct adapter access bypasses shared settings."
+  },
+  "similar": null,
+  "source": "agent_k/core/deps.py",
+  "summary": "Dependencies for Kaggle toolsets.",
+  "type": "class"
+}

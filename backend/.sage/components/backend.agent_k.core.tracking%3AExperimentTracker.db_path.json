@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.tracking:ExperimentTracker.db_path",
+  "type": "method",
+  "summary": "Return the database file path.",
+  "source": "backend/agent_k/core/tracking.py",
+  "line": 309,
+  "path": "backend/agent_k/core/tracking.py",
+  "location": {
+    "path": "backend/agent_k/core/tracking.py",
+    "line": 309,
+    "character": 11
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.conftest:TestEnv.set",
+  "type": "method",
+  "summary": "Set an environment variable, saving the original value.",
+  "source": "backend/tests/conftest.py",
+  "line": 58,
+  "path": "backend/tests/conftest.py",
+  "location": {
+    "path": "backend/tests/conftest.py",
+    "line": 58,
+    "character": 11
+  }
+}

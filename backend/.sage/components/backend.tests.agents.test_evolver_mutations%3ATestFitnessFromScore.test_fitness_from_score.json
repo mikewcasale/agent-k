@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_evolver_mutations:TestFitnessFromScore.test_fitness_from_score",
+  "type": "method",
+  "summary": "Fitness should reflect metric direction.",
+  "source": "backend/tests/agents/test_evolver_mutations.py",
+  "line": 32,
+  "path": "backend/tests/agents/test_evolver_mutations.py",
+  "location": {
+    "path": "backend/tests/agents/test_evolver_mutations.py",
+    "line": 32,
+    "character": 11
+  }
+}

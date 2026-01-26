@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Enforces uniqueness by name; raises if already registered.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents:register_agent",
+  "line": 81,
+  "notice": "Adds a singleton agent instance to the registry.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/__init__.py",
+  "summary": "Register an agent singleton by name.",
+  "type": "function"
+}

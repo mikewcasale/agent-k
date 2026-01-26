@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.exceptions:FitnessEvaluationError",
+  "line": 426,
+  "notice": "Raised when fitness evaluation fails.",
+  "pattern": {
+    "name": "exception-specific",
+    "rationale": "Captures solution and execution context for debugging."
+  },
+  "similar": null,
+  "source": "agent_k/core/exceptions.py",
+  "summary": "Raised when fitness evaluation fails.",
+  "type": "class"
+}

@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.infra.instrumentation:Metrics",
+  "type": "class",
+  "summary": "Centralized metrics recording.",
+  "notice": "Centralized metrics recording.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: metrics-recorder\n    rationale: \"Centralizes Logfire metric emission.\"\n    violations: \"Ad-hoc logging fragments telemetry signals.\"",
+  "source": "backend/agent_k/infra/instrumentation.py",
+  "line": 54,
+  "path": "backend/agent_k/infra/instrumentation.py",
+  "location": {
+    "path": "backend/agent_k/infra/instrumentation.py",
+    "line": 54,
+    "character": 7
+  }
+}

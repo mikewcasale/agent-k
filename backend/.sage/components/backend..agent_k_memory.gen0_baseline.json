@@ -1,0 +1,13 @@
+{
+  "id": "backend..agent_k_memory.gen0_baseline",
+  "type": "module",
+  "summary": "GENERATION 0 BASELINE",
+  "source": "backend/.agent_k_memory/gen0_baseline.py",
+  "line": 0,
+  "path": "backend/.agent_k_memory/gen0_baseline.py",
+  "location": {
+    "path": "backend/.agent_k_memory/gen0_baseline.py",
+    "line": 0,
+    "character": 3
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.strategy:apply_solution_policy",
+  "type": "function",
+  "summary": "Apply a technique policy to solution code when possible.",
+  "notice": "Transforms solution code based on technique policy (currently no-op).",
+  "dev": "Policy injection is disabled to allow evolutionary search to handle\ndata preparation generically. Returns (code, []) unchanged.",
+  "source": "backend/agent_k/core/strategy.py",
+  "line": 322,
+  "path": "backend/agent_k/core/strategy.py",
+  "location": {
+    "path": "backend/agent_k/core/strategy.py",
+    "line": 322,
+    "character": 7
+  }
+}

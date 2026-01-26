@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission:__getattr__",
+  "line": 52,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/__init__.py",
+  "summary": "Lazy-load graph nodes to avoid circular imports.",
+  "type": "function"
+}

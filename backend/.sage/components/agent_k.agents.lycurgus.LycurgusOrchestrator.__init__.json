@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Lazily initializes adapters if not supplied.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.lycurgus:LycurgusOrchestrator.__init__",
+  "line": 274,
+  "notice": "Initializes orchestration state and prepares agents/graph.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/lycurgus.py",
+  "summary": "Initialize the LYCURGUS orchestrator.",
+  "type": "method"
+}

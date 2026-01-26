@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.mission.state:MissionState",
+  "type": "class",
+  "summary": "State flowing through the mission graph.",
+  "notice": "State flowing through the mission graph.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: mission-state\n    rationale: \"Single source of truth for mission progression.\"\n    violations: \"Phase-specific state stored elsewhere causes drift.\"\n\n@concurrency:\n    model: asyncio\n    safe: false\n    reason: \"Mutable state shared across graph nodes.\"\n\n@invariants:\n    - \"current_phase reflects the latest active phase.\"\n    - \"phases_completed is append-only.\"",
+  "source": "backend/agent_k/mission/state.py",
+  "line": 59,
+  "path": "backend/agent_k/mission/state.py",
+  "location": {
+    "path": "backend/agent_k/mission/state.py",
+    "line": 59,
+    "character": 7
+  }
+}

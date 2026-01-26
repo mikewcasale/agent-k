@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.hints:detect_applied_hints",
+  "type": "function",
+  "summary": "Detect which hints were applied based on solution code patterns.",
+  "notice": "Returns hint IDs that appear to be applied in the given code.",
+  "dev": "Matches explicit hint comments, code snippet signatures, and\npattern-based detection for each hint type.",
+  "source": "backend/agent_k/core/hints.py",
+  "line": 975,
+  "path": "backend/agent_k/core/hints.py",
+  "location": {
+    "path": "backend/agent_k/core/hints.py",
+    "line": 975,
+    "character": 7
+  }
+}

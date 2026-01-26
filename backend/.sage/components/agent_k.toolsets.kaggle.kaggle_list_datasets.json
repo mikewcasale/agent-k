@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.kaggle:kaggle_list_datasets",
+  "line": 300,
+  "notice": "Returns file metadata for competition datasets.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/kaggle.py",
+  "summary": "List available datasets for a competition.",
+  "type": "function"
+}

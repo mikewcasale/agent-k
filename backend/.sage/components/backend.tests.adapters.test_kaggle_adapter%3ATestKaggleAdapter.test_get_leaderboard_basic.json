@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.adapters.test_kaggle_adapter:TestKaggleAdapter.test_get_leaderboard_basic",
+  "type": "method",
+  "summary": "Get leaderboard should return entries.",
+  "source": "backend/tests/adapters/test_kaggle_adapter.py",
+  "line": 73,
+  "path": "backend/tests/adapters/test_kaggle_adapter.py",
+  "location": {
+    "path": "backend/tests/adapters/test_kaggle_adapter.py",
+    "line": 73,
+    "character": 11
+  }
+}

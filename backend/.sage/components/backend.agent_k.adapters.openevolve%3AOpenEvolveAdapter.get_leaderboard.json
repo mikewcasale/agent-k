@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.get_leaderboard",
+  "type": "method",
+  "summary": "Return leaderboard entries for a competition.",
+  "source": "backend/agent_k/adapters/openevolve.py",
+  "line": 522,
+  "path": "backend/agent_k/adapters/openevolve.py",
+  "location": {
+    "path": "backend/agent_k/adapters/openevolve.py",
+    "line": 522,
+    "character": 11
+  }
+}

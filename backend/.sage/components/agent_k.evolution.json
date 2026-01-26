@@ -1,0 +1,35 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.evolution as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "id": "agent_k.evolution",
+    "pattern": "evolution-package",
+    "provides": [
+      "agent_k.evolution"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.evolution",
+  "line": 1,
+  "notice": "Evolution package exports for AGENT-K.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/__init__.py",
+  "summary": "Evolution package exports for AGENT-K.",
+  "type": "module"
+}

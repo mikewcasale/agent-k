@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:EventEmitter.emit_tool_error",
+  "type": "method",
+  "summary": "Emit tool error.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 444,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 444,
+    "character": 11
+  }
+}

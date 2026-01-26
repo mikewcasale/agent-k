@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.hints:generate_preprocessing_hints",
+  "type": "function",
+  "summary": "Generate preprocessing hints based on a dataset profile.",
+  "notice": "Returns a list of actionable preprocessing hints based on column profiles.",
+  "dev": "Analyzes column types, missing patterns, and data characteristics to\ngenerate encoding, imputation, transformation, and model selection hints.",
+  "source": "backend/agent_k/core/hints.py",
+  "line": 514,
+  "path": "backend/agent_k/core/hints.py",
+  "location": {
+    "path": "backend/agent_k/core/hints.py",
+    "line": 514,
+    "character": 7
+  }
+}

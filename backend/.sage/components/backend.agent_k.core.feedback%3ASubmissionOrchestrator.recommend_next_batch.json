@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.feedback:SubmissionOrchestrator.recommend_next_batch",
+  "type": "method",
+  "summary": "Recommend the next candidate batch using current mutation weights.",
+  "source": "backend/agent_k/core/feedback.py",
+  "line": 213,
+  "path": "backend/agent_k/core/feedback.py",
+  "location": {
+    "path": "backend/agent_k/core/feedback.py",
+    "line": 213,
+    "character": 11
+  }
+}

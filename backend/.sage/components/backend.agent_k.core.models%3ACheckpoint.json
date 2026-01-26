@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.models:Checkpoint",
+  "type": "class",
+  "summary": "Mission state checkpoint.",
+  "notice": "Mission state checkpoint.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: immutable-entity\n    rationale: \"Frozen Pydantic model for state checkpoint records.\"",
+  "source": "backend/agent_k/core/models.py",
+  "line": 590,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 590,
+    "character": 7
+  }
+}

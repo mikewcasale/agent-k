@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Creates train.csv, test.csv, sample_submission.csv in destination.\nUses hard links when possible to save disk space.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.data:stage_competition_data",
+  "line": 133,
+  "notice": "Copies or links data files to a destination with standardized names.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/data.py",
+  "summary": "Stage competition data into canonical filenames.",
+  "type": "function"
+}

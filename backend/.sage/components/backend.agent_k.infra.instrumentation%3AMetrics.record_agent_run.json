@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.infra.instrumentation:Metrics.record_agent_run",
+  "type": "method",
+  "summary": "Record agent run metrics.",
+  "source": "backend/agent_k/infra/instrumentation.py",
+  "line": 73,
+  "path": "backend/agent_k/infra/instrumentation.py",
+  "location": {
+    "path": "backend/agent_k/infra/instrumentation.py",
+    "line": 73,
+    "character": 11
+  }
+}

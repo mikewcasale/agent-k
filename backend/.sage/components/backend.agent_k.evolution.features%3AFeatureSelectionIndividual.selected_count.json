@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.evolution.features:FeatureSelectionIndividual.selected_count",
+  "type": "method",
+  "summary": "Return the number of selected features.",
+  "source": "backend/agent_k/evolution/features.py",
+  "line": 196,
+  "path": "backend/agent_k/evolution/features.py",
+  "location": {
+    "path": "backend/agent_k/evolution/features.py",
+    "line": 196,
+    "character": 11
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:EventEmitter.emit_task_start",
+  "type": "method",
+  "summary": "Emit task start event.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 412,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 412,
+    "character": 11
+  }
+}

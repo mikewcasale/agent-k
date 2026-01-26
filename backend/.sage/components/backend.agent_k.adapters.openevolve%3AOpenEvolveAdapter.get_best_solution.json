@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.get_best_solution",
+  "type": "method",
+  "summary": "Return the best solution for a completed evolution job.",
+  "source": "backend/agent_k/adapters/openevolve.py",
+  "line": 651,
+  "path": "backend/agent_k/adapters/openevolve.py",
+  "location": {
+    "path": "backend/agent_k/adapters/openevolve.py",
+    "line": 651,
+    "character": 11
+  }
+}

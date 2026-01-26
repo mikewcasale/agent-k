@@ -1,0 +1,38 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.core.tracking as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "id": "agent_k.core.tracking",
+    "pattern": "tracking-store",
+    "provides": [
+      "agent_k.core.tracking:ExperimentTracker",
+      "agent_k.core.tracking:create_experiment_tracker",
+      "agent_k.core.tracking:ExperimentRecord",
+      "agent_k.core.tracking:HintEffectivenessTracker"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.core.tracking",
+  "line": 1,
+  "notice": "Experiment tracking utilities for AGENT-K.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/tracking.py",
+  "summary": "Experiment tracking utilities for AGENT-K.",
+  "type": "module"
+}

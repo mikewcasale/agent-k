@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.sage:Doc",
+  "type": "class",
+  "summary": "Human-facing parameter description.",
+  "notice": "Human-facing parameter description.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: doc-metadata\n    rationale: \"Co-locates parameter docs with type hints.\"\n    violations: \"Out-of-band docs drift from signatures.\"",
+  "source": "backend/agent_k/core/sage.py",
+  "line": 42,
+  "path": "backend/agent_k/core/sage.py",
+  "location": {
+    "path": "backend/agent_k/core/sage.py",
+    "line": 42,
+    "character": 7
+  }
+}

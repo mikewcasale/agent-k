@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Leaves tool definitions unchanged for non-OpenAI providers.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.base:prepare_output_tools_strict",
+  "line": 220,
+  "notice": "Marks output tools as strict for OpenAI models.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/base.py",
+  "summary": "Enable strict mode on output tools for OpenAI models.",
+  "type": "function"
+}

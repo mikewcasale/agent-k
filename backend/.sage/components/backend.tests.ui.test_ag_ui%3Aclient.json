@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.ui.test_ag_ui:client",
+  "type": "function",
+  "summary": "Create a test client for the FastAPI app.",
+  "source": "backend/tests/ui/test_ag_ui.py",
+  "line": 21,
+  "path": "backend/tests/ui/test_ag_ui.py",
+  "location": {
+    "path": "backend/tests/ui/test_ag_ui.py",
+    "line": 21,
+    "character": 7
+  }
+}

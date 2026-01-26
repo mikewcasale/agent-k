@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.adapters.kaggle:KaggleAdapter.download_data",
+  "type": "method",
+  "summary": "Download competition data files.",
+  "source": "backend/agent_k/adapters/kaggle.py",
+  "line": 395,
+  "path": "backend/agent_k/adapters/kaggle.py",
+  "location": {
+    "path": "backend/agent_k/adapters/kaggle.py",
+    "line": 395,
+    "character": 11
+  }
+}

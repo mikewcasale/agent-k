@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.adapters.kaggle:KaggleAdapter.platform_name",
+  "type": "method",
+  "summary": "Return the platform identifier.",
+  "source": "backend/agent_k/adapters/kaggle.py",
+  "line": 179,
+  "path": "backend/agent_k/adapters/kaggle.py",
+  "location": {
+    "path": "backend/agent_k/adapters/kaggle.py",
+    "line": 179,
+    "character": 11
+  }
+}

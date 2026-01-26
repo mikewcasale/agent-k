@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Subclasses should override to provide concrete run behavior.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.base:BaseAgentMixin.run",
+  "line": 116,
+  "notice": "Execute the agent with the provided prompt and dependencies.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/base.py",
+  "summary": "Execute the agent with the given prompt.",
+  "type": "method"
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.tracking:ExperimentTracker.find_latest_by_code_signature",
+  "line": 566,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/tracking.py",
+  "summary": "Return the most recent record for a code signature.",
+  "type": "method"
+}

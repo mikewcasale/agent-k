@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.strategy:build_technique_policy",
+  "type": "function",
+  "summary": "Build a technique policy from problem profile and mission criteria.",
+  "notice": "Creates a TechniquePolicy with evolution parameters for the problem type.",
+  "dev": "Adjusts population size and generation limits based on criteria.\nTarget transforms and outlier clipping are disabled (handled by evolver).",
+  "source": "backend/agent_k/core/strategy.py",
+  "line": 225,
+  "path": "backend/agent_k/core/strategy.py",
+  "location": {
+    "path": "backend/agent_k/core/strategy.py",
+    "line": 225,
+    "character": 7
+  }
+}

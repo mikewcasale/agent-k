@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.models:ResearchFindings",
+  "type": "class",
+  "summary": "Complete research findings for a competition.",
+  "notice": "Complete research findings for a competition.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: immutable-entity\n    rationale: \"Frozen Pydantic model for research findings aggregate.\"",
+  "source": "backend/agent_k/core/models.py",
+  "line": 689,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 689,
+    "character": 7
+  }
+}

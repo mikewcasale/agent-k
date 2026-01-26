@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:ChatHandler.handle",
+  "type": "method",
+  "summary": "Handle chat messages from frontend.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 734,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 734,
+    "character": 11
+  }
+}

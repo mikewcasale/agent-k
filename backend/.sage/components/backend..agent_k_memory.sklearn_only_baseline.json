@@ -1,0 +1,13 @@
+{
+  "id": "backend..agent_k_memory.sklearn_only_baseline",
+  "type": "module",
+  "summary": "SKLEARN-ONLY BASELINE SOLUTION",
+  "source": "backend/.agent_k_memory/sklearn_only_baseline.py",
+  "line": 0,
+  "path": "backend/.agent_k_memory/sklearn_only_baseline.py",
+  "location": {
+    "path": "backend/.agent_k_memory/sklearn_only_baseline.py",
+    "line": 0,
+    "character": 3
+  }
+}

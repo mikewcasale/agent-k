@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.evolution.evaluator:evaluate_stage2",
+  "type": "function",
+  "summary": "Stage 2: Medium evaluation on subset of data.",
+  "notice": "Stage 2: Medium evaluation on subset of data.",
+  "dev": "See module for behavior details and invariants.",
+  "source": "backend/agent_k/evolution/evaluator.py",
+  "line": 487,
+  "path": "backend/agent_k/evolution/evaluator.py",
+  "location": {
+    "path": "backend/agent_k/evolution/evaluator.py",
+    "line": 487,
+    "character": 7
+  }
+}

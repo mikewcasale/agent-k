@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:ChatHandler",
+  "line": 699,
+  "notice": "Handle chat requests for mission and non-mission modes.",
+  "pattern": {
+    "name": "handler",
+    "rationale": "Dataclass coordinating intent classification and parsing."
+  },
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Handle chat requests for mission and non-mission modes.",
+  "type": "class"
+}

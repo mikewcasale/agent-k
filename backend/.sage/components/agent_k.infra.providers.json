@@ -1,0 +1,45 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.infra.providers as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "id": "agent_k.infra.providers",
+    "pattern": "model-factory",
+    "provides": [
+      "agent_k.infra.providers:get_model",
+      "agent_k.infra.providers:create_devstral_model",
+      "agent_k.infra.providers:create_openrouter_model",
+      "agent_k.infra.providers:is_devstral_model",
+      "agent_k.infra.providers:DEVSTRAL_MODEL_ID",
+      "agent_k.infra.providers:DEVSTRAL_BASE_URL"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.infra.providers",
+  "line": 1,
+  "notice": "Model configuration for AGENT-K.",
+  "pattern": null,
+  "similar": [
+    {
+      "id": "agent_k.infra.config",
+      "when": "General configuration; this module builds model instances."
+    }
+  ],
+  "source": "agent_k/infra/providers.py",
+  "summary": "Model configuration for AGENT-K.",
+  "type": "module"
+}

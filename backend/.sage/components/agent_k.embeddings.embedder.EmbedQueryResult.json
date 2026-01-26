@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.embeddings.embedder:EmbedQueryResult",
+  "line": 48,
+  "notice": null,
+  "pattern": {
+    "name": "protocol-interface",
+    "rationale": "Defines the embedding result contract.",
+    "violations": "Divergent payloads break embeddings consumers."
+  },
+  "similar": null,
+  "source": "agent_k/embeddings/embedder.py",
+  "summary": "Protocol for embed_query results.",
+  "type": "class"
+}

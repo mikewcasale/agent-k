@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.adapters.openevolve:_OpenEvolveJob",
+  "line": 413,
+  "notice": null,
+  "pattern": {
+    "name": "job-tracker",
+    "rationale": "Captures in-memory job state for adapter polling.",
+    "violations": "Fragmented job state tracking breaks status updates."
+  },
+  "similar": null,
+  "source": "agent_k/adapters/openevolve.py",
+  "summary": "Internal tracking for OpenEvolve evolution jobs.",
+  "type": "class"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.types:OutputT_co",
+  "type": "attribute",
+  "summary": "Covariant type variable for outputs.",
+  "source": "backend/agent_k/core/types.py",
+  "line": 47,
+  "path": "backend/agent_k/core/types.py",
+  "location": {
+    "path": "backend/agent_k/core/types.py",
+    "line": 47,
+    "character": 3
+  }
+}

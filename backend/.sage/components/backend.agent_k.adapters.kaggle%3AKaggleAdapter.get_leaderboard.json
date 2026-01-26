@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.adapters.kaggle:KaggleAdapter.get_leaderboard",
+  "type": "method",
+  "summary": "Get competition leaderboard.",
+  "source": "backend/agent_k/adapters/kaggle.py",
+  "line": 270,
+  "path": "backend/agent_k/adapters/kaggle.py",
+  "location": {
+    "path": "backend/agent_k/adapters/kaggle.py",
+    "line": 270,
+    "character": 11
+  }
+}

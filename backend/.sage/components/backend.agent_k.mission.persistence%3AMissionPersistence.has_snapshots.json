@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.mission.persistence:MissionPersistence.has_snapshots",
+  "type": "method",
+  "summary": "Return whether persistence already has stored snapshots.",
+  "source": "backend/agent_k/mission/persistence.py",
+  "line": 99,
+  "path": "backend/agent_k/mission/persistence.py",
+  "location": {
+    "path": "backend/agent_k/mission/persistence.py",
+    "line": 99,
+    "character": 11
+  }
+}

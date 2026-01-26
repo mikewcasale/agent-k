@@ -47,10 +47,16 @@ __all__ = ("CompetitionSchema", "infer_competition_schema", "locate_data_files",
 class CompetitionSchema:
     """Schema details inferred from competition data files.
 
-    @pattern:
-        name: schema-model
-        rationale: "Captures inferred column layout for downstream steps."
-        violations: "Ad-hoc dicts drift from actual data shape."
+    @notice: |
+        Schema details inferred from competition data files.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: schema-model
+            rationale: "Captures inferred column layout for downstream steps."
+            violations: "Ad-hoc dicts drift from actual data shape."
     """
 
     id_column: str

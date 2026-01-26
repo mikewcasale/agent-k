@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.tracking:HintEffectivenessTracker",
+  "line": 728,
+  "notice": "Track and aggregate hint performance across generations.",
+  "pattern": {
+    "name": "tracking-service",
+    "rationale": "Centralizes hint success tracking and suppression.",
+    "violations": "Distributed tracking makes suppression inconsistent."
+  },
+  "similar": null,
+  "source": "agent_k/core/tracking.py",
+  "summary": "Track and aggregate hint performance across generations.",
+  "type": "class"
+}

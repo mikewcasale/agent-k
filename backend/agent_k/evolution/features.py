@@ -59,9 +59,15 @@ __all__ = (
 class TransformGene:
     """Single-variable transformation gene.
 
-    @pattern:
-        name: gene-model
-        rationale: "Frozen dataclass representing a transformation gene."
+    @notice: |
+        Single-variable transformation gene.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: gene-model
+            rationale: "Frozen dataclass representing a transformation gene."
     """
 
     feature: str
@@ -72,9 +78,15 @@ class TransformGene:
 class InteractionGene:
     """Polynomial interaction gene.
 
-    @pattern:
-        name: gene-model
-        rationale: "Frozen dataclass representing an interaction gene."
+    @notice: |
+        Polynomial interaction gene.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: gene-model
+            rationale: "Frozen dataclass representing an interaction gene."
     """
 
     feature_a: str
@@ -85,9 +97,15 @@ class InteractionGene:
 class RatioGene:
     """Ratio feature gene (feature_a / feature_b).
 
-    @pattern:
-        name: gene-model
-        rationale: "Frozen dataclass representing a ratio feature gene."
+    @notice: |
+        Ratio feature gene (feature_a / feature_b).
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: gene-model
+            rationale: "Frozen dataclass representing a ratio feature gene."
     """
 
     numerator: str
@@ -98,9 +116,15 @@ class RatioGene:
 class BinningGene:
     """Binning strategy gene.
 
-    @pattern:
-        name: gene-model
-        rationale: "Frozen dataclass representing a binning strategy gene."
+    @notice: |
+        Binning strategy gene.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: gene-model
+            rationale: "Frozen dataclass representing a binning strategy gene."
     """
 
     feature: str
@@ -112,9 +136,15 @@ class BinningGene:
 class DomainFeatureGene:
     """Domain-specific engineered feature gene.
 
-    @pattern:
-        name: gene-model
-        rationale: "Frozen dataclass representing a domain feature gene."
+    @notice: |
+        Domain-specific engineered feature gene.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: gene-model
+            rationale: "Frozen dataclass representing a domain feature gene."
     """
 
     name: str
@@ -125,9 +155,15 @@ class DomainFeatureGene:
 class FeatureGenome:
     """Complete feature engineering genome.
 
-    @pattern:
-        name: genome-model
-        rationale: "Mutable dataclass aggregating feature engineering genes."
+    @notice: |
+        Complete feature engineering genome.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: genome-model
+            rationale: "Mutable dataclass aggregating feature engineering genes."
     """
 
     transforms: list[TransformGene] = field(default_factory=list)
@@ -143,9 +179,15 @@ class FeatureGenome:
 class FeatureSelectionIndividual:
     """Binary chromosome for feature inclusion.
 
-    @pattern:
-        name: individual-model
-        rationale: "Mutable dataclass for binary feature mask with fitness."
+    @notice: |
+        Binary chromosome for feature inclusion.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: individual-model
+            rationale: "Mutable dataclass for binary feature mask with fitness."
     """
 
     mask: list[int]
@@ -159,9 +201,15 @@ class FeatureSelectionIndividual:
 class FeatureEvolver:
     """Evolve feature engineering pipelines with mutation and crossover.
 
-    @pattern:
-        name: evolver
-        rationale: "Coordinates evolutionary search over feature genomes."
+    @notice: |
+        Evolve feature engineering pipelines with mutation and crossover.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: evolver
+            rationale: "Coordinates evolutionary search over feature genomes."
     """
 
     _default_domains: tuple[DomainFeatureGene, ...] = (
@@ -254,9 +302,15 @@ class FeatureEvolver:
 class FeatureSelector:
     """Maintain a Pareto front for feature selection trade-offs.
 
-    @pattern:
-        name: selector
-        rationale: "Pareto-based feature selection with population evolution."
+    @notice: |
+        Maintain a Pareto front for feature selection trade-offs.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: selector
+            rationale: "Pareto-based feature selection with population evolution."
     """
 
     def __init__(

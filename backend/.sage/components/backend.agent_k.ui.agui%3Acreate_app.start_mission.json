@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:create_app.start_mission",
+  "type": "function",
+  "summary": "Start a new mission and return mission ID.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 1160,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 1160,
+    "character": 11
+  }
+}

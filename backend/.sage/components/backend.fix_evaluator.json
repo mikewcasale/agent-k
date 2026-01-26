@@ -1,0 +1,13 @@
+{
+  "id": "backend.fix_evaluator",
+  "type": "module",
+  "summary": "Fix evaluator.py by inserting missing helper functions.",
+  "source": "backend/fix_evaluator.py",
+  "line": 1,
+  "path": "backend/fix_evaluator.py",
+  "location": {
+    "path": "backend/fix_evaluator.py",
+    "line": 1,
+    "character": 3
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.hints:ColumnType",
+  "type": "class",
+  "summary": "Detected column semantic type.",
+  "notice": "Detected column semantic type.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: enumeration\n    rationale: \"StrEnum for semantic column type classification.\"",
+  "source": "backend/agent_k/core/hints.py",
+  "line": 93,
+  "path": "backend/agent_k/core/hints.py",
+  "location": {
+    "path": "backend/agent_k/core/hints.py",
+    "line": 93,
+    "character": 7
+  }
+}

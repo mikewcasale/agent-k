@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.lycurgus:MissionStatus",
+  "line": 176,
+  "notice": "Mission status snapshot.",
+  "pattern": {
+    "name": "output-model",
+    "rationale": "Stable status payload for UI updates.",
+    "violations": "Ad-hoc status dicts hinder UI consumers."
+  },
+  "similar": null,
+  "source": "agent_k/agents/lycurgus.py",
+  "summary": "Mission status snapshot.",
+  "type": "class"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.adapters.test_openevolve:TestOpenEvolveAdapter.test_submit_and_status",
+  "type": "method",
+  "summary": "Submission status should complete with a score.",
+  "source": "backend/tests/adapters/test_openevolve.py",
+  "line": 52,
+  "path": "backend/tests/adapters/test_openevolve.py",
+  "location": {
+    "path": "backend/tests/adapters/test_openevolve.py",
+    "line": 52,
+    "character": 11
+  }
+}

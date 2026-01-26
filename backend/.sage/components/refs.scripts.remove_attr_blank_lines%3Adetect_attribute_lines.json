@@ -1,0 +1,13 @@
+{
+  "id": "refs.scripts.remove_attr_blank_lines:detect_attribute_lines",
+  "type": "function",
+  "summary": "Return a list indicating which lines are class-level attributes.",
+  "source": "refs/scripts/remove_attr_blank_lines.py",
+  "line": 40,
+  "path": "refs/scripts/remove_attr_blank_lines.py",
+  "location": {
+    "path": "refs/scripts/remove_attr_blank_lines.py",
+    "line": 40,
+    "character": 7
+  }
+}

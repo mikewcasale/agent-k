@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.infra.instrumentation:P",
+  "type": "attribute",
+  "summary": "Parameter specification for traced decorators.",
+  "source": "backend/agent_k/infra/instrumentation.py",
+  "line": 45,
+  "path": "backend/agent_k/infra/instrumentation.py",
+  "location": {
+    "path": "backend/agent_k/infra/instrumentation.py",
+    "line": 45,
+    "character": 3
+  }
+}

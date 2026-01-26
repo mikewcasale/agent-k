@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:EventEmitter.emit_tool_result",
+  "type": "method",
+  "summary": "Emit tool result.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 438,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 438,
+    "character": 11
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.code:prepare_code_execution_tool",
+  "line": 67,
+  "notice": "Returns a tool only for OpenAI-compatible providers.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/code.py",
+  "summary": "Enable CodeExecutionTool only for supported providers.",
+  "type": "function"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_evolver",
+  "type": "module",
+  "summary": "Tests for the EVOLVER optimization agent.",
+  "source": "backend/tests/agents/test_evolver.py",
+  "line": 0,
+  "path": "backend/tests/agents/test_evolver.py",
+  "location": {
+    "path": "backend/tests/agents/test_evolver.py",
+    "line": 0,
+    "character": 3
+  }
+}

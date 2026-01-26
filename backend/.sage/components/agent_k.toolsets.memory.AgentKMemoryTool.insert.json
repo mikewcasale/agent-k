@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.memory:AgentKMemoryTool.insert",
+  "line": 169,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/memory.py",
+  "summary": "Insert text at a specified line in a file.",
+  "type": "method"
+}

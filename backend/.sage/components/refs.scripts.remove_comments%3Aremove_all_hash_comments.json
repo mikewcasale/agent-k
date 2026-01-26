@@ -1,0 +1,13 @@
+{
+  "id": "refs.scripts.remove_comments:remove_all_hash_comments",
+  "type": "function",
+  "summary": "Removes all text that comes after a '#' symbol in Python code.",
+  "source": "refs/scripts/remove_comments.py",
+  "line": 14,
+  "path": "refs/scripts/remove_comments.py",
+  "location": {
+    "path": "refs/scripts/remove_comments.py",
+    "line": 14,
+    "character": 7
+  }
+}

@@ -93,9 +93,15 @@ SCHEMA_VERSION: Final[str] = "1.0.0"
 class CompetitionType(StrEnum):
     """Type of Kaggle competition.
 
-    @pattern:
-        name: enumeration
-        rationale: "StrEnum for string-serializable competition categories."
+    @notice: |
+        Type of Kaggle competition.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: enumeration
+            rationale: "StrEnum for string-serializable competition categories."
     """
 
     FEATURED = "featured"
@@ -108,9 +114,15 @@ class CompetitionType(StrEnum):
 class SubjectDomain(StrEnum):
     """Subject domains for competition classification.
 
-    @pattern:
-        name: enumeration
-        rationale: "StrEnum for ML domain categories."
+    @notice: |
+        Subject domains for competition classification.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: enumeration
+            rationale: "StrEnum for ML domain categories."
     """
 
     FINANCE = "finance"
@@ -127,9 +139,15 @@ class SubjectDomain(StrEnum):
 class EvaluationMetric(StrEnum):
     """Standard evaluation metrics for competitions.
 
-    @pattern:
-        name: enumeration
-        rationale: "StrEnum for standard ML evaluation metrics."
+    @notice: |
+        Standard evaluation metrics for competitions.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: enumeration
+            rationale: "StrEnum for standard ML evaluation metrics."
     """
 
     # Classification
@@ -151,12 +169,18 @@ class EvaluationMetric(StrEnum):
 class Competition(BaseModel):
     """Kaggle competition entity.
 
-    Represents a competition with all metadata required for evaluation
-    and participation decisions.
+        Represents a competition with all metadata required for evaluation
+        and participation decisions.
 
-    @pattern:
-        name: immutable-entity
-        rationale: "Frozen Pydantic model for competition metadata."
+    @notice: |
+        Kaggle competition entity.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: immutable-entity
+            rationale: "Frozen Pydantic model for competition metadata."
     """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
@@ -207,9 +231,15 @@ class Competition(BaseModel):
 class LeaderboardEntry(BaseModel):
     """Entry in competition leaderboard.
 
-    @pattern:
-        name: immutable-entity
-        rationale: "Frozen Pydantic model for leaderboard row data."
+    @notice: |
+        Entry in competition leaderboard.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: immutable-entity
+            rationale: "Frozen Pydantic model for leaderboard row data."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -224,9 +254,15 @@ class LeaderboardEntry(BaseModel):
 class Submission(BaseModel):
     """Competition submission entity.
 
-    @pattern:
-        name: immutable-entity
-        rationale: "Frozen Pydantic model for submission records."
+    @notice: |
+        Competition submission entity.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: immutable-entity
+            rationale: "Frozen Pydantic model for submission records."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -244,9 +280,15 @@ class Submission(BaseModel):
 class ToolCall(BaseModel):
     """Base model for tool invocation tracking.
 
-    @pattern:
-        name: immutable-entity
-        rationale: "Base frozen model for tool call telemetry."
+    @notice: |
+        Base model for tool invocation tracking.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: immutable-entity
+            rationale: "Base frozen model for tool call telemetry."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -266,9 +308,15 @@ class ToolCall(BaseModel):
 class WebSearchCall(ToolCall):
     """Web search tool call.
 
-    @pattern:
-        name: specialization
-        rationale: "Extends ToolCall with web search specific fields."
+    @notice: |
+        Web search tool call.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: specialization
+            rationale: "Extends ToolCall with web search specific fields."
     """
 
     type: ToolType = Field(default="web_search", description="Tool type")
@@ -280,9 +328,15 @@ class WebSearchCall(ToolCall):
 class KaggleMCPCall(ToolCall):
     """Kaggle MCP tool call.
 
-    @pattern:
-        name: specialization
-        rationale: "Extends ToolCall with Kaggle API specific fields."
+    @notice: |
+        Kaggle MCP tool call.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: specialization
+            rationale: "Extends ToolCall with Kaggle API specific fields."
     """
 
     type: ToolType = Field(default="kaggle_mcp", description="Tool type")
@@ -292,9 +346,15 @@ class KaggleMCPCall(ToolCall):
 class CodeExecutorCall(ToolCall):
     """Code execution tool call.
 
-    @pattern:
-        name: specialization
-        rationale: "Extends ToolCall with code execution specific fields."
+    @notice: |
+        Code execution tool call.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: specialization
+            rationale: "Extends ToolCall with code execution specific fields."
     """
 
     type: ToolType = Field(default="code_executor", description="Tool type")
@@ -309,9 +369,15 @@ class CodeExecutorCall(ToolCall):
 class MemoryCall(ToolCall):
     """Memory operation tool call.
 
-    @pattern:
-        name: specialization
-        rationale: "Extends ToolCall with memory operation specific fields."
+    @notice: |
+        Memory operation tool call.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: specialization
+            rationale: "Extends ToolCall with memory operation specific fields."
     """
 
     type: ToolType = Field(default="memory", description="Tool type")
@@ -323,9 +389,15 @@ class MemoryCall(ToolCall):
 class PlannedTask(BaseModel):
     """A planned task within a phase.
 
-    @pattern:
-        name: immutable-entity
-        rationale: "Frozen Pydantic model for task planning and tracking."
+    @notice: |
+        A planned task within a phase.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: immutable-entity
+            rationale: "Frozen Pydantic model for task planning and tracking."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -351,9 +423,15 @@ class PlannedTask(BaseModel):
 class PhasePlan(BaseModel):
     """Plan for a mission phase.
 
-    @pattern:
-        name: immutable-entity
-        rationale: "Frozen Pydantic model for phase-level planning."
+    @notice: |
+        Plan for a mission phase.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: immutable-entity
+            rationale: "Frozen Pydantic model for phase-level planning."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -374,9 +452,15 @@ class PhasePlan(BaseModel):
 class MissionPlan(BaseModel):
     """Complete mission plan with all phases.
 
-    @pattern:
-        name: immutable-entity
-        rationale: "Frozen Pydantic model for complete mission planning."
+    @notice: |
+        Complete mission plan with all phases.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: immutable-entity
+            rationale: "Frozen Pydantic model for complete mission planning."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -391,9 +475,15 @@ class MissionPlan(BaseModel):
 class GenerationMetrics(BaseModel):
     """Metrics for a single evolution generation.
 
-    @pattern:
-        name: immutable-entity
-        rationale: "Frozen Pydantic model for evolution generation metrics."
+    @notice: |
+        Metrics for a single evolution generation.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: immutable-entity
+            rationale: "Frozen Pydantic model for evolution generation metrics."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -415,9 +505,15 @@ class GenerationMetrics(BaseModel):
 class LeaderboardSubmission(BaseModel):
     """Record of a submission to the competition leaderboard.
 
-    @pattern:
-        name: immutable-entity
-        rationale: "Frozen Pydantic model for leaderboard submission records."
+    @notice: |
+        Record of a submission to the competition leaderboard.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: immutable-entity
+            rationale: "Frozen Pydantic model for leaderboard submission records."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -435,9 +531,15 @@ class LeaderboardSubmission(BaseModel):
 class EvolutionState(BaseModel):
     """State of the evolution process.
 
-    @pattern:
-        name: immutable-entity
-        rationale: "Frozen Pydantic model for evolution state tracking."
+    @notice: |
+        State of the evolution process.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: immutable-entity
+            rationale: "Frozen Pydantic model for evolution state tracking."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -462,9 +564,15 @@ class EvolutionState(BaseModel):
 class MemoryEntry(BaseModel):
     """Entry in the memory store.
 
-    @pattern:
-        name: immutable-entity
-        rationale: "Frozen Pydantic model for memory store entries."
+    @notice: |
+        Entry in the memory store.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: immutable-entity
+            rationale: "Frozen Pydantic model for memory store entries."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -482,9 +590,15 @@ class MemoryEntry(BaseModel):
 class Checkpoint(BaseModel):
     """Mission state checkpoint.
 
-    @pattern:
-        name: immutable-entity
-        rationale: "Frozen Pydantic model for state checkpoint records."
+    @notice: |
+        Mission state checkpoint.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: immutable-entity
+            rationale: "Frozen Pydantic model for state checkpoint records."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -498,9 +612,15 @@ class Checkpoint(BaseModel):
 class MemoryState(BaseModel):
     """Overall memory state.
 
-    @pattern:
-        name: immutable-entity
-        rationale: "Frozen Pydantic model for aggregate memory state."
+    @notice: |
+        Overall memory state.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: immutable-entity
+            rationale: "Frozen Pydantic model for aggregate memory state."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -513,9 +633,15 @@ class MemoryState(BaseModel):
 class ErrorEvent(BaseModel):
     """Record of an error event.
 
-    @pattern:
-        name: immutable-entity
-        rationale: "Frozen Pydantic model for error event records."
+    @notice: |
+        Record of an error event.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: immutable-entity
+            rationale: "Frozen Pydantic model for error event records."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -537,9 +663,15 @@ class ErrorEvent(BaseModel):
 class LeaderboardAnalysis(BaseModel):
     """Analysis of competition leaderboard.
 
-    @pattern:
-        name: immutable-entity
-        rationale: "Frozen Pydantic model for leaderboard analysis results."
+    @notice: |
+        Analysis of competition leaderboard.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: immutable-entity
+            rationale: "Frozen Pydantic model for leaderboard analysis results."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -557,9 +689,15 @@ class LeaderboardAnalysis(BaseModel):
 class ResearchFindings(BaseModel):
     """Complete research findings for a competition.
 
-    @pattern:
-        name: immutable-entity
-        rationale: "Frozen Pydantic model for research findings aggregate."
+    @notice: |
+        Complete research findings for a competition.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: immutable-entity
+            rationale: "Frozen Pydantic model for research findings aggregate."
     """
 
     model_config = ConfigDict(frozen=True)
@@ -574,9 +712,15 @@ class ResearchFindings(BaseModel):
 class MissionCriteria(BaseModel):
     """Criteria constraining mission execution.
 
-    @pattern:
-        name: immutable-entity
-        rationale: "Frozen Pydantic model for mission execution constraints."
+    @notice: |
+        Criteria constraining mission execution.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: immutable-entity
+            rationale: "Frozen Pydantic model for mission execution constraints."
     """
 
     model_config = ConfigDict(frozen=True)

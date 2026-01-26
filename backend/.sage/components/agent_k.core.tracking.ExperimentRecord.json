@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.tracking:ExperimentRecord",
+  "line": 157,
+  "notice": "Persistent record of an experiment or submission.",
+  "pattern": {
+    "name": "record-model",
+    "rationale": "Pydantic model for experiment persistence."
+  },
+  "similar": null,
+  "source": "agent_k/core/tracking.py",
+  "summary": "Persistent record of an experiment or submission.",
+  "type": "class"
+}

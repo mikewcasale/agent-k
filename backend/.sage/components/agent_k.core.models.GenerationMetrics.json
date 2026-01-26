@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.models:GenerationMetrics",
+  "line": 476,
+  "notice": "Metrics for a single evolution generation.",
+  "pattern": {
+    "name": "immutable-entity",
+    "rationale": "Frozen Pydantic model for evolution generation metrics."
+  },
+  "similar": null,
+  "source": "agent_k/core/models.py",
+  "summary": "Metrics for a single evolution generation.",
+  "type": "class"
+}

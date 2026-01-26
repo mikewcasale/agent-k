@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.framework:MapElitesArchive",
+  "line": 94,
+  "notice": "MAP-Elites archive for diversity-aware preservation.",
+  "pattern": {
+    "name": "archive-model",
+    "rationale": "Generic archive for MAP-Elites diversity preservation."
+  },
+  "similar": null,
+  "source": "agent_k/evolution/framework.py",
+  "summary": "MAP-Elites archive for diversity-aware preservation.",
+  "type": "class"
+}

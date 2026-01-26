@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.models:PlannedTask",
+  "type": "class",
+  "summary": "A planned task within a phase.",
+  "notice": "A planned task within a phase.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: immutable-entity\n    rationale: \"Frozen Pydantic model for task planning and tracking.\"",
+  "source": "backend/agent_k/core/models.py",
+  "line": 389,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 389,
+    "character": 7
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.features:FeatureSelectionIndividual",
+  "line": 180,
+  "notice": "Binary chromosome for feature inclusion.",
+  "pattern": {
+    "name": "individual-model",
+    "rationale": "Mutable dataclass for binary feature mask with fitness."
+  },
+  "similar": null,
+  "source": "agent_k/evolution/features.py",
+  "summary": "Binary chromosome for feature inclusion.",
+  "type": "class"
+}

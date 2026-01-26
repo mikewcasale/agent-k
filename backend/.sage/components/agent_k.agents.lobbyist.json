@@ -1,0 +1,49 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.agents.lobbyist as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "consumes": [
+      "agent_k.core.protocols:PlatformAdapter",
+      "agent_k.ui.agui:EventEmitter",
+      "agent_k.toolsets.kaggle:kaggle_toolset"
+    ],
+    "id": "agent_k.agents.lobbyist",
+    "pattern": "agent-singleton",
+    "provides": [
+      "agent_k.agents.lobbyist:LobbyistAgent",
+      "agent_k.agents.lobbyist:LobbyistDeps",
+      "agent_k.agents.lobbyist:LobbyistSettings",
+      "agent_k.agents.lobbyist:DiscoveryResult",
+      "agent_k.agents.lobbyist:lobbyist_agent"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.agents.lobbyist",
+  "line": 1,
+  "notice": "Lobbyist agent - competition discovery for AGENT-K.",
+  "pattern": null,
+  "similar": [
+    {
+      "id": "agent_k.agents.scientist",
+      "when": "Use for research/analysis, not discovery."
+    }
+  ],
+  "source": "agent_k/agents/lobbyist.py",
+  "summary": "Lobbyist agent - competition discovery for AGENT-K.",
+  "type": "module"
+}

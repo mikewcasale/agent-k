@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:EvolverAgent.submit_to_kaggle",
+  "line": 1009,
+  "notice": "Writes a submission file and triggers adapter submission.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Submit solution to Kaggle via the platform adapter.",
+  "type": "method"
+}

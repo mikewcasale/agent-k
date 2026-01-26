@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.exceptions:PhaseTimeoutError",
+  "line": 549,
+  "notice": "Raised when a phase exceeds its timeout.",
+  "pattern": {
+    "name": "exception-specific",
+    "rationale": "Captures timing metrics for timeout analysis."
+  },
+  "similar": null,
+  "source": "agent_k/core/exceptions.py",
+  "summary": "Raised when a phase exceeds its timeout.",
+  "type": "class"
+}

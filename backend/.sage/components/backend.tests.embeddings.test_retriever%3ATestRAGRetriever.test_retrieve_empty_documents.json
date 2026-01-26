@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.embeddings.test_retriever:TestRAGRetriever.test_retrieve_empty_documents",
+  "type": "method",
+  "summary": "Retriever should handle empty document sets.",
+  "source": "backend/tests/embeddings/test_retriever.py",
+  "line": 76,
+  "path": "backend/tests/embeddings/test_retriever.py",
+  "location": {
+    "path": "backend/tests/embeddings/test_retriever.py",
+    "line": 76,
+    "character": 11
+  }
+}

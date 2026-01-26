@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Analyzes column types, missing patterns, and data characteristics to\ngenerate encoding, imputation, transformation, and model selection hints.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.hints:generate_preprocessing_hints",
+  "line": 515,
+  "notice": "Returns a list of actionable preprocessing hints based on column profiles.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/hints.py",
+  "summary": "Generate preprocessing hints based on a dataset profile.",
+  "type": "function"
+}

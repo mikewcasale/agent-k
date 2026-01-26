@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.adapters.kaggle:KaggleAdapter.get_submission_status",
+  "type": "method",
+  "summary": "Get submission status from Kaggle.",
+  "source": "backend/agent_k/adapters/kaggle.py",
+  "line": 367,
+  "path": "backend/agent_k/adapters/kaggle.py",
+  "location": {
+    "path": "backend/agent_k/adapters/kaggle.py",
+    "line": 367,
+    "character": 11
+  }
+}

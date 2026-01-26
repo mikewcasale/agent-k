@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.adapters.test_openevolve:TestOpenEvolveAdapter.test_authenticate_returns_true",
+  "type": "method",
+  "summary": "Authenticate should return True (stub).",
+  "source": "backend/tests/adapters/test_openevolve.py",
+  "line": 30,
+  "path": "backend/tests/adapters/test_openevolve.py",
+  "location": {
+    "path": "backend/tests/adapters/test_openevolve.py",
+    "line": 30,
+    "character": 11
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.hints:PreprocessingHint",
+  "type": "class",
+  "summary": "Single preprocessing recommendation.",
+  "notice": "Single preprocessing recommendation.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: value-object\n    rationale: \"Mutable dataclass for hint tracking with state.\"",
+  "source": "backend/agent_k/core/hints.py",
+  "line": 388,
+  "path": "backend/agent_k/core/hints.py",
+  "location": {
+    "path": "backend/agent_k/core/hints.py",
+    "line": 388,
+    "character": 7
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_nodes:TestEvaluateMetric.test_rmsle_ignores_negative_values",
+  "type": "method",
+  "summary": "RMSLE should ignore negative targets in the denominator.",
+  "source": "backend/tests/mission/test_nodes.py",
+  "line": 76,
+  "path": "backend/tests/mission/test_nodes.py",
+  "location": {
+    "path": "backend/tests/mission/test_nodes.py",
+    "line": 76,
+    "character": 11
+  }
+}

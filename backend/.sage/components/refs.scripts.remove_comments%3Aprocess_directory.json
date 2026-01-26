@@ -1,0 +1,13 @@
+{
+  "id": "refs.scripts.remove_comments:process_directory",
+  "type": "function",
+  "summary": "Processes all Python files in a directory (recursively) to remove all hash comments.",
+  "source": "refs/scripts/remove_comments.py",
+  "line": 95,
+  "path": "refs/scripts/remove_comments.py",
+  "location": {
+    "path": "refs/scripts/remove_comments.py",
+    "line": 95,
+    "character": 7
+  }
+}

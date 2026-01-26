@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.sage:Default",
+  "line": 101,
+  "notice": "Default-value metadata for parameters.",
+  "pattern": {
+    "name": "doc-metadata",
+    "rationale": "Makes implicit defaults discoverable to agents.",
+    "violations": "Silent defaults can mislead tool usage."
+  },
+  "similar": null,
+  "source": "agent_k/core/sage.py",
+  "summary": "Default-value metadata for parameters.",
+  "type": "class"
+}

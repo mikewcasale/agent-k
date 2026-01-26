@@ -1,0 +1,18 @@
+{
+  "id": "backend.agent_k.embeddings.embedder:EmbedQueryResult",
+  "type": "class",
+  "summary": "Protocol for embed_query results.",
+  "pattern": {
+    "name": "protocol-interface",
+    "rationale": "Defines the embedding result contract.",
+    "violations": "Divergent payloads break embeddings consumers."
+  },
+  "source": "backend/agent_k/embeddings/embedder.py",
+  "line": 47,
+  "path": "backend/agent_k/embeddings/embedder.py",
+  "location": {
+    "path": "backend/agent_k/embeddings/embedder.py",
+    "line": 47,
+    "character": 7
+  }
+}

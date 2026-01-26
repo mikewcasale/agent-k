@@ -39,10 +39,16 @@ __all__ = ("Settings", "load_settings")
 class Settings:
     """Runtime configuration settings.
 
-    @pattern:
-        name: settings-model
-        rationale: "Captures runtime configuration defaults."
-        violations: "Scattered env access increases drift."
+    @notice: |
+        Runtime configuration settings.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: settings-model
+            rationale: "Captures runtime configuration defaults."
+            violations: "Scattered env access increases drift."
     """
 
     environment: str = os.getenv("ENVIRONMENT", "development")

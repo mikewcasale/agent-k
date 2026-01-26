@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.hints:PreprocessingHint",
+  "line": 389,
+  "notice": "Single preprocessing recommendation.",
+  "pattern": {
+    "name": "value-object",
+    "rationale": "Mutable dataclass for hint tracking with state."
+  },
+  "similar": null,
+  "source": "agent_k/core/hints.py",
+  "summary": "Single preprocessing recommendation.",
+  "type": "class"
+}

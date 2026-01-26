@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:CompetitionFetchRequest",
+  "line": 265,
+  "notice": "Request payload for fetching competition details by URL.",
+  "pattern": {
+    "name": "request-model",
+    "rationale": "Frozen Pydantic model for competition fetch requests."
+  },
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Request payload for fetching competition details by URL.",
+  "type": "class"
+}

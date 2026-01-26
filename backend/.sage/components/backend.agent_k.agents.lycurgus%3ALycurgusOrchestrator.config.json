@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.config",
+  "type": "method",
+  "summary": "Orchestrator configuration (read-write).",
+  "source": "backend/agent_k/agents/lycurgus.py",
+  "line": 370,
+  "path": "backend/agent_k/agents/lycurgus.py",
+  "location": {
+    "path": "backend/agent_k/agents/lycurgus.py",
+    "line": 370,
+    "character": 11
+  }
+}

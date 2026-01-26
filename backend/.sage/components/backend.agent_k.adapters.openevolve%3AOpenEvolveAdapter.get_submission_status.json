@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.get_submission_status",
+  "type": "method",
+  "summary": "Get the latest status for a submission.",
+  "source": "backend/agent_k/adapters/openevolve.py",
+  "line": 550,
+  "path": "backend/agent_k/adapters/openevolve.py",
+  "location": {
+    "path": "backend/agent_k/adapters/openevolve.py",
+    "line": 550,
+    "character": 11
+  }
+}

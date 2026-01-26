@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.toolsets.memory:AgentKMemoryTool.delete",
+  "type": "method",
+  "summary": "Delete a file or directory.",
+  "source": "backend/agent_k/toolsets/memory.py",
+  "line": 193,
+  "path": "backend/agent_k/toolsets/memory.py",
+  "location": {
+    "path": "backend/agent_k/toolsets/memory.py",
+    "line": 193,
+    "character": 11
+  }
+}

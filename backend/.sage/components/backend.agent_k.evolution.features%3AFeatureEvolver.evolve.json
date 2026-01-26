@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.evolution.features:FeatureEvolver.evolve",
+  "type": "method",
+  "summary": "Run feature evolution for a fixed number of generations.",
+  "source": "backend/agent_k/evolution/features.py",
+  "line": 231,
+  "path": "backend/agent_k/evolution/features.py",
+  "location": {
+    "path": "backend/agent_k/evolution/features.py",
+    "line": 231,
+    "character": 11
+  }
+}

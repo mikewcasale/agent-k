@@ -1,0 +1,20 @@
+{
+  "id": "backend.agent_k.core.protocols:PlatformAdapter",
+  "type": "class",
+  "summary": "Protocol for platform adapters.",
+  "notice": "Defines the adapter contract for competition platforms.",
+  "dev": "Implementations MUST handle auth, rate limits, and retries internally.",
+  "pattern": {
+    "name": "protocol-interface",
+    "rationale": "Standard adapter contract for external competition platforms.",
+    "violations": "Adapters without this contract diverge in behavior."
+  },
+  "source": "backend/agent_k/core/protocols.py",
+  "line": 44,
+  "path": "backend/agent_k/core/protocols.py",
+  "location": {
+    "path": "backend/agent_k/core/protocols.py",
+    "line": 44,
+    "character": 7
+  }
+}

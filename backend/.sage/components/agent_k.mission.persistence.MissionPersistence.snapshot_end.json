@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.persistence:MissionPersistence.snapshot_end",
+  "line": 110,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/persistence.py",
+  "summary": "Persist the end snapshot and a checkpointed state.",
+  "type": "method"
+}

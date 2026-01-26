@@ -1,0 +1,13 @@
+{
+  "id": "backend.tools.sageextract:ParsedDoc",
+  "type": "class",
+  "summary": "Parsed component docstring data.",
+  "source": "backend/tools/sageextract.py",
+  "line": 91,
+  "path": "backend/tools/sageextract.py",
+  "location": {
+    "path": "backend/tools/sageextract.py",
+    "line": 91,
+    "character": 7
+  }
+}

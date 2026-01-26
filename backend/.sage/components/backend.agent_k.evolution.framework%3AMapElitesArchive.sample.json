@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.evolution.framework:MapElitesArchive.sample",
+  "type": "method",
+  "summary": "Sample top and diverse individuals from the archive.",
+  "source": "backend/agent_k/evolution/framework.py",
+  "line": 128,
+  "path": "backend/agent_k/evolution/framework.py",
+  "location": {
+    "path": "backend/agent_k/evolution/framework.py",
+    "line": 128,
+    "character": 11
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:EventEmitter.emit_phase_start",
+  "type": "method",
+  "summary": "Emit phase start event.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 400,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 400,
+    "character": 11
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "id": "backend.examples.competition:load_state",
+  "type": "function",
+  "summary": "Load a previous run state if present.",
+  "source": "backend/examples/competition.py",
+  "line": 105,
+  "path": "backend/examples/competition.py",
+  "location": {
+    "path": "backend/examples/competition.py",
+    "line": 105,
+    "character": 7
+  }
+}

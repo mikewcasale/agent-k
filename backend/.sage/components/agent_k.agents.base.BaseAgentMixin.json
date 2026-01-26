@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.base:BaseAgentMixin",
+  "line": 87,
+  "notice": "Base mixin providing common agent functionality.",
+  "pattern": {
+    "name": "agent-base",
+    "rationale": "Shared behavior for agent wrappers around pydantic-ai Agents.",
+    "violations": "Duplicated run logic across agents."
+  },
+  "similar": null,
+  "source": "agent_k/agents/base.py",
+  "summary": "Base mixin providing common agent functionality.",
+  "type": "class"
+}

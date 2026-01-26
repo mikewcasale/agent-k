@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.base:AgentDeps",
+  "line": 57,
+  "notice": "Base dependency container for all agents.",
+  "pattern": {
+    "name": "dependency-container",
+    "rationale": "Standardizes injected services for agent runs.",
+    "violations": "Ad-hoc deps hide runtime requirements."
+  },
+  "similar": null,
+  "source": "agent_k/agents/base.py",
+  "summary": "Base dependency container for all agents.",
+  "type": "class"
+}

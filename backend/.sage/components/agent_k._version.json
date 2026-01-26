@@ -1,0 +1,35 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k._version as the canonical version source."
+    ],
+    "do_not": [
+      "Duplicate version constants elsewhere."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Use `from agent_k import __version__` instead of importing directly.",
+  "graph": {
+    "id": "agent_k._version",
+    "pattern": "versioning",
+    "provides": [
+      "agent_k._version:__version__"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k._version",
+  "line": 1,
+  "notice": "Internal version module.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/_version.py",
+  "summary": "Version information for the AGENT-K package.",
+  "type": "module"
+}

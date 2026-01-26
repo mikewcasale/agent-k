@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evals.evaluators:FitnessImprovement",
+  "line": 68,
+  "notice": "Evaluate if fitness improved over baseline.",
+  "pattern": {
+    "name": "evaluator",
+    "rationale": "Encapsulates fitness evaluation logic.",
+    "violations": "Inline comparisons fragment evaluator reuse."
+  },
+  "similar": null,
+  "source": "agent_k/evals/evaluators.py",
+  "summary": "Evaluate if fitness improved over baseline.",
+  "type": "class"
+}

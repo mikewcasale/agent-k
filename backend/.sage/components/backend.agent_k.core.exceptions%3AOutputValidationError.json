@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.exceptions:OutputValidationError",
+  "type": "class",
+  "summary": "Raised when agent output fails validation.",
+  "notice": "Raised when agent output fails validation.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: exception-specific\n    rationale: \"Captures validation errors for structured output failures.\"",
+  "source": "backend/agent_k/core/exceptions.py",
+  "line": 156,
+  "path": "backend/agent_k/core/exceptions.py",
+  "location": {
+    "path": "backend/agent_k/core/exceptions.py",
+    "line": 156,
+    "character": 7
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.models:MemoryCall",
+  "line": 370,
+  "notice": "Memory operation tool call.",
+  "pattern": {
+    "name": "specialization",
+    "rationale": "Extends ToolCall with memory operation specific fields."
+  },
+  "similar": null,
+  "source": "agent_k/core/models.py",
+  "summary": "Memory operation tool call.",
+  "type": "class"
+}

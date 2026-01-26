@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.ui.test_ag_ui",
+  "type": "module",
+  "summary": "Tests for the AG-UI FastAPI application.",
+  "source": "backend/tests/ui/test_ag_ui.py",
+  "line": 0,
+  "path": "backend/tests/ui/test_ag_ui.py",
+  "location": {
+    "path": "backend/tests/ui/test_ag_ui.py",
+    "line": 0,
+    "character": 3
+  }
+}

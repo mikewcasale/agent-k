@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_lobbyist:TestDiscoveryResult.test_result_is_frozen",
+  "type": "method",
+  "summary": "Result should be immutable.",
+  "source": "backend/tests/agents/test_lobbyist.py",
+  "line": 75,
+  "path": "backend/tests/agents/test_lobbyist.py",
+  "location": {
+    "path": "backend/tests/agents/test_lobbyist.py",
+    "line": 75,
+    "character": 11
+  }
+}

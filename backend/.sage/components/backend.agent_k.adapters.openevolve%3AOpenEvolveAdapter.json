@@ -1,0 +1,14 @@
+{
+  "id": "backend.agent_k.adapters.openevolve:OpenEvolveAdapter",
+  "type": "class",
+  "summary": "In-memory adapter for OpenEvolve integration.",
+  "dev": "See module for implementation details and extension points.\n\n@notice: |\n    Provides a PlatformAdapter facade for OpenEvolve runs.\n\n@pattern:\n    name: adapter\n    rationale: \"Encapsulates OpenEvolve-specific behaviors.\"\n    violations: \"Direct OpenEvolve use bypasses PlatformAdapter contract.\"\n\n@implements:\n    - agent_k.core.protocols:PlatformAdapter\n\n@inheritdoc:\n    - agent_k.core.protocols:PlatformAdapter\n\n@collaborators:\n    required:\n        - agent_k.adapters.openevolve:OpenEvolveRunner\n    injection: constructor\n    lifecycle: \"Long-lived adapter per mission.\"\n\n@concurrency:\n    model: asyncio\n    safe: false\n    reason: \"Mutates in-memory job state.\"\n\n@invariants:\n    - \"self._evolution_jobs retains active jobs until pruned.\"",
+  "source": "backend/agent_k/adapters/openevolve.py",
+  "line": 434,
+  "path": "backend/agent_k/adapters/openevolve.py",
+  "location": {
+    "path": "backend/agent_k/adapters/openevolve.py",
+    "line": 434,
+    "character": 7
+  }
+}

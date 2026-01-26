@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.evals.evaluators:FitnessImprovement",
+  "type": "class",
+  "summary": "Evaluate if fitness improved over baseline.",
+  "notice": "Evaluate if fitness improved over baseline.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: evaluator\n    rationale: \"Encapsulates fitness evaluation logic.\"\n    violations: \"Inline comparisons fragment evaluator reuse.\"",
+  "source": "backend/agent_k/evals/evaluators.py",
+  "line": 67,
+  "path": "backend/agent_k/evals/evaluators.py",
+  "location": {
+    "path": "backend/agent_k/evals/evaluators.py",
+    "line": 67,
+    "character": 7
+  }
+}

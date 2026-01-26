@@ -1,0 +1,22 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": {
+    "for": [
+      "model resolution"
+    ],
+    "notes": "Use get_model to normalize model specs."
+  },
+  "custom": null,
+  "dev": "Returns a string for standard pydantic-ai model specs.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.providers:get_model",
+  "line": 140,
+  "notice": "Resolves model specs into provider-specific model objects when needed.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/providers.py",
+  "summary": "Get a model instance based on specification string.",
+  "type": "function"
+}

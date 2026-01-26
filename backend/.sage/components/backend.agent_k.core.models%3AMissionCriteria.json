@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.models:MissionCriteria",
+  "type": "class",
+  "summary": "Criteria constraining mission execution.",
+  "notice": "Criteria constraining mission execution.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: immutable-entity\n    rationale: \"Frozen Pydantic model for mission execution constraints.\"",
+  "source": "backend/agent_k/core/models.py",
+  "line": 712,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 712,
+    "character": 7
+  }
+}

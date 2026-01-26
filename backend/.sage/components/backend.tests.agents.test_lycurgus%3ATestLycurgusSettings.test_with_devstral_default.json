@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_lycurgus:TestLycurgusSettings.test_with_devstral_default",
+  "type": "method",
+  "summary": "with_devstral should create config with local devstral.",
+  "source": "backend/tests/agents/test_lycurgus.py",
+  "line": 41,
+  "path": "backend/tests/agents/test_lycurgus.py",
+  "location": {
+    "path": "backend/tests/agents/test_lycurgus.py",
+    "line": 41,
+    "character": 11
+  }
+}

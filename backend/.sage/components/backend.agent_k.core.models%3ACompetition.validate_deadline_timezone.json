@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.models:Competition.validate_deadline_timezone",
+  "type": "method",
+  "summary": "Ensure deadline has timezone information.",
+  "source": "backend/agent_k/core/models.py",
+  "line": 211,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 211,
+    "character": 11
+  }
+}

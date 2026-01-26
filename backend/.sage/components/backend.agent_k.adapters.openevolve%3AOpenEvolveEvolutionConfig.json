@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.adapters.openevolve:OpenEvolveEvolutionConfig",
+  "type": "class",
+  "summary": "Evolution configuration for OpenEvolve jobs.",
+  "notice": "Evolution configuration for OpenEvolve jobs.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: config-model\n    rationale: \"Captures evolution hyperparameters in a schema.\"\n    violations: \"Loose dicts make validation brittle.\"",
+  "source": "backend/agent_k/adapters/openevolve.py",
+  "line": 140,
+  "path": "backend/agent_k/adapters/openevolve.py",
+  "location": {
+    "path": "backend/agent_k/adapters/openevolve.py",
+    "line": 140,
+    "character": 7
+  }
+}

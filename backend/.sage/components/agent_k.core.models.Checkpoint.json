@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.models:Checkpoint",
+  "line": 591,
+  "notice": "Mission state checkpoint.",
+  "pattern": {
+    "name": "immutable-entity",
+    "rationale": "Frozen Pydantic model for state checkpoint records."
+  },
+  "similar": null,
+  "source": "agent_k/core/models.py",
+  "summary": "Mission state checkpoint.",
+  "type": "class"
+}

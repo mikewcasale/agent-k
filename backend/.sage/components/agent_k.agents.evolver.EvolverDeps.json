@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:EvolverDeps",
+  "line": 436,
+  "notice": "Dependencies for the Evolver agent.",
+  "pattern": {
+    "name": "dependency-container",
+    "rationale": "Groups runtime services and evolution state.",
+    "violations": "Scattered state makes evolution hard to resume."
+  },
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Dependencies for the Evolver agent.",
+  "type": "class"
+}

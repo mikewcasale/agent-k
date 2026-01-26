@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.protocols:PlatformAdapter.get_competition",
+  "type": "method",
+  "summary": "Get detailed competition information.",
+  "source": "backend/agent_k/core/protocols.py",
+  "line": 109,
+  "path": "backend/agent_k/core/protocols.py",
+  "location": {
+    "path": "backend/agent_k/core/protocols.py",
+    "line": 109,
+    "character": 11
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.search:prepare_web_fetch",
+  "line": 175,
+  "notice": "Returns a WebFetchTool when provider and deps allow.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/search.py",
+  "summary": "Prepare WebFetchTool dynamically based on RunContext.",
+  "type": "function"
+}

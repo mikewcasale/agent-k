@@ -45,9 +45,15 @@ __all__ = ("LossFunctionEvolver", "LossGenome", "build_lightgbm_objective_params
 class LossGenome:
     """Genome for evolving custom objective functions.
 
-    @pattern:
-        name: genome-model
-        rationale: "Dataclass for LightGBM loss function parameters."
+    @notice: |
+        Genome for evolving custom objective functions.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: genome-model
+            rationale: "Dataclass for LightGBM loss function parameters."
     """
 
     objective: LossObjective = "regression"
@@ -61,9 +67,15 @@ class LossGenome:
 class LossFunctionEvolver:
     """Evolve LightGBM loss function parameters via genetic search.
 
-    @pattern:
-        name: evolver
-        rationale: "Coordinates evolutionary search over loss function genomes."
+    @notice: |
+        Evolve LightGBM loss function parameters via genetic search.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: evolver
+            rationale: "Coordinates evolutionary search over loss function genomes."
     """
 
     _objectives: tuple[str, ...] = ("regression", "regression_l1", "huber", "quantile")
@@ -124,7 +136,14 @@ class LossFunctionEvolver:
 
 
 def build_lightgbm_objective_params(genome: LossGenome) -> dict[str, Any]:
-    """Create LightGBM objective params from a LossGenome."""
+    """Create LightGBM objective params from a LossGenome.
+
+    @notice: |
+        Create LightGBM objective params from a LossGenome.
+
+    @dev: |
+        See module for behavior details and invariants.
+    """
     params: dict[str, Any] = {
         "objective": genome.objective,
         "asymmetric_weight": genome.asymmetric_weight,

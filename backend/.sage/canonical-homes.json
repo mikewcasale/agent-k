@@ -1,0 +1,90 @@
+[
+  {
+    "for": [
+      "evolver agent construction"
+    ],
+    "line": 1052,
+    "notes": "Use EvolverAgent() or module singleton.",
+    "source": "agent_k/agents/evolver.py"
+  },
+  {
+    "for": [
+      "lobbyist agent construction"
+    ],
+    "line": 345,
+    "notes": "Use LobbyistAgent() or module singleton.",
+    "source": "agent_k/agents/lobbyist.py"
+  },
+  {
+    "for": [
+      "scientist agent construction"
+    ],
+    "line": 656,
+    "notes": "Use ScientistAgent() or module singleton.",
+    "source": "agent_k/agents/scientist.py"
+  },
+  {
+    "for": [
+      "experiment tracker construction"
+    ],
+    "line": 860,
+    "notes": "Use create_experiment_tracker to ensure defaults.",
+    "source": "agent_k/core/tracking.py"
+  },
+  {
+    "for": [
+      "devstral model creation"
+    ],
+    "line": 80,
+    "notes": "Use create_devstral_model for local Devstral endpoints.",
+    "source": "agent_k/infra/providers.py"
+  },
+  {
+    "for": [
+      "openrouter model creation"
+    ],
+    "line": 114,
+    "notes": "Use create_openrouter_model for OpenRouter endpoints.",
+    "source": "agent_k/infra/providers.py"
+  },
+  {
+    "for": [
+      "model resolution"
+    ],
+    "line": 140,
+    "notes": "Use get_model to normalize model specs.",
+    "source": "agent_k/infra/providers.py"
+  },
+  {
+    "for": [
+      "mission persistence construction"
+    ],
+    "line": 185,
+    "notes": "Use create_persistence to ensure defaults.",
+    "source": "agent_k/mission/persistence.py"
+  },
+  {
+    "for": [
+      "production toolset composition"
+    ],
+    "line": 125,
+    "notes": "Use create_production_toolset for standardized behavior.",
+    "source": "agent_k/toolsets/__init__.py"
+  },
+  {
+    "for": [
+      "memory backend construction"
+    ],
+    "line": 243,
+    "notes": "Use create_memory_backend to ensure defaults.",
+    "source": "agent_k/toolsets/memory.py"
+  },
+  {
+    "for": [
+      "AG-UI application construction"
+    ],
+    "line": 1007,
+    "notes": "Use create_app to initialize the FastAPI server.",
+    "source": "agent_k/ui/agui.py"
+  }
+]

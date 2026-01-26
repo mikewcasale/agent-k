@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.mission.persistence:MissionPersistence",
+  "type": "class",
+  "summary": "Mission-specific persistence with checkpoint rotation and resumability.",
+  "notice": "Mission-specific persistence with checkpoint rotation and resumability.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: state-persistence\n    rationale: \"Stores mission snapshots for resumption and auditability.\"\n    violations: \"Ad-hoc persistence complicates recovery.\"\n\n@collaborators:\n    required:\n        - pydantic_graph.persistence.file:FileStatePersistence\n    injection: constructor\n    lifecycle: \"Scoped per mission.\"\n\n@concurrency:\n    model: asyncio\n    safe: false\n    reason: \"Mutates on-disk checkpoints and in-memory snapshots.\"\n\n@invariants:\n    - \"mission_dir exists before persistence operations.\"",
+  "source": "backend/agent_k/mission/persistence.py",
+  "line": 57,
+  "path": "backend/agent_k/mission/persistence.py",
+  "location": {
+    "path": "backend/agent_k/mission/persistence.py",
+    "line": 57,
+    "character": 7
+  }
+}

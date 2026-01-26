@@ -66,9 +66,15 @@ __all__ = (
 class Individual(Generic[GenomeT]):
     """Evolutionary individual with lineage tracking.
 
-    @pattern:
-        name: individual-model
-        rationale: "Generic dataclass for evolutionary individuals with lineage."
+    @notice: |
+        Evolutionary individual with lineage tracking.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: individual-model
+            rationale: "Generic dataclass for evolutionary individuals with lineage."
     """
 
     genome: GenomeT
@@ -87,9 +93,15 @@ class Individual(Generic[GenomeT]):
 class MapElitesArchive(Generic[GenomeT]):
     """MAP-Elites archive for diversity-aware preservation.
 
-    @pattern:
-        name: archive-model
-        rationale: "Generic archive for MAP-Elites diversity preservation."
+    @notice: |
+        MAP-Elites archive for diversity-aware preservation.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: archive-model
+            rationale: "Generic archive for MAP-Elites diversity preservation."
     """
 
     def __init__(self, descriptor_fn: DescriptorFn[GenomeT], *, max_cells: int | None = None) -> None:
@@ -141,9 +153,15 @@ class MapElitesArchive(Generic[GenomeT]):
 class Population(Generic[GenomeT]):
     """Population container with selection, crossover, and mutation helpers.
 
-    @pattern:
-        name: population-model
-        rationale: "Generic container for evolutionary population management."
+    @notice: |
+        Population container with selection, crossover, and mutation helpers.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: population-model
+            rationale: "Generic container for evolutionary population management."
     """
 
     def __init__(
@@ -216,9 +234,15 @@ class Population(Generic[GenomeT]):
 class HyperparamSpace:
     """Search space definition for hyperparameter evolution.
 
-    @pattern:
-        name: search-space
-        rationale: "Dataclass defining continuous, integer, categorical bounds."
+    @notice: |
+        Search space definition for hyperparameter evolution.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: search-space
+            rationale: "Dataclass defining continuous, integer, categorical bounds."
     """
 
     continuous: dict[str, tuple[float, float]] = field(default_factory=dict)
@@ -230,9 +254,15 @@ class HyperparamSpace:
 class HyperparamGenome:
     """Genome wrapper for hyperparameter configurations.
 
-    @pattern:
-        name: genome-model
-        rationale: "Dataclass wrapping hyperparameter key-value pairs."
+    @notice: |
+        Genome wrapper for hyperparameter configurations.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: genome-model
+            rationale: "Dataclass wrapping hyperparameter key-value pairs."
     """
 
     parameters: dict[str, Any] = field(default_factory=dict)
@@ -241,9 +271,15 @@ class HyperparamGenome:
 class HyperparamEvolver:
     """Evolutionary hyperparameter optimizer with adaptive mutation rates.
 
-    @pattern:
-        name: evolver
-        rationale: "Coordinates hyperparameter search with adaptive mutation."
+    @notice: |
+        Evolutionary hyperparameter optimizer with adaptive mutation rates.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: evolver
+            rationale: "Coordinates hyperparameter search with adaptive mutation."
     """
 
     def __init__(
@@ -343,9 +379,15 @@ class HyperparamEvolver:
 class EvolutionaryFramework:
     """Coordinator for composing evolution components into a single loop.
 
-    @pattern:
-        name: framework
-        rationale: "Composes multiple evolvers into a unified evolution loop."
+    @notice: |
+        Coordinator for composing evolution components into a single loop.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: framework
+            rationale: "Composes multiple evolvers into a unified evolution loop."
     """
 
     def __init__(

@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.adapters.test_kaggle_adapter:TestKaggleAdapter.test_search_competitions_basic",
+  "type": "method",
+  "summary": "Search competitions should return results.",
+  "source": "backend/tests/adapters/test_kaggle_adapter.py",
+  "line": 64,
+  "path": "backend/tests/adapters/test_kaggle_adapter.py",
+  "location": {
+    "path": "backend/tests/adapters/test_kaggle_adapter.py",
+    "line": 64,
+    "character": 11
+  }
+}

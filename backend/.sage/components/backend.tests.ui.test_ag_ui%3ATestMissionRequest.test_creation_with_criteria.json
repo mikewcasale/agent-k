@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.ui.test_ag_ui:TestMissionRequest.test_creation_with_criteria",
+  "type": "method",
+  "summary": "Request should be created with criteria.",
+  "source": "backend/tests/ui/test_ag_ui.py",
+  "line": 30,
+  "path": "backend/tests/ui/test_ag_ui.py",
+  "location": {
+    "path": "backend/tests/ui/test_ag_ui.py",
+    "line": 30,
+    "character": 11
+  }
+}

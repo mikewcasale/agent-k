@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.feedback:SubmissionCandidate",
+  "line": 53,
+  "notice": "Candidate configuration for submission feedback loops.",
+  "pattern": {
+    "name": "value-object",
+    "rationale": "Dataclass for candidate submission configuration."
+  },
+  "similar": null,
+  "source": "agent_k/core/feedback.py",
+  "summary": "Candidate configuration for submission feedback loops.",
+  "type": "class"
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.evaluator:_load_context",
+  "line": 78,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/evaluator.py",
+  "summary": "Load evaluation context from environment variable.",
+  "type": "function"
+}

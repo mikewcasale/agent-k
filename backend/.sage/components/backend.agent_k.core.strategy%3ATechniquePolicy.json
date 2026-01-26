@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.strategy:TechniquePolicy",
+  "type": "class",
+  "summary": "Generic technique policy for solution enforcement.",
+  "notice": "Generic technique policy for solution enforcement.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: policy-model\n    rationale: \"Encodes technique constraints for evolution.\"\n    violations: \"Inline tuning fragments policy definitions.\"",
+  "source": "backend/agent_k/core/strategy.py",
+  "line": 118,
+  "path": "backend/agent_k/core/strategy.py",
+  "location": {
+    "path": "backend/agent_k/core/strategy.py",
+    "line": 118,
+    "character": 7
+  }
+}

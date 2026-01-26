@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.evolution.framework:Individual",
+  "type": "class",
+  "summary": "Evolutionary individual with lineage tracking.",
+  "notice": "Evolutionary individual with lineage tracking.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: individual-model\n    rationale: \"Generic dataclass for evolutionary individuals with lineage.\"",
+  "source": "backend/agent_k/evolution/framework.py",
+  "line": 66,
+  "path": "backend/agent_k/evolution/framework.py",
+  "location": {
+    "path": "backend/agent_k/evolution/framework.py",
+    "line": 66,
+    "character": 7
+  }
+}

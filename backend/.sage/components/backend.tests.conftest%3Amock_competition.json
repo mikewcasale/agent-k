@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.conftest:mock_competition",
+  "type": "function",
+  "summary": "Provide a mock competition for testing.",
+  "source": "backend/tests/conftest.py",
+  "line": 213,
+  "path": "backend/tests/conftest.py",
+  "location": {
+    "path": "backend/tests/conftest.py",
+    "line": 213,
+    "character": 7
+  }
+}

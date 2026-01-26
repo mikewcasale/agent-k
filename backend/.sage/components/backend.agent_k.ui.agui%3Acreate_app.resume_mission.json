@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:create_app.resume_mission",
+  "type": "function",
+  "summary": "Resume a persisted mission and return mission ID.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 1259,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 1259,
+    "character": 11
+  }
+}

@@ -54,13 +54,19 @@ __all__ = ("configure_instrumentation", "get_logger", "traced", "operation_span"
 class Metrics:
     """Centralized metrics recording.
 
-    Provides methods for recording various metric types consistently
-    across the application.
+        Provides methods for recording various metric types consistently
+        across the application.
 
-    @pattern:
-        name: metrics-recorder
-        rationale: "Centralizes Logfire metric emission."
-        violations: "Ad-hoc logging fragments telemetry signals."
+    @notice: |
+        Centralized metrics recording.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: metrics-recorder
+            rationale: "Centralizes Logfire metric emission."
+            violations: "Ad-hoc logging fragments telemetry signals."
     """
 
     @staticmethod

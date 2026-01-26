@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.infra.logging:get_logger",
+  "type": "function",
+  "summary": "Return a component-specific logger.",
+  "notice": "Return a component-specific logger.",
+  "dev": "See module for behavior details and invariants.",
+  "source": "backend/agent_k/infra/logging.py",
+  "line": 37,
+  "path": "backend/agent_k/infra/logging.py",
+  "location": {
+    "path": "backend/agent_k/infra/logging.py",
+    "line": 37,
+    "character": 7
+  }
+}

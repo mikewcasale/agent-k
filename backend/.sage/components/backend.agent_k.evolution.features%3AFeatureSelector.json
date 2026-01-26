@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.evolution.features:FeatureSelector",
+  "type": "class",
+  "summary": "Maintain a Pareto front for feature selection trade-offs.",
+  "notice": "Maintain a Pareto front for feature selection trade-offs.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: selector\n    rationale: \"Pareto-based feature selection with population evolution.\"",
+  "source": "backend/agent_k/evolution/features.py",
+  "line": 302,
+  "path": "backend/agent_k/evolution/features.py",
+  "location": {
+    "path": "backend/agent_k/evolution/features.py",
+    "line": 302,
+    "character": 7
+  }
+}

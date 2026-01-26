@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.agents.scientist:ResearchFinding",
+  "type": "class",
+  "summary": "Individual research finding.",
+  "notice": "Individual research finding.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: output-model\n    rationale: \"Consistent schema for research findings.\"\n    violations: \"Ad-hoc dicts are hard to validate.\"",
+  "source": "backend/agent_k/agents/scientist.py",
+  "line": 240,
+  "path": "backend/agent_k/agents/scientist.py",
+  "location": {
+    "path": "backend/agent_k/agents/scientist.py",
+    "line": 240,
+    "character": 7
+  }
+}

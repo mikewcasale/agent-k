@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.agents.test_evolver_mutations:TestStructuralMutation.test_structural_mutation_model_swap",
+  "type": "method",
+  "summary": "Structural mutation should swap model families.",
+  "source": "backend/tests/agents/test_evolver_mutations.py",
+  "line": 93,
+  "path": "backend/tests/agents/test_evolver_mutations.py",
+  "location": {
+    "path": "backend/tests/agents/test_evolver_mutations.py",
+    "line": 93,
+    "character": 11
+  }
+}

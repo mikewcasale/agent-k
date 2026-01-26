@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.infra.instrumentation:Metrics.record_api_call",
+  "type": "method",
+  "summary": "Record API call metrics.",
+  "source": "backend/agent_k/infra/instrumentation.py",
+  "line": 78,
+  "path": "backend/agent_k/infra/instrumentation.py",
+  "location": {
+    "path": "backend/agent_k/infra/instrumentation.py",
+    "line": 78,
+    "character": 11
+  }
+}

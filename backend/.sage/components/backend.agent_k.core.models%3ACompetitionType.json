@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.models:CompetitionType",
+  "type": "class",
+  "summary": "Type of Kaggle competition.",
+  "notice": "Type of Kaggle competition.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: enumeration\n    rationale: \"StrEnum for string-serializable competition categories.\"",
+  "source": "backend/agent_k/core/models.py",
+  "line": 93,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 93,
+    "character": 7
+  }
+}

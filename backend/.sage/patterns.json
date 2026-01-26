@@ -1,0 +1,1422 @@
+{
+  "generated": "2026-01-26T12:50:04.843613+00:00",
+  "pattern_count": 57,
+  "patterns": {
+    "adapter": [
+      {
+        "component": "agent_k.adapters.kaggle:KaggleAdapter",
+        "line": 114,
+        "rationale": "Encapsulates Kaggle-specific API behavior.",
+        "source": "agent_k/adapters/kaggle.py",
+        "violations": [
+          "Direct HTTP use scatters auth/rate-limit logic."
+        ]
+      },
+      {
+        "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
+        "line": 435,
+        "rationale": "Encapsulates OpenEvolve-specific behaviors.",
+        "source": "agent_k/adapters/openevolve.py",
+        "violations": [
+          "Direct OpenEvolve use bypasses PlatformAdapter contract."
+        ]
+      }
+    ],
+    "adapter-runner": [
+      {
+        "component": "agent_k.adapters.openevolve:OpenEvolveRunner",
+        "line": 223,
+        "rationale": "Encapsulates OpenEvolve execution behavior.",
+        "source": "agent_k/adapters/openevolve.py",
+        "violations": [
+          "Scattered runner logic complicates evolution flow."
+        ]
+      }
+    ],
+    "agent-base": [
+      {
+        "component": "agent_k.agents.base:BaseAgentMixin",
+        "line": 87,
+        "rationale": "Shared behavior for agent wrappers around pydantic-ai Agents.",
+        "source": "agent_k/agents/base.py",
+        "violations": [
+          "Duplicated run logic across agents."
+        ]
+      }
+    ],
+    "agent-singleton": [
+      {
+        "component": "agent_k.agents.evolver:EvolverAgent",
+        "line": 556,
+        "rationale": "Single instance keeps memory/tool registration consistent.",
+        "source": "agent_k/agents/evolver.py",
+        "violations": [
+          "Multiple instances duplicate tool registrations."
+        ]
+      },
+      {
+        "component": "agent_k.agents.lobbyist:LobbyistAgent",
+        "line": 167,
+        "rationale": "Single instance ensures consistent memory/tool registration.",
+        "source": "agent_k/agents/lobbyist.py",
+        "violations": [
+          "Multiple instances cause duplicated tool registrations."
+        ]
+      },
+      {
+        "component": "agent_k.agents.scientist:ScientistAgent",
+        "line": 319,
+        "rationale": "Single instance keeps memory/tool registration consistent.",
+        "source": "agent_k/agents/scientist.py",
+        "violations": [
+          "Multiple instances duplicate tool registrations."
+        ]
+      }
+    ],
+    "archive-entry": [
+      {
+        "component": "agent_k.agents.evolver:EvolutionArchiveEntry",
+        "line": 317,
+        "rationale": "Encapsulates elite metadata for sampling.",
+        "source": "agent_k/agents/evolver.py",
+        "violations": [
+          "Unstructured elites make selection brittle."
+        ]
+      }
+    ],
+    "archive-model": [
+      {
+        "component": "agent_k.evolution.framework:MapElitesArchive",
+        "line": 94,
+        "rationale": "Generic archive for MAP-Elites diversity preservation.",
+        "source": "agent_k/evolution/framework.py",
+        "violations": []
+      }
+    ],
+    "classifier": [
+      {
+        "component": "agent_k.ui.agui:IntentClassifier",
+        "line": 612,
+        "rationale": "Dataclass for LLM-backed intent classification.",
+        "source": "agent_k/ui/agui.py",
+        "violations": []
+      }
+    ],
+    "config-model": [
+      {
+        "component": "agent_k.adapters.openevolve:OpenEvolveEvolutionConfig",
+        "line": 141,
+        "rationale": "Captures evolution hyperparameters in a schema.",
+        "source": "agent_k/adapters/openevolve.py",
+        "violations": [
+          "Loose dicts make validation brittle."
+        ]
+      }
+    ],
+    "context-model": [
+      {
+        "component": "agent_k.ui.agui:TaskEmissionContext",
+        "line": 546,
+        "rationale": "Async context manager for task lifecycle events.",
+        "source": "agent_k/ui/agui.py",
+        "violations": []
+      }
+    ],
+    "dependency-container": [
+      {
+        "component": "agent_k.agents.base:AgentDeps",
+        "line": 57,
+        "rationale": "Standardizes injected services for agent runs.",
+        "source": "agent_k/agents/base.py",
+        "violations": [
+          "Ad-hoc deps hide runtime requirements."
+        ]
+      },
+      {
+        "component": "agent_k.agents.evolver:EvolverDeps",
+        "line": 436,
+        "rationale": "Groups runtime services and evolution state.",
+        "source": "agent_k/agents/evolver.py",
+        "violations": [
+          "Scattered state makes evolution hard to resume."
+        ]
+      },
+      {
+        "component": "agent_k.agents.lobbyist:LobbyistDeps",
+        "line": 112,
+        "rationale": "Groups runtime services for discovery tools.",
+        "source": "agent_k/agents/lobbyist.py",
+        "violations": [
+          "Hidden globals make tests and tooling brittle."
+        ]
+      },
+      {
+        "component": "agent_k.agents.lycurgus:LycurgusDeps",
+        "line": 147,
+        "rationale": "Groups runtime services for orchestration.",
+        "source": "agent_k/agents/lycurgus.py",
+        "violations": [
+          "Hidden globals make orchestration brittle."
+        ]
+      },
+      {
+        "component": "agent_k.agents.scientist:ScientistDeps",
+        "line": 195,
+        "rationale": "Groups runtime services for research tools.",
+        "source": "agent_k/agents/scientist.py",
+        "violations": [
+          "Hidden globals make research runs nondeterministic."
+        ]
+      },
+      {
+        "component": "agent_k.core.deps:BaseDeps",
+        "line": 47,
+        "rationale": "Shared DI container for agent executions.",
+        "source": "agent_k/core/deps.py",
+        "violations": [
+          "Hidden globals make runs nondeterministic."
+        ]
+      },
+      {
+        "component": "agent_k.core.deps:KaggleDeps",
+        "line": 76,
+        "rationale": "Groups Kaggle adapter and toolset settings.",
+        "source": "agent_k/core/deps.py",
+        "violations": [
+          "Direct adapter access bypasses shared settings."
+        ]
+      },
+      {
+        "component": "agent_k.mission.state:GraphContext",
+        "line": 143,
+        "rationale": "Bundles runtime services for graph execution.",
+        "source": "agent_k/mission/state.py",
+        "violations": [
+          "Hidden globals make graph runs brittle."
+        ]
+      }
+    ],
+    "doc-metadata": [
+      {
+        "component": "agent_k.core.sage:Doc",
+        "line": 43,
+        "rationale": "Co-locates parameter docs with type hints.",
+        "source": "agent_k/core/sage.py",
+        "violations": [
+          "Out-of-band docs drift from signatures."
+        ]
+      },
+      {
+        "component": "agent_k.core.sage:Constraint",
+        "line": 62,
+        "rationale": "Captures validation rules without custom parsers.",
+        "source": "agent_k/core/sage.py",
+        "violations": [
+          "Opaque constraints make automated checks brittle."
+        ]
+      },
+      {
+        "component": "agent_k.core.sage:Range",
+        "line": 81,
+        "rationale": "Encodes min/max bounds for tooling and agents.",
+        "source": "agent_k/core/sage.py",
+        "violations": [
+          "Hidden bounds lead to invalid parameter choices."
+        ]
+      },
+      {
+        "component": "agent_k.core.sage:Default",
+        "line": 101,
+        "rationale": "Makes implicit defaults discoverable to agents.",
+        "source": "agent_k/core/sage.py",
+        "violations": [
+          "Silent defaults can mislead tool usage."
+        ]
+      }
+    ],
+    "embedding-store": [
+      {
+        "component": "agent_k.embeddings.store:InMemoryVectorStore",
+        "line": 93,
+        "rationale": "Provides a lightweight in-memory vector index.",
+        "source": "agent_k/embeddings/store.py",
+        "violations": [
+          "Ad-hoc retrieval logic leads to inconsistencies."
+        ]
+      }
+    ],
+    "enumeration": [
+      {
+        "component": "agent_k.adapters.openevolve:OpenEvolveJobState",
+        "line": 120,
+        "rationale": "StrEnum for OpenEvolve job lifecycle states.",
+        "source": "agent_k/adapters/openevolve.py",
+        "violations": [
+          "String literals drift across job state handling."
+        ]
+      },
+      {
+        "component": "agent_k.core.hints:ColumnType",
+        "line": 94,
+        "rationale": "StrEnum for semantic column type classification.",
+        "source": "agent_k/core/hints.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.hints:MissingPattern",
+        "line": 123,
+        "rationale": "StrEnum for MCAR/MAR/MNAR classification.",
+        "source": "agent_k/core/hints.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.hints:HintCategory",
+        "line": 142,
+        "rationale": "StrEnum for grouping preprocessing hints by category.",
+        "source": "agent_k/core/hints.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.hints:HintResult",
+        "line": 174,
+        "rationale": "StrEnum for hint outcome tracking.",
+        "source": "agent_k/core/hints.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:CompetitionType",
+        "line": 94,
+        "rationale": "StrEnum for string-serializable competition categories.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:SubjectDomain",
+        "line": 115,
+        "rationale": "StrEnum for ML domain categories.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:EvaluationMetric",
+        "line": 140,
+        "rationale": "StrEnum for standard ML evaluation metrics.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.strategy:ProblemType",
+        "line": 68,
+        "rationale": "StrEnum for ML problem taxonomy.",
+        "source": "agent_k/core/strategy.py",
+        "violations": [
+          "String literals drift across policy logic."
+        ]
+      }
+    ],
+    "evaluator": [
+      {
+        "component": "agent_k.evals.evaluators:ValidPython",
+        "line": 43,
+        "rationale": "Encapsulates evaluation logic for pydantic-evals.",
+        "source": "agent_k/evals/evaluators.py",
+        "violations": [
+          "Inline checks are harder to reuse and test."
+        ]
+      },
+      {
+        "component": "agent_k.evals.evaluators:FitnessImprovement",
+        "line": 68,
+        "rationale": "Encapsulates fitness evaluation logic.",
+        "source": "agent_k/evals/evaluators.py",
+        "violations": [
+          "Inline comparisons fragment evaluator reuse."
+        ]
+      },
+      {
+        "component": "agent_k.evals.evaluators:CompetitionSelected",
+        "line": 93,
+        "rationale": "Encapsulates competition selection checks.",
+        "source": "agent_k/evals/evaluators.py",
+        "violations": [
+          "Repeated checks drift across evals."
+        ]
+      }
+    ],
+    "event-emitter": [
+      {
+        "component": "agent_k.ui.agui:EventEmitter",
+        "line": 332,
+        "rationale": "Centralizes event streaming for the UI.",
+        "source": "agent_k/ui/agui.py",
+        "violations": [
+          "Direct SSE writes bypass buffering and tracing."
+        ]
+      }
+    ],
+    "event-model": [
+      {
+        "component": "agent_k.ui.agui:AgentKEvent",
+        "line": 283,
+        "rationale": "Frozen Pydantic model for SSE event streaming.",
+        "source": "agent_k/ui/agui.py",
+        "violations": []
+      }
+    ],
+    "evolver": [
+      {
+        "component": "agent_k.evolution.features:FeatureEvolver",
+        "line": 202,
+        "rationale": "Coordinates evolutionary search over feature genomes.",
+        "source": "agent_k/evolution/features.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.evolution.framework:HyperparamEvolver",
+        "line": 272,
+        "rationale": "Coordinates hyperparameter search with adaptive mutation.",
+        "source": "agent_k/evolution/framework.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.evolution.loss:LossFunctionEvolver",
+        "line": 68,
+        "rationale": "Coordinates evolutionary search over loss function genomes.",
+        "source": "agent_k/evolution/loss.py",
+        "violations": []
+      }
+    ],
+    "exception-base": [
+      {
+        "component": "agent_k.core.exceptions:AgentKError",
+        "line": 67,
+        "rationale": "Root exception with context and recoverability metadata.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      }
+    ],
+    "exception-category": [
+      {
+        "component": "agent_k.core.exceptions:AgentError",
+        "line": 94,
+        "rationale": "Category base for agent execution errors.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:AdapterError",
+        "line": 180,
+        "rationale": "Category base for platform adapter errors.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:CompetitionError",
+        "line": 256,
+        "rationale": "Category base for Kaggle competition errors.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:EvolutionError",
+        "line": 363,
+        "rationale": "Category base for evolutionary algorithm errors.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:MemoryError",
+        "line": 449,
+        "rationale": "Category base for memory and checkpoint errors.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:GraphError",
+        "line": 510,
+        "rationale": "Category base for state machine errors.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      }
+    ],
+    "exception-specific": [
+      {
+        "component": "agent_k.core.exceptions:AgentExecutionError",
+        "line": 109,
+        "rationale": "Captures agent name and cause for debugging.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:ToolExecutionError",
+        "line": 135,
+        "rationale": "Captures tool name and arguments for debugging.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:OutputValidationError",
+        "line": 157,
+        "rationale": "Captures validation errors for structured output failures.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:PlatformConnectionError",
+        "line": 195,
+        "rationale": "Captures platform name for connection failures.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:AuthenticationError",
+        "line": 214,
+        "rationale": "Non-recoverable authentication failure.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:RateLimitError",
+        "line": 233,
+        "rationale": "Recoverable with retry_after hint for backoff.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:CompetitionNotFoundError",
+        "line": 271,
+        "rationale": "Non-recoverable missing competition.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:CompetitionRulesNotAcceptedError",
+        "line": 292,
+        "rationale": "Non-recoverable until user accepts rules manually.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:SubmissionError",
+        "line": 316,
+        "rationale": "Captures submission context for retry logic.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:DeadlinePassedError",
+        "line": 339,
+        "rationale": "Non-recoverable deadline expiration.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:ConvergenceError",
+        "line": 378,
+        "rationale": "Captures evolution progress for analysis.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:PopulationExtinctError",
+        "line": 402,
+        "rationale": "Non-recoverable population extinction.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:FitnessEvaluationError",
+        "line": 426,
+        "rationale": "Captures solution and execution context for debugging.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:CheckpointError",
+        "line": 464,
+        "rationale": "Captures checkpoint name and operation for debugging.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:MemoryCapacityError",
+        "line": 487,
+        "rationale": "Captures size metrics for capacity planning.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:StateTransitionError",
+        "line": 525,
+        "rationale": "Captures transition context for state machine debugging.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.exceptions:PhaseTimeoutError",
+        "line": 549,
+        "rationale": "Captures timing metrics for timeout analysis.",
+        "source": "agent_k/core/exceptions.py",
+        "violations": []
+      }
+    ],
+    "execution-result": [
+      {
+        "component": "agent_k.core.solution:ExecutionResult",
+        "line": 82,
+        "rationale": "Standardizes subprocess outputs for solution runs.",
+        "source": "agent_k/core/solution.py",
+        "violations": [
+          "Tuple returns drop context for debugging."
+        ]
+      }
+    ],
+    "fitness-input": [
+      {
+        "component": "agent_k.core.strategy:FitnessInput",
+        "line": 146,
+        "rationale": "Captures evaluation signals for scoring.",
+        "source": "agent_k/core/strategy.py",
+        "violations": [
+          "Ad-hoc inputs drift across fitness logic."
+        ]
+      }
+    ],
+    "framework": [
+      {
+        "component": "agent_k.evolution.framework:EvolutionaryFramework",
+        "line": 380,
+        "rationale": "Composes multiple evolvers into a unified evolution loop.",
+        "source": "agent_k/evolution/framework.py",
+        "violations": []
+      }
+    ],
+    "gene-model": [
+      {
+        "component": "agent_k.evolution.features:TransformGene",
+        "line": 60,
+        "rationale": "Frozen dataclass representing a transformation gene.",
+        "source": "agent_k/evolution/features.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.evolution.features:InteractionGene",
+        "line": 79,
+        "rationale": "Frozen dataclass representing an interaction gene.",
+        "source": "agent_k/evolution/features.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.evolution.features:RatioGene",
+        "line": 98,
+        "rationale": "Frozen dataclass representing a ratio feature gene.",
+        "source": "agent_k/evolution/features.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.evolution.features:BinningGene",
+        "line": 117,
+        "rationale": "Frozen dataclass representing a binning strategy gene.",
+        "source": "agent_k/evolution/features.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.evolution.features:DomainFeatureGene",
+        "line": 137,
+        "rationale": "Frozen dataclass representing a domain feature gene.",
+        "source": "agent_k/evolution/features.py",
+        "violations": []
+      }
+    ],
+    "genome-model": [
+      {
+        "component": "agent_k.evolution.features:FeatureGenome",
+        "line": 156,
+        "rationale": "Mutable dataclass aggregating feature engineering genes.",
+        "source": "agent_k/evolution/features.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.evolution.framework:HyperparamGenome",
+        "line": 255,
+        "rationale": "Dataclass wrapping hyperparameter key-value pairs.",
+        "source": "agent_k/evolution/framework.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.evolution.loss:LossGenome",
+        "line": 46,
+        "rationale": "Dataclass for LightGBM loss function parameters.",
+        "source": "agent_k/evolution/loss.py",
+        "violations": []
+      }
+    ],
+    "graph-node": [
+      {
+        "component": "agent_k.mission.nodes:DiscoveryNode",
+        "line": 115,
+        "rationale": "Encapsulates discovery phase logic in the mission graph.",
+        "source": "agent_k/mission/nodes.py",
+        "violations": [
+          "Discovery logic outside nodes causes transition drift."
+        ]
+      },
+      {
+        "component": "agent_k.mission.nodes:ResearchNode",
+        "line": 273,
+        "rationale": "Encapsulates research phase logic in the mission graph.",
+        "source": "agent_k/mission/nodes.py",
+        "violations": [
+          "Research logic outside nodes causes transition drift."
+        ]
+      },
+      {
+        "component": "agent_k.mission.nodes:PrototypeNode",
+        "line": 419,
+        "rationale": "Encapsulates prototype phase logic in the mission graph.",
+        "source": "agent_k/mission/nodes.py",
+        "violations": [
+          "Prototype logic outside nodes causes transition drift."
+        ]
+      },
+      {
+        "component": "agent_k.mission.nodes:EvolutionNode",
+        "line": 900,
+        "rationale": "Encapsulates evolution phase logic in the mission graph.",
+        "source": "agent_k/mission/nodes.py",
+        "violations": [
+          "Evolution logic outside nodes causes transition drift."
+        ]
+      },
+      {
+        "component": "agent_k.mission.nodes:SubmissionNode",
+        "line": 1602,
+        "rationale": "Encapsulates submission phase logic in the mission graph.",
+        "source": "agent_k/mission/nodes.py",
+        "violations": [
+          "Submission logic outside nodes causes transition drift."
+        ]
+      }
+    ],
+    "handler": [
+      {
+        "component": "agent_k.ui.agui:ChatHandler",
+        "line": 699,
+        "rationale": "Dataclass coordinating intent classification and parsing.",
+        "source": "agent_k/ui/agui.py",
+        "violations": []
+      }
+    ],
+    "immutable-entity": [
+      {
+        "component": "agent_k.core.models:Competition",
+        "line": 170,
+        "rationale": "Frozen Pydantic model for competition metadata.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:LeaderboardEntry",
+        "line": 232,
+        "rationale": "Frozen Pydantic model for leaderboard row data.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:Submission",
+        "line": 255,
+        "rationale": "Frozen Pydantic model for submission records.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:ToolCall",
+        "line": 281,
+        "rationale": "Base frozen model for tool call telemetry.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:PlannedTask",
+        "line": 390,
+        "rationale": "Frozen Pydantic model for task planning and tracking.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:PhasePlan",
+        "line": 424,
+        "rationale": "Frozen Pydantic model for phase-level planning.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:MissionPlan",
+        "line": 453,
+        "rationale": "Frozen Pydantic model for complete mission planning.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:GenerationMetrics",
+        "line": 476,
+        "rationale": "Frozen Pydantic model for evolution generation metrics.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:LeaderboardSubmission",
+        "line": 506,
+        "rationale": "Frozen Pydantic model for leaderboard submission records.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:EvolutionState",
+        "line": 532,
+        "rationale": "Frozen Pydantic model for evolution state tracking.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:MemoryEntry",
+        "line": 565,
+        "rationale": "Frozen Pydantic model for memory store entries.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:Checkpoint",
+        "line": 591,
+        "rationale": "Frozen Pydantic model for state checkpoint records.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:MemoryState",
+        "line": 613,
+        "rationale": "Frozen Pydantic model for aggregate memory state.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:ErrorEvent",
+        "line": 634,
+        "rationale": "Frozen Pydantic model for error event records.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:LeaderboardAnalysis",
+        "line": 664,
+        "rationale": "Frozen Pydantic model for leaderboard analysis results.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:ResearchFindings",
+        "line": 690,
+        "rationale": "Frozen Pydantic model for research findings aggregate.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:MissionCriteria",
+        "line": 713,
+        "rationale": "Frozen Pydantic model for mission execution constraints.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      }
+    ],
+    "individual-model": [
+      {
+        "component": "agent_k.evolution.features:FeatureSelectionIndividual",
+        "line": 180,
+        "rationale": "Mutable dataclass for binary feature mask with fitness.",
+        "source": "agent_k/evolution/features.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.evolution.framework:Individual",
+        "line": 67,
+        "rationale": "Generic dataclass for evolutionary individuals with lineage.",
+        "source": "agent_k/evolution/framework.py",
+        "violations": []
+      }
+    ],
+    "job-tracker": [
+      {
+        "component": "agent_k.adapters.openevolve:_OpenEvolveJob",
+        "line": 413,
+        "rationale": "Captures in-memory job state for adapter polling.",
+        "source": "agent_k/adapters/openevolve.py",
+        "violations": [
+          "Fragmented job state tracking breaks status updates."
+        ]
+      }
+    ],
+    "memory-tool": [
+      {
+        "component": "agent_k.toolsets.memory:AgentKMemoryTool",
+        "line": 77,
+        "rationale": "Provides a file-backed memory interface for agents.",
+        "source": "agent_k/toolsets/memory.py",
+        "violations": [
+          "Bypassing this tool breaks memory consistency."
+        ]
+      }
+    ],
+    "metadata-model": [
+      {
+        "component": "agent_k.core.tracking:ExperimentMetadata",
+        "line": 134,
+        "rationale": "Frozen Pydantic model for solution metadata extraction.",
+        "source": "agent_k/core/tracking.py",
+        "violations": []
+      }
+    ],
+    "metrics-recorder": [
+      {
+        "component": "agent_k.infra.instrumentation:Metrics",
+        "line": 55,
+        "rationale": "Centralizes Logfire metric emission.",
+        "source": "agent_k/infra/instrumentation.py",
+        "violations": [
+          "Ad-hoc logging fragments telemetry signals."
+        ]
+      }
+    ],
+    "mission-state": [
+      {
+        "component": "agent_k.mission.state:MissionState",
+        "line": 60,
+        "rationale": "Single source of truth for mission progression.",
+        "source": "agent_k/mission/state.py",
+        "violations": [
+          "Phase-specific state stored elsewhere causes drift."
+        ]
+      }
+    ],
+    "mixin": [
+      {
+        "component": "agent_k.agents.base:MemoryMixin",
+        "line": 149,
+        "rationale": "Shares memory initialization across agents without inheritance chains.",
+        "source": "agent_k/agents/base.py",
+        "violations": [
+          "Duplicating memory setup logic in each agent."
+        ]
+      }
+    ],
+    "orchestrator": [
+      {
+        "component": "agent_k.agents.lycurgus:LycurgusOrchestrator",
+        "line": 197,
+        "rationale": "Centralized coordinator for multi-agent mission state.",
+        "source": "agent_k/agents/lycurgus.py",
+        "violations": [
+          "Decentralized orchestration leads to inconsistent transitions."
+        ]
+      },
+      {
+        "component": "agent_k.core.feedback:SubmissionOrchestrator",
+        "line": 97,
+        "rationale": "Coordinates submission feedback loops with tracker.",
+        "source": "agent_k/core/feedback.py",
+        "violations": []
+      }
+    ],
+    "output-model": [
+      {
+        "component": "agent_k.adapters.openevolve:OpenEvolveJobStatus",
+        "line": 165,
+        "rationale": "Stable status payload for job monitoring.",
+        "source": "agent_k/adapters/openevolve.py",
+        "violations": [
+          "Ad-hoc status dicts break tooling."
+        ]
+      },
+      {
+        "component": "agent_k.adapters.openevolve:OpenEvolveSolution",
+        "line": 192,
+        "rationale": "Stable schema for OpenEvolve solutions.",
+        "source": "agent_k/adapters/openevolve.py",
+        "violations": [
+          "Free-form outputs hinder integration."
+        ]
+      },
+      {
+        "component": "agent_k.agents.evolver:EvolutionResult",
+        "line": 501,
+        "rationale": "Stable schema for successful evolution outputs.",
+        "source": "agent_k/agents/evolver.py",
+        "violations": [
+          "Free-form outputs hinder submission automation."
+        ]
+      },
+      {
+        "component": "agent_k.agents.evolver:EvolutionFailure",
+        "line": 526,
+        "rationale": "Stable schema for failed evolution outputs.",
+        "source": "agent_k/agents/evolver.py",
+        "violations": [
+          "Opaque errors make recovery harder."
+        ]
+      },
+      {
+        "component": "agent_k.agents.lobbyist:DiscoveryResult",
+        "line": 143,
+        "rationale": "Stable schema for discovery outputs.",
+        "source": "agent_k/agents/lobbyist.py",
+        "violations": [
+          "Ad-hoc dict outputs are hard to validate."
+        ]
+      },
+      {
+        "component": "agent_k.agents.lycurgus:MissionStatus",
+        "line": 176,
+        "rationale": "Stable status payload for UI updates.",
+        "source": "agent_k/agents/lycurgus.py",
+        "violations": [
+          "Ad-hoc status dicts hinder UI consumers."
+        ]
+      },
+      {
+        "component": "agent_k.agents.scientist:ResearchFinding",
+        "line": 241,
+        "rationale": "Consistent schema for research findings.",
+        "source": "agent_k/agents/scientist.py",
+        "violations": [
+          "Ad-hoc dicts are hard to validate."
+        ]
+      },
+      {
+        "component": "agent_k.agents.scientist:LeaderboardAnalysis",
+        "line": 265,
+        "rationale": "Stable schema for leaderboard summaries.",
+        "source": "agent_k/agents/scientist.py",
+        "violations": [
+          "Inconsistent shapes break downstream synthesis."
+        ]
+      },
+      {
+        "component": "agent_k.agents.scientist:ResearchReport",
+        "line": 289,
+        "rationale": "Aggregates research findings into a stable schema.",
+        "source": "agent_k/agents/scientist.py",
+        "violations": [
+          "Free-form outputs hinder automation."
+        ]
+      },
+      {
+        "component": "agent_k.embeddings.retriever:RetrievalResult",
+        "line": 47,
+        "rationale": "Stable retrieval payload for RAG consumption.",
+        "source": "agent_k/embeddings/retriever.py",
+        "violations": [
+          "Ad-hoc dicts make ranking hard to interpret."
+        ]
+      },
+      {
+        "component": "agent_k.embeddings.store:VectorRecord",
+        "line": 45,
+        "rationale": "Stable schema for vector records.",
+        "source": "agent_k/embeddings/store.py",
+        "violations": [
+          "Unstructured records complicate retrieval."
+        ]
+      },
+      {
+        "component": "agent_k.mission.state:MissionResult",
+        "line": 113,
+        "rationale": "Stable schema for mission results.",
+        "source": "agent_k/mission/state.py",
+        "violations": [
+          "Ad-hoc outputs hinder UI/reporting."
+        ]
+      },
+      {
+        "component": "agent_k.ui.agui:MissionIntentOutput",
+        "line": 308,
+        "rationale": "Frozen Pydantic model for agent structured output.",
+        "source": "agent_k/ui/agui.py",
+        "violations": []
+      }
+    ],
+    "parser": [
+      {
+        "component": "agent_k.ui.agui:MissionCriteriaParser",
+        "line": 667,
+        "rationale": "Dataclass for extracting mission criteria from intent.",
+        "source": "agent_k/ui/agui.py",
+        "violations": []
+      }
+    ],
+    "policy-model": [
+      {
+        "component": "agent_k.core.strategy:TechniquePolicy",
+        "line": 119,
+        "rationale": "Encodes technique constraints for evolution.",
+        "source": "agent_k/core/strategy.py",
+        "violations": [
+          "Inline tuning fragments policy definitions."
+        ]
+      },
+      {
+        "component": "agent_k.core.strategy:FitnessPolicy",
+        "line": 170,
+        "rationale": "Encodes penalty tuning for fitness scoring.",
+        "source": "agent_k/core/strategy.py",
+        "violations": [
+          "Inline penalties drift across runs."
+        ]
+      }
+    ],
+    "population-model": [
+      {
+        "component": "agent_k.evolution.framework:Population",
+        "line": 154,
+        "rationale": "Generic container for evolutionary population management.",
+        "source": "agent_k/evolution/framework.py",
+        "violations": []
+      }
+    ],
+    "profile-model": [
+      {
+        "component": "agent_k.core.strategy:ProblemProfile",
+        "line": 93,
+        "rationale": "Bundles task metadata for downstream policies.",
+        "source": "agent_k/core/strategy.py",
+        "violations": [
+          "Implicit profiles make policy decisions inconsistent."
+        ]
+      }
+    ],
+    "protocol-interface": [
+      {
+        "component": "agent_k.core.protocols:PlatformAdapter",
+        "line": 45,
+        "rationale": "Standard adapter contract for external competition platforms.",
+        "source": "agent_k/core/protocols.py",
+        "violations": [
+          "Adapters without this contract diverge in behavior."
+        ]
+      },
+      {
+        "component": "agent_k.embeddings.embedder:EmbedQueryResult",
+        "line": 48,
+        "rationale": "Defines the embedding result contract.",
+        "source": "agent_k/embeddings/embedder.py",
+        "violations": [
+          "Divergent payloads break embeddings consumers."
+        ]
+      },
+      {
+        "component": "agent_k.embeddings.embedder:Embedder",
+        "line": 61,
+        "rationale": "Standard contract for embedding providers.",
+        "source": "agent_k/embeddings/embedder.py",
+        "violations": [
+          "Embedder implementations without this contract diverge."
+        ]
+      },
+      {
+        "component": "agent_k.embeddings.store:VectorStore",
+        "line": 65,
+        "rationale": "Standard contract for vector storage.",
+        "source": "agent_k/embeddings/store.py",
+        "violations": [
+          "Stores without this interface diverge in behavior."
+        ]
+      }
+    ],
+    "record-model": [
+      {
+        "component": "agent_k.core.tracking:ExperimentRecord",
+        "line": 157,
+        "rationale": "Pydantic model for experiment persistence.",
+        "source": "agent_k/core/tracking.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.tracking:KaggleSubmissionRecord",
+        "line": 222,
+        "rationale": "Pydantic model for Kaggle submission persistence.",
+        "source": "agent_k/core/tracking.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.tracking:HintAttemptRecord",
+        "line": 250,
+        "rationale": "Pydantic model for hint effectiveness tracking.",
+        "source": "agent_k/core/tracking.py",
+        "violations": []
+      }
+    ],
+    "request-model": [
+      {
+        "component": "agent_k.ui.agui:MissionRequest",
+        "line": 218,
+        "rationale": "Frozen Pydantic model for mission start requests.",
+        "source": "agent_k/ui/agui.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.ui.agui:CompetitionSearchRequest",
+        "line": 243,
+        "rationale": "Frozen Pydantic model for competition search requests.",
+        "source": "agent_k/ui/agui.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.ui.agui:CompetitionFetchRequest",
+        "line": 265,
+        "rationale": "Frozen Pydantic model for competition fetch requests.",
+        "source": "agent_k/ui/agui.py",
+        "violations": []
+      }
+    ],
+    "result-model": [
+      {
+        "component": "agent_k.ui.agui:MissionIntentResult",
+        "line": 593,
+        "rationale": "Dataclass for intent classification result.",
+        "source": "agent_k/ui/agui.py",
+        "violations": []
+      }
+    ],
+    "retriever": [
+      {
+        "component": "agent_k.embeddings.retriever:RAGRetriever",
+        "line": 67,
+        "rationale": "Encapsulates retrieval logic for RAG flows.",
+        "source": "agent_k/embeddings/retriever.py",
+        "violations": [
+          "Scattered retrieval logic leads to inconsistent ranking."
+        ]
+      }
+    ],
+    "schema-model": [
+      {
+        "component": "agent_k.core.data:CompetitionSchema",
+        "line": 48,
+        "rationale": "Captures inferred column layout for downstream steps.",
+        "source": "agent_k/core/data.py",
+        "violations": [
+          "Ad-hoc dicts drift from actual data shape."
+        ]
+      }
+    ],
+    "search-space": [
+      {
+        "component": "agent_k.evolution.framework:HyperparamSpace",
+        "line": 235,
+        "rationale": "Dataclass defining continuous, integer, categorical bounds.",
+        "source": "agent_k/evolution/framework.py",
+        "violations": []
+      }
+    ],
+    "selector": [
+      {
+        "component": "agent_k.evolution.features:FeatureSelector",
+        "line": 303,
+        "rationale": "Pareto-based feature selection with population evolution.",
+        "source": "agent_k/evolution/features.py",
+        "violations": []
+      }
+    ],
+    "settings": [
+      {
+        "component": "agent_k.adapters.kaggle:KaggleSettings",
+        "line": 74,
+        "rationale": "Centralizes Kaggle adapter configuration.",
+        "source": "agent_k/adapters/kaggle.py",
+        "violations": [
+          "Ad-hoc config makes auth inconsistent."
+        ]
+      },
+      {
+        "component": "agent_k.adapters.openevolve:OpenEvolveSettings",
+        "line": 92,
+        "rationale": "Centralizes OpenEvolve adapter configuration.",
+        "source": "agent_k/adapters/openevolve.py",
+        "violations": [
+          "Ad-hoc config makes adapter behavior inconsistent."
+        ]
+      },
+      {
+        "component": "agent_k.agents.evolver:EvolverSettings",
+        "line": 363,
+        "rationale": "Centralizes evolutionary optimization configuration.",
+        "source": "agent_k/agents/evolver.py",
+        "violations": [
+          "Ad-hoc overrides lead to unstable evolution runs."
+        ]
+      },
+      {
+        "component": "agent_k.agents.lobbyist:LobbyistSettings",
+        "line": 82,
+        "rationale": "Centralizes discovery agent configuration.",
+        "source": "agent_k/agents/lobbyist.py",
+        "violations": [
+          "Ad-hoc per-run overrides lead to inconsistent behavior."
+        ]
+      },
+      {
+        "component": "agent_k.agents.lycurgus:LycurgusSettings",
+        "line": 99,
+        "rationale": "Centralizes orchestration configuration.",
+        "source": "agent_k/agents/lycurgus.py",
+        "violations": [
+          "Per-run overrides lead to inconsistent missions."
+        ]
+      },
+      {
+        "component": "agent_k.agents.scientist:ScientistSettings",
+        "line": 164,
+        "rationale": "Centralizes research agent configuration.",
+        "source": "agent_k/agents/scientist.py",
+        "violations": [
+          "Per-run overrides lead to inconsistent outputs."
+        ]
+      }
+    ],
+    "settings-model": [
+      {
+        "component": "agent_k.core.settings:AgentKSettings",
+        "line": 42,
+        "rationale": "Centralizes shared environment defaults.",
+        "source": "agent_k/core/settings.py",
+        "violations": [
+          "Scattered env lookups drift across modules."
+        ]
+      },
+      {
+        "component": "agent_k.infra.config:Settings",
+        "line": 40,
+        "rationale": "Captures runtime configuration defaults.",
+        "source": "agent_k/infra/config.py",
+        "violations": [
+          "Scattered env access increases drift."
+        ]
+      }
+    ],
+    "specialization": [
+      {
+        "component": "agent_k.core.models:WebSearchCall",
+        "line": 309,
+        "rationale": "Extends ToolCall with web search specific fields.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:KaggleMCPCall",
+        "line": 329,
+        "rationale": "Extends ToolCall with Kaggle API specific fields.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:CodeExecutorCall",
+        "line": 347,
+        "rationale": "Extends ToolCall with code execution specific fields.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.models:MemoryCall",
+        "line": 370,
+        "rationale": "Extends ToolCall with memory operation specific fields.",
+        "source": "agent_k/core/models.py",
+        "violations": []
+      }
+    ],
+    "state-persistence": [
+      {
+        "component": "agent_k.mission.persistence:MissionPersistence",
+        "line": 58,
+        "rationale": "Stores mission snapshots for resumption and auditability.",
+        "source": "agent_k/mission/persistence.py",
+        "violations": [
+          "Ad-hoc persistence complicates recovery."
+        ]
+      }
+    ],
+    "summary-model": [
+      {
+        "component": "agent_k.core.tracking:ExperimentSummary",
+        "line": 195,
+        "rationale": "Frozen Pydantic model for experiment listing.",
+        "source": "agent_k/core/tracking.py",
+        "violations": []
+      }
+    ],
+    "tracking-service": [
+      {
+        "component": "agent_k.core.tracking:HintEffectivenessTracker",
+        "line": 728,
+        "rationale": "Centralizes hint success tracking and suppression.",
+        "source": "agent_k/core/tracking.py",
+        "violations": [
+          "Distributed tracking makes suppression inconsistent."
+        ]
+      }
+    ],
+    "tracking-store": [
+      {
+        "component": "agent_k.core.tracking:ExperimentTracker",
+        "line": 277,
+        "rationale": "Centralized persistence for experiment metadata.",
+        "source": "agent_k/core/tracking.py",
+        "violations": [
+          "Distributed tracking logic causes inconsistent history."
+        ]
+      }
+    ],
+    "value-object": [
+      {
+        "component": "agent_k.core.feedback:SubmissionCandidate",
+        "line": 53,
+        "rationale": "Dataclass for candidate submission configuration.",
+        "source": "agent_k/core/feedback.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.feedback:SubmissionFeedback",
+        "line": 75,
+        "rationale": "Dataclass for submission result feedback.",
+        "source": "agent_k/core/feedback.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.hints:ColumnProfile",
+        "line": 194,
+        "rationale": "Frozen dataclass for immutable column statistics.",
+        "source": "agent_k/core/hints.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.hints:DistributionStats",
+        "line": 242,
+        "rationale": "Frozen dataclass for immutable distribution stats.",
+        "source": "agent_k/core/hints.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.hints:DatasetProfile",
+        "line": 280,
+        "rationale": "Frozen dataclass for immutable dataset profile.",
+        "source": "agent_k/core/hints.py",
+        "violations": []
+      },
+      {
+        "component": "agent_k.core.hints:PreprocessingHint",
+        "line": 389,
+        "rationale": "Mutable dataclass for hint tracking with state.",
+        "source": "agent_k/core/hints.py",
+        "violations": []
+      }
+    ]
+  },
+  "version": "1.3.6"
+}

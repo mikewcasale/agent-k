@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.abort_mission",
+  "type": "method",
+  "summary": "Abort the current mission.",
+  "source": "backend/agent_k/agents/lycurgus.py",
+  "line": 388,
+  "path": "backend/agent_k/agents/lycurgus.py",
+  "location": {
+    "path": "backend/agent_k/agents/lycurgus.py",
+    "line": 388,
+    "character": 11
+  }
+}

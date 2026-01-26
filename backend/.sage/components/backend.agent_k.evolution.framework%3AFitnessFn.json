@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.evolution.framework:FitnessFn",
+  "type": "attribute",
+  "summary": "Callable signature for fitness evaluation.",
+  "source": "backend/agent_k/evolution/framework.py",
+  "line": 42,
+  "path": "backend/agent_k/evolution/framework.py",
+  "location": {
+    "path": "backend/agent_k/evolution/framework.py",
+    "line": 42,
+    "character": 3
+  }
+}

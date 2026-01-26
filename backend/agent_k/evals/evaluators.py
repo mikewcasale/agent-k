@@ -42,10 +42,16 @@ __all__ = ("CompetitionSelected", "FitnessImprovement", "ValidPython")
 class ValidPython(Evaluator[str, str]):
     """Evaluate if output is valid Python code.
 
-    @pattern:
-        name: evaluator
-        rationale: "Encapsulates evaluation logic for pydantic-evals."
-        violations: "Inline checks are harder to reuse and test."
+    @notice: |
+        Evaluate if output is valid Python code.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: evaluator
+            rationale: "Encapsulates evaluation logic for pydantic-evals."
+            violations: "Inline checks are harder to reuse and test."
     """
 
     def evaluate(self, ctx: EvaluatorContext[str, str]) -> dict[str, bool]:
@@ -61,10 +67,16 @@ class ValidPython(Evaluator[str, str]):
 class FitnessImprovement(Evaluator[str, dict[str, Any]]):
     """Evaluate if fitness improved over baseline.
 
-    @pattern:
-        name: evaluator
-        rationale: "Encapsulates fitness evaluation logic."
-        violations: "Inline comparisons fragment evaluator reuse."
+    @notice: |
+        Evaluate if fitness improved over baseline.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: evaluator
+            rationale: "Encapsulates fitness evaluation logic."
+            violations: "Inline comparisons fragment evaluator reuse."
     """
 
     baseline_fitness: float = 0.0
@@ -80,10 +92,16 @@ class FitnessImprovement(Evaluator[str, dict[str, Any]]):
 class CompetitionSelected(Evaluator[str, dict[str, Any]]):
     """Evaluate if a valid competition was selected.
 
-    @pattern:
-        name: evaluator
-        rationale: "Encapsulates competition selection checks."
-        violations: "Repeated checks drift across evals."
+    @notice: |
+        Evaluate if a valid competition was selected.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: evaluator
+            rationale: "Encapsulates competition selection checks."
+            violations: "Repeated checks drift across evals."
     """
 
     def evaluate(self, ctx: EvaluatorContext[str, dict[str, Any]]) -> dict[str, Any]:

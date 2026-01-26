@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.agents.evolver:EvolutionFailure",
+  "type": "class",
+  "summary": "Failure result for evolution process.",
+  "notice": "Failure result for evolution process.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: output-model\n    rationale: \"Stable schema for failed evolution outputs.\"\n    violations: \"Opaque errors make recovery harder.\"",
+  "source": "backend/agent_k/agents/evolver.py",
+  "line": 525,
+  "path": "backend/agent_k/agents/evolver.py",
+  "location": {
+    "path": "backend/agent_k/agents/evolver.py",
+    "line": 525,
+    "character": 7
+  }
+}

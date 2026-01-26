@@ -1,0 +1,37 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.toolsets.code as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "id": "agent_k.toolsets.code",
+    "pattern": "toolset",
+    "provides": [
+      "agent_k.toolsets.code:code_toolset",
+      "agent_k.toolsets.code:create_code_execution_tool",
+      "agent_k.toolsets.code:prepare_code_execution_tool"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.toolsets.code",
+  "line": 1,
+  "notice": "Code execution tool helpers.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/code.py",
+  "summary": "Code execution tool helpers.",
+  "type": "module"
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Currently only reads ENVIRONMENT variable. Extend as needed.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.config:load_settings",
+  "line": 58,
+  "notice": "Creates a Settings instance from environment variables.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/config.py",
+  "summary": "Load settings from environment.",
+  "type": "function"
+}

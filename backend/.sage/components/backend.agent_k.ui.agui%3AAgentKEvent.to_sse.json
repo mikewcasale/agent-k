@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:AgentKEvent.to_sse",
+  "type": "method",
+  "summary": "Convert to Server-Sent Events format.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 302,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 302,
+    "character": 11
+  }
+}

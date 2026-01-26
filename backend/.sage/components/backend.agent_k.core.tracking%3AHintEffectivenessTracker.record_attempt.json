@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.tracking:HintEffectivenessTracker.record_attempt",
+  "type": "method",
+  "summary": "Record a hint attempt and update suppression state.",
+  "source": "backend/agent_k/core/tracking.py",
+  "line": 759,
+  "path": "backend/agent_k/core/tracking.py",
+  "location": {
+    "path": "backend/agent_k/core/tracking.py",
+    "line": 759,
+    "character": 11
+  }
+}

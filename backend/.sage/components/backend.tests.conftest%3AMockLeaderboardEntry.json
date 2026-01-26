@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.conftest:MockLeaderboardEntry",
+  "type": "class",
+  "summary": "Mock leaderboard entry for testing.",
+  "source": "backend/tests/conftest.py",
+  "line": 201,
+  "path": "backend/tests/conftest.py",
+  "location": {
+    "path": "backend/tests/conftest.py",
+    "line": 201,
+    "character": 7
+  }
+}

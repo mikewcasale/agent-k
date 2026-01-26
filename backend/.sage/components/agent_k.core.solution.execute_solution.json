@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Normalizes Kaggle paths, sanitizes environment, and captures output.\nSupports builtin code execution tool or local subprocess execution.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.solution:execute_solution",
+  "line": 113,
+  "notice": "Runs Python code in an isolated subprocess with timeout support.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/solution.py",
+  "summary": "Execute solution code in a working directory.",
+  "type": "function"
+}

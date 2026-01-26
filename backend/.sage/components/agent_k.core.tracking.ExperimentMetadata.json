@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.tracking:ExperimentMetadata",
+  "line": 134,
+  "notice": "Structured metadata extracted from a solution.",
+  "pattern": {
+    "name": "metadata-model",
+    "rationale": "Frozen Pydantic model for solution metadata extraction."
+  },
+  "similar": null,
+  "source": "agent_k/core/tracking.py",
+  "summary": "Structured metadata extracted from a solution.",
+  "type": "class"
+}

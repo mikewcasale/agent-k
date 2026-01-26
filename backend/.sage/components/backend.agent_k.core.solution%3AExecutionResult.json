@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.solution:ExecutionResult",
+  "type": "class",
+  "summary": "Result of executing a solution script.",
+  "notice": "Result of executing a solution script.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: execution-result\n    rationale: \"Standardizes subprocess outputs for solution runs.\"\n    violations: \"Tuple returns drop context for debugging.\"",
+  "source": "backend/agent_k/core/solution.py",
+  "line": 81,
+  "path": "backend/agent_k/core/solution.py",
+  "location": {
+    "path": "backend/agent_k/core/solution.py",
+    "line": 81,
+    "character": 7
+  }
+}

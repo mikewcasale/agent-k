@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.mission.test_state:TestMissionState.test_started_at_auto_set",
+  "type": "method",
+  "summary": "Started at should be auto-set to current time.",
+  "source": "backend/tests/mission/test_state.py",
+  "line": 80,
+  "path": "backend/tests/mission/test_state.py",
+  "location": {
+    "path": "backend/tests/mission/test_state.py",
+    "line": 80,
+    "character": 11
+  }
+}

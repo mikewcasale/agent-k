@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.ui.agui:EventEmitter.emit_memory_retrieve",
+  "type": "method",
+  "summary": "Emit memory retrieve operation.",
+  "source": "backend/agent_k/ui/agui.py",
+  "line": 509,
+  "path": "backend/agent_k/ui/agui.py",
+  "location": {
+    "path": "backend/agent_k/ui/agui.py",
+    "line": 509,
+    "character": 11
+  }
+}

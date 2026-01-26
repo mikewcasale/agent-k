@@ -93,9 +93,15 @@ _HINT_COMMENT_PATTERN: Final[re.Pattern[str]] = re.compile(r"#\s*Applied hint:\s
 class ColumnType(StrEnum):
     """Detected column semantic type.
 
-    @pattern:
-        name: enumeration
-        rationale: "StrEnum for semantic column type classification."
+    @notice: |
+        Detected column semantic type.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: enumeration
+            rationale: "StrEnum for semantic column type classification."
     """
 
     NUMERIC_CONTINUOUS = "numeric_continuous"
@@ -116,9 +122,15 @@ class ColumnType(StrEnum):
 class MissingPattern(StrEnum):
     """Missingness pattern classification.
 
-    @pattern:
-        name: enumeration
-        rationale: "StrEnum for MCAR/MAR/MNAR classification."
+    @notice: |
+        Missingness pattern classification.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: enumeration
+            rationale: "StrEnum for MCAR/MAR/MNAR classification."
     """
 
     MCAR = "mcar"
@@ -129,9 +141,15 @@ class MissingPattern(StrEnum):
 class HintCategory(StrEnum):
     """Hint category tags for prompt grouping.
 
-    @pattern:
-        name: enumeration
-        rationale: "StrEnum for grouping preprocessing hints by category."
+    @notice: |
+        Hint category tags for prompt grouping.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: enumeration
+            rationale: "StrEnum for grouping preprocessing hints by category."
     """
 
     ENCODING = "encoding"
@@ -155,9 +173,15 @@ class HintCategory(StrEnum):
 class HintResult(StrEnum):
     """Result classification for a hint attempt.
 
-    @pattern:
-        name: enumeration
-        rationale: "StrEnum for hint outcome tracking."
+    @notice: |
+        Result classification for a hint attempt.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: enumeration
+            rationale: "StrEnum for hint outcome tracking."
     """
 
     SUCCESS = "success"
@@ -169,9 +193,15 @@ class HintResult(StrEnum):
 class ColumnProfile:
     """Profile statistics for a single column.
 
-    @pattern:
-        name: value-object
-        rationale: "Frozen dataclass for immutable column statistics."
+    @notice: |
+        Profile statistics for a single column.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: value-object
+            rationale: "Frozen dataclass for immutable column statistics."
     """
 
     name: str
@@ -211,9 +241,15 @@ class ColumnProfile:
 class DistributionStats:
     """Distribution statistics for a numeric column.
 
-    @pattern:
-        name: value-object
-        rationale: "Frozen dataclass for immutable distribution stats."
+    @notice: |
+        Distribution statistics for a numeric column.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: value-object
+            rationale: "Frozen dataclass for immutable distribution stats."
     """
 
     column_name: str
@@ -243,9 +279,15 @@ class DistributionStats:
 class DatasetProfile:
     """Comprehensive dataset analysis for hint generation.
 
-    @pattern:
-        name: value-object
-        rationale: "Frozen dataclass for immutable dataset profile."
+    @notice: |
+        Comprehensive dataset analysis for hint generation.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: value-object
+            rationale: "Frozen dataclass for immutable dataset profile."
     """
 
     columns: dict[str, ColumnProfile]
@@ -346,9 +388,15 @@ class DatasetProfile:
 class PreprocessingHint:
     """Single preprocessing recommendation.
 
-    @pattern:
-        name: value-object
-        rationale: "Mutable dataclass for hint tracking with state."
+    @notice: |
+        Single preprocessing recommendation.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: value-object
+            rationale: "Mutable dataclass for hint tracking with state."
     """
 
     id: str

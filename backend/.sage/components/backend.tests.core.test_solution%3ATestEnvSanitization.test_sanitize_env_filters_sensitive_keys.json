@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.core.test_solution:TestEnvSanitization.test_sanitize_env_filters_sensitive_keys",
+  "type": "method",
+  "summary": "Sanitization should drop sensitive keys and set defaults.",
+  "source": "backend/tests/core/test_solution.py",
+  "line": 58,
+  "path": "backend/tests/core/test_solution.py",
+  "location": {
+    "path": "backend/tests/core/test_solution.py",
+    "line": 58,
+    "character": 11
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.tracking:ExperimentMetadata",
+  "type": "class",
+  "summary": "Structured metadata extracted from a solution.",
+  "notice": "Structured metadata extracted from a solution.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: metadata-model\n    rationale: \"Frozen Pydantic model for solution metadata extraction.\"",
+  "source": "backend/agent_k/core/tracking.py",
+  "line": 133,
+  "path": "backend/agent_k/core/tracking.py",
+  "location": {
+    "path": "backend/agent_k/core/tracking.py",
+    "line": 133,
+    "character": 7
+  }
+}

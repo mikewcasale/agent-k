@@ -1,0 +1,15 @@
+{
+  "id": "backend.agent_k.core.exceptions:CheckpointError",
+  "type": "class",
+  "summary": "Raised when checkpoint operations fail.",
+  "notice": "Raised when checkpoint operations fail.",
+  "dev": "See module for implementation details and extension points.\n\n@pattern:\n    name: exception-specific\n    rationale: \"Captures checkpoint name and operation for debugging.\"",
+  "source": "backend/agent_k/core/exceptions.py",
+  "line": 463,
+  "path": "backend/agent_k/core/exceptions.py",
+  "location": {
+    "path": "backend/agent_k/core/exceptions.py",
+    "line": 463,
+    "character": 7
+  }
+}

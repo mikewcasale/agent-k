@@ -1,0 +1,20 @@
+{
+  "id": "backend.agent_k.agents.lobbyist:LobbyistAgent",
+  "type": "class",
+  "summary": "Lobbyist agent encapsulating competition discovery functionality.",
+  "notice": "Discovers Kaggle competitions matching mission criteria.\nUse the module-level lobbyist_agent or agent registry.",
+  "dev": "Registers discovery tools on initialization and wires memory/toolsets.",
+  "pattern": {
+    "name": "agent-singleton",
+    "rationale": "Single instance ensures consistent memory/tool registration.",
+    "violations": "Multiple instances cause duplicated tool registrations."
+  },
+  "source": "backend/agent_k/agents/lobbyist.py",
+  "line": 166,
+  "path": "backend/agent_k/agents/lobbyist.py",
+  "location": {
+    "path": "backend/agent_k/agents/lobbyist.py",
+    "line": 166,
+    "character": 7
+  }
+}

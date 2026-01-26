@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.logging:get_logger",
+  "line": 38,
+  "notice": "Return a component-specific logger.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/logging.py",
+  "summary": "Return a component-specific logger.",
+  "type": "function"
+}

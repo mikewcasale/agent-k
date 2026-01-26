@@ -1,0 +1,13 @@
+{
+  "id": "backend.tests.conftest:openai_api_key",
+  "type": "function",
+  "summary": "Get OpenAI API key from environment or use mock value.",
+  "source": "backend/tests/conftest.py",
+  "line": 156,
+  "path": "backend/tests/conftest.py",
+  "location": {
+    "path": "backend/tests/conftest.py",
+    "line": 156,
+    "character": 7
+  }
+}

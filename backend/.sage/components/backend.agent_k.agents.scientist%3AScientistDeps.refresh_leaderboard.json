@@ -1,0 +1,14 @@
+{
+  "id": "backend.agent_k.agents.scientist:ScientistDeps.refresh_leaderboard",
+  "type": "method",
+  "summary": "Refresh leaderboard from the platform.",
+  "notice": "Updates the cached leaderboard in-place.",
+  "source": "backend/agent_k/agents/scientist.py",
+  "line": 225,
+  "path": "backend/agent_k/agents/scientist.py",
+  "location": {
+    "path": "backend/agent_k/agents/scientist.py",
+    "line": 225,
+    "character": 11
+  }
+}

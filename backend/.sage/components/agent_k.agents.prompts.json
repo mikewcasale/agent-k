@@ -1,0 +1,35 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.agents.prompts as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": {
+    "id": "agent_k.agents.prompts",
+    "pattern": "prompt-catalog",
+    "provides": [
+      "agent_k.agents.prompts"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-01-26",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.agents.prompts",
+  "line": 1,
+  "notice": "System prompts for AGENT-K agents.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/prompts.py",
+  "summary": "System prompts for AGENT-K agents.",
+  "type": "module"
+}

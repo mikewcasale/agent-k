@@ -1,0 +1,13 @@
+{
+  "id": "backend.agent_k.core.models:Competition.is_active",
+  "type": "method",
+  "summary": "Whether competition is still accepting submissions.",
+  "source": "backend/agent_k/core/models.py",
+  "line": 219,
+  "path": "backend/agent_k/core/models.py",
+  "location": {
+    "path": "backend/agent_k/core/models.py",
+    "line": 219,
+    "character": 11
+  }
+}

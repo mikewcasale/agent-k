@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.tracking:ExperimentTracker",
+  "line": 277,
+  "notice": "SQLite-backed tracker for experiments and submissions.",
+  "pattern": {
+    "name": "tracking-store",
+    "rationale": "Centralized persistence for experiment metadata.",
+    "violations": "Distributed tracking logic causes inconsistent history."
+  },
+  "similar": null,
+  "source": "agent_k/core/tracking.py",
+  "summary": "SQLite-backed tracker for experiments and submissions.",
+  "type": "class"
+}

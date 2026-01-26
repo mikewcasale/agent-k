@@ -1,0 +1,14 @@
+{
+  "id": "backend.agent_k.agents.lycurgus:LycurgusSettings.from_file",
+  "type": "method",
+  "summary": "Create settings from JSON file.",
+  "notice": "Loads orchestration settings from a JSON file.",
+  "source": "backend/agent_k/agents/lycurgus.py",
+  "line": 120,
+  "path": "backend/agent_k/agents/lycurgus.py",
+  "location": {
+    "path": "backend/agent_k/agents/lycurgus.py",
+    "line": 120,
+    "character": 11
+  }
+}

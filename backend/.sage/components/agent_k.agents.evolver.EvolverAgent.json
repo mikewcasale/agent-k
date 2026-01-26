@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Registers evolution tools and coordinates mutation/evaluation cycles.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:EvolverAgent",
+  "line": 556,
+  "notice": "Optimizes prototype solutions via evolutionary search.\nUse the module-level evolver_agent or agent registry.",
+  "pattern": {
+    "name": "agent-singleton",
+    "rationale": "Single instance keeps memory/tool registration consistent.",
+    "violations": "Multiple instances duplicate tool registrations."
+  },
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Evolver agent encapsulating evolutionary optimization functionality.",
+  "type": "class"
+}

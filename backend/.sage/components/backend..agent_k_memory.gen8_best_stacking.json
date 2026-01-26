@@ -1,0 +1,13 @@
+{
+  "id": "backend..agent_k_memory.gen8_best_stacking",
+  "type": "module",
+  "summary": "GENERATION 8 BEST SOLUTION - STACKING ENSEMBLE",
+  "source": "backend/.agent_k_memory/gen8_best_stacking.py",
+  "line": 0,
+  "path": "backend/.agent_k_memory/gen8_best_stacking.py",
+  "location": {
+    "path": "backend/.agent_k_memory/gen8_best_stacking.py",
+    "line": 0,
+    "character": 3
+  }
+}

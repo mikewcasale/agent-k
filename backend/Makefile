@@ -1,6 +1,6 @@
 # AGENT-K Backend Makefile
 
-.PHONY: help install dev test lint format mypy check docs docs-serve clean
+.PHONY: help install dev test lint format mypy check docs docs-serve clean sage-extract sage-validate sage-clean
 
 help:  ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
@@ -48,8 +48,18 @@ clean:  ## Clean build artifacts
 	find . -type f -name "*.pyc" -delete
 
 run:  ## Run the API server
-	uv run python -m agent_k.ui.ag_ui
+	uv run python -m agent_k.ui.agui
 
 demo:  ## Run the multi-agent demo
 	uv run python examples/multi_agent_playbook.py --model devstral:local
+
+# SAGE docstring tooling
+sage-extract:  ## Extract SAGE artifacts to .sage/
+	uv run python tools/sageextract.py --emit
+
+sage-validate:  ## Validate SAGE docstring tags
+	uv run python tools/sageextract.py --validate
+
+sage-clean:  ## Remove .sage/ artifacts
+	rm -rf .sage/
 

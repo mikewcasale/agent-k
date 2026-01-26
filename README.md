@@ -31,6 +31,7 @@ AGENT-K is an autonomous multi-agent system that discovers, researches, prototyp
 - **OpenEvolve** framework for evolutionary code search
 - **Pydantic Logfire** for comprehensive observability
 - **Next.js** frontend for real-time mission monitoring
+- **SAGE Spec** structured docstrings and `.sage/` metadata for agent + human guidance
 
 ---
 
@@ -87,9 +88,34 @@ Evolves solutions using evolutionary code search to maximize competition score. 
 | **Evolutionary Code Search** | OpenEvolve integration for population-based solution optimization |
 | **Kaggle Integration** | FunctionToolset-based platform operations with OpenEvolve fallback for offline runs |
 | **Real-Time Observability** | Pydantic Logfire instrumentation for tracing, metrics, and debugging |
+| **SAGE Spec Documentation** | Structured docstrings and `.sage/` artifacts for agent navigation and review workflows |
 | **Interactive Dashboard** | Next.js frontend with mission monitoring, evolution visualization, and tool call inspection |
 | **Memory Persistence** | Cross-session context and checkpoint management for long-running missions |
 | **Error Recovery** | Automatic retry, fallback, and replanning strategies for robust execution |
+
+---
+
+## SAGE Spec (Structured Agent Guidance Embeddings)
+
+AGENT-K uses the SAGE spec to encode agent guidance and machine-readable metadata directly in
+docstrings and type annotations. The upstream spec lives at
+[github.com/mikewcasale/sage-spec](https://github.com/mikewcasale/sage-spec), and a snapshot is
+vendored at `backend/docs/sage-spec.md`.
+
+Key pieces in this repo:
+
+- Docstrings include SAGE tags like `@notice`, `@dev`, `@graph`, `@agent-guidance`, and
+  `@human-review` to capture the Contextual Relationship Graph (CRG).
+- Parameter metadata is co-located with signatures using `typing.Annotated` plus
+  `Doc`/`Range`/`Constraint`/`Default` from `agent_k.core.sage` (`backend/agent_k/core/sage.py`).
+- Machine-readable exports live in `backend/.sage/` (for example `components.json`,
+  `canonical-homes.json`, and `errors.json`) to support tooling and fast lookups without scanning
+  the full tree.
+
+Developer workflow:
+- Use the SAGE Docstrings VS Code extension (https://marketplace.visualstudio.com/items?itemName=gcode-ai.sage-vscode-extension) for tag templates and validation.
+- Refresh `.sage` artifacts before committing:
+  `backend/.venv/bin/python backend/tools/sageextract.py --emit` (pre-commit runs validation).
 
 ---
 
@@ -203,7 +229,7 @@ pnpm dev
 
 ```bash
 cd backend
-python -m agent_k.ui.ag_ui
+python -m agent_k.ui.agui
 ```
 
 Run a mission through the chat endpoint (streams Vercel AI data events):
@@ -261,6 +287,7 @@ OpenAI-compatible models.
 ```
 agent-k/
 ├── backend/
+│   ├── .sage/                     # SAGE metadata artifacts (CRG exports)
 │   ├── agent_k/
 │   │   ├── agents/                 # Pydantic-AI agent definitions
 │   │   │   ├── base.py
@@ -281,6 +308,7 @@ agent-k/
 │   │   │   ├── protocols.py
 │   │   │   ├── settings.py
 │   │   │   ├── solution.py
+│   │   │   ├── sage.py
 │   │   │   └── types.py
 │   │   ├── mission/                # State machine
 │   │   │   ├── nodes.py
@@ -309,7 +337,7 @@ agent-k/
 │   │   │   ├── logging.py
 │   │   │   └── providers.py
 │   │   └── ui/                     # AG-UI protocol (FastAPI)
-│   │       └── ag_ui.py
+│   │       └── agui.py
 │   ├── cli.py                      # FastAPI app entrypoint
 │   ├── docs/                       # Backend docs (mkdocs + logo.png)
 │   └── tests/
@@ -449,6 +477,17 @@ pnpm lint
 pnpm format
 ```
 
+### Pre-Commit (Backend)
+
+```bash
+cd backend
+uv run ruff format .
+uv run ruff check .
+backend/.venv/bin/python backend/tools/sageextract.py --emit
+backend/.venv/bin/python backend/tools/sageextract.py --validate
+uv run pytest -v --tb=short
+```
+
 ---
 
 ## Deployment
@@ -480,6 +519,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [Pydantic](https://pydantic.dev/) for the excellent AI framework and observability tools
 - [Kaggle](https://www.kaggle.com/) for the competition platform
 - [OpenEvolve](https://github.com/codelion/openevolve) for evolutionary code search inspiration
+- [SAGE Spec](https://github.com/mikewcasale/sage-spec) for structured agent guidance metadata
 
 ---
 

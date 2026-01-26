@@ -1,23 +1,52 @@
 """Kaggle toolset for AGENT-K agents.
 
+@notice: |
+    Kaggle toolset for AGENT-K agents.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.toolsets.kaggle
+    provides:
+        - agent_k.toolsets.kaggle:kaggle_toolset
+        - agent_k.toolsets.kaggle:kaggle_search_competitions
+        - agent_k.toolsets.kaggle:kaggle_get_competition
+        - agent_k.toolsets.kaggle:kaggle_get_leaderboard
+        - agent_k.toolsets.kaggle:kaggle_list_datasets
+    pattern: toolset
+
+@similar:
+    - id: agent_k.adapters.kaggle
+        when: "Adapter implementation backing these tools."
+
+@agent-guidance:
+    do:
+        - "Use agent_k.toolsets.kaggle as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import time
 from functools import wraps
-from typing import TYPE_CHECKING, Any, ParamSpec, TypeVar, cast
+from typing import TYPE_CHECKING, Annotated, Any, ParamSpec, TypeVar, cast
 
-# Third-party (alphabetical)
 import logfire
 from pydantic_ai import RunContext
 from pydantic_ai.toolsets import FunctionToolset
 
-# Local imports (core first, then alphabetical)
 from agent_k.core.deps import KaggleDeps
+from agent_k.core.sage import Doc, Range
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -33,18 +62,12 @@ ToolResultT = TypeVar("ToolResultT")
 
 __all__ = ("KaggleDeps", "kaggle_toolset")
 
-# =============================================================================
-# Toolset Definition
-# =============================================================================
 kaggle_toolset: FunctionToolset[Any] = FunctionToolset(id="kaggle")
 
 # Cache for competition data
 _cache: dict[str, Competition] = {}
 
 
-# =============================================================================
-# Tool Helpers
-# =============================================================================
 def _error_dict_response(error: str) -> dict[str, Any]:
     return {"error": error}
 
@@ -153,9 +176,6 @@ def _serialize_competition(comp: Competition) -> dict[str, Any]:
     }
 
 
-# =============================================================================
-# Tool Implementations
-# =============================================================================
 @kaggle_toolset.tool
 @with_tool_telemetry(
     task_id="kaggle_search",
@@ -166,12 +186,22 @@ def _serialize_competition(comp: Competition) -> dict[str, Any]:
 )
 async def kaggle_search_competitions(
     ctx: RunContext[Any],
-    categories: list[str] | None = None,
-    keywords: list[str] | None = None,
-    min_prize: int | None = None,
-    active_only: bool = True,
+    categories: Annotated[list[str] | None, Doc("Competition categories to filter.")] = None,
+    keywords: Annotated[list[str] | None, Doc("Keyword filters for search.")] = None,
+    min_prize: Annotated[int | None, Doc("Minimum prize pool in USD."), Range(0, 1_000_000_000)] = None,
+    active_only: Annotated[bool, Doc("Only return active competitions.")] = True,
 ) -> list[dict[str, Any]]:
-    """Search Kaggle for active competitions."""
+    """Search Kaggle for active competitions.
+
+    @notice: |
+        Returns metadata for competitions matching search criteria.
+
+    @effects:
+        io:
+            - Kaggle API request
+        state:
+            - in-module cache
+    """
     with logfire.span("kaggle_search_competitions", categories=categories, keywords=keywords):
         adapter = _require_adapter(ctx)
 
@@ -208,8 +238,14 @@ async def kaggle_search_competitions(
     error_response=_error_dict_response,
     result_summary=_competition_summary,
 )
-async def kaggle_get_competition(ctx: RunContext[Any], competition_id: str) -> dict[str, Any]:
-    """Get detailed information about a specific Kaggle competition."""
+async def kaggle_get_competition(
+    ctx: RunContext[Any], competition_id: Annotated[str, Doc("Competition identifier (slug).")]
+) -> dict[str, Any]:
+    """Get detailed information about a specific Kaggle competition.
+
+    @notice: |
+        Fetches competition metadata and caches results.
+    """
     with logfire.span("kaggle_get_competition", competition_id=competition_id):
         adapter = _require_adapter(ctx)
 
@@ -230,8 +266,16 @@ async def kaggle_get_competition(ctx: RunContext[Any], competition_id: str) -> d
     error_response=_error_dict_response,
     result_summary=_leaderboard_summary,
 )
-async def kaggle_get_leaderboard(ctx: RunContext[Any], competition_id: str, limit: int = 20) -> dict[str, Any]:
-    """Get the current leaderboard for a competition."""
+async def kaggle_get_leaderboard(
+    ctx: RunContext[Any],
+    competition_id: Annotated[str, Doc("Competition identifier (slug).")],
+    limit: Annotated[int, Doc("Maximum entries to return."), Range(1, 1000)] = 20,
+) -> dict[str, Any]:
+    """Get the current leaderboard for a competition.
+
+    @notice: |
+        Returns leaderboard entries ordered by rank.
+    """
     with logfire.span("kaggle_get_leaderboard", competition_id=competition_id):
         adapter = _require_adapter(ctx)
         entries = await adapter.get_leaderboard(competition_id, limit=limit)
@@ -250,8 +294,14 @@ async def kaggle_get_leaderboard(ctx: RunContext[Any], competition_id: str, limi
     error_response=_error_dict_response,
     result_summary=_dataset_summary,
 )
-async def kaggle_list_datasets(ctx: RunContext[Any], competition_id: str) -> dict[str, Any]:
-    """List available datasets for a competition."""
+async def kaggle_list_datasets(
+    ctx: RunContext[Any], competition_id: Annotated[str, Doc("Competition identifier (slug).")]
+) -> dict[str, Any]:
+    """List available datasets for a competition.
+
+    @notice: |
+        Returns file metadata for competition datasets.
+    """
     with logfire.span("kaggle_list_datasets", competition_id=competition_id):
         adapter = _require_adapter(ctx)
         request = getattr(adapter, "_request", None)

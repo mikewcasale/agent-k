@@ -323,7 +323,7 @@ Ensure the backend is running:
 ```bash
 cd backend
 source .venv/bin/activate
-python -m agent_k.ui.ag_ui
+python -m agent_k.ui.agui
 ```
 
 Or start both with:

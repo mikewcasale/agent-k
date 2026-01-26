@@ -1,28 +1,64 @@
 """Lycurgus orchestrator - mission coordination for AGENT-K.
 
+@notice: |
+    Lycurgus orchestrator - mission coordination for AGENT-K.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.agents.lycurgus
+    provides:
+        - agent_k.agents.lycurgus:LycurgusOrchestrator
+        - agent_k.agents.lycurgus:LycurgusSettings
+        - agent_k.agents.lycurgus:LycurgusDeps
+        - agent_k.agents.lycurgus:MissionStatus
+        - agent_k.agents.lycurgus:orchestrate
+        - agent_k.agents.lycurgus:validate_mission_result
+    consumes:
+        - agent_k.mission.nodes:DiscoveryNode
+        - agent_k.mission.nodes:ResearchNode
+        - agent_k.mission.nodes:PrototypeNode
+        - agent_k.mission.nodes:EvolutionNode
+        - agent_k.mission.nodes:SubmissionNode
+        - agent_k.ui.agui:EventEmitter
+    pattern: orchestrator
+
+@similar:
+    - id: agent_k.mission.nodes
+        when: "Mission nodes define phases; this module orchestrates them."
+
+@agent-guidance:
+    do:
+        - "Use agent_k.agents.lycurgus as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import inspect
 import json
 import os
 import re
 import uuid
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, ClassVar, Final
+from typing import TYPE_CHECKING, Annotated, Any, ClassVar, Final
 
-# Third-party (alphabetical)
 import httpx
 import logfire
 from pydantic import Field
 from pydantic_graph import Graph
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Local imports (core first, then alphabetical)
 from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
 from agent_k.adapters.openevolve import OpenEvolveAdapter
 from agent_k.agents.evolver import evolver_agent
@@ -32,10 +68,11 @@ from agent_k.agents.scientist import scientist_agent
 from agent_k.core.constants import DEFAULT_MODEL, MAX_MISSION_EVOLUTION_ROUNDS
 from agent_k.core.exceptions import CompetitionNotFoundError
 from agent_k.core.models import MissionCriteria
+from agent_k.core.sage import Doc
 from agent_k.mission.nodes import DiscoveryNode, EvolutionNode, PrototypeNode, ResearchNode, SubmissionNode
 from agent_k.mission.persistence import MissionPersistence, create_persistence
 from agent_k.mission.state import GraphContext, MissionResult, MissionState
-from agent_k.ui.ag_ui import EventEmitter
+from agent_k.ui.agui import EventEmitter
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -59,7 +96,13 @@ SCHEMA_VERSION: Final[str] = "1.0.0"
 
 
 class LycurgusSettings(BaseSettings):
-    """Settings for the Lycurgus orchestrator."""
+    """Settings for the Lycurgus orchestrator.
+
+    @pattern:
+        name: settings
+        rationale: "Centralizes orchestration configuration."
+        violations: "Per-run overrides lead to inconsistent missions."
+    """
 
     model_config = SettingsConfigDict(env_prefix="LYCURGUS_", env_file=".env", extra="ignore", validate_default=True)
     default_model: str = Field(default=DEFAULT_MODEL, description="Default model spec for mission orchestration")
@@ -68,8 +111,12 @@ class LycurgusSettings(BaseSettings):
     )
 
     @classmethod
-    def from_file(cls, path: Path) -> LycurgusSettings:
-        """Create settings from JSON file."""
+    def from_file(cls, path: Annotated[Path, Doc("Path to JSON settings file.")]) -> LycurgusSettings:
+        """Create settings from JSON file.
+
+        @notice: |
+            Loads orchestration settings from a JSON file.
+        """
         data = json.loads(path.read_text(encoding="utf-8"))
         return cls(
             default_model=data.get("default_model", cls().default_model),
@@ -77,15 +124,35 @@ class LycurgusSettings(BaseSettings):
         )
 
     @classmethod
-    def with_devstral(cls, base_url: str | None = None) -> LycurgusSettings:
-        """Create settings using Devstral model."""
+    def with_devstral(
+        cls, base_url: Annotated[str | None, Doc("Optional Devstral base URL.")] = None
+    ) -> LycurgusSettings:
+        """Create settings using Devstral model.
+
+        @notice: |
+            Sets the default model to Devstral (local or custom URL).
+        """
         model = f"devstral:{base_url}" if base_url else "devstral:local"
         return cls(default_model=model)
 
 
 @dataclass
 class LycurgusDeps:
-    """Dependencies for the Lycurgus orchestrator."""
+    """Dependencies for the Lycurgus orchestrator.
+
+    @pattern:
+        name: dependency-container
+        rationale: "Groups runtime services for orchestration."
+        violations: "Hidden globals make orchestration brittle."
+
+    @collaborators:
+        required:
+            - agent_k.ui.agui:EventEmitter
+            - httpx:AsyncClient
+            - agent_k.core.protocols:PlatformAdapter
+        injection: constructor
+        lifecycle: "Allocated per orchestrator run."
+    """
 
     event_emitter: EventEmitter
     http_client: httpx.AsyncClient
@@ -94,7 +161,13 @@ class LycurgusDeps:
 
 @dataclass
 class MissionStatus:
-    """Mission status snapshot."""
+    """Mission status snapshot.
+
+    @pattern:
+        name: output-model
+        rationale: "Stable status payload for UI updates."
+        violations: "Ad-hoc status dicts hinder UI consumers."
+    """
 
     phase: str
     progress: float
@@ -116,18 +189,45 @@ class LycurgusOrchestrator:
         state: Current mission state.
         agents: Dictionary of specialized agents.
         graph: State machine graph for orchestration.
+
+    @notice: |
+        Coordinates discovery, research, prototype, evolution, and submission phases.
+
+    @dev: |
+        Uses pydantic-graph nodes to drive mission lifecycle.
+
+    @pattern:
+        name: orchestrator
+        rationale: "Centralized coordinator for multi-agent mission state."
+        violations: "Decentralized orchestration leads to inconsistent transitions."
+
+    @collaborators:
+        required:
+            - agent_k.mission.nodes:DiscoveryNode
+            - agent_k.mission.nodes:ResearchNode
+            - agent_k.mission.nodes:PrototypeNode
+            - agent_k.mission.nodes:EvolutionNode
+            - agent_k.mission.nodes:SubmissionNode
+        optional:
+            - agent_k.adapters.kaggle:KaggleAdapter
+            - agent_k.adapters.openevolve:OpenEvolveAdapter
+        injection: constructor
+        lifecycle: "Long-lived during mission runs."
+
+    @concurrency:
+        model: asyncio
+        safe: false
+        reason: "Mutates orchestration state and shared resources."
+
+    @invariants:
+        - "self._graph is initialized before orchestration runs."
+        - "self._state is None when idle."
     """
 
-    # =========================================================================
-    # Class Variables (ClassVar annotations)
-    # =========================================================================
     _default_model: ClassVar[str] = "anthropic:claude-sonnet-4-5"
     _max_evolution_rounds: ClassVar[int] = 100
     _supported_competition_types: ClassVar[frozenset[str]] = frozenset({"featured", "research", "playground"})
 
-    # =========================================================================
-    # Instance Variable Annotations (slots if applicable)
-    # =========================================================================
     __slots__ = (
         "_state",
         "_agents",
@@ -147,20 +247,24 @@ class LycurgusOrchestrator:
     def __init__(
         self,
         *,
-        config: LycurgusSettings | None = None,
-        model: str | None = None,
-        event_emitter: EventEmitter | None = None,
-        http_client: httpx.AsyncClient | None = None,
-        platform_adapter: PlatformAdapter | None = None,
+        config: Annotated[LycurgusSettings | None, Doc("Optional orchestrator settings.")] = None,
+        model: Annotated[str | None, Doc("Override default model spec for agents.")] = None,
+        event_emitter: Annotated[EventEmitter | None, Doc("Event emitter for UI streaming.")] = None,
+        http_client: Annotated[httpx.AsyncClient | None, Doc("Shared HTTP client for research tools.")] = None,
+        platform_adapter: Annotated[PlatformAdapter | None, Doc("Adapter for platform operations.")] = None,
     ) -> None:
         """Initialize the LYCURGUS orchestrator.
 
-        Args:
-            config: Configuration for orchestration behavior.
-            model: Override default model for all agents.
-            event_emitter: Event emitter for AG-UI streaming.
-            http_client: Shared HTTP client for research tools.
-            platform_adapter: Adapter for platform operations.
+        @notice: |
+            Initializes orchestration state and prepares agents/graph.
+
+        @dev: |
+            Lazily initializes adapters if not supplied.
+
+        @state-changes:
+            - self._agents
+            - self._graph
+            - self._state
         """
         self._config = config or LycurgusSettings()
         if model is not None:
@@ -178,9 +282,6 @@ class LycurgusOrchestrator:
         self._graph = self._build_orchestration_graph()
         self._state: MissionState | None = None
 
-    # =========================================================================
-    # Other Dunder Methods (alphabetical)
-    # =========================================================================
     def __repr__(self) -> str:
         return f"{type(self).__name__}(state={self._state!r}, agents={list(self._agents.keys())!r})"
 
@@ -199,55 +300,39 @@ class LycurgusOrchestrator:
         self._entered = False
         await self._cleanup_resources()
 
-    # =========================================================================
-    # Class Methods (constructors and factories)
-    # =========================================================================
     @classmethod
-    def from_config_file(cls, path: Path) -> LycurgusOrchestrator:
+    def from_config_file(cls, path: Annotated[Path, Doc("Path to JSON configuration file.")]) -> LycurgusOrchestrator:
         """Create orchestrator from configuration file.
 
-        Args:
-            path: Path to YAML or JSON configuration file.
-
-        Returns:
-            Configured LycurgusOrchestrator instance.
+        @notice: |
+            Builds an orchestrator from a JSON config file.
         """
         config = LycurgusSettings.from_file(path)
         return cls(config=config)
 
     @classmethod
-    def with_custom_agents(cls, agents: dict[str, Agent[Any, Any]]) -> LycurgusOrchestrator:
+    def with_custom_agents(
+        cls, agents: Annotated[dict[str, Agent[Any, Any]], Doc("Custom agent registry overrides.")]
+    ) -> LycurgusOrchestrator:
         """Create orchestrator with custom agent implementations.
 
-        Args:
-            agents: Dictionary mapping agent names to implementations.
-
-        Returns:
-            Orchestrator with custom agents.
+        @notice: |
+            Injects custom agent instances for orchestration.
         """
         instance = cls()
         instance._agents.update(agents)
         return instance
 
-    # =========================================================================
-    # Static Methods
-    # =========================================================================
     @staticmethod
-    def validate_competition_id(competition_id: str) -> bool:
+    def validate_competition_id(competition_id: Annotated[str, Doc("Competition identifier to validate.")]) -> bool:
         """Validate Kaggle competition identifier format.
 
-        Args:
-            competition_id: Competition identifier to validate.
-
-        Returns:
-            True if valid, False otherwise.
+        @notice: |
+            Returns true for lowercase alphanumeric slugs with dashes.
         """
         pattern = r"^[a-z0-9-]+$"
         return bool(re.match(pattern, competition_id))
 
-    # =========================================================================
-    # Properties (read-only first, then read-write)
-    # =========================================================================
     @property
     def state(self) -> MissionState | None:
         """Current mission state, or None if no mission active."""
@@ -282,9 +367,6 @@ class LycurgusOrchestrator:
             raise RuntimeError("Cannot reconfigure during active mission")
         self._config = value
 
-    # =========================================================================
-    # Public Instance Methods (alphabetical)
-    # =========================================================================
     async def abort_mission(self, reason: str) -> None:
         """Abort the current mission.
 
@@ -492,9 +574,6 @@ class LycurgusOrchestrator:
             await self._event_emitter.emit("recovery-attempt", {"phase": state.current_phase, "strategy": "resume"})
         self._logger.info("mission_resumed", mission_id=state.mission_id)
 
-    # =========================================================================
-    # Protected Methods (for subclass use)
-    # =========================================================================
     def _initialize_agents(self) -> dict[str, Agent[Any, Any]]:
         """Initialize specialized agent singletons."""
         return {"lobbyist": lobbyist_agent, "scientist": scientist_agent, "evolver": evolver_agent}
@@ -529,9 +608,6 @@ class LycurgusOrchestrator:
         self._state = result.state
         return result.output
 
-    # =========================================================================
-    # Private Methods (internal implementation)
-    # =========================================================================
     def _calculate_progress(self, state: MissionState) -> float:
         """Calculate mission progress from the current state."""
         phases = ("discovery", "research", "prototype", "evolution", "submission")
@@ -608,12 +684,26 @@ class LycurgusOrchestrator:
 
 
 async def orchestrate(
-    orchestrator: LycurgusOrchestrator, competition_id: str, criteria: MissionCriteria | None = None
+    orchestrator: Annotated[LycurgusOrchestrator, Doc("Orchestrator instance to run.")],
+    competition_id: Annotated[str, Doc("Competition identifier (slug).")],
+    criteria: Annotated[MissionCriteria | None, Doc("Optional mission criteria override.")] = None,
 ) -> MissionResult:
-    """Convenience helper to execute a mission."""
+    """Convenience helper to execute a mission.
+
+    @notice: |
+        Executes a mission end-to-end using the orchestrator.
+
+    @effects:
+        io:
+            - Kaggle API requests
+    """
     return await orchestrator.execute_mission(competition_id, criteria=criteria)
 
 
-def validate_mission_result(result: MissionResult) -> MissionResult:
-    """Validate mission result payload."""
+def validate_mission_result(result: Annotated[MissionResult, Doc("Mission result payload.")]) -> MissionResult:
+    """Validate mission result payload.
+
+    @notice: |
+        Passthrough validator for mission results.
+    """
     return result

@@ -1,28 +1,61 @@
 """Lobbyist agent - competition discovery for AGENT-K.
 
+@notice: |
+    Lobbyist agent - competition discovery for AGENT-K.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.agents.lobbyist
+    provides:
+        - agent_k.agents.lobbyist:LobbyistAgent
+        - agent_k.agents.lobbyist:LobbyistDeps
+        - agent_k.agents.lobbyist:LobbyistSettings
+        - agent_k.agents.lobbyist:DiscoveryResult
+        - agent_k.agents.lobbyist:lobbyist_agent
+    consumes:
+        - agent_k.core.protocols:PlatformAdapter
+        - agent_k.ui.agui:EventEmitter
+        - agent_k.toolsets.kaggle:kaggle_toolset
+    pattern: agent-singleton
+
+@similar:
+    - id: agent_k.agents.scientist
+        when: "Use for research/analysis, not discovery."
+
+@agent-guidance:
+    do:
+        - "Use agent_k.agents.lobbyist as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Final, cast
+from typing import TYPE_CHECKING, Annotated, Any, Final, cast
 
-# Third-party (alphabetical)
 import logfire
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic_ai import Agent, ModelRetry, ModelSettings, RunContext
 from pydantic_ai.toolsets import FunctionToolset
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Local imports (core first, then alphabetical)
 from agent_k.agents import register_agent
 from agent_k.agents.base import MemoryMixin, universal_tool_preparation
 from agent_k.agents.prompts import LOBBYIST_SYSTEM_PROMPT
 from agent_k.core.constants import DEFAULT_MODEL
 from agent_k.core.models import Competition
+from agent_k.core.sage import Doc, Range
 from agent_k.infra.providers import get_model
 from agent_k.toolsets import create_production_toolset, kaggle_toolset, prepare_memory_tool, prepare_web_search
 
@@ -30,7 +63,7 @@ if TYPE_CHECKING:
     import httpx
 
     from agent_k.core.protocols import PlatformAdapter
-    from agent_k.ui.ag_ui import EventEmitter
+    from agent_k.ui.agui import EventEmitter
 
 __all__ = (
     "DiscoveryResult",
@@ -46,7 +79,13 @@ SCHEMA_VERSION: Final[str] = "1.0.0"
 
 
 class LobbyistSettings(BaseSettings):
-    """Configuration for the Lobbyist agent."""
+    """Configuration for the Lobbyist agent.
+
+    @pattern:
+        name: settings
+        rationale: "Centralizes discovery agent configuration."
+        violations: "Ad-hoc per-run overrides lead to inconsistent behavior."
+    """
 
     model_config = SettingsConfigDict(env_prefix="LOBBYIST_", env_file=".env", extra="ignore", validate_default=True)
     model: str = Field(default=DEFAULT_MODEL, description="Model identifier for discovery tasks")
@@ -64,7 +103,23 @@ class LobbyistSettings(BaseSettings):
 
 @dataclass
 class LobbyistDeps:
-    """Dependencies for the Lobbyist agent."""
+    """Dependencies for the Lobbyist agent.
+
+    @pattern:
+        name: dependency-container
+        rationale: "Groups runtime services for discovery tools."
+        violations: "Hidden globals make tests and tooling brittle."
+
+    @collaborators:
+        required:
+            - httpx:AsyncClient
+            - agent_k.core.protocols:PlatformAdapter
+            - agent_k.ui.agui:EventEmitter
+        optional:
+            - agent_k.toolsets.memory:AgentKMemoryTool
+        injection: constructor
+        lifecycle: "Allocated per agent run."
+    """
 
     http_client: httpx.AsyncClient
     platform_adapter: PlatformAdapter
@@ -73,7 +128,13 @@ class LobbyistDeps:
 
 
 class DiscoveryResult(BaseModel):
-    """Result of competition discovery."""
+    """Result of competition discovery.
+
+    @pattern:
+        name: output-model
+        rationale: "Stable schema for discovery outputs."
+        violations: "Ad-hoc dict outputs are hard to validate."
+    """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -85,13 +146,52 @@ class DiscoveryResult(BaseModel):
 
 
 class LobbyistAgent(MemoryMixin):
-    """Lobbyist agent encapsulating competition discovery functionality."""
+    """Lobbyist agent encapsulating competition discovery functionality.
 
-    def __init__(self, settings: LobbyistSettings | None = None) -> None:
+    @notice: |
+        Discovers Kaggle competitions matching mission criteria.
+        Use the module-level lobbyist_agent or agent registry.
+
+    @dev: |
+        Registers discovery tools on initialization and wires memory/toolsets.
+
+    @pattern:
+        name: agent-singleton
+        rationale: "Single instance ensures consistent memory/tool registration."
+        violations: "Multiple instances cause duplicated tool registrations."
+
+    @collaborators:
+        required:
+            - agent_k.core.protocols:PlatformAdapter
+            - agent_k.ui.agui:EventEmitter
+        optional:
+            - httpx:AsyncClient
+        injection: deps via RunContext
+        lifecycle: "Module-level singleton at import time."
+
+    @concurrency:
+        model: asyncio
+        safe: false
+        reason: "Mutates internal caches and tool registrations."
+
+    @invariants:
+        - "self._agent is initialized after __init__ completes."
+        - "self._toolset registers discovery tools exactly once."
+    """
+
+    def __init__(self, settings: Annotated[LobbyistSettings | None, Doc("Optional settings override.")] = None) -> None:
         """Initialize the Lobbyist agent.
 
-        Args:
-            settings: Configuration for the agent. Uses defaults if not provided.
+        @notice: |
+            Builds the agent singleton and registers tools.
+
+        @dev: |
+            Initializes memory backend, toolset, and pydantic-ai Agent.
+
+        @state-changes:
+            - self._settings
+            - self._toolset
+            - self._agent
         """
         self._settings = settings or LobbyistSettings()
         self._toolset: FunctionToolset[LobbyistDeps] = FunctionToolset(id="lobbyist")
@@ -114,11 +214,24 @@ class LobbyistAgent(MemoryMixin):
     async def search_kaggle_competitions(
         self,
         ctx: RunContext[LobbyistDeps],
-        categories: list[str],
-        keywords: list[str] | None = None,
-        min_prize: int | None = None,
+        categories: Annotated[list[str], Doc("Competition categories to search.")],
+        keywords: Annotated[list[str] | None, Doc("Optional keyword filters.")] = None,
+        min_prize: Annotated[int | None, Doc("Minimum prize pool in USD."), Range(0, 1_000_000_000)] = None,
     ) -> list[dict[str, Any]]:
-        """Search Kaggle for competitions matching criteria."""
+        """Search Kaggle for competitions matching criteria.
+
+        @notice: |
+            Queries the platform adapter for competition listings.
+
+        @dev: |
+            Emits telemetry events before and after the search.
+
+        @effects:
+            io:
+                - Kaggle API requests
+            state:
+                - ctx.deps.search_cache
+        """
         with logfire.span("lobbyist.search_kaggle", categories=categories, keywords=keywords):
             await ctx.deps.event_emitter.emit_tool_start(
                 task_id="discovery_search",
@@ -145,8 +258,18 @@ class LobbyistAgent(MemoryMixin):
 
             return competitions
 
-    async def get_competition_details(self, ctx: RunContext[LobbyistDeps], competition_id: str) -> dict[str, Any]:
-        """Get detailed information about a specific competition."""
+    async def get_competition_details(
+        self, ctx: RunContext[LobbyistDeps], competition_id: Annotated[str, Doc("Competition identifier (slug).")]
+    ) -> dict[str, Any]:
+        """Get detailed information about a specific competition.
+
+        @notice: |
+            Fetches the competition details via the platform adapter.
+
+        @effects:
+            io:
+                - Kaggle API request
+        """
         with logfire.span("lobbyist.get_details", competition_id=competition_id):
             adapter = ctx.deps.platform_adapter
             competition = await adapter.get_competition(competition_id)
@@ -155,12 +278,23 @@ class LobbyistAgent(MemoryMixin):
     async def score_competition_fit(
         self,
         ctx: RunContext[LobbyistDeps],
-        competition_id: str,
-        target_domains: list[str],
-        min_days_remaining: int,
-        target_percentile: float,
+        competition_id: Annotated[str, Doc("Competition identifier to score.")],
+        target_domains: Annotated[list[str], Doc("Target subject domains for scoring.")],
+        min_days_remaining: Annotated[int, Doc("Minimum days remaining required."), Range(0, 3650)],
+        target_percentile: Annotated[float, Doc("Target percentile for fit scoring."), Range(0.0, 100.0)],
     ) -> dict[str, Any]:
-        """Score how well a competition fits the mission criteria."""
+        """Score how well a competition fits the mission criteria.
+
+        @notice: |
+            Computes a heuristic fit score from cached competition metadata.
+
+        @dev: |
+            Returns a structured dict with score and reasoning.
+
+        @effects:
+            state:
+                - none
+        """
         competition = ctx.deps.search_cache.get(competition_id)
         if not competition:
             return {"score": 0.0, "reason": "Competition not in cache"}
@@ -190,7 +324,19 @@ class LobbyistAgent(MemoryMixin):
         }
 
     def _create_agent(self) -> Agent[LobbyistDeps, DiscoveryResult]:
-        """Create the underlying pydantic-ai agent."""
+        """Create the underlying pydantic-ai agent.
+
+        @factory-for:
+            id: agent_k.agents.lobbyist:LobbyistAgent
+            rationale: "Centralizes agent wiring and toolset preparation."
+            singleton: true
+            cache-key: "module"
+
+        @canonical-home:
+            for:
+                - "lobbyist agent construction"
+            notes: "Use LobbyistAgent() or module singleton."
+        """
         builtin_tools: list[Any] = [prepare_web_search]
         if self._memory_backend is not None:
             builtin_tools.append(prepare_memory_tool)
@@ -217,7 +363,12 @@ class LobbyistAgent(MemoryMixin):
         return agent
 
     def _register_tools(self) -> None:
-        """Register all discovery tools with the toolset."""
+        """Register all discovery tools with the toolset.
+
+        @effects:
+            state:
+                - self._toolset
+        """
         self._toolset.tool(self.search_kaggle_competitions)
         self._toolset.tool(self.get_competition_details)
         self._toolset.tool(self.score_competition_fit)

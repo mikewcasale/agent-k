@@ -58,3 +58,10 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
+      - id: sage-validate
+        name: SAGE docstring validation
+        entry: uv
+        args: [run, python, tools/sageextract.py, --validate]
+        language: system
+        types: [python]
+        pass_filenames: false

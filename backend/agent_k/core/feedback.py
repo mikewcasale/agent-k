@@ -1,20 +1,40 @@
 """Submission feedback loop utilities for AGENT-K.
 
+@notice: |
+    Submission feedback loop utilities for AGENT-K.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.core.feedback
+    provides:
+        - agent_k.core.feedback
+    pattern: feedback-models
+
+@agent-guidance:
+    do:
+        - "Use agent_k.core.feedback as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any, Final, TypeAlias
+from typing import TYPE_CHECKING, Any, Final
 
-# Third-party (alphabetical)
 import logfire
 
-# Local imports (core first, then alphabetical)
 from agent_k.core.tracking import ExperimentTracker, KaggleSubmissionRecord
 
 if TYPE_CHECKING:
@@ -22,7 +42,7 @@ if TYPE_CHECKING:
 
     from agent_k.core.types import MetricDirection
 
-MutationWeights: TypeAlias = dict[str, float]
+type MutationWeights = dict[str, float]
 """Weight mapping for mutation tags."""
 
 __all__ = ("SubmissionCandidate", "SubmissionFeedback", "SubmissionOrchestrator")
@@ -30,7 +50,12 @@ __all__ = ("SubmissionCandidate", "SubmissionFeedback", "SubmissionOrchestrator"
 
 @dataclass(slots=True)
 class SubmissionCandidate:
-    """Candidate configuration for submission feedback loops."""
+    """Candidate configuration for submission feedback loops.
+
+    @pattern:
+        name: value-object
+        rationale: "Dataclass for candidate submission configuration."
+    """
 
     model_config_hash: str
     feature_set_hash: str | None = None
@@ -41,7 +66,12 @@ class SubmissionCandidate:
 
 @dataclass(slots=True)
 class SubmissionFeedback:
-    """Feedback summary for a processed submission."""
+    """Feedback summary for a processed submission.
+
+    @pattern:
+        name: value-object
+        rationale: "Dataclass for submission result feedback."
+    """
 
     submission_id: str
     public_score: float | None
@@ -52,7 +82,12 @@ class SubmissionFeedback:
 
 
 class SubmissionOrchestrator:
-    """Manage the submission feedback loop across iterations."""
+    """Manage the submission feedback loop across iterations.
+
+    @pattern:
+        name: orchestrator
+        rationale: "Coordinates submission feedback loops with tracker."
+    """
 
     _default_mutations: Final[tuple[str, ...]] = (
         "point",

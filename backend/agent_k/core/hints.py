@@ -1,12 +1,34 @@
 """Adaptive preprocessing hint system for AGENT-K.
 
+@notice: |
+    Adaptive preprocessing hint system for AGENT-K.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.core.hints
+    provides:
+        - agent_k.core.hints
+    pattern: analysis-hints
+
+@agent-guidance:
+    do:
+        - "Use agent_k.core.hints as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import csv
 import math
 import re
@@ -16,7 +38,6 @@ from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
 
-# Third-party (alphabetical)
 import logfire
 import numpy as np
 import pandas as pd
@@ -70,7 +91,12 @@ _HINT_COMMENT_PATTERN: Final[re.Pattern[str]] = re.compile(r"#\s*Applied hint:\s
 
 
 class ColumnType(StrEnum):
-    """Detected column semantic type."""
+    """Detected column semantic type.
+
+    @pattern:
+        name: enumeration
+        rationale: "StrEnum for semantic column type classification."
+    """
 
     NUMERIC_CONTINUOUS = "numeric_continuous"
     NUMERIC_DISCRETE = "numeric_discrete"
@@ -88,7 +114,12 @@ class ColumnType(StrEnum):
 
 
 class MissingPattern(StrEnum):
-    """Missingness pattern classification."""
+    """Missingness pattern classification.
+
+    @pattern:
+        name: enumeration
+        rationale: "StrEnum for MCAR/MAR/MNAR classification."
+    """
 
     MCAR = "mcar"
     MAR = "mar"
@@ -96,7 +127,12 @@ class MissingPattern(StrEnum):
 
 
 class HintCategory(StrEnum):
-    """Hint category tags for prompt grouping."""
+    """Hint category tags for prompt grouping.
+
+    @pattern:
+        name: enumeration
+        rationale: "StrEnum for grouping preprocessing hints by category."
+    """
 
     ENCODING = "encoding"
     SCALING = "scaling"
@@ -117,7 +153,12 @@ class HintCategory(StrEnum):
 
 
 class HintResult(StrEnum):
-    """Result classification for a hint attempt."""
+    """Result classification for a hint attempt.
+
+    @pattern:
+        name: enumeration
+        rationale: "StrEnum for hint outcome tracking."
+    """
 
     SUCCESS = "success"
     FAILURE = "failure"
@@ -126,7 +167,12 @@ class HintResult(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class ColumnProfile:
-    """Profile statistics for a single column."""
+    """Profile statistics for a single column.
+
+    @pattern:
+        name: value-object
+        rationale: "Frozen dataclass for immutable column statistics."
+    """
 
     name: str
     dtype: str
@@ -163,7 +209,12 @@ class ColumnProfile:
 
 @dataclass(frozen=True, slots=True)
 class DistributionStats:
-    """Distribution statistics for a numeric column."""
+    """Distribution statistics for a numeric column.
+
+    @pattern:
+        name: value-object
+        rationale: "Frozen dataclass for immutable distribution stats."
+    """
 
     column_name: str
     count: int
@@ -190,7 +241,12 @@ class DistributionStats:
 
 @dataclass(frozen=True, slots=True)
 class DatasetProfile:
-    """Comprehensive dataset analysis for hint generation."""
+    """Comprehensive dataset analysis for hint generation.
+
+    @pattern:
+        name: value-object
+        rationale: "Frozen dataclass for immutable dataset profile."
+    """
 
     columns: dict[str, ColumnProfile]
     row_count: int
@@ -288,7 +344,12 @@ class DatasetProfile:
 
 @dataclass(slots=True)
 class PreprocessingHint:
-    """Single preprocessing recommendation."""
+    """Single preprocessing recommendation.
+
+    @pattern:
+        name: value-object
+        rationale: "Mutable dataclass for hint tracking with state."
+    """
 
     id: str
     category: HintCategory
@@ -353,7 +414,15 @@ class PreprocessingHint:
 def build_dataset_profile(
     train_path: Path, test_path: Path | None = None, sample_path: Path | None = None
 ) -> DatasetProfile:
-    """Profile dataset columns for preprocessing hints."""
+    """Profile dataset columns for preprocessing hints.
+
+    @notice: |
+        Builds a comprehensive profile of dataset columns for hint generation.
+
+    @dev: |
+        Samples up to MAX_PROFILE_ROWS, infers column types, detects missing
+        patterns, and computes target correlations.
+    """
     target_columns, id_column = _infer_target_columns(
         train_path=train_path, test_path=test_path, sample_path=sample_path
     )
@@ -395,7 +464,15 @@ def build_dataset_profile(
 
 
 def generate_preprocessing_hints(profile: DatasetProfile, competition_id: str | None = None) -> list[PreprocessingHint]:
-    """Generate preprocessing hints based on a dataset profile."""
+    """Generate preprocessing hints based on a dataset profile.
+
+    @notice: |
+        Returns a list of actionable preprocessing hints based on column profiles.
+
+    @dev: |
+        Analyzes column types, missing patterns, and data characteristics to
+        generate encoding, imputation, transformation, and model selection hints.
+    """
     _ = competition_id
     hints: list[PreprocessingHint] = []
     target_columns = set(profile.target_columns)
@@ -823,7 +900,15 @@ def generate_preprocessing_hints(profile: DatasetProfile, competition_id: str | 
 def compute_hint_priority(
     hint: PreprocessingHint, tracker: HintEffectivenessTracker, competition_id: str, generation: int
 ) -> float:
-    """Compute dynamic priority based on historical effectiveness."""
+    """Compute dynamic priority based on historical effectiveness.
+
+    @notice: |
+        Adjusts hint priority using success rates and recency from the tracker.
+
+    @dev: |
+        Applies success boost, recency penalty, and amplification factors.
+        Returns 0.0 if hint is suppressed.
+    """
     base_priority = hint.priority
     success_rate = tracker.get_success_rate(hint.id, competition_id)
     success_boost = success_rate * 0.3
@@ -840,7 +925,15 @@ def compute_hint_priority(
 
 
 def detect_applied_hints(code: str, hints: Iterable[PreprocessingHint]) -> set[str]:
-    """Detect which hints were applied based on solution code patterns."""
+    """Detect which hints were applied based on solution code patterns.
+
+    @notice: |
+        Returns hint IDs that appear to be applied in the given code.
+
+    @dev: |
+        Matches explicit hint comments, code snippet signatures, and
+        pattern-based detection for each hint type.
+    """
     if not isinstance(code, str):
         return set()
     applied: set[str] = set()

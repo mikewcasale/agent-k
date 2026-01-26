@@ -13,6 +13,12 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+      - id: backend-typecheck
+        name: Backend typecheck
+        entry: bash -c "cd backend && uv run mypy ."
+        language: system
+        pass_filenames: false
+        always_run: true
       - id: backend-tests
         name: Backend tests
         entry: bash -c "cd backend && uv run pytest -v --tb=short"
@@ -31,3 +37,9 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+      - id: docs-build
+        name: Docs build check
+        entry: bash -c "cd backend && uv run --extra docs mkdocs build --strict"
+        language: system
+        pass_filenames: false
+        files: ^backend/(docs/|mkdocs\.yml)

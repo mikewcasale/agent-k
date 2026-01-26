@@ -1,20 +1,39 @@
 """Generic problem profiling, technique policy, and fitness factory for AGENT-K.
 
+@notice: |
+    Generic problem profiling, technique policy, and fitness factory for AGENT-K.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.core.strategy
+    provides:
+        - agent_k.core.strategy
+    pattern: strategy
+
+@agent-guidance:
+    do:
+        - "Use agent_k.core.strategy as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
+from typing import TYPE_CHECKING, Final
 
-# Standard library (continued)
-from typing import TYPE_CHECKING, Final, TypeAlias
-
-# Local imports (core first, then alphabetical)
 from .data import CompetitionSchema
 from .models import Competition, EvaluationMetric, MissionCriteria
 from .types import MetricDirection
@@ -42,11 +61,17 @@ _CLASSIFICATION_METRICS: Final[frozenset[EvaluationMetric]] = frozenset(
 _VISION_TAGS: Final[frozenset[str]] = frozenset({"vision", "computer vision", "image", "images"})
 _TEXT_TAGS: Final[frozenset[str]] = frozenset({"nlp", "text", "language"})
 
-FitnessFunction: TypeAlias = Callable[["FitnessInput"], float]
+type FitnessFunction = Callable[["FitnessInput"], float]
 
 
 class ProblemType(StrEnum):
-    """Supported ML problem types for policy selection."""
+    """Supported ML problem types for policy selection.
+
+    @pattern:
+        name: enumeration
+        rationale: "StrEnum for ML problem taxonomy."
+        violations: "String literals drift across policy logic."
+    """
 
     TABULAR_REGRESSION = "tabular_regression"
     TABULAR_CLASSIFICATION = "tabular_classification"
@@ -59,7 +84,13 @@ class ProblemType(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class ProblemProfile:
-    """Profile describing the ML task for a competition."""
+    """Profile describing the ML task for a competition.
+
+    @pattern:
+        name: profile-model
+        rationale: "Bundles task metadata for downstream policies."
+        violations: "Implicit profiles make policy decisions inconsistent."
+    """
 
     problem_type: ProblemType
     metric: EvaluationMetric
@@ -73,7 +104,13 @@ class ProblemProfile:
 
 @dataclass(frozen=True, slots=True)
 class TechniquePolicy:
-    """Generic technique policy for solution enforcement."""
+    """Generic technique policy for solution enforcement.
+
+    @pattern:
+        name: policy-model
+        rationale: "Encodes technique constraints for evolution."
+        violations: "Inline tuning fragments policy definitions."
+    """
 
     problem_type: ProblemType
     enable_outlier_clipping: bool = False  # Disabled - handled by evolver.
@@ -88,7 +125,13 @@ class TechniquePolicy:
 
 @dataclass(frozen=True, slots=True)
 class FitnessInput:
-    """Input payload for fitness scoring."""
+    """Input payload for fitness scoring.
+
+    @pattern:
+        name: fitness-input
+        rationale: "Captures evaluation signals for scoring."
+        violations: "Ad-hoc inputs drift across fitness logic."
+    """
 
     cv_score: float
     runtime_ms: int
@@ -100,7 +143,13 @@ class FitnessInput:
 
 @dataclass(frozen=True, slots=True)
 class FitnessPolicy:
-    """Policy controlling fitness adjustments."""
+    """Policy controlling fitness adjustments.
+
+    @pattern:
+        name: policy-model
+        rationale: "Encodes penalty tuning for fitness scoring."
+        violations: "Inline penalties drift across runs."
+    """
 
     metric_direction: MetricDirection
     runtime_ms_threshold: int | None = None
@@ -110,7 +159,15 @@ class FitnessPolicy:
 
 
 def build_problem_profile(competition: Competition, schema: CompetitionSchema) -> ProblemProfile:
-    """Infer a generic ML task profile from competition metadata and schema."""
+    """Infer a generic ML task profile from competition metadata and schema.
+
+    @notice: |
+        Creates a ProblemProfile from competition metadata and data schema.
+
+    @dev: |
+        Infers problem type (tabular/vision/text, classification/regression)
+        from competition tags and evaluation metric.
+    """
     metric = competition.metric
     is_classification = metric in _CLASSIFICATION_METRICS
     uses_proba = metric in {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
@@ -136,7 +193,15 @@ def build_problem_profile(competition: Competition, schema: CompetitionSchema) -
 
 
 def build_technique_policy(profile: ProblemProfile, criteria: MissionCriteria | None = None) -> TechniquePolicy:
-    """Build a technique policy from problem profile and mission criteria."""
+    """Build a technique policy from problem profile and mission criteria.
+
+    @notice: |
+        Creates a TechniquePolicy with evolution parameters for the problem type.
+
+    @dev: |
+        Adjusts population size and generation limits based on criteria.
+        Target transforms and outlier clipping are disabled (handled by evolver).
+    """
     enable_target_transform = profile.problem_type == ProblemType.TABULAR_REGRESSION
     min_generations = 5
     min_population_size = 6
@@ -168,7 +233,15 @@ def build_fitness_policy(
     max_runtime_ms: int | None,
     complexity_threshold: int | None = None,
 ) -> FitnessPolicy:
-    """Create a fitness policy using variable conditions and criteria."""
+    """Create a fitness policy using variable conditions and criteria.
+
+    @notice: |
+        Creates a FitnessPolicy with penalty weights and thresholds.
+
+    @dev: |
+        Penalty weight scales with min_improvements_required.
+        Complexity threshold defaults based on problem type.
+    """
     penalty_weight = 0.05
     if criteria is not None:
         penalty_weight = min(0.2, 0.05 + criteria.min_improvements_required * 0.02)
@@ -190,7 +263,15 @@ def build_fitness_policy(
 
 
 def build_fitness_function(policy: FitnessPolicy) -> FitnessFunction:
-    """Build a fitness function from policy."""
+    """Build a fitness function from policy.
+
+    @notice: |
+        Creates a callable fitness function from a FitnessPolicy.
+
+    @dev: |
+        Returns a closure that scores FitnessInput based on policy thresholds.
+        Invalid inputs return 0.0; penalties applied for runtime/complexity.
+    """
 
     def fitness(input_data: FitnessInput) -> float:
         if not input_data.valid:
@@ -211,8 +292,12 @@ def build_fitness_function(policy: FitnessPolicy) -> FitnessFunction:
 def apply_solution_policy(code: str, policy: TechniquePolicy) -> tuple[str, list[str]]:
     """Apply a technique policy to solution code when possible.
 
-    NOTE: Policy injection is disabled to allow evolutionary search to handle
-    data preparation generically.
+    @notice: |
+        Transforms solution code based on technique policy (currently no-op).
+
+    @dev: |
+        Policy injection is disabled to allow evolutionary search to handle
+        data preparation generically. Returns (code, []) unchanged.
     """
     return code, []
 

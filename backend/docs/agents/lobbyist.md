@@ -25,7 +25,7 @@ The LOBBYIST agent discovers and evaluates Kaggle competitions that match user c
 ```python
 from agent_k.agents.lobbyist import LobbyistDeps, lobbyist_agent
 from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
-from agent_k.ui.ag_ui import EventEmitter
+from agent_k.ui.agui import EventEmitter
 import httpx
 
 async with httpx.AsyncClient() as http:

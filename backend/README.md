@@ -19,6 +19,31 @@ The AGENT-K backend is a Python package implementing a multi-agent system for au
 
 The orchestrator will use the Kaggle API when credentials are available; otherwise it falls back to the in-memory OpenEvolve adapter for offline runs.
 
+The backend follows the SAGE spec (Structured Agent Guidance Embeddings) for structured
+docstrings and parameter metadata. The upstream spec lives at
+[github.com/mikewcasale/sage-spec](https://github.com/mikewcasale/sage-spec), with a local
+snapshot in `docs/sage-spec.md`.
+
+---
+
+## SAGE Spec (Structured Agent Guidance Embeddings)
+
+SAGE provides structured, machine-readable guidance for both agents and human reviewers. In
+this codebase it is used in three main places:
+
+- Docstrings include SAGE tags such as `@notice`, `@dev`, `@graph`, `@agent-guidance`, and
+  `@human-review` to capture the Contextual Relationship Graph (CRG).
+- Parameter metadata is co-located with signatures using `typing.Annotated` plus
+  `Doc`/`Range`/`Constraint`/`Default` from `agent_k.core.sage` (`agent_k/core/sage.py`).
+- Machine-readable exports live in `backend/.sage/` (for example `components.json`,
+  `canonical-homes.json`, and `errors.json`) to support tooling and fast lookups without scanning
+  the full tree.
+
+Developer workflow:
+- Use the SAGE Docstrings VS Code extension (https://marketplace.visualstudio.com/items?itemName=gcode-ai.sage-vscode-extension) for tag templates and validation.
+- Refresh `.sage` artifacts before committing:
+  `backend/.venv/bin/python backend/tools/sageextract.py --emit` (pre-commit runs validation).
+
 ---
 
 ## Installation
@@ -84,6 +109,7 @@ agent_k/
 │   ├── protocols.py            # Interface definitions
 │   ├── settings.py             # Shared settings
 │   ├── solution.py             # Solution execution helpers
+│   ├── sage.py                 # SAGE docstring metadata helpers
 │   └── types.py                # Type aliases
 │
 ├── mission/                    # State machine
@@ -112,7 +138,7 @@ agent_k/
 │   └── submission.yaml         # Sample eval cases
 │
 ├── ui/                         # AG-UI protocol
-│   └── ag_ui.py                # FastAPI app and event emitter
+│   └── agui.py                # FastAPI app and event emitter
 │
 └── infra/                      # Infrastructure
     ├── config.py               # Configuration management
@@ -282,6 +308,17 @@ uv run ruff format .
 uv run mypy .
 ```
 
+### Pre-Commit (Backend)
+
+```bash
+cd backend
+uv run ruff format .
+uv run ruff check .
+backend/.venv/bin/python backend/tools/sageextract.py --emit
+backend/.venv/bin/python backend/tools/sageextract.py --validate
+uv run pytest -v --tb=short
+```
+
 ---
 
 ## Observability
@@ -302,7 +339,8 @@ configure_instrumentation(
 ## Documentation
 
 MkDocs source lives in `docs/` (including `docs/logo.png`), with build settings in
-`mkdocs.yml`.
+`mkdocs.yml`. The SAGE spec snapshot is stored in `docs/sage-spec.md` and the upstream source is
+available at [github.com/mikewcasale/sage-spec](https://github.com/mikewcasale/sage-spec).
 
 ---
 

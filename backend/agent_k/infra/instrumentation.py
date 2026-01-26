@@ -1,19 +1,40 @@
 """Centralized instrumentation for AGENT-K.
 
+@notice: |
+    Centralized instrumentation for AGENT-K.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.infra.instrumentation
+    provides:
+        - agent_k.infra.instrumentation
+    pattern: instrumentation
+
+@agent-guidance:
+    do:
+        - "Use agent_k.infra.instrumentation as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import asyncio
 import os
 from contextlib import contextmanager
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Literal, ParamSpec, TypeVar, cast
 
-# Third-party (alphabetical)
 import logfire
 from opentelemetry import trace
 from opentelemetry.trace import Span, Status, StatusCode
@@ -35,6 +56,11 @@ class Metrics:
 
     Provides methods for recording various metric types consistently
     across the application.
+
+    @pattern:
+        name: metrics-recorder
+        rationale: "Centralizes Logfire metric emission."
+        violations: "Ad-hoc logging fragments telemetry signals."
     """
 
     @staticmethod
@@ -76,6 +102,12 @@ def configure_instrumentation(
 
     This function should be called once at application startup.
 
+    @notice: |
+        Initializes Logfire and instruments common libraries.
+
+    @dev: |
+        Call once at startup. Instruments pydantic-ai, httpx, and asyncio.
+
     Args:
         service_name: Name of the service for tracing.
         environment: Deployment environment (dev, staging, prod).
@@ -96,6 +128,12 @@ def configure_instrumentation(
 def get_logger(name: str) -> logfire.Logfire:
     """Get a logger with component-specific settings.
 
+    @notice: |
+        Returns a Logfire instance tagged with the component name.
+
+    @dev: |
+        Use for component-specific logging with automatic tagging.
+
     Args:
         name: Component name (e.g., 'agents.lobbyist', 'adapters.kaggle').
 
@@ -105,13 +143,16 @@ def get_logger(name: str) -> logfire.Logfire:
     return logfire.with_settings(tags=[f"component:{name}"])
 
 
-# =============================================================================
-# Span Decorators
-# =============================================================================
 def traced(
     name: str | None = None, *, record_args: bool = True, record_result: bool = True
 ) -> Callable[[Callable[P, R]], Callable[P, R]]:
     """Decorator to add tracing to a function.
+
+    @notice: |
+        Wraps a function with automatic span creation and error recording.
+
+    @dev: |
+        Supports both sync and async functions. Records args/result as attributes.
 
     Args:
         name: Span name (defaults to function name).
@@ -176,6 +217,12 @@ def traced(
 def operation_span(name: str, **attributes: Any) -> Iterator[Span]:
     """Context manager for custom operation spans.
 
+    @notice: |
+        Creates a tracing span for a code block with custom attributes.
+
+    @dev: |
+        Yields the span for manual status/attribute updates.
+
     Args:
         name: Span name.
         **attributes: Additional span attributes.
@@ -201,9 +248,6 @@ def operation_span(name: str, **attributes: Any) -> Iterator[Span]:
             raise
 
 
-# =============================================================================
-# Helper Functions
-# =============================================================================
 def _serialize_args(args: tuple[Any, ...], kwargs: dict[str, Any]) -> str:
     """Serialize function arguments for logging."""
     parts = [repr(a)[:100] for a in args]

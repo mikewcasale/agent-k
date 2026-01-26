@@ -119,7 +119,7 @@ Common event types:
 The backend exposes an `EventEmitter` with convenience helpers for emitting events:
 
 ```python
-from agent_k.ui.ag_ui import EventEmitter
+from agent_k.ui.agui import EventEmitter
 
 emitter = EventEmitter()
 await emitter.emit_phase_start("discovery", ["Search Kaggle", "Rank results"])
@@ -128,8 +128,8 @@ await emitter.emit_tool_result("task_1", "tool_1", result={"count": 10}, duratio
 
 ## FastAPI Integration
 
-The FastAPI app is defined in `agent_k.ui.ag_ui` and can be launched via:
+The FastAPI app is defined in `agent_k.ui.agui` and can be launched via:
 
 ```bash
-python -m agent_k.ui.ag_ui
+python -m agent_k.ui.agui
 ```

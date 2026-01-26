@@ -128,7 +128,7 @@ This installs the `dev` and `docs` optional dependencies.
 ```bash
 cd backend
 source .venv/bin/activate
-python -m agent_k.ui.ag_ui
+python -m agent_k.ui.agui
 ```
 
 The API server runs at `http://localhost:9000`.

@@ -1,12 +1,51 @@
 """Evolver agent - evolutionary optimization for AGENT-K.
 
+@notice: |
+    Evolver agent - evolutionary optimization for AGENT-K.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.agents.evolver
+    provides:
+        - agent_k.agents.evolver:EvolverAgent
+        - agent_k.agents.evolver:EvolverDeps
+        - agent_k.agents.evolver:EvolverSettings
+        - agent_k.agents.evolver:EvolutionResult
+        - agent_k.agents.evolver:EvolutionFailure
+        - agent_k.agents.evolver:EVOLUTION_OUTPUT_TYPE
+        - agent_k.agents.evolver:evolver_agent
+    consumes:
+        - agent_k.core.protocols:PlatformAdapter
+        - agent_k.ui.agui:EventEmitter
+        - agent_k.adapters.openevolve:OpenEvolveRunner
+        - agent_k.toolsets.code:code_toolset
+    pattern: agent-singleton
+
+@similar:
+    - id: agent_k.agents.scientist
+        when: "Use for research synthesis rather than optimization."
+    - id: agent_k.evolution.framework
+        when: "Framework utilities for evolution outside the agent context."
+
+@agent-guidance:
+    do:
+        - "Use agent_k.agents.evolver as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import ast
 import csv
 import hashlib
@@ -17,9 +56,8 @@ import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 from textwrap import dedent
-from typing import TYPE_CHECKING, Any, Final, Self, cast
+from typing import TYPE_CHECKING, Annotated, Any, Final, Self, cast
 
-# Third-party (alphabetical)
 import logfire
 import numpy as np
 import pandas as pd
@@ -30,7 +68,6 @@ from pydantic_ai.toolsets import FunctionToolset
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from sklearn.metrics import log_loss, mean_absolute_error, mean_squared_error, mean_squared_log_error, roc_auc_score
 
-# Local imports (core first, then alphabetical)
 from agent_k.adapters.openevolve import OpenEvolveRunner
 from agent_k.agents import register_agent
 from agent_k.agents.base import MemoryMixin, universal_tool_preparation
@@ -44,6 +81,7 @@ from agent_k.core.constants import (
 )
 from agent_k.core.data import CompetitionSchema, stage_competition_data
 from agent_k.core.hints import DatasetProfile, PreprocessingHint, compute_hint_priority, detect_applied_hints
+from agent_k.core.sage import Doc, Range
 from agent_k.core.solution import execute_solution
 from agent_k.core.strategy import (
     FitnessInput,
@@ -69,7 +107,7 @@ from agent_k.toolsets import code_toolset, create_production_toolset, prepare_co
 if TYPE_CHECKING:
     from agent_k.core.models import Competition
     from agent_k.core.protocols import PlatformAdapter
-    from agent_k.ui.ag_ui import EventEmitter
+    from agent_k.ui.agui import EventEmitter
 
 __all__ = (
     "EVOLUTION_OUTPUT_TYPE",
@@ -276,7 +314,13 @@ _ENCODING_HINT_IDS: Final[frozenset[str]] = frozenset(
 
 @dataclass(frozen=True, slots=True)
 class EvolutionArchiveEntry:
-    """Tracked candidate for MAP-Elites-style sampling."""
+    """Tracked candidate for MAP-Elites-style sampling.
+
+    @pattern:
+        name: archive-entry
+        rationale: "Encapsulates elite metadata for sampling."
+        violations: "Unstructured elites make selection brittle."
+    """
 
     code: str
     fitness: float
@@ -286,8 +330,18 @@ class EvolutionArchiveEntry:
     model_family: str
     signature: str
 
-    def to_payload(self, *, max_chars: int) -> dict[str, Any]:
-        """Serialize entry for tool outputs."""
+    def to_payload(
+        self, *, max_chars: Annotated[int, Doc("Maximum code characters to include."), Range(0, 100_000)]
+    ) -> dict[str, Any]:
+        """Serialize entry for tool outputs.
+
+        @notice: |
+            Converts the archive entry into a JSON-serializable payload.
+
+        @effects:
+            state:
+                - none
+        """
         truncated = False
         code = self.code
         if max_chars > 0 and len(code) > max_chars:
@@ -306,7 +360,13 @@ class EvolutionArchiveEntry:
 
 
 class EvolverSettings(BaseSettings):
-    """Configuration for the Evolver agent."""
+    """Configuration for the Evolver agent.
+
+    @pattern:
+        name: settings
+        rationale: "Centralizes evolutionary optimization configuration."
+        violations: "Ad-hoc overrides lead to unstable evolution runs."
+    """
 
     model_config = SettingsConfigDict(env_prefix="EVOLVER_", env_file=".env", extra="ignore", validate_default=True)
     model: str = Field(default=DEFAULT_MODEL, description="Model identifier for evolution tasks")
@@ -367,7 +427,28 @@ class EvolverSettings(BaseSettings):
 
 @dataclass
 class EvolverDeps:
-    """Dependencies for the Evolver agent."""
+    """Dependencies for the Evolver agent.
+
+    @pattern:
+        name: dependency-container
+        rationale: "Groups runtime services and evolution state."
+        violations: "Scattered state makes evolution hard to resume."
+
+    @collaborators:
+        required:
+            - agent_k.core.protocols:PlatformAdapter
+            - agent_k.ui.agui:EventEmitter
+            - agent_k.core.models:Competition
+        optional:
+            - agent_k.core.tracking:ExperimentTracker
+            - agent_k.core.hints:HintEffectivenessTracker
+        injection: constructor
+        lifecycle: "Allocated per evolution run."
+
+    @invariants:
+        - "population_size >= 1"
+        - "max_generations >= min_generations"
+    """
 
     competition: Competition
     event_emitter: EventEmitter
@@ -405,7 +486,13 @@ class EvolverDeps:
 
 
 class EvolutionResult(BaseModel):
-    """Result of evolution process."""
+    """Result of evolution process.
+
+    @pattern:
+        name: output-model
+        rationale: "Stable schema for successful evolution outputs."
+        violations: "Free-form outputs hinder submission automation."
+    """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -418,7 +505,13 @@ class EvolutionResult(BaseModel):
 
 
 class EvolutionFailure(BaseModel):
-    """Failure result for evolution process."""
+    """Failure result for evolution process.
+
+    @pattern:
+        name: output-model
+        rationale: "Stable schema for failed evolution outputs."
+        violations: "Opaque errors make recovery harder."
+    """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -440,14 +533,56 @@ class EvolverAgent(MemoryMixin):
 
     This class wraps the pydantic-ai Agent and provides all evolution tools
     as instance methods for cleaner organization and testing.
+
+    @notice: |
+        Optimizes prototype solutions via evolutionary search.
+        Use the module-level evolver_agent or agent registry.
+
+    @dev: |
+        Registers evolution tools and coordinates mutation/evaluation cycles.
+
+    @pattern:
+        name: agent-singleton
+        rationale: "Single instance keeps memory/tool registration consistent."
+        violations: "Multiple instances duplicate tool registrations."
+
+    @collaborators:
+        required:
+            - agent_k.core.protocols:PlatformAdapter
+            - agent_k.ui.agui:EventEmitter
+        optional:
+            - agent_k.adapters.openevolve:OpenEvolveRunner
+        injection: deps via RunContext
+        lifecycle: "Module-level singleton at import time."
+
+    @concurrency:
+        model: asyncio
+        safe: false
+        reason: "Mutates evolution state and caches."
+
+    @invariants:
+        - "self._agent is initialized after __init__ completes."
+        - "self._toolset registers evolution tools exactly once."
     """
 
-    def __init__(self, settings: EvolverSettings | None = None, *, register: bool = True) -> None:
+    def __init__(
+        self,
+        settings: Annotated[EvolverSettings | None, Doc("Optional settings override.")] = None,
+        *,
+        register: Annotated[bool, Doc("Register agent in global registry.")] = True,
+    ) -> None:
         """Initialize the Evolver agent.
 
-        Args:
-            settings: Configuration for the agent. Uses defaults if not provided.
-            register: Whether to register this agent in the global registry.
+        @notice: |
+            Builds the agent singleton and registers tools.
+
+        @dev: |
+            Initializes memory backend, toolset, and pydantic-ai Agent.
+
+        @state-changes:
+            - self._settings
+            - self._toolset
+            - self._agent
         """
         self._settings = settings or EvolverSettings()
         self._toolset: FunctionToolset[EvolverDeps] = FunctionToolset(id="evolver")
@@ -469,9 +604,24 @@ class EvolverAgent(MemoryMixin):
         return self._settings
 
     async def run_openevolve(
-        self, deps: EvolverDeps, *, base_prompt: str | None = None, model_specs: list[str] | None = None
+        self,
+        deps: Annotated[EvolverDeps, Doc("Evolution dependencies and state.")],
+        *,
+        base_prompt: Annotated[str | None, Doc("Optional base prompt override.")] = None,
+        model_specs: Annotated[list[str] | None, Doc("Optional model specs for OpenEvolve.")] = None,
     ) -> EvolutionResult | EvolutionFailure:
-        """Run OpenEvolve-backed evolution for a prototype solution."""
+        """Run OpenEvolve-backed evolution for a prototype solution.
+
+        @notice: |
+            Delegates mutation and evaluation to OpenEvolve when enabled.
+
+        @effects:
+            io:
+                - OpenEvolve API requests
+            state:
+                - deps.best_solution
+                - deps.best_fitness
+        """
         with logfire.span("evolver.openevolve"):
             initial_program = deps.initial_solution or deps.best_solution or ""
             baseline_score = self._score_from_fitness(deps.best_fitness, deps.competition.metric_direction)
@@ -539,20 +689,20 @@ class EvolverAgent(MemoryMixin):
     async def mutate_solution(
         self,
         ctx: RunContext[EvolverDeps],
-        solution_code: str,
-        mutation_type: str,
-        mutation_params: dict[str, Any] | None = None,
+        solution_code: Annotated[str, Doc("Solution code to mutate.")],
+        mutation_type: Annotated[
+            str, Doc("Mutation type (point, structural, hyperparameter, crossover, hint_injection).")
+        ],
+        mutation_params: Annotated[dict[str, Any] | None, Doc("Optional parameters for the mutation.")] = None,
     ) -> str:
         """Apply mutation to a solution.
 
-        Args:
-            ctx: Run context with dependencies.
-            solution_code: The solution code to mutate.
-            mutation_type: Type of mutation (point, structural, hyperparameter, crossover, hint_injection).
-            mutation_params: Optional parameters for the mutation.
+        @notice: |
+            Applies a mutation strategy and returns the mutated code.
 
-        Returns:
-            Mutated solution code.
+        @effects:
+            state:
+                - none
         """
         with logfire.span("evolver.mutate", mutation_type=mutation_type):
             await ctx.deps.event_emitter.emit(
@@ -589,17 +739,22 @@ class EvolverAgent(MemoryMixin):
             return mutated
 
     async def evaluate_fitness(
-        self, ctx: RunContext[EvolverDeps], solution_code: str, validation_split: float = 0.2
+        self,
+        ctx: RunContext[EvolverDeps],
+        solution_code: Annotated[str, Doc("Solution code to evaluate.")],
+        validation_split: Annotated[float, Doc("Fraction of data for validation."), Range(0.0, 0.9)] = 0.2,
     ) -> ToolReturn:
         """Evaluate solution fitness.
 
-        Args:
-            ctx: Run context with dependencies.
-            solution_code: Solution code to evaluate.
-            validation_split: Fraction of data for validation.
+        @notice: |
+            Runs evaluation and emits fitness telemetry.
 
-        Returns:
-            ToolReturn with fitness results.
+        @effects:
+            io:
+                - local execution
+            state:
+                - ctx.deps.best_fitness
+                - ctx.deps.best_solution
         """
         with logfire.span("evolver.evaluate_fitness"):
             tool_call_id = f"fitness_{id(solution_code):x}"
@@ -692,21 +847,20 @@ class EvolverAgent(MemoryMixin):
     async def record_generation(
         self,
         ctx: RunContext[EvolverDeps],
-        generation: int,
-        best_fitness: float,
-        mean_fitness: float,
-        worst_fitness: float,
-        mutations: dict[str, int],
+        generation: Annotated[int, Doc("Generation index (0-based)."), Range(0, 10_000)],
+        best_fitness: Annotated[float, Doc("Best fitness in generation.")],
+        mean_fitness: Annotated[float, Doc("Mean fitness in generation.")],
+        worst_fitness: Annotated[float, Doc("Worst fitness in generation.")],
+        mutations: Annotated[dict[str, int], Doc("Mutation counts for the generation.")],
     ) -> None:
         """Record generation metrics.
 
-        Args:
-            ctx: Run context with dependencies.
-            generation: Generation number.
-            best_fitness: Best fitness in generation.
-            mean_fitness: Mean fitness in generation.
-            worst_fitness: Worst fitness in generation.
-            mutations: Count of each mutation type applied.
+        @notice: |
+            Appends generation metrics and emits telemetry.
+
+        @effects:
+            state:
+                - ctx.deps.generation_history
         """
         global_generation = generation + ctx.deps.generation_offset
         metrics = {
@@ -732,17 +886,19 @@ class EvolverAgent(MemoryMixin):
         )
 
     async def check_convergence(
-        self, ctx: RunContext[EvolverDeps], threshold_generations: int = 5, improvement_threshold: float = 0.001
+        self,
+        ctx: RunContext[EvolverDeps],
+        threshold_generations: Annotated[int, Doc("Generations to check for improvement."), Range(1, 1000)] = 5,
+        improvement_threshold: Annotated[float, Doc("Minimum improvement required."), Range(0.0, 10.0)] = 0.001,
     ) -> ToolReturn:
         """Check if evolution has converged.
 
-        Args:
-            ctx: Run context with dependencies.
-            threshold_generations: Generations to check for improvement.
-            improvement_threshold: Minimum improvement required.
+        @notice: |
+            Determines whether fitness has plateaued or target score reached.
 
-        Returns:
-            Convergence status dictionary.
+        @effects:
+            state:
+                - none
         """
         history = ctx.deps.generation_history
         policy = self._resolve_technique_policy(ctx.deps)
@@ -799,9 +955,20 @@ class EvolverAgent(MemoryMixin):
         return ToolReturn(return_value=result, content=json.dumps(result))
 
     async def sample_elites(
-        self, ctx: RunContext[EvolverDeps], num_top: int | None = None, num_diverse: int | None = None
+        self,
+        ctx: RunContext[EvolverDeps],
+        num_top: Annotated[int | None, Doc("Number of top elites to sample.")] = None,
+        num_diverse: Annotated[int | None, Doc("Number of diverse elites to sample.")] = None,
     ) -> ToolReturn:
-        """Sample elite solutions for prompt construction."""
+        """Sample elite solutions for prompt construction.
+
+        @notice: |
+            Selects top and diverse elites from the archive.
+
+        @effects:
+            state:
+                - none
+        """
         top = self._settings.elite_sample_top if num_top is None else max(0, num_top)
         diverse = self._settings.elite_sample_diverse if num_diverse is None else max(0, num_diverse)
         entries = self._select_elite_samples(ctx.deps, top=top, diverse=diverse)
@@ -810,17 +977,20 @@ class EvolverAgent(MemoryMixin):
         return ToolReturn(return_value=payload, content=summary)
 
     async def submit_to_kaggle(
-        self, ctx: RunContext[EvolverDeps], solution_code: str, message: str = "AGENT-K submission"
+        self,
+        ctx: RunContext[EvolverDeps],
+        solution_code: Annotated[str, Doc("Solution code to submit.")],
+        message: Annotated[str, Doc("Submission message.")] = "AGENT-K submission",
     ) -> ToolReturn:
         """Submit solution to Kaggle via the platform adapter.
 
-        Args:
-            ctx: Run context with dependencies.
-            solution_code: Solution code to submit.
-            message: Submission message.
+        @notice: |
+            Writes a submission file and triggers adapter submission.
 
-        Returns:
-            Submission result dictionary.
+        @effects:
+            io:
+                - local filesystem access
+                - Kaggle API request
         """
         with logfire.span("evolver.submit", competition_id=ctx.deps.competition.id):
             tool_call_id = f"submit_{len(ctx.deps.generation_history)}"
@@ -855,7 +1025,19 @@ class EvolverAgent(MemoryMixin):
             return ToolReturn(return_value=result, content=summary)
 
     def _create_agent(self) -> Agent[EvolverDeps, EvolutionResult | EvolutionFailure]:
-        """Create the underlying pydantic-ai agent."""
+        """Create the underlying pydantic-ai agent.
+
+        @factory-for:
+            id: agent_k.agents.evolver:EvolverAgent
+            rationale: "Centralizes agent wiring and toolset preparation."
+            singleton: true
+            cache-key: "module"
+
+        @canonical-home:
+            for:
+                - "evolver agent construction"
+            notes: "Use EvolverAgent() or module singleton."
+        """
         builtin_tools: list[Any] = [prepare_code_execution_tool]
         if self._settings.enable_kaggle_mcp:
             builtin_tools.insert(0, MCPServerTool(id="kaggle", url=self._settings.kaggle_mcp_url))

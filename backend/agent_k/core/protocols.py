@@ -1,5 +1,28 @@
 """Protocol definitions for platform adapters.
 
+@notice: |
+    Protocol definitions for platform adapters.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.core.protocols
+    provides:
+        - agent_k.core.protocols
+    pattern: protocols
+
+@agent-guidance:
+    do:
+        - "Use agent_k.core.protocols as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
@@ -30,6 +53,17 @@ class PlatformAdapter(Protocol):
         ...     async def search_competitions(self, categories: list[str], **kwargs) -> AsyncIterator[Competition]:
         ...         async for comp in self._api.list_competitions():
         ...             yield Competition.model_validate(comp)
+
+    @notice: |
+        Defines the adapter contract for competition platforms.
+
+    @dev: |
+        Implementations MUST handle auth, rate limits, and retries internally.
+
+    @pattern:
+        name: protocol-interface
+        rationale: "Standard adapter contract for external competition platforms."
+        violations: "Adapters without this contract diverge in behavior."
     """
 
     @property

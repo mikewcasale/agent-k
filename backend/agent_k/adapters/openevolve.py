@@ -1,12 +1,41 @@
 """OpenEvolve integration adapter.
 
+@notice: |
+    OpenEvolve integration adapter.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.adapters.openevolve
+    provides:
+        - agent_k.adapters.openevolve:OpenEvolveAdapter
+        - agent_k.adapters.openevolve:OpenEvolveRunner
+        - agent_k.adapters.openevolve:OpenEvolveSettings
+        - agent_k.adapters.openevolve:OpenEvolveEvolutionConfig
+    pattern: adapter
+
+@similar:
+    - id: agent_k.evolution.framework
+        when: "Evolution utilities outside adapter context."
+
+@agent-guidance:
+    do:
+        - "Use agent_k.adapters.openevolve as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import csv
 import hashlib
 import inspect
@@ -20,16 +49,14 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from pathlib import Path
-from typing import Any, Final, TypeAlias
+from typing import Annotated, Any, Final
 
-# Third-party (alphabetical)
 import logfire
 from openevolve import OpenEvolve
 from openevolve.config import Config, LLMModelConfig, load_config
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Local imports (core first, then alphabetical)
 from agent_k.agents.prompts import OPENEVOLVE_MUTATION_PROMPT
 from agent_k.core.exceptions import (
     AdapterError,
@@ -41,6 +68,7 @@ from agent_k.core.exceptions import (
 from agent_k.core.hints import PreprocessingHint
 from agent_k.core.models import Competition, CompetitionType, EvaluationMetric, LeaderboardEntry, Submission
 from agent_k.core.protocols import PlatformAdapter
+from agent_k.core.sage import Doc, Range
 from agent_k.infra.providers import DEVSTRAL_BASE_URL, DEVSTRAL_MODEL_ID, OPENROUTER_FREE_MODELS
 
 __all__ = (
@@ -64,6 +92,11 @@ class OpenEvolveSettings(BaseSettings):
     """Settings for OpenEvolve adapter.
 
     Environment variables are prefixed with OPENEVOLVE_.
+
+    @pattern:
+        name: settings
+        rationale: "Centralizes OpenEvolve adapter configuration."
+        violations: "Ad-hoc config makes adapter behavior inconsistent."
     """
 
     model_config = SettingsConfigDict(env_prefix="OPENEVOLVE_", env_file=".env", extra="ignore", validate_default=True)
@@ -78,7 +111,13 @@ class OpenEvolveSettings(BaseSettings):
 
 
 class OpenEvolveJobState(StrEnum):
-    """Lifecycle state for an OpenEvolve job."""
+    """Lifecycle state for an OpenEvolve job.
+
+    @pattern:
+        name: enumeration
+        rationale: "StrEnum for OpenEvolve job lifecycle states."
+        violations: "String literals drift across job state handling."
+    """
 
     QUEUED = "queued"
     RUNNING = "running"
@@ -87,7 +126,13 @@ class OpenEvolveJobState(StrEnum):
 
 
 class OpenEvolveEvolutionConfig(BaseModel):
-    """Evolution configuration for OpenEvolve jobs."""
+    """Evolution configuration for OpenEvolve jobs.
+
+    @pattern:
+        name: config-model
+        rationale: "Captures evolution hyperparameters in a schema."
+        violations: "Loose dicts make validation brittle."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION)
@@ -99,7 +144,13 @@ class OpenEvolveEvolutionConfig(BaseModel):
 
 
 class OpenEvolveJobStatus(BaseModel):
-    """Status snapshot for an OpenEvolve evolution job."""
+    """Status snapshot for an OpenEvolve evolution job.
+
+    @pattern:
+        name: output-model
+        rationale: "Stable status payload for job monitoring."
+        violations: "Ad-hoc status dicts break tooling."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION)
@@ -114,7 +165,13 @@ class OpenEvolveJobStatus(BaseModel):
 
 
 class OpenEvolveSolution(BaseModel):
-    """Best solution produced by an OpenEvolve job."""
+    """Best solution produced by an OpenEvolve job.
+
+    @pattern:
+        name: output-model
+        rationale: "Stable schema for OpenEvolve solutions."
+        violations: "Free-form outputs hinder integration."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION)
@@ -133,7 +190,19 @@ _DEFAULT_VALIDATION_SPLIT: Final[float] = 0.2
 
 @dataclass
 class OpenEvolveRunner:
-    """Runner for OpenEvolve evolutionary optimization."""
+    """Runner for OpenEvolve evolutionary optimization.
+
+    @pattern:
+        name: adapter-runner
+        rationale: "Encapsulates OpenEvolve execution behavior."
+        violations: "Scattered runner logic complicates evolution flow."
+
+    @collaborators:
+        required:
+            - openevolve:OpenEvolve
+        injection: constructor
+        lifecycle: "Scoped per OpenEvolve run."
+    """
 
     config_path: Path | None = None
     work_dir: Path | None = None
@@ -145,9 +214,21 @@ class OpenEvolveRunner:
     base_prompt: str | None = None
 
     async def run_evolution(
-        self, initial_program: str, max_iterations: int = 50, target_score: float | None = None
+        self,
+        initial_program: Annotated[str, Doc("Initial solution code to evolve.")],
+        max_iterations: Annotated[int, Doc("Maximum evolution iterations."), Range(1, 1000)] = 50,
+        target_score: Annotated[float | None, Doc("Target fitness score, if any.")] = None,
     ) -> dict[str, Any]:
-        """Run OpenEvolve evolution on a solution."""
+        """Run OpenEvolve evolution on a solution.
+
+        @notice: |
+            Executes OpenEvolve with the configured evaluator and model specs.
+
+        @effects:
+            io:
+                - filesystem writes
+                - OpenEvolve execution
+        """
         if not initial_program.strip():
             raise EvolutionError("OpenEvolve requires a non-empty initial program.")
 
@@ -287,13 +368,19 @@ class OpenEvolveRunner:
         os.environ.setdefault("ENABLE_ARTIFACTS", "true")
 
 
-FitnessFunction: TypeAlias = Callable[[str], float | Awaitable[float]]
-EvolutionConfigInput: TypeAlias = OpenEvolveEvolutionConfig | dict[str, Any] | None
+type FitnessFunction = Callable[[str], float | Awaitable[float]]
+type EvolutionConfigInput = OpenEvolveEvolutionConfig | dict[str, Any] | None
 
 
 @dataclass
 class _OpenEvolveJob:
-    """Internal tracking for OpenEvolve evolution jobs."""
+    """Internal tracking for OpenEvolve evolution jobs.
+
+    @pattern:
+        name: job-tracker
+        rationale: "Captures in-memory job state for adapter polling."
+        violations: "Fragmented job state tracking breaks status updates."
+    """
 
     job_id: str
     prototype: str
@@ -309,7 +396,36 @@ class _OpenEvolveJob:
 
 @dataclass
 class OpenEvolveAdapter(PlatformAdapter):
-    """In-memory adapter for OpenEvolve integration."""
+    """In-memory adapter for OpenEvolve integration.
+
+    @notice: |
+        Provides a PlatformAdapter facade for OpenEvolve runs.
+
+    @pattern:
+        name: adapter
+        rationale: "Encapsulates OpenEvolve-specific behaviors."
+        violations: "Direct OpenEvolve use bypasses PlatformAdapter contract."
+
+    @implements:
+        - agent_k.core.protocols:PlatformAdapter
+
+    @inheritdoc:
+        - agent_k.core.protocols:PlatformAdapter
+
+    @collaborators:
+        required:
+            - agent_k.adapters.openevolve:OpenEvolveRunner
+        injection: constructor
+        lifecycle: "Long-lived adapter per mission."
+
+    @concurrency:
+        model: asyncio
+        safe: false
+        reason: "Mutates in-memory job state."
+
+    @invariants:
+        - "self._evolution_jobs retains active jobs until pruned."
+    """
 
     config: OpenEvolveSettings = field(default_factory=OpenEvolveSettings)
     api_url: str | None = None

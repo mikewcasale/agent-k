@@ -1,26 +1,45 @@
 """Evolutionary feature engineering and selection primitives.
 
+@notice: |
+    Evolutionary feature engineering and selection primitives.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.evolution.features
+    provides:
+        - agent_k.evolution.features
+    pattern: feature-engineering
+
+@agent-guidance:
+    do:
+        - "Use agent_k.evolution.features as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import random
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from typing import Any, Literal
 
-# Third-party (alphabetical)
-from typing import Any, Literal, TypeAlias
-
-# Local imports (core first, then alphabetical)
 from agent_k.evolution.framework import FitnessFn, Individual, Population
 
-TransformType: TypeAlias = Literal["log", "sqrt", "square", "boxcox", "yeojohnson"]
+type TransformType = Literal["log", "sqrt", "square", "boxcox", "yeojohnson"]
 """Supported transformation genes."""
 
-BinningStrategy: TypeAlias = Literal["equal_width", "equal_frequency", "kmeans"]
+type BinningStrategy = Literal["equal_width", "equal_frequency", "kmeans"]
 """Supported binning strategies."""
 
 __all__ = (
@@ -38,7 +57,12 @@ __all__ = (
 
 @dataclass(frozen=True, slots=True)
 class TransformGene:
-    """Single-variable transformation gene."""
+    """Single-variable transformation gene.
+
+    @pattern:
+        name: gene-model
+        rationale: "Frozen dataclass representing a transformation gene."
+    """
 
     feature: str
     transform: TransformType
@@ -46,7 +70,12 @@ class TransformGene:
 
 @dataclass(frozen=True, slots=True)
 class InteractionGene:
-    """Polynomial interaction gene."""
+    """Polynomial interaction gene.
+
+    @pattern:
+        name: gene-model
+        rationale: "Frozen dataclass representing an interaction gene."
+    """
 
     feature_a: str
     feature_b: str
@@ -54,7 +83,12 @@ class InteractionGene:
 
 @dataclass(frozen=True, slots=True)
 class RatioGene:
-    """Ratio feature gene (feature_a / feature_b)."""
+    """Ratio feature gene (feature_a / feature_b).
+
+    @pattern:
+        name: gene-model
+        rationale: "Frozen dataclass representing a ratio feature gene."
+    """
 
     numerator: str
     denominator: str
@@ -62,7 +96,12 @@ class RatioGene:
 
 @dataclass(frozen=True, slots=True)
 class BinningGene:
-    """Binning strategy gene."""
+    """Binning strategy gene.
+
+    @pattern:
+        name: gene-model
+        rationale: "Frozen dataclass representing a binning strategy gene."
+    """
 
     feature: str
     strategy: BinningStrategy
@@ -71,7 +110,12 @@ class BinningGene:
 
 @dataclass(frozen=True, slots=True)
 class DomainFeatureGene:
-    """Domain-specific engineered feature gene."""
+    """Domain-specific engineered feature gene.
+
+    @pattern:
+        name: gene-model
+        rationale: "Frozen dataclass representing a domain feature gene."
+    """
 
     name: str
     inputs: tuple[str, ...]
@@ -79,7 +123,12 @@ class DomainFeatureGene:
 
 @dataclass(slots=True)
 class FeatureGenome:
-    """Complete feature engineering genome."""
+    """Complete feature engineering genome.
+
+    @pattern:
+        name: genome-model
+        rationale: "Mutable dataclass aggregating feature engineering genes."
+    """
 
     transforms: list[TransformGene] = field(default_factory=list)
     interactions: list[InteractionGene] = field(default_factory=list)
@@ -92,7 +141,12 @@ class FeatureGenome:
 
 @dataclass(slots=True)
 class FeatureSelectionIndividual:
-    """Binary chromosome for feature inclusion."""
+    """Binary chromosome for feature inclusion.
+
+    @pattern:
+        name: individual-model
+        rationale: "Mutable dataclass for binary feature mask with fitness."
+    """
 
     mask: list[int]
     score: float | None = None
@@ -103,7 +157,12 @@ class FeatureSelectionIndividual:
 
 
 class FeatureEvolver:
-    """Evolve feature engineering pipelines with mutation and crossover."""
+    """Evolve feature engineering pipelines with mutation and crossover.
+
+    @pattern:
+        name: evolver
+        rationale: "Coordinates evolutionary search over feature genomes."
+    """
 
     _default_domains: tuple[DomainFeatureGene, ...] = (
         DomainFeatureGene("TotalSF", ("TotalBsmtSF", "1stFlrSF", "2ndFlrSF")),
@@ -193,7 +252,12 @@ class FeatureEvolver:
 
 
 class FeatureSelector:
-    """Maintain a Pareto front for feature selection trade-offs."""
+    """Maintain a Pareto front for feature selection trade-offs.
+
+    @pattern:
+        name: selector
+        rationale: "Pareto-based feature selection with population evolution."
+    """
 
     def __init__(
         self, feature_names: list[str], *, population_size: int = 20, rng: random.Random | None = None

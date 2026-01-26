@@ -1,12 +1,34 @@
 """Core domain primitives, models, and protocols for AGENT-K.
 
+@notice: |
+    Core domain primitives, models, and protocols for AGENT-K.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.core
+    provides:
+        - agent_k.core
+    pattern: core-facade
+
+@agent-guidance:
+    do:
+        - "Use agent_k.core as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Local imports (core first, then alphabetical)
 from .constants import (
     CHECKPOINT_INTERVAL_GENERATIONS,
     CONVERGENCE_THRESHOLD_GENERATIONS,
@@ -82,6 +104,7 @@ from .models import (
     WebSearchCall,
 )
 from .protocols import PlatformAdapter
+from .sage import Constraint, Default, Doc, Range
 from .settings import AgentKSettings
 from .types import (
     AgentDepsT,
@@ -183,6 +206,10 @@ __all__ = (
     "ToolCall",
     "WebSearchCall",
     "AgentKSettings",
+    "Constraint",
+    "Default",
+    "Doc",
+    "Range",
     "AgentDepsT",
     "AsyncCallback",
     "CompetitionId",

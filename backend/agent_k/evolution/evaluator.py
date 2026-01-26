@@ -1,12 +1,34 @@
 """OpenEvolve evaluator for AGENT-K solutions.
 
+@notice: |
+    OpenEvolve evaluator for AGENT-K solutions.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.evolution.evaluator
+    provides:
+        - agent_k.evolution.evaluator
+    pattern: evolution-evaluator
+
+@agent-guidance:
+    do:
+        - "Use agent_k.evolution.evaluator as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import ast
 import asyncio
 import json
@@ -19,7 +41,6 @@ import traceback
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
 
-# Third-party (alphabetical)
 import logfire
 from openevolve.evaluation_result import EvaluationResult
 

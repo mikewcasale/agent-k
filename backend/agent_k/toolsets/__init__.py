@@ -1,20 +1,48 @@
 """Toolsets and built-in tool helpers for AGENT-K agents.
 
+@notice: |
+    Toolsets and built-in tool helpers for AGENT-K agents.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.toolsets
+    provides:
+        - agent_k.toolsets:TOOLSET_REGISTRY
+        - agent_k.toolsets:compose_toolsets
+        - agent_k.toolsets:create_production_toolset
+    pattern: toolset-registry
+
+@similar:
+    - id: agent_k.toolsets.kaggle
+        when: "Specific Kaggle tool implementations."
+
+@agent-guidance:
+    do:
+        - "Use agent_k.toolsets as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 from dataclasses import replace
-from typing import Any, TypeVar
+from typing import Annotated, Any, TypeVar
 
-# Third-party (alphabetical)
 from pydantic_ai import RunContext, ToolDefinition
 from pydantic_ai.toolsets import AbstractToolset, CombinedToolset, FunctionToolset
 
-# Local imports (core first, then alphabetical)
+from agent_k.core.sage import Doc
+
 from .code import code_toolset, create_code_execution_tool, prepare_code_execution_tool
 from .kaggle import kaggle_toolset
 from .memory import AgentKMemoryTool, create_memory_backend, prepare_memory_tool, register_memory_tool
@@ -59,15 +87,19 @@ TOOLSET_REGISTRY: dict[str, FunctionToolset[Any]] = {
 }
 
 
-def compose_toolsets(names: list[str], *, prefix: bool = True) -> AbstractToolset:
+def compose_toolsets(
+    names: Annotated[list[str], Doc("Toolset registry names to compose.")],
+    *,
+    prefix: Annotated[bool, Doc("Whether to prefix tools with the toolset name.")] = True,
+) -> AbstractToolset:
     """Compose multiple toolsets into one.
 
-    Args:
-        names: Toolset registry names to compose.
-        prefix: Whether to prefix tools with the toolset name.
+    @notice: |
+        Combines toolsets and optionally prefixes tool names.
 
-    Returns:
-        Combined toolset ready for agent use.
+    @errors:
+        terminal:
+            - KeyError
     """
     toolsets: list[AbstractToolset] = []
     for name in names:
@@ -82,7 +114,10 @@ def compose_toolsets(names: list[str], *, prefix: bool = True) -> AbstractToolse
 
 
 def create_production_toolset(
-    toolsets: list[FunctionToolset[DepsT]], *, require_approval_for: list[str] | None = None, prefix: str | None = None
+    toolsets: Annotated[list[FunctionToolset[DepsT]], Doc("Toolsets to combine.")],
+    *,
+    require_approval_for: Annotated[list[str] | None, Doc("Tool names requiring approval.")] = None,
+    prefix: Annotated[str | None, Doc("Prefix for tool names.")] = None,
 ) -> AbstractToolset[DepsT]:
     """Create production-ready toolset with wrappers.
 
@@ -90,6 +125,17 @@ def create_production_toolset(
     - Prefixing for namespace isolation
     - Approval requirements for selected tools
     - Strict mode for OpenAI tool calls
+
+    @factory-for:
+        id: agent_k.toolsets:CombinedToolset
+        rationale: "Centralizes production wrapper policy."
+        singleton: false
+        cache-key: prefix
+
+    @canonical-home:
+        for:
+            - "production toolset composition"
+        notes: "Use create_production_toolset for standardized behavior."
     """
     combined: AbstractToolset[DepsT] = CombinedToolset(toolsets)
 
@@ -99,7 +145,10 @@ def create_production_toolset(
     if require_approval_for:
         combined = combined.approval_required(lambda _ctx, tool_def, _args: tool_def.name in require_approval_for)
 
-    async def prepare_for_model(ctx: RunContext[DepsT], tool_defs: list[ToolDefinition]) -> list[ToolDefinition]:
+    async def prepare_for_model(
+        ctx: Annotated[RunContext[DepsT], Doc("Run context for tool preparation.")],
+        tool_defs: Annotated[list[ToolDefinition], Doc("Tool definitions to update.")],
+    ) -> list[ToolDefinition]:
         if ctx.model.system == "openai":
             return [replace(td, strict=True) for td in tool_defs]
         return tool_defs

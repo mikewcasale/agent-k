@@ -1,21 +1,51 @@
 """Memory tool helpers for AGENT-K agents.
 
+@notice: |
+    Memory tool helpers for AGENT-K agents.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.toolsets.memory
+    provides:
+        - agent_k.toolsets.memory:AgentKMemoryTool
+        - agent_k.toolsets.memory:create_memory_backend
+        - agent_k.toolsets.memory:prepare_memory_tool
+        - agent_k.toolsets.memory:register_memory_tool
+    pattern: toolset
+
+@similar:
+    - id: agent_k.embeddings.store
+        when: "Vector store persistence; this module is file-backed memory tool."
+
+@agent-guidance:
+    do:
+        - "Use agent_k.toolsets.memory as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import os
 import shutil
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Annotated, Any
 
-# Third-party (alphabetical)
 import logfire
 from pydantic_ai import RunContext, ToolDefinition
 from pydantic_ai.builtin_tools import MemoryTool
+
+from agent_k.core.sage import Doc
 
 _anthropic_memory: Any | None
 try:  # pragma: no cover - optional dependency
@@ -44,9 +74,20 @@ _DEFAULT_MEMORY_DIR = Path(os.getenv("AGENT_K_MEMORY_DIR", ".agent_k_memory"))
 
 
 class AgentKMemoryTool(_MemoryBase):  # pragma: no cover - optional dependency
-    """File-backed memory implementation for Anthropic MemoryTool."""
+    """File-backed memory implementation for Anthropic MemoryTool.
 
-    def __init__(self, base_path: Path | None = None) -> None:
+    @pattern:
+        name: memory-tool
+        rationale: "Provides a file-backed memory interface for agents."
+        violations: "Bypassing this tool breaks memory consistency."
+
+    @concurrency:
+        model: asyncio
+        safe: false
+        reason: "Performs filesystem mutations without locks."
+    """
+
+    def __init__(self, base_path: Annotated[Path | None, Doc("Base path for memory storage.")] = None) -> None:
         if _anthropic_memory is None:
             raise RuntimeError("anthropic is required to use AgentKMemoryTool")
         super().__init__()
@@ -190,29 +231,51 @@ class AgentKMemoryTool(_MemoryBase):  # pragma: no cover - optional dependency
         path.write_text(text, encoding="utf-8")
 
 
-def create_memory_backend(storage_path: Path | None = None) -> AgentKMemoryTool:
+def create_memory_backend(
+    storage_path: Annotated[Path | None, Doc("Base directory for memory files.")] = None,
+) -> AgentKMemoryTool:
     """Create an Anthropic-compatible memory backend.
 
-    Args:
-        storage_path: Base directory for memory files.
+    @notice: |
+        Creates a file-backed memory tool for Anthropic providers.
 
-    Returns:
-        Configured AgentKMemoryTool instance.
+    @factory-for:
+        id: agent_k.toolsets.memory:AgentKMemoryTool
+        rationale: "Centralizes default storage path behavior."
+        singleton: false
+        cache-key: storage_path
+
+    @canonical-home:
+        for:
+            - "memory backend construction"
+        notes: "Use create_memory_backend to ensure defaults."
     """
     return AgentKMemoryTool(base_path=storage_path)
 
 
-async def prepare_memory_tool(ctx: RunContext[Any]) -> MemoryTool | None:
-    """Dynamically enable MemoryTool only for supported providers."""
+async def prepare_memory_tool(
+    ctx: Annotated[RunContext[Any], Doc("Run context for tool preparation.")],
+) -> MemoryTool | None:
+    """Dynamically enable MemoryTool only for supported providers.
+
+    @notice: |
+        Returns MemoryTool only for Anthropic models.
+    """
     return None if ctx.model.system != "anthropic" else MemoryTool()
 
 
-def register_memory_tool(agent: Agent[Any, Any], memory_backend: AgentKMemoryTool) -> None:
+def register_memory_tool(
+    agent: Annotated[Agent[Any, Any], Doc("Agent instance to register the tool on.")],
+    memory_backend: Annotated[AgentKMemoryTool, Doc("Memory backend implementation.")],
+) -> None:
     """Register the Anthropic MemoryTool handler on an agent.
 
-    Args:
-        agent: Agent instance to register the tool on.
-        memory_backend: Memory backend implementation.
+    @notice: |
+        Attaches the memory tool to the agent with a plain tool handler.
+
+    @effects:
+        state:
+            - agent tool registry
     """
 
     @agent.tool_plain(name="memory", prepare=_prepare_memory_definition)

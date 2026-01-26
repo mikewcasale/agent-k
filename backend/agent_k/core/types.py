@@ -1,16 +1,36 @@
 """Type aliases and type variables for AGENT-K.
 
+@notice: |
+    Type aliases and type variables for AGENT-K.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.core.types
+    provides:
+        - agent_k.core.types
+    pattern: type-definitions
+
+@agent-guidance:
+    do:
+        - "Use agent_k.core.types as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 from collections.abc import Awaitable, Callable
-
-# Third-party (alphabetical)
-from typing import TYPE_CHECKING, Any, Literal, ParamSpec, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, ParamSpec, TypeVar
 
 if TYPE_CHECKING:
     from pydantic_ai.messages import ModelMessage
@@ -65,25 +85,25 @@ __all__ = (
     "EventCallback",
 )
 
-CompetitionId: TypeAlias = str
-MissionId: TypeAlias = str
-TaskId: TypeAlias = str
-LeaderboardRank: TypeAlias = int
-Score: TypeAlias = float
-FitnessScore: TypeAlias = float
+type CompetitionId = str
+type MissionId = str
+type TaskId = str
+type LeaderboardRank = int
+type Score = float
+type FitnessScore = float
 
-JsonDict: TypeAlias = dict[str, Any]
-MessageHistory: TypeAlias = list["ModelMessage"]
-ToolResult: TypeAlias = str | dict[str, Any]
+type JsonDict = dict[str, Any]
+type MessageHistory = list["ModelMessage"]
+type ToolResult = str | dict[str, Any]
 
-MetricDirection: TypeAlias = Literal["maximize", "minimize"]
-MissionPhase: TypeAlias = Literal["discovery", "research", "prototype", "evolution", "submission"]
-TaskStatus: TypeAlias = Literal["pending", "in_progress", "completed", "failed", "blocked", "skipped"]
-TaskPriority: TypeAlias = Literal["critical", "high", "medium", "low"]
-ToolType: TypeAlias = Literal["web_search", "kaggle_mcp", "code_executor", "memory", "browser"]
-MemoryScope: TypeAlias = Literal["session", "persistent", "global"]
-ErrorCategory: TypeAlias = Literal["transient", "recoverable", "fatal"]
-RecoveryStrategy: TypeAlias = Literal["retry", "fallback", "skip", "replan", "abort"]
+type MetricDirection = Literal["maximize", "minimize"]
+type MissionPhase = Literal["discovery", "research", "prototype", "evolution", "submission"]
+type TaskStatus = Literal["pending", "in_progress", "completed", "failed", "blocked", "skipped"]
+type TaskPriority = Literal["critical", "high", "medium", "low"]
+type ToolType = Literal["web_search", "kaggle_mcp", "code_executor", "memory", "browser"]
+type MemoryScope = Literal["session", "persistent", "global"]
+type ErrorCategory = Literal["transient", "recoverable", "fatal"]
+type RecoveryStrategy = Literal["retry", "fallback", "skip", "replan", "abort"]
 
-AsyncCallback: TypeAlias = Callable[[str], Awaitable[None]]
-EventCallback: TypeAlias = Callable[[str, JsonDict], Awaitable[None]]
+type AsyncCallback = Callable[[str], Awaitable[None]]
+type EventCallback = Callable[[str, JsonDict], Awaitable[None]]

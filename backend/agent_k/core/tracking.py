@@ -1,12 +1,37 @@
 """Experiment tracking utilities for AGENT-K.
 
+@notice: |
+    Experiment tracking utilities for AGENT-K.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.core.tracking
+    provides:
+        - agent_k.core.tracking:ExperimentTracker
+        - agent_k.core.tracking:create_experiment_tracker
+        - agent_k.core.tracking:ExperimentRecord
+        - agent_k.core.tracking:HintEffectivenessTracker
+    pattern: tracking-store
+
+@agent-guidance:
+    do:
+        - "Use agent_k.core.tracking as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import ast
 import hashlib
 import json
@@ -17,11 +42,12 @@ import uuid
 from collections import defaultdict
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Final
+from typing import Annotated, Any, Final
 
-# Third-party (alphabetical)
 import logfire
 from pydantic import BaseModel, ConfigDict, Field
+
+from agent_k.core.sage import Doc
 
 __all__ = (
     "ExperimentMetadata",
@@ -105,7 +131,12 @@ _TARGET_TRANSFORM_PATTERNS: Final[tuple[tuple[str, re.Pattern[str]], ...]] = (
 
 
 class ExperimentMetadata(BaseModel):
-    """Structured metadata extracted from a solution."""
+    """Structured metadata extracted from a solution.
+
+    @pattern:
+        name: metadata-model
+        rationale: "Frozen Pydantic model for solution metadata extraction."
+    """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True)
     model_name: str | None = Field(default=None, description="Primary model class name")
@@ -117,7 +148,12 @@ class ExperimentMetadata(BaseModel):
 
 
 class ExperimentRecord(BaseModel):
-    """Persistent record of an experiment or submission."""
+    """Persistent record of an experiment or submission.
+
+    @pattern:
+        name: record-model
+        rationale: "Pydantic model for experiment persistence."
+    """
 
     model_config = ConfigDict(str_strip_whitespace=True, validate_default=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -144,7 +180,12 @@ class ExperimentRecord(BaseModel):
 
 
 class ExperimentSummary(BaseModel):
-    """Lightweight summary of a stored experiment."""
+    """Lightweight summary of a stored experiment.
+
+    @pattern:
+        name: summary-model
+        rationale: "Frozen Pydantic model for experiment listing."
+    """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True)
     record_id: str = Field(..., description="Record identifier")
@@ -160,7 +201,12 @@ class ExperimentSummary(BaseModel):
 
 
 class KaggleSubmissionRecord(BaseModel):
-    """Persistent record of a Kaggle submission and leaderboard scores."""
+    """Persistent record of a Kaggle submission and leaderboard scores.
+
+    @pattern:
+        name: record-model
+        rationale: "Pydantic model for Kaggle submission persistence."
+    """
 
     model_config = ConfigDict(str_strip_whitespace=True, validate_default=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -177,7 +223,12 @@ class KaggleSubmissionRecord(BaseModel):
 
 
 class HintAttemptRecord(BaseModel):
-    """Track preprocessing hint usage and outcomes."""
+    """Track preprocessing hint usage and outcomes.
+
+    @pattern:
+        name: record-model
+        rationale: "Pydantic model for hint effectiveness tracking."
+    """
 
     model_config = ConfigDict(str_strip_whitespace=True, validate_default=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -193,13 +244,27 @@ class HintAttemptRecord(BaseModel):
 
 
 class ExperimentTracker:
-    """SQLite-backed tracker for experiments and submissions."""
+    """SQLite-backed tracker for experiments and submissions.
+
+    @pattern:
+        name: tracking-store
+        rationale: "Centralized persistence for experiment metadata."
+        violations: "Distributed tracking logic causes inconsistent history."
+
+    @concurrency:
+        model: asyncio
+        safe: false
+        reason: "Uses SQLite connections without cross-process locking."
+
+    @invariants:
+        - "Database schema is initialized before writes."
+    """
 
     _table_name: Final[str] = "experiments"
     _submission_table_name: Final[str] = "kaggle_submissions"
     _hint_table_name: Final[str] = "hint_attempts"
 
-    def __init__(self, db_path: Path | None = None) -> None:
+    def __init__(self, db_path: Annotated[Path | None, Doc("SQLite database path override.")] = None) -> None:
         self._db_path = (db_path or _resolve_db_path()).expanduser()
         self._db_path.parent.mkdir(parents=True, exist_ok=True)
         self._initialize_schema()
@@ -624,7 +689,13 @@ class ExperimentTracker:
 
 
 class HintEffectivenessTracker:
-    """Track and aggregate hint performance across generations."""
+    """Track and aggregate hint performance across generations.
+
+    @pattern:
+        name: tracking-service
+        rationale: "Centralizes hint success tracking and suppression."
+        violations: "Distributed tracking makes suppression inconsistent."
+    """
 
     _HINT_TRACKER_PATH: Final[Path] = Path("~/.agent_k/hint_tracker.json").expanduser()
     _suppression_threshold: Final[int] = 3
@@ -741,8 +812,25 @@ class HintEffectivenessTracker:
                     self._suppressed[comp_id].add(hint_id)
 
 
-def create_experiment_tracker(db_path: Path | None = None) -> ExperimentTracker:
-    """Factory for ExperimentTracker instances."""
+def create_experiment_tracker(
+    db_path: Annotated[Path | None, Doc("SQLite database path override.")] = None,
+) -> ExperimentTracker:
+    """Factory for ExperimentTracker instances.
+
+    @notice: |
+        Returns a tracker configured with the default database path.
+
+    @factory-for:
+        id: agent_k.core.tracking:ExperimentTracker
+        rationale: "Centralizes tracker defaults and storage path."
+        singleton: false
+        cache-key: db_path
+
+    @canonical-home:
+        for:
+            - "experiment tracker construction"
+        notes: "Use create_experiment_tracker to ensure defaults."
+    """
     return ExperimentTracker(db_path=db_path)
 
 

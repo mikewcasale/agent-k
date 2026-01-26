@@ -1,15 +1,36 @@
 """Evaluation datasets.
 
+@notice: |
+    Evaluation datasets.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.evals.datasets
+    provides:
+        - agent_k.evals.datasets
+    pattern: evaluation-datasets
+
+@agent-guidance:
+    do:
+        - "Use agent_k.evals.datasets as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 from pathlib import Path
 
-# Third-party (alphabetical)
 from pydantic_evals import Case, Dataset
 from pydantic_evals.evaluators import Contains, IsInstance, LLMJudge, MaxDuration
 
@@ -29,9 +50,6 @@ def load_dataset(name: str) -> Dataset:
     return Dataset.from_file(path)
 
 
-# =============================================================================
-# Dataset Definitions
-# =============================================================================
 discovery_dataset = Dataset(
     cases=[
         Case(

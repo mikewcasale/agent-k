@@ -18,7 +18,7 @@ from pydantic_ai import Agent
 from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
 from agent_k.core.deps import KaggleDeps
 from agent_k.toolsets import kaggle_toolset
-from agent_k.ui.ag_ui import EventEmitter
+from agent_k.ui.agui import EventEmitter
 
 config = KaggleSettings(
     username="your_kaggle_username",

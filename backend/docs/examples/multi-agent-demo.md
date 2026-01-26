@@ -17,7 +17,7 @@ from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
 from agent_k.adapters.openevolve import OpenEvolveAdapter
 from agent_k.agents.lobbyist import LobbyistDeps, lobbyist_agent
 from agent_k.agents.scientist import ScientistDeps, scientist_agent
-from agent_k.ui.ag_ui import EventEmitter
+from agent_k.ui.agui import EventEmitter
 
 
 async def run_agents(adapter, http_client):

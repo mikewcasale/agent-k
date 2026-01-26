@@ -1,19 +1,51 @@
 """Model configuration for AGENT-K.
 
+@notice: |
+    Model configuration for AGENT-K.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.infra.providers
+    provides:
+        - agent_k.infra.providers:get_model
+        - agent_k.infra.providers:create_devstral_model
+        - agent_k.infra.providers:create_openrouter_model
+        - agent_k.infra.providers:is_devstral_model
+        - agent_k.infra.providers:DEVSTRAL_MODEL_ID
+        - agent_k.infra.providers:DEVSTRAL_BASE_URL
+    pattern: model-factory
+
+@similar:
+    - id: agent_k.infra.config
+        when: "General configuration; this module builds model instances."
+
+@agent-guidance:
+    do:
+        - "Use agent_k.infra.providers as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import os
-from typing import TYPE_CHECKING, Final, TypeAlias
+from typing import TYPE_CHECKING, Annotated, Final
 
-# Third-party (alphabetical)
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.providers.openrouter import OpenRouterProvider
+
+from agent_k.core.sage import Doc
 
 if TYPE_CHECKING:
     from pydantic_ai.models import Model
@@ -38,25 +70,31 @@ OPENROUTER_FREE_MODELS: Final[dict[str, str]] = {
 }
 # Free OpenRouter model identifiers for agentic coding tasks.
 
-ModelType: TypeAlias = str
+type ModelType = str
 
 
-def create_devstral_model(model_id: str = DEVSTRAL_MODEL_ID, base_url: str | None = None) -> OpenAIChatModel:
+def create_devstral_model(
+    model_id: Annotated[str, Doc("Devstral model identifier.")] = DEVSTRAL_MODEL_ID,
+    base_url: Annotated[str | None, Doc("Base URL for the Devstral endpoint.")] = None,
+) -> OpenAIChatModel:
     """Create a Devstral model instance for local LM Studio server.
 
     This creates an OpenAI-compatible model that connects to a local
     LM Studio server running Devstral.
 
-    Args:
-        model_id: The model identifier to use (default: devstral-small-2-2512).
-        base_url: Override the base URL for the LM Studio server.
+    @notice: |
+        Creates an OpenAIChatModel configured for Devstral.
 
-    Returns:
-        Configured OpenAIChatModel instance.
+    @factory-for:
+        id: pydantic_ai.models.openai:OpenAIChatModel
+        rationale: "Centralizes local LM Studio configuration."
+        singleton: false
+        cache-key: model_id
 
-    Example:
-        >>> model = create_devstral_model()
-        >>> agent = Agent(model, deps_type=MyDeps)
+    @canonical-home:
+        for:
+            - "devstral model creation"
+        notes: "Use create_devstral_model for local Devstral endpoints."
     """
     url = base_url or DEVSTRAL_BASE_URL
 
@@ -69,29 +107,30 @@ def create_devstral_model(model_id: str = DEVSTRAL_MODEL_ID, base_url: str | Non
     )
 
 
-def create_openrouter_model(model_id: str) -> OpenAIChatModel:
+def create_openrouter_model(model_id: Annotated[str, Doc("OpenRouter model identifier.")]) -> OpenAIChatModel:
     """Create a model instance using OpenRouter.
 
     OpenRouter provides access to many models including Devstral, Claude,
     GPT-4, and more through a unified API.
 
-    Args:
-        model_id: The OpenRouter model identifier (e.g., 'mistralai/devstral-small-2505').
+    @notice: |
+        Creates an OpenAIChatModel configured for OpenRouter.
 
-    Returns:
-        Configured OpenAIChatModel instance using OpenRouter.
+    @factory-for:
+        id: pydantic_ai.models.openai:OpenAIChatModel
+        rationale: "Centralizes OpenRouter provider configuration."
+        singleton: false
+        cache-key: model_id
 
-    Example:
-        >>> model = create_openrouter_model("mistralai/devstral-small-2505")
-        >>> agent = Agent(model, deps_type=MyDeps)
-
-    Note:
-        Requires OPENROUTER_API_KEY environment variable to be set.
+    @canonical-home:
+        for:
+            - "openrouter model creation"
+        notes: "Use create_openrouter_model for OpenRouter endpoints."
     """
     return OpenAIChatModel(model_id, provider=OpenRouterProvider())
 
 
-def get_model(model_spec: str) -> Model | str:
+def get_model(model_spec: Annotated[str, Doc("Model specification string.")]) -> Model | str:
     """Get a model instance based on specification string.
 
     Supports:
@@ -99,21 +138,22 @@ def get_model(model_spec: str) -> Model | str:
     - Local Devstral (e.g., 'devstral:local')
     - OpenRouter models (e.g., 'openrouter:mistralai/devstral-small-2505')
 
-    Args:
-        model_spec: Model specification string.
+    @notice: |
+        Resolves model specs into provider-specific model objects when needed.
 
-    Returns:
-        Either a Model instance (for custom models) or the string (for standard models).
+    @dev: |
+        Returns a string for standard pydantic-ai model specs.
 
-    Examples:
-        >>> get_model("anthropic:claude-3-haiku-20240307")  # Returns string for pydantic-ai
-        'anthropic:claude-3-haiku-20240307'
+    @factory-for:
+        id: pydantic_ai.models:Model
+        rationale: "Centralized model resolution for all agents."
+        singleton: false
+        cache-key: model_spec
 
-        >>> get_model("devstral:local")  # Returns OpenAIChatModel for local LM Studio
-        OpenAIChatModel(...)
-
-        >>> get_model("openrouter:mistralai/devstral-small-2505")  # Returns OpenAIChatModel via OpenRouter
-        OpenAIChatModel(...)
+    @canonical-home:
+        for:
+            - "model resolution"
+        notes: "Use get_model to normalize model specs."
     """
     if model_spec.startswith("devstral:"):
         # Parse devstral model specification for local LM Studio
@@ -139,13 +179,10 @@ def get_model(model_spec: str) -> Model | str:
     return model_spec
 
 
-def is_devstral_model(model_spec: str) -> bool:
+def is_devstral_model(model_spec: Annotated[str, Doc("Model specification string.")]) -> bool:
     """Check if a model specification refers to Devstral.
 
-    Args:
-        model_spec: Model specification string.
-
-    Returns:
-        True if the model is a Devstral variant.
+    @notice: |
+        Returns true when the model spec targets Devstral.
     """
     return model_spec.startswith("devstral:")

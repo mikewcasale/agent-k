@@ -1,12 +1,34 @@
 """System prompts for AGENT-K agents.
 
+@notice: |
+    System prompts for AGENT-K agents.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.agents.prompts
+    provides:
+        - agent_k.agents.prompts
+    pattern: prompt-catalog
+
+@agent-guidance:
+    do:
+        - "Use agent_k.agents.prompts as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 from typing import Final
 
 __all__ = (
@@ -116,7 +138,7 @@ PREPROCESSING HINTS (REQUIRED):
 - Prioritize hints with higher priority values.
 - When applying a hint:
   1) Copy the code_snippet from the hint into your solution and adapt variable names.
-  2) Add the comment: \`# Applied hint: <hint_id>\` near the injected code.
+  2) Add the comment: `# Applied hint: <hint_id>` near the injected code.
 - This comment is CRITICAL for tracking which hints improve scores.
 """
 
@@ -156,22 +178,22 @@ Based on the fitness history, choose your approach:
 
 **If stderr shows errors**: FIX THEM FIRST before optimizing.
 - ImportError → Use try/except fallback pattern
-- KeyError/columns missing → Add \`X_test = test_df[X.columns]\` pattern
+- KeyError/columns missing → Add `X_test = test_df[X.columns]` pattern
 - ValueError shapes → Check data alignment before fit
 
-**If stdout is missing baseline**: Add \`print(f'Baseline {{METRIC}} score: {{score}}')\`
+**If stdout is missing baseline**: Add `print(f'Baseline {{METRIC}} score: {{score}}')`
 
 ## LIGHTGBM PREFERENCE
 Always prefer LightGBM over XGBoost. When evolving loss functions, use LightGBM's custom objective:
-\`\`\`python
+```python
 def custom_objective(y_true, y_pred):
     grad = ...  # gradient
     hess = ...  # hessian
     return grad, hess
-\`\`\`
+```
 
 ## PREPROCESSING HINTS
-Apply at least ONE preprocessing hint and add \`# Applied hint: <hint_id>\` near the inserted code.
+Apply at least ONE preprocessing hint and add `# Applied hint: <hint_id>` near the inserted code.
 Prioritize hints with higher priority values from the PREPROCESSING GUIDANCE section.
 
 ## OUTPUT REQUIREMENTS
@@ -179,12 +201,12 @@ Prioritize hints with higher priority values from the PREPROCESSING GUIDANCE sec
 - Preserve all working functionality
 - Add detailed comments explaining changes
 - Ensure the code is syntactically valid
-- Keep baseline print: \`print(f"Baseline {{METRIC}} score: {{score}}")\`
-- Write submission: \`submission.to_csv("submission.csv", index=False)\`
+- Keep baseline print: `print(f"Baseline {{METRIC}} score: {{score}}")`
+- Write submission: `submission.to_csv("submission.csv", index=False)`
 - Use local files only: train.csv, test.csv, sample_submission.csv (no /kaggle/input paths)
 
 ## COMMON PATTERNS THAT WORK
-\`\`\`python
+```python
 # Safe LightGBM with fallback
 try:
     from lightgbm import LGBMRegressor
@@ -203,7 +225,7 @@ def huber_objective(y_true, y_pred, delta=1.0):
     grad = np.where(np.abs(residual) <= delta, residual, delta * np.sign(residual))
     hess = np.where(np.abs(residual) <= delta, 1.0, 0.0)
     return grad, hess
-\`\`\`
+```
 """
 
 LYCURGUS_SYSTEM_PROMPT: Final[str] = "You are LYCURGUS, orchestrating the AGENT-K multi-agent system."

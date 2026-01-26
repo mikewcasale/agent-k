@@ -1,12 +1,39 @@
 """Kaggle platform adapter implementation.
 
+@notice: |
+    Kaggle platform adapter implementation.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.adapters.kaggle
+    provides:
+        - agent_k.adapters.kaggle:KaggleAdapter
+        - agent_k.adapters.kaggle:KaggleSettings
+    pattern: adapter
+
+@similar:
+    - id: agent_k.toolsets.kaggle
+        when: "Toolset wrappers over this adapter for agent tools."
+
+@agent-guidance:
+    do:
+        - "Use agent_k.adapters.kaggle as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import asyncio
 import csv
 import io
@@ -18,13 +45,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
 from urllib.parse import quote
 
-# Third-party (alphabetical)
 import httpx
 import logfire
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Local imports (core first, then alphabetical)
 from agent_k.core.exceptions import (
     AuthenticationError,
     CompetitionNotFoundError,
@@ -49,11 +74,28 @@ class KaggleSettings(BaseSettings):
     """Settings for Kaggle adapter.
 
     Environment variables are prefixed with KAGGLE_.
+
+    @pattern:
+        name: settings
+        rationale: "Centralizes Kaggle adapter configuration."
+        violations: "Ad-hoc config makes auth inconsistent."
     """
 
     model_config = SettingsConfigDict(env_prefix="KAGGLE_", env_file=".env", extra="ignore", validate_default=True)
     username: str = Field(..., description="Kaggle API username")
+    """Kaggle API username for authentication.
+
+    @source: "KAGGLE_USERNAME environment variable."
+    @sensitivity: internal
+    @logging: "Avoid logging full username in telemetry."
+    """
     api_key: str = Field(..., description="Kaggle API key")
+    """Kaggle API key for authentication.
+
+    @source: "KAGGLE_KEY environment variable."
+    @sensitivity: secret
+    @logging: "MUST NOT be logged."
+    """
     base_url: str = Field(default="https://www.kaggle.com/api/v1", description="Base URL for Kaggle API")
     timeout: int = Field(default=30, ge=1, description="HTTP timeout in seconds")
     max_retries: int = Field(default=3, ge=0, description="Maximum retry attempts for failed requests")
@@ -74,6 +116,37 @@ class KaggleAdapter(PlatformAdapter):
         >>> async with KaggleAdapter(config) as adapter:
         ...     async for comp in adapter.search_competitions(["featured"]):
         ...         print(comp.title)
+
+    @notice: |
+        Async adapter for Kaggle competition APIs.
+
+    @dev: |
+        Wraps HTTP calls with retry/backoff and normalizes responses.
+
+    @pattern:
+        name: adapter
+        rationale: "Encapsulates Kaggle-specific API behavior."
+        violations: "Direct HTTP use scatters auth/rate-limit logic."
+
+    @implements:
+        - agent_k.core.protocols:PlatformAdapter
+
+    @inheritdoc:
+        - agent_k.core.protocols:PlatformAdapter
+
+    @collaborators:
+        required:
+            - httpx:AsyncClient
+        injection: dataclass
+        lifecycle: "Use as async context manager per mission."
+
+    @concurrency:
+        model: asyncio
+        safe: false
+        reason: "Mutates internal auth and rate-limit state."
+
+    @invariants:
+        - "self._client is initialized after __post_init__."
     """
 
     config: KaggleSettings
@@ -353,9 +426,6 @@ class KaggleAdapter(PlatformAdapter):
 
             return downloaded
 
-    # =========================================================================
-    # Private Methods
-    # =========================================================================
     async def _request(self, method: str, path: str, **kwargs: Any) -> httpx.Response:
         """Make rate-limited request to Kaggle API."""
         async with self._rate_limit_semaphore:

@@ -1,22 +1,54 @@
 """Vector store abstractions.
 
+@notice: |
+    Vector store abstractions.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.embeddings.store
+    provides:
+        - agent_k.embeddings.store:VectorStore
+        - agent_k.embeddings.store:VectorRecord
+        - agent_k.embeddings.store:InMemoryVectorStore
+    pattern: embedding-store
+
+@agent-guidance:
+    do:
+        - "Use agent_k.embeddings.store as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 from dataclasses import dataclass, field
 from math import sqrt
-from typing import Any, Protocol
+from typing import Annotated, Any, Protocol
+
+from agent_k.core.sage import Doc, Range
 
 __all__ = ("InMemoryVectorStore", "VectorRecord", "VectorStore")
 
 
 @dataclass(frozen=True, slots=True)
 class VectorRecord:
-    """Single vector record."""
+    """Single vector record.
+
+    @pattern:
+        name: output-model
+        rationale: "Stable schema for vector records."
+        violations: "Unstructured records complicate retrieval."
+    """
 
     record_id: str
     vector: list[float]
@@ -24,31 +56,51 @@ class VectorRecord:
 
 
 class VectorStore(Protocol):
-    """Protocol for vector stores."""
+    """Protocol for vector stores.
 
-    def upsert(self, records: list[VectorRecord]) -> None:
+    @pattern:
+        name: protocol-interface
+        rationale: "Standard contract for vector storage."
+        violations: "Stores without this interface diverge in behavior."
+    """
+
+    def upsert(self, records: Annotated[list[VectorRecord], Doc("Vector records to upsert.")]) -> None:
         """Insert or update vector records."""
         ...
 
-    def query(self, vector: list[float], top_k: int = 5) -> list[VectorRecord]:
+    def query(
+        self,
+        vector: Annotated[list[float], Doc("Query vector.")],
+        top_k: Annotated[int, Doc("Number of results to return."), Range(1, 1000)] = 5,
+    ) -> list[VectorRecord]:
         """Return the top matching records for a query vector."""
         ...
 
 
 class InMemoryVectorStore:
-    """Simple in-memory vector store with cosine similarity."""
+    """Simple in-memory vector store with cosine similarity.
+
+    @pattern:
+        name: embedding-store
+        rationale: "Provides a lightweight in-memory vector index."
+        violations: "Ad-hoc retrieval logic leads to inconsistencies."
+    """
 
     def __init__(self) -> None:
         self._records: list[VectorRecord] = []
 
-    def upsert(self, records: list[VectorRecord]) -> None:
+    def upsert(self, records: Annotated[list[VectorRecord], Doc("Vector records to upsert.")]) -> None:
         """Insert or update vector records."""
         existing = {record.record_id: record for record in self._records}
         for record in records:
             existing[record.record_id] = record
         self._records = list(existing.values())
 
-    def query(self, vector: list[float], top_k: int = 5) -> list[VectorRecord]:
+    def query(
+        self,
+        vector: Annotated[list[float], Doc("Query vector.")],
+        top_k: Annotated[int, Doc("Number of results to return."), Range(1, 1000)] = 5,
+    ) -> list[VectorRecord]:
         """Return the top matching records for a query vector."""
         scored = [(record, _cosine_similarity(vector, record.vector)) for record in self._records]
         scored.sort(key=lambda item: item[1], reverse=True)

@@ -1,19 +1,42 @@
 """RAG retrieval patterns.
 
+@notice: |
+    RAG retrieval patterns.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.embeddings.retriever
+    provides:
+        - agent_k.embeddings.retriever:RAGRetriever
+        - agent_k.embeddings.retriever:RetrievalResult
+    pattern: retriever
+
+@agent-guidance:
+    do:
+        - "Use agent_k.embeddings.retriever as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 from dataclasses import dataclass
-from typing import Any
+from typing import Annotated, Any
 
-# Third-party (alphabetical)
 import numpy as np
 
-# Local imports (core first, then alphabetical)
+from agent_k.core.sage import Doc, Range
+
 from .embedder import embed_query
 
 __all__ = ("RAGRetriever", "RetrievalResult")
@@ -21,7 +44,13 @@ __all__ = ("RAGRetriever", "RetrievalResult")
 
 @dataclass(frozen=True, slots=True)
 class RetrievalResult:
-    """Single retrieval result."""
+    """Single retrieval result.
+
+    @pattern:
+        name: output-model
+        rationale: "Stable retrieval payload for RAG consumption."
+        violations: "Ad-hoc dicts make ranking hard to interpret."
+    """
 
     content: str
     score: float
@@ -29,10 +58,19 @@ class RetrievalResult:
 
 
 class RAGRetriever:
-    """Simple RAG retriever with cosine similarity."""
+    """Simple RAG retriever with cosine similarity.
+
+    @pattern:
+        name: retriever
+        rationale: "Encapsulates retrieval logic for RAG flows."
+        violations: "Scattered retrieval logic leads to inconsistent ranking."
+    """
 
     def __init__(
-        self, documents: list[str], embeddings: list[list[float]], metadata: list[dict[str, Any]] | None = None
+        self,
+        documents: Annotated[list[str], Doc("Documents to index.")],
+        embeddings: Annotated[list[list[float]], Doc("Embedding vectors aligned to documents.")],
+        metadata: Annotated[list[dict[str, Any]] | None, Doc("Optional metadata aligned to documents.")] = None,
     ) -> None:
         if len(documents) != len(embeddings):
             raise ValueError("documents and embeddings length mismatch")
@@ -53,15 +91,15 @@ class RAGRetriever:
         self._norms = norms
         self._metadata = metadata or [{} for _ in documents]
 
-    async def retrieve(self, query: str, top_k: int = 5) -> list[RetrievalResult]:
+    async def retrieve(
+        self,
+        query: Annotated[str, Doc("Search query.")],
+        top_k: Annotated[int, Doc("Number of results to return."), Range(1, 1000)] = 5,
+    ) -> list[RetrievalResult]:
         """Retrieve top-k relevant documents.
 
-        Args:
-            query: Search query.
-            top_k: Number of results.
-
-        Returns:
-            Ranked retrieval results.
+        @notice: |
+            Computes cosine similarity and returns the top matches.
         """
         if top_k <= 0 or not self._documents:
             return []

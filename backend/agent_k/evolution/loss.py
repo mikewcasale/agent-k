@@ -1,22 +1,41 @@
 """Loss function evolution for LightGBM objectives.
 
+@notice: |
+    Loss function evolution for LightGBM objectives.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.evolution.loss
+    provides:
+        - agent_k.evolution.loss
+    pattern: loss-functions
+
+@agent-guidance:
+    do:
+        - "Use agent_k.evolution.loss as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import random
 from dataclasses import dataclass, field
+from typing import Any
 
-# Third-party (alphabetical)
-from typing import Any, TypeAlias
-
-# Local imports (core first, then alphabetical)
 from agent_k.evolution.framework import FitnessFn, Individual, Population
 
-LossObjective: TypeAlias = str
+type LossObjective = str
 """LightGBM objective identifiers."""
 
 __all__ = ("LossFunctionEvolver", "LossGenome", "build_lightgbm_objective_params")
@@ -24,7 +43,12 @@ __all__ = ("LossFunctionEvolver", "LossGenome", "build_lightgbm_objective_params
 
 @dataclass(slots=True)
 class LossGenome:
-    """Genome for evolving custom objective functions."""
+    """Genome for evolving custom objective functions.
+
+    @pattern:
+        name: genome-model
+        rationale: "Dataclass for LightGBM loss function parameters."
+    """
 
     objective: LossObjective = "regression"
     asymmetric_weight: float = 1.0
@@ -35,7 +59,12 @@ class LossGenome:
 
 
 class LossFunctionEvolver:
-    """Evolve LightGBM loss function parameters via genetic search."""
+    """Evolve LightGBM loss function parameters via genetic search.
+
+    @pattern:
+        name: evolver
+        rationale: "Coordinates evolutionary search over loss function genomes."
+    """
 
     _objectives: tuple[str, ...] = ("regression", "regression_l1", "huber", "quantile")
 

@@ -117,7 +117,7 @@ agent-k/
 
 ### New API Endpoint
 
-1. Add a route in `backend/agent_k/ui/ag_ui.py`
+1. Add a route in `backend/agent_k/ui/agui.py`
 2. Update API docs if needed
 3. Add tests under `backend/tests/`
 

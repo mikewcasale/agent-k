@@ -1,20 +1,40 @@
 """Core domain models for AGENT-K.
 
+@notice: |
+    Core domain models for AGENT-K.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.core.models
+    provides:
+        - agent_k.core.models
+    pattern: domain-models
+
+@agent-guidance:
+    do:
+        - "Use agent_k.core.models as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any, Final, Self
 
-# Third-party (alphabetical)
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
 
-# Local imports (core first, then alphabetical)
 from .constants import MAX_MISSION_EVOLUTION_ROUNDS
 from .types import (
     CompetitionId,
@@ -71,7 +91,12 @@ SCHEMA_VERSION: Final[str] = "1.0.0"
 
 
 class CompetitionType(StrEnum):
-    """Type of Kaggle competition."""
+    """Type of Kaggle competition.
+
+    @pattern:
+        name: enumeration
+        rationale: "StrEnum for string-serializable competition categories."
+    """
 
     FEATURED = "featured"
     RESEARCH = "research"
@@ -81,7 +106,12 @@ class CompetitionType(StrEnum):
 
 
 class SubjectDomain(StrEnum):
-    """Subject domains for competition classification."""
+    """Subject domains for competition classification.
+
+    @pattern:
+        name: enumeration
+        rationale: "StrEnum for ML domain categories."
+    """
 
     FINANCE = "finance"
     MEDICAL = "medical"
@@ -95,7 +125,12 @@ class SubjectDomain(StrEnum):
 
 
 class EvaluationMetric(StrEnum):
-    """Standard evaluation metrics for competitions."""
+    """Standard evaluation metrics for competitions.
+
+    @pattern:
+        name: enumeration
+        rationale: "StrEnum for standard ML evaluation metrics."
+    """
 
     # Classification
     ACCURACY = "accuracy"
@@ -113,14 +148,15 @@ class EvaluationMetric(StrEnum):
     NDCG = "ndcg"
 
 
-# =============================================================================
-# Competition Models
-# =============================================================================
 class Competition(BaseModel):
     """Kaggle competition entity.
 
     Represents a competition with all metadata required for evaluation
     and participation decisions.
+
+    @pattern:
+        name: immutable-entity
+        rationale: "Frozen Pydantic model for competition metadata."
     """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
@@ -169,7 +205,12 @@ class Competition(BaseModel):
 
 
 class LeaderboardEntry(BaseModel):
-    """Entry in competition leaderboard."""
+    """Entry in competition leaderboard.
+
+    @pattern:
+        name: immutable-entity
+        rationale: "Frozen Pydantic model for leaderboard row data."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -181,7 +222,12 @@ class LeaderboardEntry(BaseModel):
 
 
 class Submission(BaseModel):
-    """Competition submission entity."""
+    """Competition submission entity.
+
+    @pattern:
+        name: immutable-entity
+        rationale: "Frozen Pydantic model for submission records."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -195,11 +241,13 @@ class Submission(BaseModel):
     error_message: str | None = Field(default=None, description="Error message if failed")
 
 
-# =============================================================================
-# Tool Call Models (For Frontend Event Streaming)
-# =============================================================================
 class ToolCall(BaseModel):
-    """Base model for tool invocation tracking."""
+    """Base model for tool invocation tracking.
+
+    @pattern:
+        name: immutable-entity
+        rationale: "Base frozen model for tool call telemetry."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -216,7 +264,12 @@ class ToolCall(BaseModel):
 
 
 class WebSearchCall(ToolCall):
-    """Web search tool call."""
+    """Web search tool call.
+
+    @pattern:
+        name: specialization
+        rationale: "Extends ToolCall with web search specific fields."
+    """
 
     type: ToolType = Field(default="web_search", description="Tool type")
     query: str = Field(..., description="Search query")
@@ -225,14 +278,24 @@ class WebSearchCall(ToolCall):
 
 
 class KaggleMCPCall(ToolCall):
-    """Kaggle MCP tool call."""
+    """Kaggle MCP tool call.
+
+    @pattern:
+        name: specialization
+        rationale: "Extends ToolCall with Kaggle API specific fields."
+    """
 
     type: ToolType = Field(default="kaggle_mcp", description="Tool type")
     competition_id: CompetitionId | None = Field(default=None, description="Target competition id")
 
 
 class CodeExecutorCall(ToolCall):
-    """Code execution tool call."""
+    """Code execution tool call.
+
+    @pattern:
+        name: specialization
+        rationale: "Extends ToolCall with code execution specific fields."
+    """
 
     type: ToolType = Field(default="code_executor", description="Tool type")
     code: str = Field(..., description="Executed code")
@@ -244,7 +307,12 @@ class CodeExecutorCall(ToolCall):
 
 
 class MemoryCall(ToolCall):
-    """Memory operation tool call."""
+    """Memory operation tool call.
+
+    @pattern:
+        name: specialization
+        rationale: "Extends ToolCall with memory operation specific fields."
+    """
 
     type: ToolType = Field(default="memory", description="Tool type")
     key: str = Field(..., description="Memory key")
@@ -252,11 +320,13 @@ class MemoryCall(ToolCall):
     value_preview: str | None = Field(default=None, description="Preview of stored value")
 
 
-# =============================================================================
-# Task Planning Models
-# =============================================================================
 class PlannedTask(BaseModel):
-    """A planned task within a phase."""
+    """A planned task within a phase.
+
+    @pattern:
+        name: immutable-entity
+        rationale: "Frozen Pydantic model for task planning and tracking."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -279,7 +349,12 @@ class PlannedTask(BaseModel):
 
 
 class PhasePlan(BaseModel):
-    """Plan for a mission phase."""
+    """Plan for a mission phase.
+
+    @pattern:
+        name: immutable-entity
+        rationale: "Frozen Pydantic model for phase-level planning."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -297,7 +372,12 @@ class PhasePlan(BaseModel):
 
 
 class MissionPlan(BaseModel):
-    """Complete mission plan with all phases."""
+    """Complete mission plan with all phases.
+
+    @pattern:
+        name: immutable-entity
+        rationale: "Frozen Pydantic model for complete mission planning."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -308,11 +388,13 @@ class MissionPlan(BaseModel):
     checkpoints: list[str] = Field(default_factory=list, description="Checkpoint identifiers")
 
 
-# =============================================================================
-# Evolution Models
-# =============================================================================
 class GenerationMetrics(BaseModel):
-    """Metrics for a single evolution generation."""
+    """Metrics for a single evolution generation.
+
+    @pattern:
+        name: immutable-entity
+        rationale: "Frozen Pydantic model for evolution generation metrics."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -331,7 +413,12 @@ class GenerationMetrics(BaseModel):
 
 
 class LeaderboardSubmission(BaseModel):
-    """Record of a submission to the competition leaderboard."""
+    """Record of a submission to the competition leaderboard.
+
+    @pattern:
+        name: immutable-entity
+        rationale: "Frozen Pydantic model for leaderboard submission records."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -346,7 +433,12 @@ class LeaderboardSubmission(BaseModel):
 
 
 class EvolutionState(BaseModel):
-    """State of the evolution process."""
+    """State of the evolution process.
+
+    @pattern:
+        name: immutable-entity
+        rationale: "Frozen Pydantic model for evolution state tracking."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -367,11 +459,13 @@ class EvolutionState(BaseModel):
     )
 
 
-# =============================================================================
-# Memory Models
-# =============================================================================
 class MemoryEntry(BaseModel):
-    """Entry in the memory store."""
+    """Entry in the memory store.
+
+    @pattern:
+        name: immutable-entity
+        rationale: "Frozen Pydantic model for memory store entries."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -386,7 +480,12 @@ class MemoryEntry(BaseModel):
 
 
 class Checkpoint(BaseModel):
-    """Mission state checkpoint."""
+    """Mission state checkpoint.
+
+    @pattern:
+        name: immutable-entity
+        rationale: "Frozen Pydantic model for state checkpoint records."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -397,7 +496,12 @@ class Checkpoint(BaseModel):
 
 
 class MemoryState(BaseModel):
-    """Overall memory state."""
+    """Overall memory state.
+
+    @pattern:
+        name: immutable-entity
+        rationale: "Frozen Pydantic model for aggregate memory state."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -406,11 +510,13 @@ class MemoryState(BaseModel):
     total_size_bytes: int = Field(default=0, description="Total size in bytes")
 
 
-# =============================================================================
-# Error Models
-# =============================================================================
 class ErrorEvent(BaseModel):
-    """Record of an error event."""
+    """Record of an error event.
+
+    @pattern:
+        name: immutable-entity
+        rationale: "Frozen Pydantic model for error event records."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -428,11 +534,13 @@ class ErrorEvent(BaseModel):
     resolution: str | None = Field(default=None, description="Resolution details")
 
 
-# =============================================================================
-# Research Models
-# =============================================================================
 class LeaderboardAnalysis(BaseModel):
-    """Analysis of competition leaderboard."""
+    """Analysis of competition leaderboard.
+
+    @pattern:
+        name: immutable-entity
+        rationale: "Frozen Pydantic model for leaderboard analysis results."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -447,7 +555,12 @@ class LeaderboardAnalysis(BaseModel):
 
 
 class ResearchFindings(BaseModel):
-    """Complete research findings for a competition."""
+    """Complete research findings for a competition.
+
+    @pattern:
+        name: immutable-entity
+        rationale: "Frozen Pydantic model for research findings aggregate."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -458,11 +571,13 @@ class ResearchFindings(BaseModel):
     strategy_recommendations: list[str] = Field(default_factory=list, description="Strategy recommendations")
 
 
-# =============================================================================
-# Mission State Models
-# =============================================================================
 class MissionCriteria(BaseModel):
-    """Criteria constraining mission execution."""
+    """Criteria constraining mission execution.
+
+    @pattern:
+        name: immutable-entity
+        rationale: "Frozen Pydantic model for mission execution constraints."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")

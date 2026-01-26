@@ -1,20 +1,46 @@
 """Mission state for pydantic-graph.
 
+@notice: |
+    Mission state for pydantic-graph.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.mission.state
+    provides:
+        - agent_k.mission.state:MissionState
+        - agent_k.mission.state:MissionResult
+        - agent_k.mission.state:GraphContext
+    pattern: mission-state
+
+@similar:
+    - id: agent_k.mission.nodes
+        when: "Nodes drive phase transitions; this module holds state."
+
+@agent-guidance:
+    do:
+        - "Use agent_k.mission.state as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any, Final
 
-# Third-party (alphabetical)
 from pydantic import BaseModel, ConfigDict, Field
 
-# Local imports (core first, then alphabetical)
 from agent_k.core.models import Competition, EvolutionState, MemoryState, MissionCriteria, PhasePlan, ResearchFindings
 from agent_k.core.types import CompetitionId, MissionId, MissionPhase, TaskId
 
@@ -23,7 +49,7 @@ if TYPE_CHECKING:
     from pydantic_ai import Agent
 
     from agent_k.core.protocols import PlatformAdapter
-    from agent_k.ui.ag_ui import EventEmitter
+    from agent_k.ui.agui import EventEmitter
 
 __all__ = ("MissionResult", "MissionState", "GraphContext", "SCHEMA_VERSION")
 
@@ -31,7 +57,22 @@ SCHEMA_VERSION: Final[str] = "1.0.0"
 
 
 class MissionState(BaseModel):
-    """State flowing through the mission graph."""
+    """State flowing through the mission graph.
+
+    @pattern:
+        name: mission-state
+        rationale: "Single source of truth for mission progression."
+        violations: "Phase-specific state stored elsewhere causes drift."
+
+    @concurrency:
+        model: asyncio
+        safe: false
+        reason: "Mutable state shared across graph nodes."
+
+    @invariants:
+        - "current_phase reflects the latest active phase."
+        - "phases_completed is append-only."
+    """
 
     model_config = ConfigDict(validate_assignment=True, arbitrary_types_allowed=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -63,7 +104,13 @@ class MissionState(BaseModel):
 
 
 class MissionResult(BaseModel):
-    """Final result of mission execution."""
+    """Final result of mission execution.
+
+    @pattern:
+        name: output-model
+        rationale: "Stable schema for mission results."
+        violations: "Ad-hoc outputs hinder UI/reporting."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -81,7 +128,13 @@ class MissionResult(BaseModel):
 
 @dataclass(slots=True)
 class GraphContext:
-    """Context passed to graph execution."""
+    """Context passed to graph execution.
+
+    @pattern:
+        name: dependency-container
+        rationale: "Bundles runtime services for graph execution."
+        violations: "Hidden globals make graph runs brittle."
+    """
 
     event_emitter: EventEmitter | None = None
     http_client: httpx.AsyncClient | None = None

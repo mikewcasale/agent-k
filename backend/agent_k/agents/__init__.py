@@ -1,15 +1,49 @@
 """Agent registry and exports.
 
+@notice: |
+    Agent registry and exports.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.agents
+    provides:
+        - agent_k.agents:AGENT_REGISTRY
+        - agent_k.agents:register_agent
+        - agent_k.agents:get_agent
+    consumes:
+        - agent_k.agents.evolver:EvolverAgent
+        - agent_k.agents.lobbyist:LobbyistAgent
+        - agent_k.agents.scientist:ScientistAgent
+        - agent_k.agents.lycurgus:LycurgusOrchestrator
+    pattern: agent-registry
+
+@similar:
+    - id: agent_k.mission.nodes
+        when: "Mission nodes orchestrate phases; this module only registers agents."
+
+@agent-guidance:
+    do:
+        - "Use agent_k.agents as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
-from typing import TYPE_CHECKING, Any, Final
+from typing import TYPE_CHECKING, Annotated, Any, Final
 
-# Third-party (alphabetical)
+from agent_k.core.sage import Doc
+
 if TYPE_CHECKING:
     from pydantic_ai import Agent
 
@@ -40,15 +74,44 @@ __all__ = (
 AGENT_REGISTRY: Final[dict[str, Agent[Any, Any]]] = {}
 
 
-def register_agent(name: str, agent: Agent[Any, Any]) -> None:
-    """Register an agent singleton by name."""
+def register_agent(
+    name: Annotated[str, Doc("Registry key for the agent singleton.")],
+    agent: Annotated[Agent[Any, Any], Doc("Agent instance to register.")],
+) -> None:
+    """Register an agent singleton by name.
+
+    @notice: |
+        Adds a singleton agent instance to the registry.
+
+    @dev: |
+        Enforces uniqueness by name; raises if already registered.
+
+    @effects:
+        state:
+            - AGENT_REGISTRY
+
+    @errors:
+        terminal:
+            - ValueError
+    """
     if name in AGENT_REGISTRY:
         raise ValueError(f"Agent {name!r} already registered")
     AGENT_REGISTRY[name] = agent
 
 
-def get_agent(name: str) -> Agent[Any, Any]:
-    """Return a registered agent by name."""
+def get_agent(name: Annotated[str, Doc("Registry key for the agent singleton.")]) -> Agent[Any, Any]:
+    """Return a registered agent by name.
+
+    @notice: |
+        Retrieves a registered agent singleton.
+
+    @dev: |
+        Raises if the agent name is unknown to avoid silent misconfiguration.
+
+    @errors:
+        terminal:
+            - KeyError
+    """
     if name not in AGENT_REGISTRY:
         raise KeyError(f"Unknown agent: {name}. Available: {list(AGENT_REGISTRY)}")
     return AGENT_REGISTRY[name]

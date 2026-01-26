@@ -1,12 +1,39 @@
 """FastAPI application for AG-UI protocol.
 
+@notice: |
+    FastAPI application for AG-UI protocol.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.ui.agui
+    provides:
+        - agent_k.ui.agui:EventEmitter
+        - agent_k.ui.agui:create_app
+    pattern: ui-api
+
+@similar:
+    - id: agent_k.mission.nodes
+        when: "Mission graph logic; this module exposes HTTP/SSE UI."
+
+@agent-guidance:
+    do:
+        - "Use agent_k.ui.agui as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import asyncio
 import json
 import os
@@ -15,9 +42,8 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any, Final, Literal, TypeAlias
+from typing import TYPE_CHECKING, Annotated, Any, Final, Literal
 
-# Third-party (alphabetical)
 import logfire
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,11 +51,11 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic_ai import Agent
 
-# Local imports (core first, then alphabetical)
 from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
 from agent_k.core.constants import DEFAULT_MODEL, MISSION_PHASES
 from agent_k.core.exceptions import AgentKError, AuthenticationError, CompetitionNotFoundError, classify_error
 from agent_k.core.models import Competition, CompetitionType, LeaderboardSubmission, MissionCriteria
+from agent_k.core.sage import Doc
 from agent_k.infra.instrumentation import configure_instrumentation
 from agent_k.infra.providers import get_model
 from agent_k.mission.persistence import CHECKPOINT_DIR, MissionPersistence, create_persistence
@@ -62,7 +88,7 @@ SCHEMA_VERSION: Final[str] = "1.0.0"
 APP_VERSION: Final[str] = "0.1.0"
 DEFAULT_HOST: Final[str] = "0.0.0.0"
 DEFAULT_PORT: Final[int] = 9000
-APP_MODULE: Final[str] = "agent_k.ui.ag_ui:app"
+APP_MODULE: Final[str] = "agent_k.ui.agui:app"
 MAX_COMPETITION_RESULTS: Final[int] = 25
 _DOMAIN_KEYWORDS: Final[dict[str, tuple[str, ...]]] = {
     "finance": ("finance", "financial", "trading", "stock", "market"),
@@ -151,7 +177,7 @@ AGENT_K_EVENT_TYPES: Final[frozenset[str]] = frozenset(
     }
 )
 
-EventType: TypeAlias = Literal[
+type EventType = Literal[
     # State management
     "state-snapshot",
     "state-delta",
@@ -189,7 +215,12 @@ EventType: TypeAlias = Literal[
 
 
 class MissionRequest(BaseModel):
-    """Request to start a new mission."""
+    """Request to start a new mission.
+
+    @pattern:
+        name: request-model
+        rationale: "Frozen Pydantic model for mission start requests."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -203,7 +234,12 @@ class MissionRequest(BaseModel):
 
 
 class CompetitionSearchRequest(BaseModel):
-    """Request payload for competition search."""
+    """Request payload for competition search.
+
+    @pattern:
+        name: request-model
+        rationale: "Frozen Pydantic model for competition search requests."
+    """
 
     model_config = ConfigDict(frozen=True)
     paid_only: bool = Field(default=False, description="Only return competitions with prize pools")
@@ -214,14 +250,24 @@ class CompetitionSearchRequest(BaseModel):
 
 
 class CompetitionFetchRequest(BaseModel):
-    """Request payload for fetching competition details by URL."""
+    """Request payload for fetching competition details by URL.
+
+    @pattern:
+        name: request-model
+        rationale: "Frozen Pydantic model for competition fetch requests."
+    """
 
     model_config = ConfigDict(frozen=True)
     url: str = Field(..., min_length=10, description="Kaggle competition URL")
 
 
 class AgentKEvent(BaseModel):
-    """Event to be streamed to the frontend."""
+    """Event to be streamed to the frontend.
+
+    @pattern:
+        name: event-model
+        rationale: "Frozen Pydantic model for SSE event streaming."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -235,7 +281,12 @@ class AgentKEvent(BaseModel):
 
 
 class MissionIntentOutput(BaseModel):
-    """Structured output for intent detection."""
+    """Structured output for intent detection.
+
+    @pattern:
+        name: output-model
+        rationale: "Frozen Pydantic model for agent structured output."
+    """
 
     model_config = ConfigDict(frozen=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -243,9 +294,6 @@ class MissionIntentOutput(BaseModel):
     criteria: MissionCriteria | None = Field(default=None, description="Extracted mission criteria")
 
 
-# =============================================================================
-# Agent Singleton (Module-Level)
-# =============================================================================
 intent_agent: Final[Agent[None, MissionIntentOutput]] = Agent(
     get_model(DEFAULT_MODEL),
     output_type=MissionIntentOutput,
@@ -263,17 +311,33 @@ class EventEmitter:
     Events are queued and streamed to the frontend via SSE.
 
     Per spec Section 8, all emissions are traced via Logfire.
+
+    @pattern:
+        name: event-emitter
+        rationale: "Centralizes event streaming for the UI."
+        violations: "Direct SSE writes bypass buffering and tracing."
+
+    @concurrency:
+        model: asyncio
+        safe: false
+        reason: "Mutates internal queue and closed state."
+
+    @invariants:
+        - "Events are only enqueued when not closed."
     """
 
     _queue: asyncio.Queue[AgentKEvent] = field(default_factory=asyncio.Queue)
     _closed: bool = False
 
-    async def emit(self, event_type: EventType, data: dict[str, Any]) -> None:
+    async def emit(
+        self,
+        event_type: Annotated[EventType, Doc("Type of event to emit.")],
+        data: Annotated[dict[str, Any], Doc("Event payload data.")],
+    ) -> None:
         """Emit an event to the stream.
 
-        Args:
-            event_type: Type of event to emit.
-            data: Event payload data.
+        @notice: |
+            Enqueues an event for SSE streaming.
         """
         if self._closed:
             return
@@ -303,9 +367,6 @@ class EventEmitter:
         """Close the event stream."""
         self._closed = True
 
-    # =========================================================================
-    # Convenience Methods for Phase Events
-    # =========================================================================
     async def emit_phase_start(self, phase: str, objectives: list[str]) -> None:
         """Emit phase start event."""
         await self.emit("phase-start", {"phase": phase, "objectives": objectives})
@@ -318,9 +379,6 @@ class EventEmitter:
         """Emit phase error event."""
         await self.emit("phase-error", {"phase": phase, "error": error, "recoverable": recoverable})
 
-    # =========================================================================
-    # Convenience Methods for Task Events
-    # =========================================================================
     async def emit_task_start(self, task_id: str, phase: str, name: str) -> None:
         """Emit task start event."""
         await self.emit("task-start", {"taskId": task_id, "phase": phase, "name": name})
@@ -337,9 +395,6 @@ class EventEmitter:
             "task-complete", {"taskId": task_id, "success": success, "result": result, "durationMs": duration_ms}
         )
 
-    # =========================================================================
-    # Convenience Methods for Tool Events
-    # =========================================================================
     async def emit_tool_start(self, task_id: str, tool_call_id: str, tool_type: str, operation: str) -> None:
         """Emit tool invocation start."""
         await self.emit(
@@ -360,9 +415,6 @@ class EventEmitter:
         """Emit tool error."""
         await self.emit("tool-error", {"taskId": task_id, "toolCallId": tool_call_id, "error": error})
 
-    # =========================================================================
-    # Convenience Methods for Evolution Events
-    # =========================================================================
     async def emit_generation_start(self, generation: int, population_size: int) -> None:
         """Emit generation start event."""
         await self.emit("generation-start", {"generation": generation, "populationSize": population_size})
@@ -420,9 +472,6 @@ class EventEmitter:
         """Emit convergence detection event."""
         await self.emit("convergence-detected", {"generation": generation, "reason": reason})
 
-    # =========================================================================
-    # Convenience Methods for Memory Events
-    # =========================================================================
     async def emit_memory_store(self, key: str, scope: str, category: str) -> None:
         """Emit memory store operation."""
         await self.emit("memory-store", {"key": key, "scope": scope, "category": category})
@@ -435,9 +484,6 @@ class EventEmitter:
         """Emit checkpoint creation."""
         await self.emit("checkpoint-created", {"name": name, "phase": phase})
 
-    # =========================================================================
-    # Convenience Methods for Error Events
-    # =========================================================================
     async def emit_error(
         self, error_id: str, category: str, error_type: str, message: str, context: str, recovery_strategy: str
     ) -> None:
@@ -470,6 +516,10 @@ class TaskEmissionContext:
     """Context manager for task-scoped event emission.
 
     Automatically emits task-start and task-complete events.
+
+    @pattern:
+        name: context-model
+        rationale: "Async context manager for task lifecycle events."
 
     Example:
         async with TaskEmissionContext(emitter, 'task_1', 'discovery', 'Search') as ctx:
@@ -504,7 +554,12 @@ class TaskEmissionContext:
 
 @dataclass(slots=True)
 class MissionIntentResult:
-    """Result of mission intent parsing."""
+    """Result of mission intent parsing.
+
+    @pattern:
+        name: result-model
+        rationale: "Dataclass for intent classification result."
+    """
 
     is_mission: bool
     criteria: MissionCriteria | None = None
@@ -512,7 +567,12 @@ class MissionIntentResult:
 
 @dataclass(slots=True)
 class IntentClassifier:
-    """Classify whether a message requests a mission."""
+    """Classify whether a message requests a mission.
+
+    @pattern:
+        name: classifier
+        rationale: "Dataclass for LLM-backed intent classification."
+    """
 
     agent: Agent[None, MissionIntentOutput] = field(default_factory=lambda: intent_agent)
     mission_keywords: tuple[str, ...] = _MISSION_KEYWORDS
@@ -556,7 +616,12 @@ Extract mission criteria if this is a mission request."""
 
 @dataclass(slots=True)
 class MissionCriteriaParser:
-    """Parse mission criteria from intent output."""
+    """Parse mission criteria from intent output.
+
+    @pattern:
+        name: parser
+        rationale: "Dataclass for extracting mission criteria from intent."
+    """
 
     def parse(self, message: str, intent: MissionIntentResult) -> MissionCriteria | None:
         """Parse mission criteria from an intent result.
@@ -577,7 +642,12 @@ class MissionCriteriaParser:
 
 @dataclass(slots=True)
 class ChatHandler:
-    """Handle chat requests for mission and non-mission modes."""
+    """Handle chat requests for mission and non-mission modes.
+
+    @pattern:
+        name: handler
+        rationale: "Dataclass coordinating intent classification and parsing."
+    """
 
     classifier: IntentClassifier
     parser: MissionCriteriaParser
@@ -855,7 +925,22 @@ async def _load_persisted_status(mission_id: str) -> dict[str, Any] | None:
 
 
 def create_app() -> FastAPI:
-    """Create and configure the FastAPI application."""
+    """Create and configure the FastAPI application.
+
+    @notice: |
+        Constructs the FastAPI app with routes and middleware.
+
+    @factory-for:
+        id: fastapi:FastAPI
+        rationale: "Centralizes AG-UI app wiring."
+        singleton: false
+        cache-key: "app"
+
+    @canonical-home:
+        for:
+            - "AG-UI application construction"
+        notes: "Use create_app to initialize the FastAPI server."
+    """
     configure_instrumentation()
     app = FastAPI(title="AGENT-K", description="Multi-agent Kaggle competition system", version=APP_VERSION)
 
@@ -1228,9 +1313,6 @@ def create_app() -> FastAPI:
     return app
 
 
-# =============================================================================
-# Competition Search Helpers
-# =============================================================================
 def _build_kaggle_adapter() -> KaggleAdapter:
     username = os.getenv("KAGGLE_USERNAME")
     api_key = os.getenv("KAGGLE_KEY")
@@ -1595,9 +1677,6 @@ async def _fetch_competition(url: str) -> Competition:
         return await adapter.get_competition_by_url(url)
 
 
-# =============================================================================
-# Entry Point
-# =============================================================================
 app: Final = create_app()
 
 

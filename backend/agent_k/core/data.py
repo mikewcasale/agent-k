@@ -1,12 +1,34 @@
 """Competition data utilities for AGENT-K.
 
+@notice: |
+    Competition data utilities for AGENT-K.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.core.data
+    provides:
+        - agent_k.core.data
+    pattern: data-access
+
+@agent-guidance:
+    do:
+        - "Use agent_k.core.data as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import csv
 import os
 import shutil
@@ -23,7 +45,13 @@ __all__ = ("CompetitionSchema", "infer_competition_schema", "locate_data_files",
 
 @dataclass(frozen=True, slots=True)
 class CompetitionSchema:
-    """Schema details inferred from competition data files."""
+    """Schema details inferred from competition data files.
+
+    @pattern:
+        name: schema-model
+        rationale: "Captures inferred column layout for downstream steps."
+        violations: "Ad-hoc dicts drift from actual data shape."
+    """
 
     id_column: str
     target_columns: list[str]
@@ -31,7 +59,15 @@ class CompetitionSchema:
 
 
 def infer_competition_schema(train_path: Path, test_path: Path, sample_path: Path) -> CompetitionSchema:
-    """Infer competition schema from train/test/sample submission files."""
+    """Infer competition schema from train/test/sample submission files.
+
+    @notice: |
+        Analyzes CSV headers to determine ID column and target columns.
+
+    @dev: |
+        Compares train vs test headers to identify target columns.
+        Falls back to sample submission columns if no difference found.
+    """
     train_header = _read_header(train_path)
     test_header = _read_header(test_path)
     sample_header = _read_header(sample_path)
@@ -52,7 +88,15 @@ def infer_competition_schema(train_path: Path, test_path: Path, sample_path: Pat
 
 
 def locate_data_files(paths: Iterable[str | Path]) -> tuple[Path, Path, Path]:
-    """Locate train/test/sample files from downloaded data."""
+    """Locate train/test/sample files from downloaded data.
+
+    @notice: |
+        Finds train, test, and sample submission files from a list of paths.
+
+    @dev: |
+        Automatically extracts ZIP files and searches for files by name pattern.
+        Raises FileNotFoundError if required files are not found.
+    """
     files: list[Path] = []
 
     for path_value in paths:
@@ -80,7 +124,15 @@ def locate_data_files(paths: Iterable[str | Path]) -> tuple[Path, Path, Path]:
 def stage_competition_data(
     train_path: Path, test_path: Path, sample_path: Path, destination: Path, *, competition_id: str | None = None
 ) -> dict[str, Path]:
-    """Stage competition data into canonical filenames."""
+    """Stage competition data into canonical filenames.
+
+    @notice: |
+        Copies or links data files to a destination with standardized names.
+
+    @dev: |
+        Creates train.csv, test.csv, sample_submission.csv in destination.
+        Uses hard links when possible to save disk space.
+    """
     destination.mkdir(parents=True, exist_ok=True)
 
     staged = {

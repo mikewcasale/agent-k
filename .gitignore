@@ -182,3 +182,7 @@ backend/.env
 backend/fix_evaluator.py
 backend/solution.py
 python-ai-style-guide-compressed.md
+backend/fastapi_docstring_spec.md
+backend/.sage/
+audit.md
+.sourcery.yaml

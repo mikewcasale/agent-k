@@ -1,17 +1,49 @@
 """Search tool helpers for AGENT-K agents.
 
+@notice: |
+    Search tool helpers for AGENT-K agents.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.toolsets.search
+    provides:
+        - agent_k.toolsets.search:build_kaggle_search_query
+        - agent_k.toolsets.search:build_scholarly_query
+        - agent_k.toolsets.search:create_web_search_tool
+        - agent_k.toolsets.search:prepare_web_search
+        - agent_k.toolsets.search:create_web_fetch_tool
+        - agent_k.toolsets.search:prepare_web_fetch
+    pattern: toolset
+
+@similar:
+    - id: agent_k.toolsets.browser
+        when: "Use for browsing fetched pages rather than constructing queries."
+
+@agent-guidance:
+    do:
+        - "Use agent_k.toolsets.search as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
-from typing import Any, Literal, cast
+from typing import Annotated, Any, Literal, cast
 
-# Third-party (alphabetical)
 from pydantic_ai import RunContext
 from pydantic_ai.builtin_tools import WebFetchTool, WebSearchTool, WebSearchUserLocation
+
+from agent_k.core.sage import Doc
 
 try:  # pragma: no cover - optional dependency
     from pydantic_ai.models.openai import OpenAIChatModel
@@ -28,13 +60,24 @@ __all__ = (
 )
 
 
-def build_kaggle_search_query(query: str) -> str:
-    """Build a Kaggle-scoped web search query."""
+def build_kaggle_search_query(query: Annotated[str, Doc("Search query text.")]) -> str:
+    """Build a Kaggle-scoped web search query.
+
+    @notice: |
+        Prefixes the query with site restrictions for Kaggle.
+    """
     return f"site:kaggle.com {query}".strip()
 
 
-def build_scholarly_query(topic: str, source: str = "all") -> str:
-    """Build a web search query for academic sources."""
+def build_scholarly_query(
+    topic: Annotated[str, Doc("Topic to search for.")],
+    source: Annotated[str, Doc("Source filter: arxiv, paperswithcode, or all.")] = "all",
+) -> str:
+    """Build a web search query for academic sources.
+
+    @notice: |
+        Adds site restrictions for scholarly sources.
+    """
     if source == "arxiv":
         return f"site:arxiv.org {topic}".strip()
     if source == "paperswithcode":
@@ -44,13 +87,17 @@ def build_scholarly_query(topic: str, source: str = "all") -> str:
 
 def create_web_search_tool(
     *,
-    search_context_size: Literal["low", "medium", "high"] = "medium",
-    user_location: WebSearchUserLocation | None = None,
-    blocked_domains: list[str] | None = None,
-    allowed_domains: list[str] | None = None,
-    max_uses: int | None = None,
+    search_context_size: Annotated[Literal["low", "medium", "high"], Doc("Search context size.")] = "medium",
+    user_location: Annotated[WebSearchUserLocation | None, Doc("Optional user location context.")] = None,
+    blocked_domains: Annotated[list[str] | None, Doc("Domains to exclude from search.")] = None,
+    allowed_domains: Annotated[list[str] | None, Doc("Domains to allow for search.")] = None,
+    max_uses: Annotated[int | None, Doc("Maximum tool uses per run.")] = None,
 ) -> WebSearchTool:
-    """Create a WebSearchTool with explicit configuration."""
+    """Create a WebSearchTool with explicit configuration.
+
+    @notice: |
+        Builds a configured WebSearchTool instance.
+    """
     return WebSearchTool(
         search_context_size=search_context_size,
         user_location=user_location,
@@ -60,8 +107,14 @@ def create_web_search_tool(
     )
 
 
-async def prepare_web_search(ctx: RunContext[Any]) -> WebSearchTool | None:
-    """Prepare WebSearchTool dynamically based on RunContext."""
+async def prepare_web_search(
+    ctx: Annotated[RunContext[Any], Doc("Run context for tool preparation.")],
+) -> WebSearchTool | None:
+    """Prepare WebSearchTool dynamically based on RunContext.
+
+    @notice: |
+        Returns a WebSearchTool when provider and deps allow.
+    """
     if ctx.model.system not in {"anthropic", "openai", "google", "groq"}:
         return None
     if OpenAIChatModel is not None and isinstance(ctx.model, OpenAIChatModel):
@@ -81,13 +134,17 @@ async def prepare_web_search(ctx: RunContext[Any]) -> WebSearchTool | None:
 
 def create_web_fetch_tool(
     *,
-    allowed_domains: list[str] | None = None,
-    blocked_domains: list[str] | None = None,
-    max_uses: int | None = None,
-    enable_citations: bool = True,
-    max_content_tokens: int | None = None,
+    allowed_domains: Annotated[list[str] | None, Doc("Domains allowed for fetch.")] = None,
+    blocked_domains: Annotated[list[str] | None, Doc("Domains blocked for fetch.")] = None,
+    max_uses: Annotated[int | None, Doc("Maximum tool uses per run.")] = None,
+    enable_citations: Annotated[bool, Doc("Whether to include citations.")] = True,
+    max_content_tokens: Annotated[int | None, Doc("Maximum tokens for fetched content.")] = None,
 ) -> WebFetchTool:
-    """Create a WebFetchTool with explicit configuration."""
+    """Create a WebFetchTool with explicit configuration.
+
+    @notice: |
+        Builds a configured WebFetchTool instance.
+    """
     return WebFetchTool(
         allowed_domains=allowed_domains,
         blocked_domains=blocked_domains,
@@ -97,8 +154,14 @@ def create_web_fetch_tool(
     )
 
 
-async def prepare_web_fetch(ctx: RunContext[Any]) -> WebFetchTool | None:
-    """Prepare WebFetchTool dynamically based on RunContext."""
+async def prepare_web_fetch(
+    ctx: Annotated[RunContext[Any], Doc("Run context for tool preparation.")],
+) -> WebFetchTool | None:
+    """Prepare WebFetchTool dynamically based on RunContext.
+
+    @notice: |
+        Returns a WebFetchTool when provider and deps allow.
+    """
     if ctx.model.system not in {"anthropic", "google"}:
         return None
     if getattr(ctx.deps, "offline_mode", False):

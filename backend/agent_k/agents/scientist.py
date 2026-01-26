@@ -1,20 +1,59 @@
 """Scientist agent - research and analysis for AGENT-K.
 
+@notice: |
+    Scientist agent - research and analysis for AGENT-K.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.agents.scientist
+    provides:
+        - agent_k.agents.scientist:ScientistAgent
+        - agent_k.agents.scientist:ScientistDeps
+        - agent_k.agents.scientist:ScientistSettings
+        - agent_k.agents.scientist:ResearchReport
+        - agent_k.agents.scientist:ResearchFinding
+        - agent_k.agents.scientist:LeaderboardAnalysis
+        - agent_k.agents.scientist:get_external_data_policy
+        - agent_k.agents.scientist:scientist_agent
+    consumes:
+        - agent_k.core.protocols:PlatformAdapter
+        - agent_k.toolsets.kaggle:kaggle_toolset
+        - agent_k.toolsets.search:search_toolset
+        - agent_k.toolsets.browser:browser_toolset
+    pattern: agent-singleton
+
+@similar:
+    - id: agent_k.agents.lobbyist
+        when: "Use for competition discovery rather than research synthesis."
+    - id: agent_k.agents.evolver
+        when: "Use for solution optimization rather than research."
+
+@agent-guidance:
+    do:
+        - "Use agent_k.agents.scientist as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import csv
 import re
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Final, cast
+from typing import TYPE_CHECKING, Annotated, Any, Final, cast
 
-# Third-party (alphabetical)
 import httpx
 import logfire
 from pydantic import BaseModel, ConfigDict, Field
@@ -22,13 +61,13 @@ from pydantic_ai import Agent, ModelRetry, ModelSettings, RunContext
 from pydantic_ai.toolsets import FunctionToolset
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Local imports (core first, then alphabetical)
 from agent_k.agents import register_agent
 from agent_k.agents.base import MemoryMixin, universal_tool_preparation
 from agent_k.agents.prompts import SCIENTIST_SYSTEM_PROMPT
 from agent_k.core.constants import DEFAULT_MODEL
 from agent_k.core.data import locate_data_files
 from agent_k.core.hints import DatasetProfile, build_dataset_profile, generate_preprocessing_hints
+from agent_k.core.sage import Doc, Range
 from agent_k.infra.providers import get_model
 from agent_k.toolsets import (
     create_production_toolset,
@@ -122,7 +161,13 @@ _MISSING_VALUE_TOKENS: Final[frozenset[str]] = frozenset({"", "na", "nan", "null
 
 
 class ScientistSettings(BaseSettings):
-    """Configuration for the Scientist agent."""
+    """Configuration for the Scientist agent.
+
+    @pattern:
+        name: settings
+        rationale: "Centralizes research agent configuration."
+        violations: "Per-run overrides lead to inconsistent outputs."
+    """
 
     model_config = SettingsConfigDict(env_prefix="SCIENTIST_", env_file=".env", extra="ignore", validate_default=True)
     model: str = Field(default=DEFAULT_MODEL, description="Model identifier for research tasks")
@@ -141,7 +186,23 @@ class ScientistSettings(BaseSettings):
 
 @dataclass
 class ScientistDeps:
-    """Dependencies for the Scientist agent."""
+    """Dependencies for the Scientist agent.
+
+    @pattern:
+        name: dependency-container
+        rationale: "Groups runtime services for research tools."
+        violations: "Hidden globals make research runs nondeterministic."
+
+    @collaborators:
+        required:
+            - httpx:AsyncClient
+            - agent_k.core.protocols:PlatformAdapter
+            - agent_k.core.models:Competition
+        optional:
+            - agent_k.core.models:LeaderboardEntry
+        injection: constructor
+        lifecycle: "Allocated per agent run."
+    """
 
     http_client: httpx.AsyncClient
     platform_adapter: PlatformAdapter
@@ -150,12 +211,28 @@ class ScientistDeps:
     research_cache: dict[str, Any] = field(default_factory=dict)
 
     async def refresh_leaderboard(self) -> None:
-        """Refresh leaderboard from the platform."""
+        """Refresh leaderboard from the platform.
+
+        @notice: |
+            Updates the cached leaderboard in-place.
+
+        @effects:
+            io:
+                - Kaggle API request
+            state:
+                - self.leaderboard
+        """
         self.leaderboard = await self.platform_adapter.get_leaderboard(self.competition.id, limit=100)
 
 
 class ResearchFinding(BaseModel):
-    """Individual research finding."""
+    """Individual research finding.
+
+    @pattern:
+        name: output-model
+        rationale: "Consistent schema for research findings."
+        violations: "Ad-hoc dicts are hard to validate."
+    """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -167,7 +244,13 @@ class ResearchFinding(BaseModel):
 
 
 class LeaderboardAnalysis(BaseModel):
-    """Analysis of competition leaderboard."""
+    """Analysis of competition leaderboard.
+
+    @pattern:
+        name: output-model
+        rationale: "Stable schema for leaderboard summaries."
+        violations: "Inconsistent shapes break downstream synthesis."
+    """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -179,7 +262,13 @@ class LeaderboardAnalysis(BaseModel):
 
 
 class ResearchReport(BaseModel):
-    """Complete research report for a competition."""
+    """Complete research report for a competition.
+
+    @pattern:
+        name: output-model
+        rationale: "Aggregates research findings into a stable schema."
+        violations: "Free-form outputs hinder automation."
+    """
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
@@ -197,13 +286,54 @@ class ResearchReport(BaseModel):
 
 
 class ScientistAgent(MemoryMixin):
-    """Scientist agent encapsulating research and analysis functionality."""
+    """Scientist agent encapsulating research and analysis functionality.
 
-    def __init__(self, settings: ScientistSettings | None = None) -> None:
+    @notice: |
+        Performs leaderboard, literature, and notebook analysis.
+        Use the module-level scientist_agent or agent registry.
+
+    @dev: |
+        Registers research tools and synthesizes outputs into ResearchReport.
+
+    @pattern:
+        name: agent-singleton
+        rationale: "Single instance keeps memory/tool registration consistent."
+        violations: "Multiple instances duplicate tool registrations."
+
+    @collaborators:
+        required:
+            - agent_k.core.protocols:PlatformAdapter
+            - agent_k.core.models:Competition
+        optional:
+            - httpx:AsyncClient
+        injection: deps via RunContext
+        lifecycle: "Module-level singleton at import time."
+
+    @concurrency:
+        model: asyncio
+        safe: false
+        reason: "Mutates internal caches and tool registration."
+
+    @invariants:
+        - "self._agent is initialized after __init__ completes."
+        - "self._toolset registers research tools exactly once."
+    """
+
+    def __init__(
+        self, settings: Annotated[ScientistSettings | None, Doc("Optional settings override.")] = None
+    ) -> None:
         """Initialize the Scientist agent.
 
-        Args:
-            settings: Configuration for the agent. Uses defaults if not provided.
+        @notice: |
+            Builds the agent singleton and registers tools.
+
+        @dev: |
+            Initializes memory backend, toolset, and pydantic-ai Agent.
+
+        @state-changes:
+            - self._settings
+            - self._toolset
+            - self._agent
         """
         self._settings = settings or ScientistSettings()
         self._toolset: FunctionToolset[ScientistDeps] = FunctionToolset(id="scientist")
@@ -223,8 +353,22 @@ class ScientistAgent(MemoryMixin):
         """Return current settings."""
         return self._settings
 
-    async def analyze_leaderboard(self, ctx: RunContext[ScientistDeps], refresh: bool = True) -> dict[str, Any]:
-        """Analyze the current competition leaderboard."""
+    async def analyze_leaderboard(
+        self,
+        ctx: RunContext[ScientistDeps],
+        refresh: Annotated[bool, Doc("Whether to refresh leaderboard before analysis.")] = True,
+    ) -> dict[str, Any]:
+        """Analyze the current competition leaderboard.
+
+        @notice: |
+            Computes distribution stats and common approaches from leaderboard entries.
+
+        @effects:
+            io:
+                - Kaggle API request (optional)
+            state:
+                - ctx.deps.leaderboard
+        """
         with logfire.span("scientist.analyze_leaderboard"):
             if refresh:
                 await ctx.deps.refresh_leaderboard()
@@ -244,9 +388,20 @@ class ScientistAgent(MemoryMixin):
             }
 
     async def get_kaggle_notebooks(
-        self, ctx: RunContext[ScientistDeps], sort_by: str = "voteCount", max_results: int = 10
+        self,
+        ctx: RunContext[ScientistDeps],
+        sort_by: Annotated[str, Doc("Sort key for Kaggle notebooks.")] = "voteCount",
+        max_results: Annotated[int, Doc("Maximum notebooks to retrieve."), Range(1, 50)] = 10,
     ) -> list[dict[str, Any]]:
-        """Get top notebooks for the competition."""
+        """Get top notebooks for the competition.
+
+        @notice: |
+            Retrieves competition notebooks ordered by vote count or freshness.
+
+        @effects:
+            io:
+                - Kaggle API request
+        """
         with logfire.span("scientist.get_notebooks"):
             notebooks = await self._fetch_kaggle_notebooks(ctx, sort_by=sort_by, max_results=max_results)
             if notebooks:
@@ -264,9 +419,20 @@ class ScientistAgent(MemoryMixin):
             ]
 
     async def analyze_top_kernels(
-        self, ctx: RunContext[ScientistDeps], sort_by: str = "voteCount", max_results: int = 5
+        self,
+        ctx: RunContext[ScientistDeps],
+        sort_by: Annotated[str, Doc("Sort key for Kaggle kernels.")] = "voteCount",
+        max_results: Annotated[int, Doc("Maximum kernels to analyze."), Range(1, 25)] = 5,
     ) -> dict[str, Any]:
-        """Analyze top Kaggle kernels for techniques and patterns."""
+        """Analyze top Kaggle kernels for techniques and patterns.
+
+        @notice: |
+            Downloads and summarizes kernel code to identify techniques.
+
+        @effects:
+            io:
+                - Kaggle API request
+        """
         with logfire.span("scientist.analyze_top_kernels"):
             notebooks = await self._fetch_kaggle_notebooks(ctx, sort_by=sort_by, max_results=max_results)
             analyses: list[dict[str, Any]] = []
@@ -293,19 +459,37 @@ class ScientistAgent(MemoryMixin):
                 )
             return {"kernels": analyses, "summary": self._summarize_kernel_analysis(analyses)}
 
-    async def extract_techniques(self, ctx: RunContext[ScientistDeps], kernel_code: str) -> dict[str, Any]:
-        """Extract modeling techniques from Kaggle kernel code."""
+    async def extract_techniques(
+        self, ctx: RunContext[ScientistDeps], kernel_code: Annotated[str, Doc("Raw kernel code to analyze.")]
+    ) -> dict[str, Any]:
+        """Extract modeling techniques from Kaggle kernel code.
+
+        @notice: |
+            Scans code for common ML techniques and feature engineering patterns.
+
+        @effects:
+            state:
+                - none
+        """
         _ = ctx
         return self._extract_techniques_from_code(kernel_code)
 
     async def synthesize_strategy(
         self,
         ctx: RunContext[ScientistDeps],
-        techniques: list[str] | None = None,
-        target_transforms: list[str] | None = None,
-        stacking: list[str] | None = None,
+        techniques: Annotated[list[str] | None, Doc("Extracted modeling techniques.")] = None,
+        target_transforms: Annotated[list[str] | None, Doc("Candidate target transforms.")] = None,
+        stacking: Annotated[list[str] | None, Doc("Stacking or blending hints.")] = None,
     ) -> dict[str, Any]:
-        """Synthesize a prioritized strategy from extracted techniques."""
+        """Synthesize a prioritized strategy from extracted techniques.
+
+        @notice: |
+            Aggregates extracted techniques into prioritized action items.
+
+        @effects:
+            state:
+                - none
+        """
         _ = ctx
         techniques = techniques or []
         target_transforms = target_transforms or []
@@ -356,7 +540,16 @@ class ScientistAgent(MemoryMixin):
         return {"plan": plan, "signals": {"techniques": techniques, "stacking": stacking}}
 
     async def analyze_data_characteristics(self, ctx: RunContext[ScientistDeps]) -> dict[str, Any]:
-        """Analyze competition data characteristics."""
+        """Analyze competition data characteristics.
+
+        @notice: |
+            Profiles datasets and derives preprocessing hints.
+
+        @effects:
+            io:
+                - Kaggle API request
+                - local filesystem access
+        """
         with logfire.span("scientist.analyze_data"):
             try:
                 with tempfile.TemporaryDirectory() as tmp_dir:
@@ -387,18 +580,39 @@ class ScientistAgent(MemoryMixin):
                 return self._fallback_dataset_summary(ctx.deps.competition)
 
     async def check_external_data_rules(
-        self, ctx: RunContext[ScientistDeps], profile: dict[str, Any] | None = None
+        self,
+        ctx: RunContext[ScientistDeps],
+        profile: Annotated[dict[str, Any] | None, Doc("Dataset profile snapshot, if available.")] = None,
     ) -> dict[str, Any]:
-        """Check competition rules for external data usage."""
+        """Check competition rules for external data usage.
+
+        @notice: |
+            Fetches rules and infers external data policy.
+
+        @effects:
+            io:
+                - Kaggle API request
+        """
         dataset_profile = DatasetProfile.from_dict(profile) if isinstance(profile, dict) else None
         return await get_external_data_policy(
             ctx.deps.http_client, ctx.deps.competition.id, profile=dataset_profile, cache=ctx.deps.research_cache
         )
 
     async def compute_baseline_estimate(
-        self, ctx: RunContext[ScientistDeps], leaderboard_scores: list[float], competition_difficulty: str
+        self,
+        ctx: RunContext[ScientistDeps],
+        leaderboard_scores: Annotated[list[float], Doc("Leaderboard scores to summarize.")],
+        competition_difficulty: Annotated[str, Doc("Difficulty label (easy/medium/hard).")],
     ) -> float:
-        """Estimate achievable baseline score."""
+        """Estimate achievable baseline score.
+
+        @notice: |
+            Uses leaderboard median and a difficulty multiplier.
+
+        @effects:
+            state:
+                - none
+        """
         _ = ctx
         if not leaderboard_scores:
             return 0.0
@@ -409,7 +623,19 @@ class ScientistAgent(MemoryMixin):
         return median * difficulty_multiplier
 
     def _create_agent(self) -> Agent[ScientistDeps, ResearchReport]:
-        """Create the underlying pydantic-ai agent."""
+        """Create the underlying pydantic-ai agent.
+
+        @factory-for:
+            id: agent_k.agents.scientist:ScientistAgent
+            rationale: "Centralizes agent wiring and toolset preparation."
+            singleton: true
+            cache-key: "module"
+
+        @canonical-home:
+            for:
+                - "scientist agent construction"
+            notes: "Use ScientistAgent() or module singleton."
+        """
         builtin_tools: list[Any] = [prepare_web_search, prepare_web_fetch]
         if self._memory_backend is not None:
             builtin_tools.append(prepare_memory_tool)
@@ -622,13 +848,26 @@ class ScientistAgent(MemoryMixin):
 
 
 async def get_external_data_policy(
-    http_client: httpx.AsyncClient,
-    competition_id: str,
+    http_client: Annotated[httpx.AsyncClient, Doc("HTTP client for rule fetching.")],
+    competition_id: Annotated[str, Doc("Competition identifier (slug).")],
     *,
-    profile: DatasetProfile | None = None,
-    cache: dict[str, Any] | None = None,
+    profile: Annotated[DatasetProfile | None, Doc("Optional dataset profile for enrichment hints.")] = None,
+    cache: Annotated[dict[str, Any] | None, Doc("Optional cache for policy results.")] = None,
 ) -> dict[str, Any]:
-    """Fetch and parse competition rules for external data usage."""
+    """Fetch and parse competition rules for external data usage.
+
+    @notice: |
+        Retrieves competition rules and infers external data allowance.
+
+    @dev: |
+        Uses simple heuristics and caches results when provided.
+
+    @effects:
+        io:
+            - Kaggle API request
+        state:
+            - cache (optional)
+    """
     cache_key = f"external_data_policy:{competition_id}"
     if cache is not None:
         cached = cache.get(cache_key)

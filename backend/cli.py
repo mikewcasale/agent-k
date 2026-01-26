@@ -8,7 +8,7 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
-from agent_k.ui.ag_ui import create_app
+from agent_k.ui.agui import create_app
 
 __all__ = ("app", "health_check")
 

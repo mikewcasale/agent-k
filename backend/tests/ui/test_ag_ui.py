@@ -10,7 +10,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from agent_k.core.models import MissionCriteria
-from agent_k.ui.ag_ui import MissionRequest, create_app
+from agent_k.ui.agui import MissionRequest, create_app
 
 __all__ = ()
 

@@ -6,18 +6,28 @@ This file provides guidance for Claude Code (claude.ai/code) when working with c
 
 AGENT-K is an autonomous multi-agent system for participating in Kaggle competitions. Built with Pydantic-AI and FastAPI, it orchestrates specialized agents through five mission phases: Discovery, Research, Prototype, Evolution, and Submission.
 
+- all commands should use python 3.13 via backend/.venv
+
 - No placeholders, no stubs, no fake / synthetic data, no mocks, no cheating. Assume all implementations need to be real production-ready solutions
 
 - Always prefer LightGBM for tree-based models instead of XGBoost. For evolutionary searches, always try evolving custom loss functions for LightGBM (see custom objective function https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.train.html#lightgbm.train).
 
 ## Backend Python Style (Required)
 
-All backend code under `backend/` must follow `docs/python-ai-style-guide.md`. If this file conflicts with that guide, the style guide wins.
+All backend code under `backend/` must follow `refs/python-ai-style-guide-compressed.md` if it exists. If this file conflicts with that guide, the style guide wins. 
+
+SAGE docstrings (Structured Agent Guidance Embeddings) are required for backend changes. Use the SAGE Docstrings VS Code extension (https://marketplace.visualstudio.com/items?itemName=gcode-ai.sage-vscode-extension) for templates and validation, and keep docstrings in sync with code updates. Before every pre-commit/commit, regenerate and validate the `.sage` artifacts with the repository venv:
+
+```bash
+backend/.venv/bin/python backend/tools/sageextract.py --emit
+backend/.venv/bin/python backend/tools/sageextract.py --validate
+```
+Pre-commit runs validation; do not hand-edit `.sage` files.
 
 Required backend conventions (summary):
 - Module layout: module docstring with MIT license notice, `from __future__ import annotations as _annotations`, ordered imports, `TYPE_CHECKING` block, module TypeVars, `__all__` tuple, then constants/enums/ABCs/models/classes/functions.
 - Typing: lowercase generics (`list[str]`), unions with `|`, `TypeAliasType` for complex aliases, `collections.abc` for Callables/Iterators.
-- Formatting: 4-space indent, 88-100 char lines, trailing commas for multiline, double quotes, early-return control flow.
+- Formatting: 4-space indent, 120 char lines, trailing commas for multiline, double quotes, early-return control flow. see backend/
 - Observability: use `logfire` (avoid `logging.getLogger()` in backend).
 - Prefer built-in `pydantic-ai`, `pydantic-graph`, `pydantic-evals`, and `logfire` tools before custom implementations.
 - Never add competition-specific logic, configs, functions, classes, or example scripts. All competition handling must be generic by ML problem type (e.g., tabular regression/classification, vision, text).
@@ -85,6 +95,8 @@ uv run pytest tests/test_file.py::test_name -v
 
 # Linting and formatting
 uv run ruff check .
+backend/.venv/bin/python backend/tools/sageextract.py --emit
+backend/.venv/bin/python backend/tools/sageextract.py --validate
 uv run ruff format .
 uv run mypy .
 
@@ -95,7 +107,7 @@ uv run python examples/multi_agent_playbook.py --model anthropic:claude-3-haiku-
 # Start FastAPI server (port 9000)
 uvicorn cli:app --host 0.0.0.0 --port 9000 --reload
 # Or:
-python -m agent_k.ui.ag_ui
+python -m agent_k.ui.agui
 ```
 
 ### Frontend (`frontend/`)
@@ -135,6 +147,8 @@ Before each commit (or pre-commit run), always execute and fix failures:
 ```bash
 uv run ruff format .
 uv run ruff check .
+backend/.venv/bin/python backend/tools/sageextract.py --emit
+backend/.venv/bin/python backend/tools/sageextract.py --validate
 uv run pytest -v --tb=short
 ```
 

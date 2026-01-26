@@ -38,7 +38,7 @@ from pathlib import Path
 
 from agent_k.agents.evolver import EvolverDeps, evolver_agent
 from agent_k.core.data import infer_competition_schema, locate_data_files, stage_competition_data
-from agent_k.ui.ag_ui import EventEmitter
+from agent_k.ui.agui import EventEmitter
 
 # Download data through the adapter
 files = await adapter.download_data(competition.id, work_dir)

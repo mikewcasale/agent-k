@@ -1,5 +1,28 @@
 """AGENT-K package initialization.
 
+@notice: |
+    AGENT-K package initialization.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k
+    provides:
+        - agent_k
+    pattern: package-entry
+
+@agent-guidance:
+    do:
+        - "Use agent_k as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
@@ -8,7 +31,6 @@ from __future__ import annotations as _annotations
 
 from typing import TYPE_CHECKING, Any
 
-# Local imports (core first, then alphabetical)
 from ._version import __version__
 
 if TYPE_CHECKING:

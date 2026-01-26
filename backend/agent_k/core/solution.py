@@ -1,12 +1,34 @@
 """Solution execution utilities for AGENT-K.
 
+@notice: |
+    Solution execution utilities for AGENT-K.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.core.solution
+    provides:
+        - agent_k.core.solution
+    pattern: solution-models
+
+@agent-guidance:
+    do:
+        - "Use agent_k.core.solution as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import asyncio
 import base64
 import os
@@ -17,13 +39,11 @@ import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Final, cast
 
-# Third-party (alphabetical)
 import logfire
 from pydantic_ai import Agent, ModelSettings
 from pydantic_ai.builtin_tools import CodeExecutionTool
 from pydantic_ai.messages import BuiltinToolReturnPart, ModelResponse
 
-# Local imports (core first, then alphabetical)
 from agent_k.infra.providers import get_model
 
 if TYPE_CHECKING:
@@ -59,7 +79,13 @@ _CODE_EXECUTION_AGENT_CACHE: dict[str, Agent[None, str]] = {}
 
 @dataclass(frozen=True, slots=True)
 class ExecutionResult:
-    """Result of executing a solution script."""
+    """Result of executing a solution script.
+
+    @pattern:
+        name: execution-result
+        rationale: "Standardizes subprocess outputs for solution runs."
+        violations: "Tuple returns drop context for debugging."
+    """
 
     returncode: int
     stdout: str
@@ -78,7 +104,15 @@ async def execute_solution(
     model_spec: str | None = None,
     max_inline_data_bytes: int = _DEFAULT_MAX_INLINE_DATA_BYTES,
 ) -> ExecutionResult:
-    """Execute solution code in a working directory."""
+    """Execute solution code in a working directory.
+
+    @notice: |
+        Runs Python code in an isolated subprocess with timeout support.
+
+    @dev: |
+        Normalizes Kaggle paths, sanitizes environment, and captures output.
+        Supports builtin code execution tool or local subprocess execution.
+    """
     normalized_code = _normalize_kaggle_paths(code)
     if use_builtin_code_execution:
         tool_result = await _execute_with_builtin_tool(
@@ -91,7 +125,14 @@ async def execute_solution(
 
 
 def parse_baseline_score(output: str) -> float | None:
-    """Parse baseline score from solution output."""
+    """Parse baseline score from solution output.
+
+    @notice: |
+        Extracts numeric score from "Baseline ... score: X.XX" pattern.
+
+    @dev: |
+        Returns None if pattern not found or value cannot be parsed.
+    """
     if match := BASELINE_SCORE_PATTERN.search(output):
         try:
             return float(match.group(1))

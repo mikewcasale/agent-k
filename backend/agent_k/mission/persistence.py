@@ -1,23 +1,51 @@
 """State persistence utilities for the mission graph.
 
+@notice: |
+    State persistence utilities for the mission graph.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.mission.persistence
+    provides:
+        - agent_k.mission.persistence:MissionPersistence
+        - agent_k.mission.persistence:create_persistence
+        - agent_k.mission.persistence:CHECKPOINT_DIR
+    pattern: state-persistence
+
+@similar:
+    - id: agent_k.core.tracking
+        when: "Tracking experiment metrics; this module persists mission state."
+
+@agent-guidance:
+    do:
+        - "Use agent_k.mission.persistence as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Final
+from typing import Annotated, Any, Final
 
-# Third-party (alphabetical)
 import logfire
 from pydantic_graph import BaseNode, End
 from pydantic_graph.persistence import EndSnapshot, NodeSnapshot, Snapshot
 from pydantic_graph.persistence.file import FileStatePersistence
 
-# Local imports (core first, then alphabetical)
+from agent_k.core.sage import Doc, Range
+
 from .state import MissionResult, MissionState
 
 __all__ = ("MissionPersistence", "create_persistence", "CHECKPOINT_DIR")
@@ -27,9 +55,34 @@ CHECKPOINT_PREFIX: Final[str] = "checkpoint_"
 
 
 class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
-    """Mission-specific persistence with checkpoint rotation and resumability."""
+    """Mission-specific persistence with checkpoint rotation and resumability.
 
-    def __init__(self, mission_id: str, checkpoint_dir: Path = CHECKPOINT_DIR, max_checkpoints: int = 10) -> None:
+    @pattern:
+        name: state-persistence
+        rationale: "Stores mission snapshots for resumption and auditability."
+        violations: "Ad-hoc persistence complicates recovery."
+
+    @collaborators:
+        required:
+            - pydantic_graph.persistence.file:FileStatePersistence
+        injection: constructor
+        lifecycle: "Scoped per mission."
+
+    @concurrency:
+        model: asyncio
+        safe: false
+        reason: "Mutates on-disk checkpoints and in-memory snapshots."
+
+    @invariants:
+        - "mission_dir exists before persistence operations."
+    """
+
+    def __init__(
+        self,
+        mission_id: Annotated[str, Doc("Mission identifier for checkpoint storage.")],
+        checkpoint_dir: Annotated[Path, Doc("Root directory for mission checkpoints.")] = CHECKPOINT_DIR,
+        max_checkpoints: Annotated[int, Doc("Maximum checkpoints to retain."), Range(1, 1000)] = 10,
+    ) -> None:
         self.mission_id = mission_id
         self.max_checkpoints = max_checkpoints
         self.mission_dir = checkpoint_dir / mission_id
@@ -120,6 +173,23 @@ class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
             old_checkpoint.unlink()
 
 
-def create_persistence(mission_id: str) -> MissionPersistence:
-    """Factory for mission persistence."""
+def create_persistence(
+    mission_id: Annotated[str, Doc("Mission identifier for checkpoint storage.")],
+) -> MissionPersistence:
+    """Factory for mission persistence.
+
+    @notice: |
+        Creates a MissionPersistence instance for the given mission.
+
+    @factory-for:
+        id: agent_k.mission.persistence:MissionPersistence
+        rationale: "Centralizes checkpoint path defaults."
+        singleton: false
+        cache-key: mission_id
+
+    @canonical-home:
+        for:
+            - "mission persistence construction"
+        notes: "Use create_persistence to ensure defaults."
+    """
     return MissionPersistence(mission_id)

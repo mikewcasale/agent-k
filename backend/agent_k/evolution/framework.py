@@ -1,19 +1,39 @@
 """Evolutionary framework primitives for AGENT-K.
 
+@notice: |
+    Evolutionary framework primitives for AGENT-K.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.evolution.framework
+    provides:
+        - agent_k.evolution.framework
+    pattern: evolution-framework
+
+@agent-guidance:
+    do:
+        - "Use agent_k.evolution.framework as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import math
 import random
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
-
-# Third-party (alphabetical)
 from typing import Any, Generic, TypeAliasType, TypeVar
 
 GenomeT = TypeVar("GenomeT")
@@ -44,7 +64,12 @@ __all__ = (
 
 @dataclass(slots=True)
 class Individual(Generic[GenomeT]):
-    """Evolutionary individual with lineage tracking."""
+    """Evolutionary individual with lineage tracking.
+
+    @pattern:
+        name: individual-model
+        rationale: "Generic dataclass for evolutionary individuals with lineage."
+    """
 
     genome: GenomeT
     fitness: float | None = None
@@ -60,7 +85,12 @@ class Individual(Generic[GenomeT]):
 
 
 class MapElitesArchive(Generic[GenomeT]):
-    """MAP-Elites archive for diversity-aware preservation."""
+    """MAP-Elites archive for diversity-aware preservation.
+
+    @pattern:
+        name: archive-model
+        rationale: "Generic archive for MAP-Elites diversity preservation."
+    """
 
     def __init__(self, descriptor_fn: DescriptorFn[GenomeT], *, max_cells: int | None = None) -> None:
         self._descriptor_fn = descriptor_fn
@@ -109,7 +139,12 @@ class MapElitesArchive(Generic[GenomeT]):
 
 
 class Population(Generic[GenomeT]):
-    """Population container with selection, crossover, and mutation helpers."""
+    """Population container with selection, crossover, and mutation helpers.
+
+    @pattern:
+        name: population-model
+        rationale: "Generic container for evolutionary population management."
+    """
 
     def __init__(
         self,
@@ -179,7 +214,12 @@ class Population(Generic[GenomeT]):
 
 @dataclass(slots=True)
 class HyperparamSpace:
-    """Search space definition for hyperparameter evolution."""
+    """Search space definition for hyperparameter evolution.
+
+    @pattern:
+        name: search-space
+        rationale: "Dataclass defining continuous, integer, categorical bounds."
+    """
 
     continuous: dict[str, tuple[float, float]] = field(default_factory=dict)
     integer: dict[str, tuple[int, int]] = field(default_factory=dict)
@@ -188,13 +228,23 @@ class HyperparamSpace:
 
 @dataclass(slots=True)
 class HyperparamGenome:
-    """Genome wrapper for hyperparameter configurations."""
+    """Genome wrapper for hyperparameter configurations.
+
+    @pattern:
+        name: genome-model
+        rationale: "Dataclass wrapping hyperparameter key-value pairs."
+    """
 
     parameters: dict[str, Any] = field(default_factory=dict)
 
 
 class HyperparamEvolver:
-    """Evolutionary hyperparameter optimizer with adaptive mutation rates."""
+    """Evolutionary hyperparameter optimizer with adaptive mutation rates.
+
+    @pattern:
+        name: evolver
+        rationale: "Coordinates hyperparameter search with adaptive mutation."
+    """
 
     def __init__(
         self,
@@ -291,7 +341,12 @@ class HyperparamEvolver:
 
 
 class EvolutionaryFramework:
-    """Coordinator for composing evolution components into a single loop."""
+    """Coordinator for composing evolution components into a single loop.
+
+    @pattern:
+        name: framework
+        rationale: "Composes multiple evolvers into a unified evolution loop."
+    """
 
     def __init__(
         self,

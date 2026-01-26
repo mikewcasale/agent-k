@@ -1,12 +1,47 @@
 """State machine nodes for AGENT-K mission graph.
 
+@notice: |
+    State machine nodes for AGENT-K mission graph.
+
+@dev: |
+    See module for implementation details and extension points.
+
+@graph:
+    id: agent_k.mission.nodes
+    provides:
+        - agent_k.mission.nodes:DiscoveryNode
+        - agent_k.mission.nodes:ResearchNode
+        - agent_k.mission.nodes:PrototypeNode
+        - agent_k.mission.nodes:EvolutionNode
+        - agent_k.mission.nodes:SubmissionNode
+    consumes:
+        - agent_k.mission.state:MissionState
+        - agent_k.agents.lobbyist:LobbyistAgent
+        - agent_k.agents.scientist:ScientistAgent
+        - agent_k.agents.evolver:EvolverAgent
+    pattern: graph-state-machine
+
+@similar:
+    - id: agent_k.agents.lycurgus
+        when: "Lycurgus orchestrates nodes; this module defines node behavior."
+
+@agent-guidance:
+    do:
+        - "Use agent_k.mission.nodes as the canonical home for this capability."
+    do_not:
+        - "Create parallel modules without updating @similar or @graph."
+
+@human-review:
+    last-verified: 2026-01-26
+    owners:
+        - agent-k-core
+
 (c) Mike Casale 2025.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-# Standard library (alphabetical)
 import asyncio
 import csv
 import hashlib
@@ -24,11 +59,9 @@ from pathlib import Path
 from textwrap import dedent
 from typing import TYPE_CHECKING, Any, Final
 
-# Third-party (alphabetical)
 import logfire
 from pydantic_graph import BaseNode, End, GraphRunContext
 
-# Local imports (core first, then alphabetical)
 from ..agents import get_agent
 from ..agents.evolver import EvolutionFailure, EvolverAgent, EvolverDeps, settings as evolver_settings
 from ..agents.lobbyist import LobbyistDeps
@@ -66,7 +99,7 @@ if TYPE_CHECKING:
     from pydantic_ai import Agent
 
     from ..core.protocols import PlatformAdapter
-    from ..ui.ag_ui import EventEmitter
+    from ..ui.agui import EventEmitter
 
 __all__ = ("DiscoveryNode", "ResearchNode", "PrototypeNode", "EvolutionNode", "SubmissionNode")
 
@@ -86,6 +119,29 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
     Transitions:
         - Success → ResearchNode
         - Failure → End(failure)
+
+    @pattern:
+        name: graph-node
+        rationale: "Encapsulates discovery phase logic in the mission graph."
+        violations: "Discovery logic outside nodes causes transition drift."
+
+    @collaborators:
+        required:
+            - agent_k.agents.lobbyist:LobbyistAgent
+            - agent_k.ui.agui:EventEmitter
+        optional:
+            - httpx:AsyncClient
+            - agent_k.core.protocols:PlatformAdapter
+        injection: GraphContext
+        lifecycle: "Instantiated per graph run."
+
+    @concurrency:
+        model: asyncio
+        safe: false
+        reason: "Mutates mission state during execution."
+
+    @invariants:
+        - "timeout > 0"
     """
 
     timeout: int = DISCOVERY_TIMEOUT_SECONDS
@@ -215,6 +271,29 @@ class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
     Transitions:
         - Success → PrototypeNode
         - Failure → End(failure)
+
+    @pattern:
+        name: graph-node
+        rationale: "Encapsulates research phase logic in the mission graph."
+        violations: "Research logic outside nodes causes transition drift."
+
+    @collaborators:
+        required:
+            - agent_k.agents.scientist:ScientistAgent
+            - agent_k.ui.agui:EventEmitter
+        optional:
+            - httpx:AsyncClient
+            - agent_k.core.protocols:PlatformAdapter
+        injection: GraphContext
+        lifecycle: "Instantiated per graph run."
+
+    @concurrency:
+        model: asyncio
+        safe: false
+        reason: "Mutates mission state during execution."
+
+    @invariants:
+        - "timeout > 0"
     """
 
     timeout: int = RESEARCH_TIMEOUT_SECONDS
@@ -332,6 +411,28 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
     Transitions:
         - Success → EvolutionNode
         - Failure → End(failure)
+
+    @pattern:
+        name: graph-node
+        rationale: "Encapsulates prototype phase logic in the mission graph."
+        violations: "Prototype logic outside nodes causes transition drift."
+
+    @collaborators:
+        required:
+            - agent_k.core.solution:execute_solution
+            - agent_k.ui.agui:EventEmitter
+        optional:
+            - agent_k.core.protocols:PlatformAdapter
+        injection: GraphContext
+        lifecycle: "Instantiated per graph run."
+
+    @concurrency:
+        model: asyncio
+        safe: false
+        reason: "Mutates mission state during execution."
+
+    @invariants:
+        - "timeout > 0"
     """
 
     timeout: int = PROTOTYPE_TIMEOUT_SECONDS
@@ -785,6 +886,28 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
     Transitions:
         - Success → SubmissionNode
         - Failure → End(failure with best solution)
+
+    @pattern:
+        name: graph-node
+        rationale: "Encapsulates evolution phase logic in the mission graph."
+        violations: "Evolution logic outside nodes causes transition drift."
+
+    @collaborators:
+        required:
+            - agent_k.agents.evolver:EvolverAgent
+            - agent_k.ui.agui:EventEmitter
+        optional:
+            - agent_k.core.protocols:PlatformAdapter
+        injection: GraphContext
+        lifecycle: "Instantiated per graph run."
+
+    @concurrency:
+        model: asyncio
+        safe: false
+        reason: "Mutates mission state during execution."
+
+    @invariants:
+        - "timeout > 0"
     """
 
     timeout: int = EVOLUTION_TIMEOUT_SECONDS
@@ -819,7 +942,6 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
             state.phase_started_at = datetime.now(UTC)
 
             try:
-                # Initialize evolution state
                 state.evolution_state = EvolutionState(
                     max_generations=state.criteria.max_evolution_rounds,
                     min_improvements_required=state.criteria.min_improvements_required,
@@ -828,624 +950,29 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 if _quick_test_enabled(state.criteria):
                     return await self._run_quick_evolution(state, emitter)
 
-                with tempfile.TemporaryDirectory() as work_dir:
-                    work_path = Path(work_dir)
-                    competition_id = state.competition_id or competition.id
-                    state.competition_id = competition_id
-                    train_path, test_path, sample_path = await _prepare_session_data(
-                        platform_adapter, state.mission_id, competition_id
-                    )
-                    staged = stage_competition_data(
-                        train_path, test_path, sample_path, work_path, competition_id=competition_id
-                    )
-                    schema = infer_competition_schema(staged["train"], staged["test"], staged["sample"])
+                outcome = await self._run_full_evolution(
+                    deps=ctx.deps,
+                    state=state,
+                    emitter=emitter,
+                    platform_adapter=platform_adapter,
+                    competition=competition,
+                )
+                if isinstance(outcome, End):
+                    return outcome
 
-                    population_size = evolver_settings.population_size
-                    solution_timeout = evolver_settings.solution_timeout
-                    profile = build_problem_profile(competition, schema)
-                    technique_policy = build_technique_policy(profile, state.criteria)
-                    population_size = max(population_size, technique_policy.min_population_size)
-                    if state.criteria.max_evolution_rounds <= 5:
-                        population_size = min(population_size, 4)
-                        solution_timeout = min(solution_timeout, 90)
-                    elif state.criteria.max_evolution_rounds <= 10:
-                        population_size = min(population_size, 10)
-                        solution_timeout = min(solution_timeout, 180)
-
-                    min_generations = min(evolver_settings.min_generations, state.criteria.max_evolution_rounds)
-                    min_generations = max(min_generations, technique_policy.min_generations)
-                    min_generations = min(min_generations, state.criteria.max_evolution_rounds)
-                    min_improvements_required = state.criteria.min_improvements_required
-                    fitness_policy = build_fitness_policy(
-                        profile, state.criteria, max_runtime_ms=int(solution_timeout * 1000)
-                    )
-                    target_score = self._calculate_target_score(state)
-                    evolution_models = [model.strip() for model in state.criteria.evolution_models if model.strip()]
-                    use_openevolve = state.criteria.use_openevolve or evolver_settings.use_openevolve
-                    strategy_recommendations = (
-                        state.research_findings.strategy_recommendations if state.research_findings else []
-                    )
-                    filtered_recommendations = _filter_disallowed_recommendations(strategy_recommendations)
-                    strategy_text = "; ".join(filtered_recommendations) if filtered_recommendations else "N/A"
-                    lightgbm_guidance = (
-                        "LightGBM is available. Prefer it for tree-based models instead of XGBoost. "
-                        "For evolutionary searches, always try evolving custom LightGBM loss settings "
-                        "(quantile alpha, huber delta, asymmetric weighting, MAE/RMSE blends) via the "
-                        "LightGBM custom objective interface."
-                        if _LIGHTGBM_AVAILABLE
-                        else "LightGBM is unavailable in this runtime; do not import or use it."
-                    )
-                    avoid_library_guidance = (
-                        "Avoid XGBoost and CatBoost unless explicitly enabled for the mission; "
-                        "prefer LightGBM for tree-based boosting."
-                    )
-                    base_prompt = f"""
-                    Evolve solution for {competition.title}.
-                    Target: Top {state.criteria.target_leaderboard_percentile * 100:.0f}% on leaderboard.
-                    Research suggests: {strategy_text}
-                    Minimum generations before convergence (global count): {min_generations}.
-                    Minimum improvements required before submission: {min_improvements_required}.
-                    Maintain diversity using model families and solution complexity bins.
-                    Use sample_elites to pull top and diverse candidates.
-                    Use cascade evaluation in evaluate_fitness to skip full runs when quick checks fail.
-                    Consider KNeighborsRegressor variants with tuned n_neighbors, weights, metric, p, leaf_size,
-                    algorithm, and scaling choices (StandardScaler/MinMax/Robust) for distance sensitivity.
-                    For categorical features, consider sklearn preprocessing (SimpleImputer + OneHotEncoder(handle_unknown="ignore"))
-                    or pandas.get_dummies on a DataFrame; avoid mixing get_dummies output inside a ColumnTransformer.
-                    {lightgbm_guidance}
-                    {avoid_library_guidance}
-                    If research mentions disallowed libraries, ignore those suggestions and stay within the allowed stack.
-                    """
-                    if technique_policy.enable_target_transform:
-                        base_prompt += (
-                            "\nFor skewed regression targets, consider log1p transforms with inverse expm1 on"
-                            " predictions."
-                        )
-                    if technique_policy.enable_outlier_clipping:
-                        base_prompt += "\nConsider clipping extreme numeric outliers via quantiles."
-
-                    baseline_fitness = _fitness_from_score(state.prototype_score, competition.metric_direction)
-                    best_solution = state.prototype_code or ""
-                    best_fitness: float | None = baseline_fitness
-                    improvement_count = 0
-                    combined_history: list[dict[str, Any]] = []
-                    elite_archive: dict[tuple[int, str], Any] = {}
-                    convergence_detected = False
-                    convergence_reason: str | None = None
-
-                    dataset_profile: DatasetProfile | None = None
-                    preprocessing_hints: list[PreprocessingHint] = []
-                    hint_tracker: HintEffectivenessTracker | None = None
-                    eda_results = state.research_findings.eda_results if state.research_findings else None
-                    if isinstance(eda_results, dict):
-                        profile_payload = eda_results.get("dataset_profile")
-                        if isinstance(profile_payload, dict):
-                            dataset_profile = DatasetProfile.from_dict(profile_payload)
-                        hint_payloads = eda_results.get("preprocessing_hints") or []
-                        for hint_payload in hint_payloads:
-                            if isinstance(hint_payload, dict):
-                                preprocessing_hints.append(PreprocessingHint.from_dict(hint_payload))
-                    tracker = create_experiment_tracker()
-                    if preprocessing_hints:
-                        hint_tracker = HintEffectivenessTracker(experiment_tracker=tracker)
-                    failure_counts: dict[str, int] = {}
-
-                    def record_rate_limit(
-                        error_message: str, *, model_spec: str | None, error_type: str | None
-                    ) -> None:
-                        state.errors.append(
-                            {
-                                "phase": "evolution",
-                                "error": error_message,
-                                "error_type": error_type or "rate_limit",
-                                "timestamp": datetime.now(UTC).isoformat(),
-                            }
-                        )
-                        logfire.warning(
-                            "evolution_rate_limited", model=model_spec or evolver_settings.model, error=error_message
-                        )
-
-                    deps_kwargs = {
-                        "competition": competition,
-                        "event_emitter": emitter,
-                        "platform_adapter": platform_adapter,
-                        "data_dir": work_path,
-                        "train_path": staged["train"],
-                        "test_path": staged["test"],
-                        "sample_path": staged["sample"],
-                        "target_columns": schema.target_columns,
-                        "train_target_columns": schema.train_target_columns,
-                        "id_column": schema.id_column,
-                        "problem_profile": profile,
-                        "technique_policy": technique_policy,
-                        "fitness_policy": fitness_policy,
-                        "population_size": population_size,
-                        "solution_timeout": solution_timeout,
-                        "target_score": target_score,
-                        "min_generations": min_generations,
-                        "min_improvements_required": min_improvements_required,
-                        "experiment_tracker": tracker,
-                        "dataset_profile": dataset_profile,
-                        "preprocessing_hints": preprocessing_hints,
-                        "hint_tracker": hint_tracker,
-                        "failure_counts": failure_counts,
-                    }
-
-                    if use_openevolve:
-                        deps = EvolverDeps(
-                            **deps_kwargs,  # type: ignore[arg-type]
-                            initial_solution=best_solution,
-                            best_solution=best_solution or None,
-                            best_fitness=best_fitness,
-                            max_generations=state.criteria.max_evolution_rounds,
-                            improvement_count=improvement_count,
-                            elite_archive=elite_archive,
-                        )
-                        evolver_instance = EvolverAgent(settings=evolver_settings, register=False)
-                        try:
-                            result = await evolver_instance.run_openevolve(
-                                deps, base_prompt=base_prompt, model_specs=evolution_models or [evolver_settings.model]
-                            )
-                        except Exception as exc:
-                            if _is_rate_limit_error(exc):
-                                record_rate_limit(str(exc), model_spec=None, error_type=getattr(exc, "code", None))
-                                combined_history = deps.generation_history
-                                improvement_count = deps.improvement_count
-                                convergence_detected = True
-                                convergence_reason = "rate_limit"
-                            else:
-                                raise
-                        else:
-                            if isinstance(result, EvolutionFailure):
-                                fallback_solution = (
-                                    result.partial_solution or best_solution or state.prototype_code or ""
-                                )
-                                if fallback_solution:
-                                    best_solution = fallback_solution
-                                    if best_fitness is None:
-                                        best_fitness = baseline_fitness or 0.0
-                                    combined_history = deps.generation_history
-                                    improvement_count = deps.improvement_count
-                                    convergence_detected = True
-                                    convergence_reason = "failure_fallback"
-                                    logfire.warning(
-                                        "evolution_failure_fallback", error=result.error_message, model="openevolve"
-                                    )
-                                    state.errors.append(
-                                        {
-                                            "phase": "evolution",
-                                            "error": result.error_message,
-                                            "error_type": result.error_type,
-                                            "timestamp": datetime.now(UTC).isoformat(),
-                                        }
-                                    )
-                                    await emitter.emit_error(
-                                        error_id=f"evolution_fallback_{state.mission_id}",
-                                        category="recoverable",
-                                        error_type=result.error_type,
-                                        message=result.error_message,
-                                        context="evolution",
-                                        recovery_strategy="fallback",
-                                    )
-                                else:
-                                    state.errors.append(
-                                        {
-                                            "phase": "evolution",
-                                            "error": result.error_message,
-                                            "error_type": result.error_type,
-                                            "timestamp": datetime.now(UTC).isoformat(),
-                                        }
-                                    )
-                                    await emitter.emit_phase_error(
-                                        phase="evolution",
-                                        error=result.error_message,
-                                        recoverable=bool(result.recoverable),
-                                    )
-                                    await emitter.emit_error(
-                                        error_id=f"evolution_{state.mission_id}",
-                                        category="recoverable" if result.recoverable else "fatal",
-                                        error_type=result.error_type,
-                                        message=result.error_message,
-                                        context="evolution",
-                                        recovery_strategy="retry" if result.recoverable else "abort",
-                                    )
-                                    await emitter.emit_phase_complete(
-                                        phase="evolution",
-                                        success=False,
-                                        duration_ms=self._elapsed_ms(state.phase_started_at),
-                                    )
-                                    return End(
-                                        MissionResult(
-                                            success=False,
-                                            mission_id=state.mission_id,
-                                            competition_id=state.competition_id,
-                                            error_message=f"Evolution failed: {result.error_message}",
-                                            phases_completed=list(state.phases_completed),
-                                        )
-                                    )
-                            else:
-                                combined_history = deps.generation_history
-                                improvement_count = deps.improvement_count
-                                best_solution = result.best_solution
-                                best_fitness = result.best_fitness
-                                convergence_detected = result.convergence_achieved
-                                convergence_reason = result.convergence_reason
-                    elif not evolution_models:
-                        deps = EvolverDeps(
-                            **deps_kwargs,  # type: ignore[arg-type]
-                            initial_solution=best_solution,
-                            best_solution=best_solution or None,
-                            best_fitness=best_fitness,
-                            max_generations=state.criteria.max_evolution_rounds,
-                            improvement_count=improvement_count,
-                            elite_archive=elite_archive,
-                        )
-                        evolver_agent = _resolve_agent(ctx.deps, "evolver")
-                        try:
-                            run_result = await evolver_agent.run(base_prompt, deps=deps)
-                        except Exception as exc:
-                            if _is_rate_limit_error(exc):
-                                record_rate_limit(str(exc), model_spec=None, error_type=getattr(exc, "code", None))
-                                combined_history = deps.generation_history
-                                improvement_count = deps.improvement_count
-                                convergence_detected = True
-                                convergence_reason = "rate_limit"
-                            else:
-                                raise
-                        else:
-                            result = run_result.output
-                            if isinstance(result, EvolutionFailure):
-                                is_rate_limited = _is_rate_limit_error(result.error_message) or _is_rate_limit_error(
-                                    result.error_type
-                                )
-                                if is_rate_limited:
-                                    if result.partial_solution:
-                                        best_solution = result.partial_solution
-                                    record_rate_limit(
-                                        result.error_message, model_spec=None, error_type=result.error_type
-                                    )
-                                    combined_history = deps.generation_history
-                                    improvement_count = deps.improvement_count
-                                    convergence_detected = True
-                                    convergence_reason = "rate_limit"
-                                elif _is_constraints_failure(result.error_message):
-                                    best_solution = result.partial_solution or state.prototype_code or ""
-                                    best_fitness = baseline_fitness or 0.0
-                                    combined_history = deps.generation_history
-                                    improvement_count = deps.improvement_count
-                                    convergence_detected = True
-                                    convergence_reason = "constraints"
-                                    logfire.warning("evolution_constraints_fallback", error=result.error_message)
-                                    state.errors.append(
-                                        {
-                                            "phase": "evolution",
-                                            "error": result.error_message,
-                                            "error_type": result.error_type or "constraints",
-                                            "timestamp": datetime.now(UTC).isoformat(),
-                                        }
-                                    )
-                                    await emitter.emit_error(
-                                        error_id=f"evolution_constraints_{state.mission_id}",
-                                        category="recoverable",
-                                        error_type=result.error_type or "constraints",
-                                        message=result.error_message,
-                                        context="evolution",
-                                        recovery_strategy="fallback",
-                                    )
-                                else:
-                                    fallback_solution = (
-                                        result.partial_solution or best_solution or state.prototype_code or ""
-                                    )
-                                    if fallback_solution:
-                                        if result.partial_solution and state.evolution_state is not None:
-                                            state.evolution_state = state.evolution_state.model_copy(
-                                                update={
-                                                    "best_solution": {"code": result.partial_solution, "fitness": 0.0}
-                                                }
-                                            )
-                                        best_solution = fallback_solution
-                                        if best_fitness is None:
-                                            best_fitness = baseline_fitness or 0.0
-                                        combined_history = deps.generation_history
-                                        improvement_count = deps.improvement_count
-                                        convergence_detected = True
-                                        convergence_reason = "failure_fallback"
-                                        logfire.warning(
-                                            "evolution_failure_fallback", error=result.error_message, model="primary"
-                                        )
-                                        state.errors.append(
-                                            {
-                                                "phase": "evolution",
-                                                "error": result.error_message,
-                                                "error_type": result.error_type,
-                                                "timestamp": datetime.now(UTC).isoformat(),
-                                            }
-                                        )
-                                        await emitter.emit_error(
-                                            error_id=f"evolution_fallback_{state.mission_id}",
-                                            category="recoverable",
-                                            error_type=result.error_type,
-                                            message=result.error_message,
-                                            context="evolution",
-                                            recovery_strategy="fallback",
-                                        )
-                                    else:
-                                        if result.partial_solution and state.evolution_state is not None:
-                                            state.evolution_state = state.evolution_state.model_copy(
-                                                update={
-                                                    "best_solution": {"code": result.partial_solution, "fitness": 0.0}
-                                                }
-                                            )
-
-                                        state.errors.append(
-                                            {
-                                                "phase": "evolution",
-                                                "error": result.error_message,
-                                                "error_type": result.error_type,
-                                                "timestamp": datetime.now(UTC).isoformat(),
-                                            }
-                                        )
-
-                                        await emitter.emit_phase_error(
-                                            phase="evolution",
-                                            error=result.error_message,
-                                            recoverable=bool(result.recoverable),
-                                        )
-                                        await emitter.emit_error(
-                                            error_id=f"evolution_{state.mission_id}",
-                                            category="recoverable" if result.recoverable else "fatal",
-                                            error_type=result.error_type,
-                                            message=result.error_message,
-                                            context="evolution",
-                                            recovery_strategy="retry" if result.recoverable else "abort",
-                                        )
-                                        await emitter.emit_phase_complete(
-                                            phase="evolution",
-                                            success=False,
-                                            duration_ms=self._elapsed_ms(state.phase_started_at),
-                                        )
-
-                                        return End(
-                                            MissionResult(
-                                                success=False,
-                                                mission_id=state.mission_id,
-                                                competition_id=state.competition_id,
-                                                error_message=f"Evolution failed: {result.error_message}",
-                                                phases_completed=list(state.phases_completed),
-                                            )
-                                        )
-
-                            if not isinstance(result, EvolutionFailure):
-                                combined_history = deps.generation_history
-                                improvement_count = deps.improvement_count
-                                best_solution = result.best_solution
-                                best_fitness = result.best_fitness
-                                convergence_detected = result.convergence_achieved
-                                convergence_reason = result.convergence_reason
-                    else:
-                        agents_by_model: dict[str, Any] = {}
-                        remaining_generations = state.criteria.max_evolution_rounds
-                        available_models = [model for model in evolution_models if model]
-                        segment_index = 0
-                        model_index = 0
-
-                        while remaining_generations > 0 and available_models:
-                            segment_index += 1
-                            rotation_stride = max(
-                                5, min(25, math.ceil(remaining_generations / max(len(available_models), 1)))
-                            )
-                            model_spec = available_models[model_index % len(available_models)]
-                            segment_generations = min(rotation_stride, remaining_generations)
-                            generation_offset = len(combined_history)
-
-                            agent = agents_by_model.get(model_spec)
-                            if agent is None:
-                                segment_settings = evolver_settings.model_copy(update={"model": model_spec})
-                                agent_instance = EvolverAgent(settings=segment_settings, register=False)
-                                agent = agent_instance.agent
-                                agents_by_model[model_spec] = agent
-
-                            segment_prompt = (
-                                f"""{base_prompt}
-Model rotation segment {segment_index} using {model_spec}."""
-                                f"\nRun {segment_generations} generations for this segment starting at {generation_offset + 1},"
-                                " unless convergence criteria are met earlier."
-                            )
-
-                            segment_deps = EvolverDeps(
-                                **deps_kwargs,  # type: ignore[arg-type]
-                                initial_solution=best_solution or state.prototype_code or "",
-                                best_solution=best_solution or None,
-                                best_fitness=best_fitness,
-                                max_generations=segment_generations,
-                                improvement_count=improvement_count,
-                                generation_history=combined_history,
-                                generation_offset=generation_offset,
-                                elite_archive=elite_archive,
-                            )
-                            try:
-                                run_result = await agent.run(segment_prompt, deps=segment_deps)
-                            except Exception as exc:
-                                if _is_rate_limit_error(exc):
-                                    record_rate_limit(
-                                        str(exc), model_spec=model_spec, error_type=getattr(exc, "code", None)
-                                    )
-                                    agents_by_model.pop(model_spec, None)
-                                    available_models = [model for model in available_models if model != model_spec]
-                                    if not available_models:
-                                        convergence_detected = True
-                                        convergence_reason = "rate_limit"
-                                    continue
-                                raise
-
-                            result = run_result.output
-                            if isinstance(result, EvolutionFailure):
-                                is_rate_limited = _is_rate_limit_error(result.error_message) or _is_rate_limit_error(
-                                    result.error_type
-                                )
-                                if is_rate_limited:
-                                    if result.partial_solution:
-                                        best_solution = result.partial_solution
-                                    record_rate_limit(
-                                        result.error_message, model_spec=model_spec, error_type=result.error_type
-                                    )
-                                    improvement_count = segment_deps.improvement_count
-                                    agents_by_model.pop(model_spec, None)
-                                    available_models = [model for model in available_models if model != model_spec]
-                                    if not available_models:
-                                        convergence_detected = True
-                                        convergence_reason = "rate_limit"
-                                    continue
-                                if _is_constraints_failure(result.error_message):
-                                    if result.partial_solution:
-                                        best_solution = result.partial_solution
-                                    elif not best_solution:
-                                        best_solution = state.prototype_code or ""
-                                    if best_fitness is None:
-                                        best_fitness = baseline_fitness or 0.0
-                                    combined_history = segment_deps.generation_history
-                                    improvement_count = segment_deps.improvement_count
-                                    convergence_detected = True
-                                    convergence_reason = "constraints"
-                                    logfire.warning(
-                                        "evolution_constraints_fallback", error=result.error_message, model=model_spec
-                                    )
-                                    state.errors.append(
-                                        {
-                                            "phase": "evolution",
-                                            "error": result.error_message,
-                                            "error_type": result.error_type or "constraints",
-                                            "timestamp": datetime.now(UTC).isoformat(),
-                                        }
-                                    )
-                                    await emitter.emit_error(
-                                        error_id=f"evolution_constraints_{state.mission_id}",
-                                        category="recoverable",
-                                        error_type=result.error_type or "constraints",
-                                        message=result.error_message,
-                                        context="evolution",
-                                        recovery_strategy="fallback",
-                                    )
-                                    break
-
-                                fallback_solution = (
-                                    result.partial_solution or best_solution or state.prototype_code or ""
-                                )
-                                if fallback_solution:
-                                    if result.partial_solution and state.evolution_state is not None:
-                                        state.evolution_state = state.evolution_state.model_copy(
-                                            update={"best_solution": {"code": result.partial_solution, "fitness": 0.0}}
-                                        )
-                                    best_solution = fallback_solution
-                                    if best_fitness is None:
-                                        best_fitness = baseline_fitness or 0.0
-                                    combined_history = segment_deps.generation_history
-                                    improvement_count = segment_deps.improvement_count
-                                    convergence_detected = True
-                                    convergence_reason = "failure_fallback"
-                                    logfire.warning(
-                                        "evolution_failure_fallback", error=result.error_message, model=model_spec
-                                    )
-                                    state.errors.append(
-                                        {
-                                            "phase": "evolution",
-                                            "error": result.error_message,
-                                            "error_type": result.error_type,
-                                            "timestamp": datetime.now(UTC).isoformat(),
-                                        }
-                                    )
-                                    await emitter.emit_error(
-                                        error_id=f"evolution_fallback_{state.mission_id}",
-                                        category="recoverable",
-                                        error_type=result.error_type,
-                                        message=result.error_message,
-                                        context="evolution",
-                                        recovery_strategy="fallback",
-                                    )
-                                    break
-
-                                if result.partial_solution and state.evolution_state is not None:
-                                    state.evolution_state = state.evolution_state.model_copy(
-                                        update={"best_solution": {"code": result.partial_solution, "fitness": 0.0}}
-                                    )
-
-                                state.errors.append(
-                                    {
-                                        "phase": "evolution",
-                                        "error": result.error_message,
-                                        "error_type": result.error_type,
-                                        "timestamp": datetime.now(UTC).isoformat(),
-                                    }
-                                )
-
-                                await emitter.emit_phase_error(
-                                    phase="evolution", error=result.error_message, recoverable=bool(result.recoverable)
-                                )
-                                await emitter.emit_error(
-                                    error_id=f"evolution_{state.mission_id}",
-                                    category="recoverable" if result.recoverable else "fatal",
-                                    error_type=result.error_type,
-                                    message=result.error_message,
-                                    context="evolution",
-                                    recovery_strategy="retry" if result.recoverable else "abort",
-                                )
-                                await emitter.emit_phase_complete(
-                                    phase="evolution",
-                                    success=False,
-                                    duration_ms=self._elapsed_ms(state.phase_started_at),
-                                )
-
-                                return End(
-                                    MissionResult(
-                                        success=False,
-                                        mission_id=state.mission_id,
-                                        competition_id=state.competition_id,
-                                        error_message=f"Evolution failed: {result.error_message}",
-                                        phases_completed=list(state.phases_completed),
-                                    )
-                                )
-
-                            if best_fitness is None or result.best_fitness > best_fitness:
-                                best_fitness = result.best_fitness
-                                best_solution = result.best_solution
-                            improvement_count = segment_deps.improvement_count
-                            model_index += 1
-
-                            if result.convergence_achieved and len(combined_history) >= min_generations:
-                                convergence_detected = True
-                                convergence_reason = result.convergence_reason
-                                break
-
-                            if len(combined_history) <= generation_offset:
-                                baseline = (
-                                    result.best_fitness if result.best_fitness is not None else (best_fitness or 0.0)
-                                )
-                                for idx in range(segment_generations):
-                                    combined_history.append(
-                                        {
-                                            "generation": generation_offset + idx + 1,
-                                            "best_fitness": baseline,
-                                            "mean_fitness": baseline,
-                                            "worst_fitness": baseline,
-                                            "population_size": population_size,
-                                            "mutations": {
-                                                "point": 0,
-                                                "structural": 0,
-                                                "hyperparameter": 0,
-                                                "crossover": 0,
-                                            },
-                                        }
-                                    )
-
-                            remaining_generations = state.criteria.max_evolution_rounds - len(combined_history)
-
-                        if not available_models and remaining_generations > 0:
-                            convergence_detected = True
-                            convergence_reason = "rate_limit"
+                (
+                    best_solution,
+                    best_fitness,
+                    history,
+                    improvement_count,
+                    convergence_detected,
+                    convergence_reason,
+                    population_size,
+                    failure_counts,
+                ) = outcome
 
                 resolved_solution = best_solution or state.prototype_code or ""
                 resolved_fitness = best_fitness if best_fitness is not None else 0.0
-                history = combined_history
                 failure_summary = dict(failure_counts)
                 if failure_summary:
                     logfire.info(
@@ -1454,7 +981,6 @@ Model rotation segment {segment_index} using {model_spec}."""
                         total_failures=sum(failure_summary.values()),
                     )
 
-                # Update state with evolution results
                 state.evolution_state = state.evolution_state.model_copy(
                     update={
                         "best_solution": {"code": resolved_solution, "fitness": resolved_fitness},
@@ -1464,7 +990,7 @@ Model rotation segment {segment_index} using {model_spec}."""
                         "max_generations": state.criteria.max_evolution_rounds,
                         "population_size": population_size,
                         "improvement_count": improvement_count,
-                        "min_improvements_required": min_improvements_required,
+                        "min_improvements_required": state.criteria.min_improvements_required,
                         "generation_history": _convert_generation_history(history, population_size),
                         "failure_summary": failure_summary,
                     }
@@ -1500,6 +1026,488 @@ Model rotation segment {segment_index} using {model_spec}."""
                         phases_completed=list(state.phases_completed),
                     )
                 )
+
+    async def _run_full_evolution(
+        self,
+        *,
+        deps: GraphContext,
+        state: MissionState,
+        emitter: EventEmitter,
+        platform_adapter: PlatformAdapter,
+        competition: Any,
+    ) -> (
+        End[MissionResult] | tuple[str, float | None, list[dict[str, Any]], int, bool, str | None, int, dict[str, int]]
+    ):
+        criteria = state.criteria
+        max_rounds = criteria.max_evolution_rounds
+
+        with tempfile.TemporaryDirectory() as work_dir:
+            work_path = Path(work_dir)
+            competition_id = state.competition_id or competition.id
+            state.competition_id = competition_id
+            train_path, test_path, sample_path = await _prepare_session_data(
+                platform_adapter, state.mission_id, competition_id
+            )
+            staged = stage_competition_data(
+                train_path, test_path, sample_path, work_path, competition_id=competition_id
+            )
+            schema = infer_competition_schema(staged["train"], staged["test"], staged["sample"])
+
+            population_size = evolver_settings.population_size
+            solution_timeout = evolver_settings.solution_timeout
+            profile = build_problem_profile(competition, schema)
+            technique_policy = build_technique_policy(profile, criteria)
+            population_size = max(population_size, technique_policy.min_population_size)
+            if max_rounds <= 5:
+                population_size = min(population_size, 4)
+                solution_timeout = min(solution_timeout, 90)
+            elif max_rounds <= 10:
+                population_size = min(population_size, 10)
+                solution_timeout = min(solution_timeout, 180)
+
+            min_generations = min(max(evolver_settings.min_generations, technique_policy.min_generations), max_rounds)
+            min_improvements_required = criteria.min_improvements_required
+            fitness_policy = build_fitness_policy(profile, criteria, max_runtime_ms=int(solution_timeout * 1000))
+            target_score = self._calculate_target_score(state)
+            evolution_models = [model.strip() for model in criteria.evolution_models if model.strip()]
+            use_openevolve = criteria.use_openevolve or evolver_settings.use_openevolve
+            research = state.research_findings
+            strategy_recommendations = research.strategy_recommendations if research else []
+            filtered_recommendations = _filter_disallowed_recommendations(strategy_recommendations)
+            strategy_text = "; ".join(filtered_recommendations) if filtered_recommendations else "N/A"
+            lightgbm_guidance = (
+                "LightGBM is available. Prefer it for tree-based models instead of XGBoost. "
+                "For evolutionary searches, always try evolving custom LightGBM loss settings "
+                "(quantile alpha, huber delta, asymmetric weighting, MAE/RMSE blends) via the "
+                "LightGBM custom objective interface."
+                if _LIGHTGBM_AVAILABLE
+                else "LightGBM is unavailable in this runtime; do not import or use it."
+            )
+            avoid_library_guidance = (
+                "Avoid XGBoost and CatBoost unless explicitly enabled for the mission; "
+                "prefer LightGBM for tree-based boosting."
+            )
+            base_prompt = f"""
+                    Evolve solution for {competition.title}.
+                    Target: Top {criteria.target_leaderboard_percentile * 100:.0f}% on leaderboard.
+                    Research suggests: {strategy_text}
+                    Minimum generations before convergence (global count): {min_generations}.
+                    Minimum improvements required before submission: {min_improvements_required}.
+                    Maintain diversity using model families and solution complexity bins.
+                    Use sample_elites to pull top and diverse candidates.
+                    Use cascade evaluation in evaluate_fitness to skip full runs when quick checks fail.
+                    Consider KNeighborsRegressor variants with tuned n_neighbors, weights, metric, p, leaf_size,
+                    algorithm, and scaling choices (StandardScaler/MinMax/Robust) for distance sensitivity.
+                    For categorical features, consider sklearn preprocessing (SimpleImputer + OneHotEncoder(handle_unknown="ignore"))
+                    or pandas.get_dummies on a DataFrame; avoid mixing get_dummies output inside a ColumnTransformer.
+                    {lightgbm_guidance}
+                    {avoid_library_guidance}
+                    If research mentions disallowed libraries, ignore those suggestions and stay within the allowed stack.
+                    """
+            if technique_policy.enable_target_transform:
+                base_prompt += (
+                    "\nFor skewed regression targets, consider log1p transforms with inverse expm1 on predictions."
+                )
+            if technique_policy.enable_outlier_clipping:
+                base_prompt += "\nConsider clipping extreme numeric outliers via quantiles."
+
+            baseline_fitness = _fitness_from_score(state.prototype_score, competition.metric_direction)
+            best_solution = state.prototype_code or ""
+            best_fitness: float | None = baseline_fitness
+            improvement_count = 0
+            combined_history: list[dict[str, Any]] = []
+            elite_archive: dict[tuple[int, str], Any] = {}
+            convergence_detected = False
+            convergence_reason: str | None = None
+
+            dataset_profile: DatasetProfile | None = None
+            preprocessing_hints: list[PreprocessingHint] = []
+            eda_results = research.eda_results if research else None
+            if isinstance(eda_results, dict):
+                profile_payload = eda_results.get("dataset_profile")
+                if isinstance(profile_payload, dict):
+                    dataset_profile = DatasetProfile.from_dict(profile_payload)
+                hint_payloads = eda_results.get("preprocessing_hints") or []
+                for hint_payload in hint_payloads:
+                    if isinstance(hint_payload, dict):
+                        preprocessing_hints.append(PreprocessingHint.from_dict(hint_payload))
+            tracker = create_experiment_tracker()
+            hint_tracker = HintEffectivenessTracker(experiment_tracker=tracker) if preprocessing_hints else None
+            failure_counts: dict[str, int] = {}
+
+            def _append_error(error_message: str, error_type: str | None) -> None:
+                state.errors.append(
+                    {
+                        "phase": "evolution",
+                        "error": error_message,
+                        "error_type": error_type,
+                        "timestamp": datetime.now(UTC).isoformat(),
+                    }
+                )
+
+            def _warn(event: str, *, error: str, model: str | None = None) -> None:
+                if model:
+                    logfire.warning(event, error=error, model=model)
+                else:
+                    logfire.warning(event, error=error)
+
+            def record_rate_limit(error_message: str, *, model_spec: str | None, error_type: str | None) -> None:
+                _append_error(error_message, error_type or "rate_limit")
+                logfire.warning(
+                    "evolution_rate_limited", model=model_spec or evolver_settings.model, error=error_message
+                )
+
+            def _set_partial_solution(code: str) -> None:
+                if state.evolution_state is None:
+                    return
+                state.evolution_state = state.evolution_state.model_copy(
+                    update={"best_solution": {"code": code, "fitness": 0.0}}
+                )
+
+            def _apply_rate_limit(
+                error_message: str,
+                *,
+                model_spec: str | None,
+                error_type: str | None,
+                deps: EvolverDeps | None,
+                mark_convergence: bool,
+            ) -> None:
+                nonlocal combined_history, improvement_count, convergence_detected, convergence_reason
+                record_rate_limit(error_message, model_spec=model_spec, error_type=error_type)
+                if deps is not None:
+                    combined_history = deps.generation_history
+                    improvement_count = deps.improvement_count
+                if mark_convergence:
+                    convergence_detected = True
+                    convergence_reason = "rate_limit"
+
+            async def _emit_failure(result: EvolutionFailure) -> End[MissionResult]:
+                _append_error(result.error_message, result.error_type)
+                await emitter.emit_phase_error(
+                    phase="evolution", error=result.error_message, recoverable=bool(result.recoverable)
+                )
+                await emitter.emit_error(
+                    error_id=f"evolution_{state.mission_id}",
+                    category="recoverable" if result.recoverable else "fatal",
+                    error_type=result.error_type,
+                    message=result.error_message,
+                    context="evolution",
+                    recovery_strategy="retry" if result.recoverable else "abort",
+                )
+                await emitter.emit_phase_complete(
+                    phase="evolution", success=False, duration_ms=self._elapsed_ms(state.phase_started_at)
+                )
+                return End(
+                    MissionResult(
+                        success=False,
+                        mission_id=state.mission_id,
+                        competition_id=state.competition_id,
+                        error_message=f"Evolution failed: {result.error_message}",
+                        phases_completed=list(state.phases_completed),
+                    )
+                )
+
+            async def _apply_fallback(
+                result: EvolutionFailure,
+                *,
+                deps: EvolverDeps,
+                model: str | None = None,
+                reason: str = "failure_fallback",
+                event: str = "evolution_failure_fallback",
+                error_id: str = "evolution_fallback",
+                update_partial: bool = True,
+                require_solution: bool = True,
+                error_type: str | None = None,
+            ) -> bool:
+                nonlocal best_solution, best_fitness, combined_history, improvement_count, convergence_detected
+                nonlocal convergence_reason
+                fallback_solution = result.partial_solution or best_solution or state.prototype_code or ""
+                if require_solution and not fallback_solution:
+                    return False
+                if update_partial and result.partial_solution:
+                    _set_partial_solution(result.partial_solution)
+                best_solution = fallback_solution
+                if best_fitness is None:
+                    best_fitness = baseline_fitness or 0.0
+                combined_history = deps.generation_history
+                improvement_count = deps.improvement_count
+                convergence_detected = True
+                convergence_reason = reason
+                _warn(event, error=result.error_message, model=model)
+                _append_error(result.error_message, error_type or result.error_type)
+                await emitter.emit_error(
+                    error_id=f"{error_id}_{state.mission_id}",
+                    category="recoverable",
+                    error_type=error_type or result.error_type,
+                    message=result.error_message,
+                    context="evolution",
+                    recovery_strategy="fallback",
+                )
+                return True
+
+            def _apply_success(result: Any, deps: EvolverDeps) -> None:
+                nonlocal combined_history, improvement_count, best_solution, best_fitness, convergence_detected
+                nonlocal convergence_reason
+                combined_history = deps.generation_history
+                improvement_count = deps.improvement_count
+                best_solution = result.best_solution
+                best_fitness = result.best_fitness
+                convergence_detected = result.convergence_achieved
+                convergence_reason = result.convergence_reason
+
+            deps_kwargs = {
+                "competition": competition,
+                "event_emitter": emitter,
+                "platform_adapter": platform_adapter,
+                "data_dir": work_path,
+                "train_path": staged["train"],
+                "test_path": staged["test"],
+                "sample_path": staged["sample"],
+                "target_columns": schema.target_columns,
+                "train_target_columns": schema.train_target_columns,
+                "id_column": schema.id_column,
+                "problem_profile": profile,
+                "technique_policy": technique_policy,
+                "fitness_policy": fitness_policy,
+                "population_size": population_size,
+                "solution_timeout": solution_timeout,
+                "target_score": target_score,
+                "min_generations": min_generations,
+                "min_improvements_required": min_improvements_required,
+                "experiment_tracker": tracker,
+                "dataset_profile": dataset_profile,
+                "preprocessing_hints": preprocessing_hints,
+                "hint_tracker": hint_tracker,
+                "failure_counts": failure_counts,
+            }
+
+            if use_openevolve:
+                deps_instance = EvolverDeps(
+                    **deps_kwargs,
+                    initial_solution=best_solution,
+                    best_solution=best_solution or None,
+                    best_fitness=best_fitness,
+                    max_generations=max_rounds,
+                    improvement_count=improvement_count,
+                    elite_archive=elite_archive,
+                )
+                evolver_instance = EvolverAgent(settings=evolver_settings, register=False)
+                try:
+                    result = await evolver_instance.run_openevolve(
+                        deps_instance, base_prompt=base_prompt, model_specs=evolution_models or [evolver_settings.model]
+                    )
+                except Exception as exc:
+                    if _is_rate_limit_error(exc):
+                        _apply_rate_limit(
+                            str(exc),
+                            model_spec=None,
+                            error_type=getattr(exc, "code", None),
+                            deps=deps_instance,
+                            mark_convergence=True,
+                        )
+                    else:
+                        raise
+                else:
+                    if isinstance(result, EvolutionFailure):
+                        if not await _apply_fallback(
+                            result, deps=deps_instance, model="openevolve", update_partial=False
+                        ):
+                            return await _emit_failure(result)
+                    else:
+                        _apply_success(result, deps_instance)
+
+            elif not evolution_models:
+                deps_instance = EvolverDeps(
+                    **deps_kwargs,
+                    initial_solution=best_solution,
+                    best_solution=best_solution or None,
+                    best_fitness=best_fitness,
+                    max_generations=max_rounds,
+                    improvement_count=improvement_count,
+                    elite_archive=elite_archive,
+                )
+                evolver_agent = _resolve_agent(deps, "evolver")
+                try:
+                    run_result = await evolver_agent.run(base_prompt, deps=deps_instance)
+                except Exception as exc:
+                    if _is_rate_limit_error(exc):
+                        _apply_rate_limit(
+                            str(exc),
+                            model_spec=None,
+                            error_type=getattr(exc, "code", None),
+                            deps=deps_instance,
+                            mark_convergence=True,
+                        )
+                    else:
+                        raise
+                else:
+                    result = run_result.output
+                    if isinstance(result, EvolutionFailure):
+                        if _is_rate_limit_error(result.error_message) or _is_rate_limit_error(result.error_type):
+                            if result.partial_solution:
+                                best_solution = result.partial_solution
+                            _apply_rate_limit(
+                                result.error_message,
+                                model_spec=None,
+                                error_type=result.error_type,
+                                deps=deps_instance,
+                                mark_convergence=True,
+                            )
+                        elif _is_constraints_failure(result.error_message):
+                            await _apply_fallback(
+                                result,
+                                deps=deps_instance,
+                                reason="constraints",
+                                event="evolution_constraints_fallback",
+                                error_id="evolution_constraints",
+                                update_partial=False,
+                                require_solution=False,
+                                error_type=result.error_type or "constraints",
+                            )
+                        else:
+                            if not await _apply_fallback(result, deps=deps_instance, model="primary"):
+                                if result.partial_solution:
+                                    _set_partial_solution(result.partial_solution)
+                                return await _emit_failure(result)
+                    else:
+                        _apply_success(result, deps_instance)
+            else:
+                agents_by_model: dict[str, Any] = {}
+                remaining_generations = max_rounds
+                available_models = [model for model in evolution_models if model]
+                segment_index = 0
+                model_index = 0
+
+                while remaining_generations > 0 and available_models:
+                    segment_index += 1
+                    rotation_stride = max(5, min(25, math.ceil(remaining_generations / max(len(available_models), 1))))
+                    model_spec = available_models[model_index % len(available_models)]
+                    segment_generations = min(rotation_stride, remaining_generations)
+                    generation_offset = len(combined_history)
+
+                    agent = agents_by_model.get(model_spec)
+                    if agent is None:
+                        segment_settings = evolver_settings.model_copy(update={"model": model_spec})
+                        agent_instance = EvolverAgent(settings=segment_settings, register=False)
+                        agent = agent_instance.agent
+                        agents_by_model[model_spec] = agent
+
+                    segment_prompt = (
+                        f"""{base_prompt}
+Model rotation segment {segment_index} using {model_spec}."""
+                        f"\nRun {segment_generations} generations for this segment starting at {generation_offset + 1},"
+                        " unless convergence criteria are met earlier."
+                    )
+
+                    segment_deps = EvolverDeps(
+                        **deps_kwargs,
+                        initial_solution=best_solution or state.prototype_code or "",
+                        best_solution=best_solution or None,
+                        best_fitness=best_fitness,
+                        max_generations=segment_generations,
+                        improvement_count=improvement_count,
+                        generation_history=combined_history,
+                        generation_offset=generation_offset,
+                        elite_archive=elite_archive,
+                    )
+                    try:
+                        run_result = await agent.run(segment_prompt, deps=segment_deps)
+                    except Exception as exc:
+                        if _is_rate_limit_error(exc):
+                            _apply_rate_limit(
+                                str(exc),
+                                model_spec=model_spec,
+                                error_type=getattr(exc, "code", None),
+                                deps=segment_deps,
+                                mark_convergence=False,
+                            )
+                            agents_by_model.pop(model_spec, None)
+                            available_models = [model for model in available_models if model != model_spec]
+                            if not available_models:
+                                convergence_detected = True
+                                convergence_reason = "rate_limit"
+                            continue
+                        raise
+
+                    result = run_result.output
+                    if isinstance(result, EvolutionFailure):
+                        if _is_rate_limit_error(result.error_message) or _is_rate_limit_error(result.error_type):
+                            if result.partial_solution:
+                                best_solution = result.partial_solution
+                            _apply_rate_limit(
+                                result.error_message,
+                                model_spec=model_spec,
+                                error_type=result.error_type,
+                                deps=segment_deps,
+                                mark_convergence=False,
+                            )
+                            agents_by_model.pop(model_spec, None)
+                            available_models = [model for model in available_models if model != model_spec]
+                            if not available_models:
+                                convergence_detected = True
+                                convergence_reason = "rate_limit"
+                            continue
+                        if _is_constraints_failure(result.error_message):
+                            await _apply_fallback(
+                                result,
+                                deps=segment_deps,
+                                model=model_spec,
+                                reason="constraints",
+                                event="evolution_constraints_fallback",
+                                error_id="evolution_constraints",
+                                update_partial=False,
+                                require_solution=False,
+                                error_type=result.error_type or "constraints",
+                            )
+                            break
+
+                        if await _apply_fallback(result, deps=segment_deps, model=model_spec):
+                            break
+                        if result.partial_solution:
+                            _set_partial_solution(result.partial_solution)
+                        return await _emit_failure(result)
+
+                    if best_fitness is None or result.best_fitness > best_fitness:
+                        best_fitness = result.best_fitness
+                        best_solution = result.best_solution
+                    improvement_count = segment_deps.improvement_count
+                    model_index += 1
+
+                    if result.convergence_achieved and len(combined_history) >= min_generations:
+                        convergence_detected = True
+                        convergence_reason = result.convergence_reason
+                        break
+
+                    if len(combined_history) <= generation_offset:
+                        baseline = result.best_fitness if result.best_fitness is not None else (best_fitness or 0.0)
+                        for idx in range(segment_generations):
+                            combined_history.append(
+                                {
+                                    "generation": generation_offset + idx + 1,
+                                    "best_fitness": baseline,
+                                    "mean_fitness": baseline,
+                                    "worst_fitness": baseline,
+                                    "population_size": population_size,
+                                    "mutations": {"point": 0, "structural": 0, "hyperparameter": 0, "crossover": 0},
+                                }
+                            )
+
+                    remaining_generations = max_rounds - len(combined_history)
+
+                if not available_models and remaining_generations > 0:
+                    convergence_detected = True
+                    convergence_reason = "rate_limit"
+
+        return (
+            best_solution,
+            best_fitness,
+            combined_history,
+            improvement_count,
+            convergence_detected,
+            convergence_reason,
+            population_size,
+            failure_counts,
+        )
 
     async def _run_quick_evolution(self, state: MissionState, emitter: EventEmitter) -> SubmissionNode:
         max_generations = state.criteria.max_evolution_rounds
@@ -1574,6 +1582,28 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
     Transitions:
         - Success → End(success)
         - Failure → End(failure)
+
+    @pattern:
+        name: graph-node
+        rationale: "Encapsulates submission phase logic in the mission graph."
+        violations: "Submission logic outside nodes causes transition drift."
+
+    @collaborators:
+        required:
+            - agent_k.core.protocols:PlatformAdapter
+            - agent_k.ui.agui:EventEmitter
+        optional:
+            - agent_k.agents.evolver:EvolverAgent
+        injection: GraphContext
+        lifecycle: "Instantiated per graph run."
+
+    @concurrency:
+        model: asyncio
+        safe: false
+        reason: "Mutates mission state during execution."
+
+    @invariants:
+        - "timeout > 0"
     """
 
     timeout: int = SUBMISSION_TIMEOUT_SECONDS

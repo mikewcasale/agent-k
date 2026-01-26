@@ -14,7 +14,7 @@ Make sure you have completed the [installation](install.md) steps:
 
 ```bash
 cd backend
-python -m agent_k.ui.ag_ui
+python -m agent_k.ui.agui
 ```
 
 The API server runs on `http://localhost:9000`.

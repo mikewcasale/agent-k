@@ -51,7 +51,7 @@ services:
       # works without paid Anthropic/OpenAI credits. Override in Render Dashboard
       # to use a paid model (e.g. anthropic:claude-sonnet-4-5) if credits exist.
       - key: DEFAULT_MODEL
-        value: "openrouter:mistralai/devstral-2512:free"
+        value: "openrouter:openai/gpt-oss-120b:free"
       # === AI MODEL API KEYS ===
       # Set these in Render Dashboard or add to agent-k-secrets group
       - key: ANTHROPIC_API_KEY

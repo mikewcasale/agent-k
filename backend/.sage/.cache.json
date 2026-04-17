@@ -80,1554 +80,15 @@
       "referencedIds": [],
       "tags": []
     },
-    "backend/agent_k/toolsets/tracking.py": {
-      "hash": "e8178ac0031d46a214cbd2c02c662a05002cfaa94cc87b394294dd556e3ae3db",
-      "lastModified": 1769423806813.0386,
+    "backend/cli.py": {
+      "hash": "2807f9bf27cf5b34c62b8996316524b03ddfb785c8d5bca1e71b25ecc3e14574",
+      "lastModified": 1769394959660.4763,
       "componentIds": [
-        "agent_k.toolsets.tracking"
-      ],
-      "referencedIds": [
-        "- id: agent_k.core.tracking\n    when: \"Core tracking storage APIs; this module exposes tool wrappers.\"\n",
-        "agent_k.toolsets.tracking:tracking_best_experiment",
-        "agent_k.toolsets.tracking:tracking_list_experiments",
-        "agent_k.toolsets.tracking:tracking_record_experiment",
-        "agent_k.toolsets.tracking:tracking_toolset"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice",
-        "similar"
-      ]
-    },
-    "backend/agent_k/toolsets/search.py": {
-      "hash": "c04f6b0f2fcb1c4ce4a1596c8586226e7eabcfad9fed7b8db0d568c2c1a2c6bd",
-      "lastModified": 1769431746550.9714,
-      "componentIds": [
-        "agent_k.toolsets.search",
-        "backend.agent_k.toolsets.search:build_kaggle_search_query"
-      ],
-      "referencedIds": [
-        "- id: agent_k.toolsets.browser\n    when: \"Use for browsing fetched pages rather than constructing queries.\"\n",
-        "agent_k.toolsets.search:build_kaggle_search_query",
-        "agent_k.toolsets.search:build_scholarly_query",
-        "agent_k.toolsets.search:create_web_fetch_tool",
-        "agent_k.toolsets.search:create_web_search_tool",
-        "agent_k.toolsets.search:prepare_web_fetch",
-        "agent_k.toolsets.search:prepare_web_search"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice",
-        "similar"
-      ]
-    },
-    "backend/agent_k/toolsets/scholarly.py": {
-      "hash": "88b74db8b99bc4933f17ead51c592af1cbe7a52cd6207c6220359dda492c4c07",
-      "lastModified": 1769395074231.0251,
-      "componentIds": [
-        "agent_k.toolsets.scholarly"
-      ],
-      "referencedIds": [
-        "agent_k.toolsets.scholarly"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/toolsets/browser.py": {
-      "hash": "99838a91c3487c38b6034a0c5aeaed12be71ff4be31230ab45d9673d31ab6dd2",
-      "lastModified": 1769395074230.84,
-      "componentIds": [
-        "agent_k.toolsets.browser"
-      ],
-      "referencedIds": [
-        "agent_k.toolsets.browser"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/toolsets/kaggle.py": {
-      "hash": "fc30a672ee44c4f04e520f2d53bb9eeb129217b36cf31a4fdd8aa904537a828a",
-      "lastModified": 1769423806813.2744,
-      "componentIds": [
-        "agent_k.toolsets.kaggle",
-        "backend.agent_k.toolsets.kaggle:P",
-        "backend.agent_k.toolsets.kaggle:ToolResultT"
-      ],
-      "referencedIds": [
-        "- id: agent_k.adapters.kaggle\n    when: \"Adapter implementation backing these tools.\"\n",
-        "agent_k.toolsets.kaggle:kaggle_get_competition",
-        "agent_k.toolsets.kaggle:kaggle_get_leaderboard",
-        "agent_k.toolsets.kaggle:kaggle_list_datasets",
-        "agent_k.toolsets.kaggle:kaggle_search_competitions",
-        "agent_k.toolsets.kaggle:kaggle_toolset"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice",
-        "similar"
-      ]
-    },
-    "backend/agent_k/toolsets/__init__.py": {
-      "hash": "9e6fc562fe164e1eda9fd54f7d6f0120c34f087ed0d3ff26e3d03275ab0640bd",
-      "lastModified": 1769431746551.372,
-      "componentIds": [
-        "agent_k.toolsets",
-        "backend.agent_k.toolsets:DepsT"
-      ],
-      "referencedIds": [
-        "- id: agent_k.toolsets.kaggle\n    when: \"Specific Kaggle tool implementations.\"\n",
-        "agent_k.toolsets:TOOLSET_REGISTRY",
-        "agent_k.toolsets:compose_toolsets",
-        "agent_k.toolsets:create_production_toolset"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice",
-        "similar"
-      ]
-    },
-    "backend/agent_k/toolsets/code.py": {
-      "hash": "5e4e512da44e47b184c0cac6ae201563e8f9e2168d8eafdb841c9f666568aac7",
-      "lastModified": 1769431746553.0452,
-      "componentIds": [
-        "agent_k.toolsets.code",
-        "backend.agent_k.toolsets.code:create_code_execution_tool"
-      ],
-      "referencedIds": [
-        "agent_k.toolsets.code:code_toolset",
-        "agent_k.toolsets.code:create_code_execution_tool",
-        "agent_k.toolsets.code:prepare_code_execution_tool"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/toolsets/memory.py": {
-      "hash": "fee933d6d15f93e28499f0ef603b887b069e42b1be361f5ed8005a511aa15463",
-      "lastModified": 1769431746554.762,
-      "componentIds": [
-        "agent_k.toolsets.memory",
-        "backend.agent_k.toolsets.memory:AgentKMemoryTool",
-        "backend.agent_k.toolsets.memory:AgentKMemoryTool.create",
-        "backend.agent_k.toolsets.memory:AgentKMemoryTool.delete",
-        "backend.agent_k.toolsets.memory:AgentKMemoryTool.insert",
-        "backend.agent_k.toolsets.memory:AgentKMemoryTool.rename",
-        "backend.agent_k.toolsets.memory:AgentKMemoryTool.str_replace",
-        "backend.agent_k.toolsets.memory:AgentKMemoryTool.view"
-      ],
-      "referencedIds": [
-        "- id: agent_k.embeddings.store\n    when: \"Vector store persistence; this module is file-backed memory tool.\"\n",
-        "agent_k.toolsets.memory:AgentKMemoryTool",
-        "agent_k.toolsets.memory:create_memory_backend",
-        "agent_k.toolsets.memory:prepare_memory_tool",
-        "agent_k.toolsets.memory:register_memory_tool"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice",
-        "similar"
-      ]
-    },
-    "backend/agent_k/__main__.py": {
-      "hash": "4516e2e7e490990bce79825cc646ed13157a139ccc8fffc9b8985e034ffffed5",
-      "lastModified": 1769420189695.8535,
-      "componentIds": [
-        "agent_k.__main__",
-        "backend.agent_k.__main__:main"
-      ],
-      "referencedIds": [
-        "agent_k.__main__"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/evolution/evaluator.py": {
-      "hash": "832c9a81e153292810325b967b9a67a253ecd21a55a6fea5f98e2c5ba2c1b6d5",
-      "lastModified": 1769431746551.3418,
-      "componentIds": [
-        "agent_k.evolution.evaluator",
-        "backend.agent_k.evolution.evaluator:evaluate",
-        "backend.agent_k.evolution.evaluator:evaluate_stage1",
-        "backend.agent_k.evolution.evaluator:evaluate_stage2"
-      ],
-      "referencedIds": [
-        "agent_k.evolution.evaluator"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/evolution/loss.py": {
-      "hash": "bb4d04d0c166b4cf1c7a137aa9e9a0a260a3a3ae1d41d89ea40cacb103b2d45e",
-      "lastModified": 1769431746550.8147,
-      "componentIds": [
-        "agent_k.evolution.loss",
-        "backend.agent_k.evolution.loss:build_lightgbm_objective_params"
-      ],
-      "referencedIds": [
-        "agent_k.evolution.loss"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/evolution/features.py": {
-      "hash": "29fb7b0a7fc44d0349f269783812d7ca98b92150c8ff54e52d84fe85238429ca",
-      "lastModified": 1769431746552.4443,
-      "componentIds": [
-        "agent_k.evolution.features",
-        "backend.agent_k.evolution.features:BinningGene",
-        "backend.agent_k.evolution.features:DomainFeatureGene",
-        "backend.agent_k.evolution.features:FeatureEvolver",
-        "backend.agent_k.evolution.features:FeatureEvolver.evolve",
-        "backend.agent_k.evolution.features:FeatureGenome",
-        "backend.agent_k.evolution.features:FeatureSelectionIndividual",
-        "backend.agent_k.evolution.features:FeatureSelectionIndividual.selected_count",
-        "backend.agent_k.evolution.features:FeatureSelector",
-        "backend.agent_k.evolution.features:FeatureSelector.evolve",
-        "backend.agent_k.evolution.features:InteractionGene",
-        "backend.agent_k.evolution.features:RatioGene",
-        "backend.agent_k.evolution.features:TransformGene"
-      ],
-      "referencedIds": [
-        "agent_k.evolution.features"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/evolution/__init__.py": {
-      "hash": "34c458a07d32a23ace815d9a945f2c72a11850b668c8e9594a9c90b310055b9c",
-      "lastModified": 1769395074214.4238,
-      "componentIds": [
-        "agent_k.evolution"
-      ],
-      "referencedIds": [
-        "agent_k.evolution"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/evolution/framework.py": {
-      "hash": "80b4787e6e307bceefbeeeb19066fe083c9a618f4003b4547f2c46f4329dd575",
-      "lastModified": 1769431746554.3906,
-      "componentIds": [
-        "agent_k.evolution.framework",
-        "backend.agent_k.evolution.framework:CrossoverFn",
-        "backend.agent_k.evolution.framework:DescriptorFn",
-        "backend.agent_k.evolution.framework:EvolutionaryFramework",
-        "backend.agent_k.evolution.framework:EvolutionaryFramework.run",
-        "backend.agent_k.evolution.framework:FitnessFn",
-        "backend.agent_k.evolution.framework:GenomeT",
-        "backend.agent_k.evolution.framework:HyperparamEvolver.evolve",
-        "backend.agent_k.evolution.framework:Individual",
-        "backend.agent_k.evolution.framework:Individual.with_genome",
-        "backend.agent_k.evolution.framework:MapElitesArchive",
-        "backend.agent_k.evolution.framework:MapElitesArchive.add",
-        "backend.agent_k.evolution.framework:MapElitesArchive.cells",
-        "backend.agent_k.evolution.framework:MapElitesArchive.sample",
-        "backend.agent_k.evolution.framework:MutationFn",
-        "backend.agent_k.evolution.framework:Population",
-        "backend.agent_k.evolution.framework:Population.best",
-        "backend.agent_k.evolution.framework:Population.evaluate",
-        "backend.agent_k.evolution.framework:Population.tournament"
-      ],
-      "referencedIds": [
-        "agent_k.evolution.framework"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/adapters/openevolve.py": {
-      "hash": "3f4771e03de3f118a4ce10abc6d986fdc83164fde0a5f3328f37d2c72bc0a6d4",
-      "lastModified": 1769431746553.166,
-      "componentIds": [
-        "agent_k.adapters.openevolve",
-        "backend.agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.authenticate",
-        "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.download_data",
-        "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.get_best_solution",
-        "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.get_leaderboard",
-        "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.get_submission_status",
-        "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.platform_name",
-        "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.submit",
-        "backend.agent_k.adapters.openevolve:OpenEvolveEvolutionConfig",
-        "backend.agent_k.adapters.openevolve:OpenEvolveJobState",
-        "backend.agent_k.adapters.openevolve:OpenEvolveJobStatus",
-        "backend.agent_k.adapters.openevolve:OpenEvolveRunner",
-        "backend.agent_k.adapters.openevolve:OpenEvolveSettings",
-        "backend.agent_k.adapters.openevolve:OpenEvolveSolution"
-      ],
-      "referencedIds": [
-        "- id: agent_k.evolution.framework\n    when: \"Evolution utilities outside adapter context.\"\n",
-        "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "agent_k.adapters.openevolve:OpenEvolveEvolutionConfig",
-        "agent_k.adapters.openevolve:OpenEvolveRunner",
-        "agent_k.adapters.openevolve:OpenEvolveSettings"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice",
-        "similar"
-      ]
-    },
-    "backend/agent_k/adapters/kaggle.py": {
-      "hash": "fea0d2eaa47ae7531a70dea69b2dbc57ddc6ab205edee9da85197069fb88b62a",
-      "lastModified": 1769431746551.754,
-      "componentIds": [
-        "agent_k.adapters.kaggle",
-        "backend.agent_k.adapters.kaggle:KaggleAdapter",
-        "backend.agent_k.adapters.kaggle:KaggleAdapter.authenticate",
-        "backend.agent_k.adapters.kaggle:KaggleAdapter.download_data",
-        "backend.agent_k.adapters.kaggle:KaggleAdapter.get_competition_by_url",
-        "backend.agent_k.adapters.kaggle:KaggleAdapter.get_leaderboard",
-        "backend.agent_k.adapters.kaggle:KaggleAdapter.get_submission_status",
-        "backend.agent_k.adapters.kaggle:KaggleAdapter.platform_name",
-        "backend.agent_k.adapters.kaggle:KaggleAdapter.submit",
-        "backend.agent_k.adapters.kaggle:KaggleSettings",
-        "backend.agent_k.adapters.kaggle:KaggleSettings.api_key",
-        "backend.agent_k.adapters.kaggle:KaggleSettings.username"
-      ],
-      "referencedIds": [
-        "- id: agent_k.toolsets.kaggle\n    when: \"Toolset wrappers over this adapter for agent tools.\"\n",
-        "agent_k.adapters.kaggle:KaggleAdapter",
-        "agent_k.adapters.kaggle:KaggleSettings",
-        "agent_k.core.protocols:PlatformAdapter"
-      ],
-      "tags": [
-        "agent-guidance",
-        "collaborators",
-        "concurrency",
-        "dev",
-        "graph",
-        "human-review",
-        "implements",
-        "inheritdoc",
-        "invariants",
-        "logging",
-        "notice",
-        "pattern",
-        "sensitivity",
-        "similar",
-        "source"
-      ]
-    },
-    "backend/agent_k/adapters/__init__.py": {
-      "hash": "d8dd0680cf97d1f4c1ad0ac6ddc35a5c13b1634977cc74b274fe0481d8f8c93b",
-      "lastModified": 1769395074194.9307,
-      "componentIds": [
-        "agent_k.adapters"
-      ],
-      "referencedIds": [
-        "agent_k.adapters"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/mission/state.py": {
-      "hash": "bf95a7f5b2c63670781fb2ca9a0f477a48344a3365f59fc11e889349580a608b",
-      "lastModified": 1769431746550.8276,
-      "componentIds": [
-        "agent_k.mission.state",
-        "backend.agent_k.mission.state:GraphContext",
-        "backend.agent_k.mission.state:MissionResult",
-        "backend.agent_k.mission.state:MissionState"
-      ],
-      "referencedIds": [
-        "- id: agent_k.mission.nodes\n    when: \"Nodes drive phase transitions; this module holds state.\"\n",
-        "agent_k.mission.state:GraphContext",
-        "agent_k.mission.state:MissionResult",
-        "agent_k.mission.state:MissionState"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice",
-        "similar"
-      ]
-    },
-    "backend/agent_k/mission/nodes.py": {
-      "hash": "9a146878950ad98b700f74501ac2e3bbd7fa6d13dabd041179aa1cfd349f21ad",
-      "lastModified": 1769431746558.131,
-      "componentIds": [
-        "agent_k.mission.nodes",
-        "backend.agent_k.mission.nodes:DiscoveryNode",
-        "backend.agent_k.mission.nodes:DiscoveryNode.run",
-        "backend.agent_k.mission.nodes:PrototypeNode",
-        "backend.agent_k.mission.nodes:PrototypeNode.run",
-        "backend.agent_k.mission.nodes:ResearchNode",
-        "backend.agent_k.mission.nodes:ResearchNode.run",
-        "backend.agent_k.mission.nodes:SubmissionNode",
-        "backend.agent_k.mission.nodes:SubmissionNode.run"
-      ],
-      "referencedIds": [
-        "- id: agent_k.agents.lycurgus\n    when: \"Lycurgus orchestrates nodes; this module defines node behavior.\"\n",
-        "agent_k.agents.evolver:EvolverAgent",
-        "agent_k.agents.lobbyist:LobbyistAgent",
-        "agent_k.agents.scientist:ScientistAgent",
-        "agent_k.mission.nodes:DiscoveryNode",
-        "agent_k.mission.nodes:EvolutionNode",
-        "agent_k.mission.nodes:PrototypeNode",
-        "agent_k.mission.nodes:ResearchNode",
-        "agent_k.mission.nodes:SubmissionNode",
-        "agent_k.mission.state:MissionState"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice",
-        "similar"
-      ]
-    },
-    "backend/agent_k/mission/__init__.py": {
-      "hash": "045475a97b76d768d3d78b112cd169b6b644ee33f51c1df6fd10a46d856f8c38",
-      "lastModified": 1769395074171.8064,
-      "componentIds": [
-        "agent_k.mission"
-      ],
-      "referencedIds": [
-        "agent_k.mission"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/mission/persistence.py": {
-      "hash": "98f2671d68fdb2b6b05be7b52b7ccc8d2edd066e6cc22b60db5c098531a35dbc",
-      "lastModified": 1769431746554.6382,
-      "componentIds": [
-        "agent_k.mission.persistence",
-        "backend.agent_k.mission.persistence:MissionPersistence",
-        "backend.agent_k.mission.persistence:MissionPersistence.has_snapshots",
-        "backend.agent_k.mission.persistence:MissionPersistence.load_latest_result",
-        "backend.agent_k.mission.persistence:MissionPersistence.load_latest_snapshot",
-        "backend.agent_k.mission.persistence:MissionPersistence.load_latest_state",
-        "backend.agent_k.mission.persistence:MissionPersistence.load_next",
-        "backend.agent_k.mission.persistence:MissionPersistence.snapshot_end",
-        "backend.agent_k.mission.persistence:MissionPersistence.snapshot_node"
-      ],
-      "referencedIds": [
-        "- id: agent_k.core.tracking\n    when: \"Tracking experiment metrics; this module persists mission state.\"\n",
-        "agent_k.mission.persistence:CHECKPOINT_DIR",
-        "agent_k.mission.persistence:MissionPersistence",
-        "agent_k.mission.persistence:create_persistence"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice",
-        "similar"
-      ]
-    },
-    "backend/agent_k/agents/base.py": {
-      "hash": "c88b346dfcd62f86d2208673d0ad7ba9acd315964ad37924f5a7d537daab41f9",
-      "lastModified": 1769431746550.2551,
-      "componentIds": [
-        "agent_k.agents.base",
-        "backend.agent_k.agents.base:AgentDeps",
-        "backend.agent_k.agents.base:BaseAgentMixin",
-        "backend.agent_k.agents.base:MemoryMixin"
-      ],
-      "referencedIds": [
-        "agent_k.agents.base:AgentDeps",
-        "agent_k.agents.base:BaseAgentMixin",
-        "agent_k.agents.base:MemoryMixin",
-        "agent_k.agents.base:prepare_output_tools_strict",
-        "agent_k.agents.base:universal_tool_preparation",
-        "agent_k.toolsets.memory:AgentKMemoryTool",
-        "agent_k.toolsets.memory:create_memory_backend",
-        "agent_k.toolsets.memory:register_memory_tool"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/agents/lobbyist.py": {
-      "hash": "19aa2aa9ddd59c4fb6566da95f2c41804a5bc7d5022753850d711523182db808",
-      "lastModified": 1769431746551.0623,
-      "componentIds": [
-        "agent_k.agents.lobbyist",
-        "backend.agent_k.agents.lobbyist:DiscoveryResult",
-        "backend.agent_k.agents.lobbyist:LobbyistAgent",
-        "backend.agent_k.agents.lobbyist:LobbyistAgent.agent",
-        "backend.agent_k.agents.lobbyist:LobbyistAgent.settings",
-        "backend.agent_k.agents.lobbyist:LobbyistDeps",
-        "backend.agent_k.agents.lobbyist:LobbyistSettings",
-        "backend.agent_k.agents.lobbyist:LobbyistSettings.model_settings"
-      ],
-      "referencedIds": [
-        "- id: agent_k.agents.scientist\n    when: \"Use for research/analysis, not discovery.\"\n",
-        "agent_k.agents.lobbyist:DiscoveryResult",
-        "agent_k.agents.lobbyist:LobbyistAgent",
-        "agent_k.agents.lobbyist:LobbyistDeps",
-        "agent_k.agents.lobbyist:LobbyistSettings",
-        "agent_k.agents.lobbyist:lobbyist_agent",
-        "agent_k.core.protocols:PlatformAdapter",
-        "agent_k.toolsets.kaggle:kaggle_toolset",
-        "agent_k.ui.agui:EventEmitter"
-      ],
-      "tags": [
-        "agent-guidance",
-        "collaborators",
-        "concurrency",
-        "dev",
-        "graph",
-        "human-review",
-        "invariants",
-        "notice",
-        "pattern",
-        "similar"
-      ]
-    },
-    "backend/agent_k/agents/scientist.py": {
-      "hash": "2f478c8cee15b4b4465fc929e33ad273bad1d74e62aca51186da14ebf673f473",
-      "lastModified": 1769431746553.8938,
-      "componentIds": [
-        "agent_k.agents.scientist",
-        "backend.agent_k.agents.scientist:LeaderboardAnalysis",
-        "backend.agent_k.agents.scientist:ResearchFinding",
-        "backend.agent_k.agents.scientist:ResearchReport",
-        "backend.agent_k.agents.scientist:ScientistAgent",
-        "backend.agent_k.agents.scientist:ScientistAgent.agent",
-        "backend.agent_k.agents.scientist:ScientistAgent.analyze_data_characteristics",
-        "backend.agent_k.agents.scientist:ScientistAgent.settings",
-        "backend.agent_k.agents.scientist:ScientistDeps",
-        "backend.agent_k.agents.scientist:ScientistDeps.refresh_leaderboard",
-        "backend.agent_k.agents.scientist:ScientistSettings",
-        "backend.agent_k.agents.scientist:ScientistSettings.model_settings"
-      ],
-      "referencedIds": [
-        "- id: agent_k.agents.lobbyist\n    when: \"Use for competition discovery rather than research synthesis.\"\n- id: agent_k.agents.evolver\n    when: \"Use for solution optimization rather than research.\"\n",
-        "agent_k.agents.scientist:LeaderboardAnalysis",
-        "agent_k.agents.scientist:ResearchFinding",
-        "agent_k.agents.scientist:ResearchReport",
-        "agent_k.agents.scientist:ScientistAgent",
-        "agent_k.agents.scientist:ScientistDeps",
-        "agent_k.agents.scientist:ScientistSettings",
-        "agent_k.agents.scientist:get_external_data_policy",
-        "agent_k.agents.scientist:scientist_agent",
-        "agent_k.core.protocols:PlatformAdapter",
-        "agent_k.toolsets.kaggle:kaggle_toolset",
-        "agent_k.toolsets.search:prepare_web_fetch",
-        "agent_k.toolsets.search:prepare_web_search"
-      ],
-      "tags": [
-        "agent-guidance",
-        "collaborators",
-        "concurrency",
-        "dev",
-        "effects",
-        "graph",
-        "human-review",
-        "invariants",
-        "notice",
-        "pattern",
-        "similar"
-      ]
-    },
-    "backend/agent_k/agents/evolver.py": {
-      "hash": "f7cd0f54dc0a1d0b09f202492ddcbf30fb781253e5b0fbc68a784d76ef9231ad",
-      "lastModified": 1769431746558.741,
-      "componentIds": [
-        "agent_k.agents.evolver",
-        "backend.agent_k.agents.evolver:EvolutionArchiveEntry",
-        "backend.agent_k.agents.evolver:EvolutionFailure",
-        "backend.agent_k.agents.evolver:EvolutionResult",
-        "backend.agent_k.agents.evolver:EvolverAgent",
-        "backend.agent_k.agents.evolver:EvolverAgent.agent",
-        "backend.agent_k.agents.evolver:EvolverAgent.settings",
-        "backend.agent_k.agents.evolver:EvolverDeps",
-        "backend.agent_k.agents.evolver:EvolverSettings",
-        "backend.agent_k.agents.evolver:EvolverSettings.model_settings",
-        "backend.agent_k.agents.evolver:EvolverSettings.validate_evolution_params"
-      ],
-      "referencedIds": [
-        "- id: agent_k.agents.scientist\n    when: \"Use for research synthesis rather than optimization.\"\n- id: agent_k.evolution.framework\n    when: \"Framework utilities for evolution outside the agent context.\"\n",
-        "agent_k.adapters.openevolve:OpenEvolveRunner",
-        "agent_k.agents.evolver:EVOLUTION_OUTPUT_TYPE",
-        "agent_k.agents.evolver:EvolutionFailure",
-        "agent_k.agents.evolver:EvolutionResult",
-        "agent_k.agents.evolver:EvolverAgent",
-        "agent_k.agents.evolver:EvolverDeps",
-        "agent_k.agents.evolver:EvolverSettings",
-        "agent_k.agents.evolver:evolver_agent",
-        "agent_k.core.protocols:PlatformAdapter",
-        "agent_k.toolsets.code:code_toolset",
-        "agent_k.ui.agui:EventEmitter"
-      ],
-      "tags": [
-        "agent-guidance",
-        "collaborators",
-        "concurrency",
-        "dev",
-        "graph",
-        "human-review",
-        "invariants",
-        "notice",
-        "pattern",
-        "similar"
-      ]
-    },
-    "backend/agent_k/agents/prompts.py": {
-      "hash": "5f6f4e93ecacb79fd0374442e6073dfc44fa5ea55216178e65443af639a0f96d",
-      "lastModified": 1769422053414.835,
-      "componentIds": [
-        "agent_k.agents.prompts"
-      ],
-      "referencedIds": [
-        "agent_k.agents.prompts"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/agents/__init__.py": {
-      "hash": "1fa6ad6eaa25162e249a1927eb0c62bf4e4452eecbe4bb21e9c5092e65624e68",
-      "lastModified": 1769421384321.7559,
-      "componentIds": [
-        "agent_k.agents",
-        "backend.agent_k.agents:get_agent"
-      ],
-      "referencedIds": [
-        "- id: agent_k.mission.nodes\n    when: \"Mission nodes orchestrate phases; this module only registers agents.\"\n",
-        "agent_k.agents.evolver:EvolverAgent",
-        "agent_k.agents.lobbyist:LobbyistAgent",
-        "agent_k.agents.lycurgus:LycurgusOrchestrator",
-        "agent_k.agents.scientist:ScientistAgent",
-        "agent_k.agents:AGENT_REGISTRY",
-        "agent_k.agents:get_agent",
-        "agent_k.agents:register_agent"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "errors",
-        "graph",
-        "human-review",
-        "notice",
-        "similar"
-      ]
-    },
-    "backend/agent_k/agents/lycurgus.py": {
-      "hash": "4439587ddbaa075089704ad798dedec5dc9dd3cb9ac86ef114b612b0c04f6cb1",
-      "lastModified": 1776465015448.3457,
-      "componentIds": [
-        "agent_k.agents.lycurgus",
-        "backend.agent_k.agents.lycurgus:LycurgusDeps",
-        "backend.agent_k.agents.lycurgus:LycurgusOrchestrator",
-        "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.abort_mission",
-        "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.config",
-        "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.current_phase",
-        "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.from_config_file",
-        "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.is_active",
-        "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.resume_mission",
-        "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.state",
-        "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.validate_competition_id",
-        "backend.agent_k.agents.lycurgus:LycurgusSettings",
-        "backend.agent_k.agents.lycurgus:LycurgusSettings.from_file",
-        "backend.agent_k.agents.lycurgus:MissionStatus",
-        "backend.agent_k.agents.lycurgus:validate_mission_result"
-      ],
-      "referencedIds": [
-        "- id: agent_k.mission.nodes\n    when: \"Mission nodes define phases; this module orchestrates them.\"\n",
-        "agent_k.agents.lycurgus:LycurgusDeps",
-        "agent_k.agents.lycurgus:LycurgusOrchestrator",
-        "agent_k.agents.lycurgus:LycurgusSettings",
-        "agent_k.agents.lycurgus:MissionStatus",
-        "agent_k.agents.lycurgus:orchestrate",
-        "agent_k.agents.lycurgus:validate_mission_result",
-        "agent_k.mission.nodes:DiscoveryNode",
-        "agent_k.mission.nodes:EvolutionNode",
-        "agent_k.mission.nodes:PrototypeNode",
-        "agent_k.mission.nodes:ResearchNode",
-        "agent_k.mission.nodes:SubmissionNode",
-        "agent_k.ui.agui:EventEmitter"
-      ],
-      "tags": [
-        "agent-guidance",
-        "collaborators",
-        "concurrency",
-        "dev",
-        "graph",
-        "human-review",
-        "invariants",
-        "notice",
-        "pattern",
-        "similar"
-      ]
-    },
-    "backend/agent_k/__init__.py": {
-      "hash": "bcd0718f10ba1f312688f35300b5dd2bb986f4eec332ded78b7ed62cebefc119",
-      "lastModified": 1769395074050.2913,
-      "componentIds": [
-        "agent_k"
-      ],
-      "referencedIds": [
-        "agent_k"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/_version.py": {
-      "hash": "5d75679c2be8a5520b9bcf9fa46ae80d0595e85511a1690cd338cc644553613d",
-      "lastModified": 1769421400078.057,
-      "componentIds": [
-        "agent_k._version"
-      ],
-      "referencedIds": [
-        "agent_k._version:__version__"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/core/data.py": {
-      "hash": "45f523e1f224afc84c6c3d0b6b3bf3e24068b255eb294d8b174d772c89895632",
-      "lastModified": 1769431746552.8364,
-      "componentIds": [
-        "agent_k.core.data",
-        "backend.agent_k.core.data:CompetitionSchema",
-        "backend.agent_k.core.data:infer_competition_schema",
-        "backend.agent_k.core.data:locate_data_files"
-      ],
-      "referencedIds": [
-        "agent_k.core.data"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/core/tracking.py": {
-      "hash": "d160be0a442969f5f5e4c67e0259963fedcf16b83c0f5c238c5d709cc68e23e2",
-      "lastModified": 1769431746554.0166,
-      "componentIds": [
-        "agent_k.core.tracking",
-        "backend.agent_k.core.tracking:ExperimentMetadata",
-        "backend.agent_k.core.tracking:ExperimentRecord",
-        "backend.agent_k.core.tracking:ExperimentSummary",
-        "backend.agent_k.core.tracking:ExperimentTracker",
-        "backend.agent_k.core.tracking:ExperimentTracker.db_path",
-        "backend.agent_k.core.tracking:ExperimentTracker.find_latest_by_config_signature",
-        "backend.agent_k.core.tracking:ExperimentTracker.list_experiments",
-        "backend.agent_k.core.tracking:ExperimentTracker.list_submissions",
-        "backend.agent_k.core.tracking:ExperimentTracker.record_experiment",
-        "backend.agent_k.core.tracking:ExperimentTracker.record_hint_attempt",
-        "backend.agent_k.core.tracking:ExperimentTracker.record_submission",
-        "backend.agent_k.core.tracking:HintAttemptRecord",
-        "backend.agent_k.core.tracking:HintEffectivenessTracker",
-        "backend.agent_k.core.tracking:HintEffectivenessTracker.amplify_hint",
-        "backend.agent_k.core.tracking:HintEffectivenessTracker.get_last_attempt",
-        "backend.agent_k.core.tracking:HintEffectivenessTracker.get_success_rate",
-        "backend.agent_k.core.tracking:HintEffectivenessTracker.is_amplified",
-        "backend.agent_k.core.tracking:HintEffectivenessTracker.is_suppressed",
-        "backend.agent_k.core.tracking:HintEffectivenessTracker.load",
-        "backend.agent_k.core.tracking:HintEffectivenessTracker.record_attempt",
-        "backend.agent_k.core.tracking:HintEffectivenessTracker.save",
-        "backend.agent_k.core.tracking:HintEffectivenessTracker.suppress_hint",
-        "backend.agent_k.core.tracking:HintEffectivenessTracker.suppressed_hints",
-        "backend.agent_k.core.tracking:KaggleSubmissionRecord",
-        "backend.agent_k.core.tracking:extract_solution_metadata"
-      ],
-      "referencedIds": [
-        "agent_k.core.tracking:ExperimentRecord",
-        "agent_k.core.tracking:ExperimentTracker",
-        "agent_k.core.tracking:HintEffectivenessTracker",
-        "agent_k.core.tracking:create_experiment_tracker"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/core/hints.py": {
-      "hash": "b765c1f92fbebc301ba3d3a1faeda725424dedcac72b9f12f57a03f7fe1d3206",
-      "lastModified": 1769431746554.1653,
-      "componentIds": [
-        "agent_k.core.hints",
-        "backend.agent_k.core.hints:ColumnProfile",
-        "backend.agent_k.core.hints:ColumnProfile.to_dict",
-        "backend.agent_k.core.hints:ColumnType",
-        "backend.agent_k.core.hints:DatasetProfile",
-        "backend.agent_k.core.hints:DatasetProfile.from_dict",
-        "backend.agent_k.core.hints:DatasetProfile.to_dict",
-        "backend.agent_k.core.hints:DistributionStats",
-        "backend.agent_k.core.hints:DistributionStats.to_dict",
-        "backend.agent_k.core.hints:HintCategory",
-        "backend.agent_k.core.hints:HintResult",
-        "backend.agent_k.core.hints:MissingPattern",
-        "backend.agent_k.core.hints:PreprocessingHint",
-        "backend.agent_k.core.hints:PreprocessingHint.from_dict",
-        "backend.agent_k.core.hints:PreprocessingHint.to_dict",
-        "backend.agent_k.core.hints:detect_applied_hints",
-        "backend.agent_k.core.hints:generate_preprocessing_hints"
-      ],
-      "referencedIds": [
-        "agent_k.core.hints"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/core/exceptions.py": {
-      "hash": "26de7478d37d1b1435f5842dc5e61aaf49f2c1d3ab0188526c00c48d8f9cb0bd",
-      "lastModified": 1769431746553.657,
-      "componentIds": [
-        "agent_k.core.exceptions",
-        "backend.agent_k.core.exceptions:AdapterError",
-        "backend.agent_k.core.exceptions:AgentError",
-        "backend.agent_k.core.exceptions:AgentExecutionError",
-        "backend.agent_k.core.exceptions:AgentKError",
-        "backend.agent_k.core.exceptions:AuthenticationError",
-        "backend.agent_k.core.exceptions:CheckpointError",
-        "backend.agent_k.core.exceptions:CompetitionError",
-        "backend.agent_k.core.exceptions:CompetitionNotFoundError",
-        "backend.agent_k.core.exceptions:CompetitionRulesNotAcceptedError",
-        "backend.agent_k.core.exceptions:ConvergenceError",
-        "backend.agent_k.core.exceptions:DeadlinePassedError",
-        "backend.agent_k.core.exceptions:EvolutionError",
-        "backend.agent_k.core.exceptions:FitnessEvaluationError",
-        "backend.agent_k.core.exceptions:GraphError",
-        "backend.agent_k.core.exceptions:MemoryCapacityError",
-        "backend.agent_k.core.exceptions:MemoryError",
-        "backend.agent_k.core.exceptions:OutputValidationError",
-        "backend.agent_k.core.exceptions:PhaseTimeoutError",
-        "backend.agent_k.core.exceptions:PlatformConnectionError",
-        "backend.agent_k.core.exceptions:PopulationExtinctError",
-        "backend.agent_k.core.exceptions:RateLimitError",
-        "backend.agent_k.core.exceptions:StateTransitionError",
-        "backend.agent_k.core.exceptions:SubmissionError",
-        "backend.agent_k.core.exceptions:ToolExecutionError",
-        "backend.agent_k.core.exceptions:classify_error"
-      ],
-      "referencedIds": [
-        "agent_k.core.exceptions"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/core/settings.py": {
-      "hash": "424a5bca94cd208706db7c9a61bf2a82a95d6aed6c1711f48f67314f2942bf4e",
-      "lastModified": 1769431746551.7292,
-      "componentIds": [
-        "agent_k.core.settings",
-        "backend.agent_k.core.settings:AgentKSettings"
-      ],
-      "referencedIds": [
-        "agent_k.core.settings"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/core/types.py": {
-      "hash": "a601b70984ce51bd915f6d30d379e04b0a385e87319f8af82c988f022a4e5ae8",
-      "lastModified": 1769419721933.3535,
-      "componentIds": [
-        "agent_k.core.types",
-        "backend.agent_k.core.types:AgentDepsT",
-        "backend.agent_k.core.types:InputT_contra",
-        "backend.agent_k.core.types:OutputT",
-        "backend.agent_k.core.types:OutputT_co",
-        "backend.agent_k.core.types:P",
-        "backend.agent_k.core.types:R",
-        "backend.agent_k.core.types:StateT"
-      ],
-      "referencedIds": [
-        "agent_k.core.types"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/core/strategy.py": {
-      "hash": "9f532e50a3379ef562a50929bb210e66427f1ca7a752b82134bdfdb7212320bc",
-      "lastModified": 1769431746551.3652,
-      "componentIds": [
-        "agent_k.core.strategy",
-        "backend.agent_k.core.strategy:FitnessInput",
-        "backend.agent_k.core.strategy:FitnessPolicy",
-        "backend.agent_k.core.strategy:ProblemProfile",
-        "backend.agent_k.core.strategy:ProblemType",
-        "backend.agent_k.core.strategy:TechniquePolicy",
-        "backend.agent_k.core.strategy:apply_solution_policy",
-        "backend.agent_k.core.strategy:build_fitness_function",
-        "backend.agent_k.core.strategy:build_problem_profile",
-        "backend.agent_k.core.strategy:build_technique_policy"
-      ],
-      "referencedIds": [
-        "agent_k.core.strategy"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/core/__init__.py": {
-      "hash": "8ee851c05c002eedad13a70ae963102cc42e3d55e13b254d31e694d025e947e5",
-      "lastModified": 1769395074088.4685,
-      "componentIds": [
-        "agent_k.core"
-      ],
-      "referencedIds": [
-        "agent_k.core"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/core/constants.py": {
-      "hash": "1d312b62509f61af72cb634cb5d5ef5ee6304b364422ca5fdb18cb99b3cdd1b7",
-      "lastModified": 1776465928328.0103,
-      "componentIds": [
-        "agent_k.core.constants"
-      ],
-      "referencedIds": [
-        "agent_k.core.constants"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/core/feedback.py": {
-      "hash": "a4fa9d5c038b7f6df91f849012d29038258fce3ab1d2227e0e7421d31fd41250",
-      "lastModified": 1769431746550.4263,
-      "componentIds": [
-        "agent_k.core.feedback",
-        "backend.agent_k.core.feedback:SubmissionOrchestrator.analyze_changes",
-        "backend.agent_k.core.feedback:SubmissionOrchestrator.mutation_weights",
-        "backend.agent_k.core.feedback:SubmissionOrchestrator.recommend_next_batch"
-      ],
-      "referencedIds": [
-        "agent_k.core.feedback"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/core/solution.py": {
-      "hash": "63f5f58761e891587e050f42f27aad7442fbd6879a91acaa592f00b60d436679",
-      "lastModified": 1769431746550.5642,
-      "componentIds": [
-        "agent_k.core.solution",
-        "backend.agent_k.core.solution:ExecutionResult",
-        "backend.agent_k.core.solution:parse_baseline_score"
-      ],
-      "referencedIds": [
-        "agent_k.core.solution"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/core/protocols.py": {
-      "hash": "f1b5560c682f9a805b5319fa5fb4dae093813ecbd84c4397428161ff6674fb22",
-      "lastModified": 1769395074080.931,
-      "componentIds": [
-        "agent_k.core.protocols",
-        "backend.agent_k.core.protocols:PlatformAdapter",
-        "backend.agent_k.core.protocols:PlatformAdapter.authenticate",
-        "backend.agent_k.core.protocols:PlatformAdapter.download_data",
-        "backend.agent_k.core.protocols:PlatformAdapter.get_competition",
-        "backend.agent_k.core.protocols:PlatformAdapter.get_leaderboard",
-        "backend.agent_k.core.protocols:PlatformAdapter.get_submission_status",
-        "backend.agent_k.core.protocols:PlatformAdapter.platform_name",
-        "backend.agent_k.core.protocols:PlatformAdapter.submit"
-      ],
-      "referencedIds": [
-        "agent_k.core.protocols"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice",
-        "pattern"
-      ]
-    },
-    "backend/agent_k/core/models.py": {
-      "hash": "7a93b7b12ff065ba9f950323cf2fb1caf68cfdac9b14546ca3c2a022591a5e76",
-      "lastModified": 1769431746553.8271,
-      "componentIds": [
-        "agent_k.core.models",
-        "backend.agent_k.core.models:Checkpoint",
-        "backend.agent_k.core.models:CodeExecutorCall",
-        "backend.agent_k.core.models:Competition",
-        "backend.agent_k.core.models:Competition.days_remaining",
-        "backend.agent_k.core.models:Competition.is_active",
-        "backend.agent_k.core.models:Competition.validate_deadline_timezone",
-        "backend.agent_k.core.models:CompetitionType",
-        "backend.agent_k.core.models:ErrorEvent",
-        "backend.agent_k.core.models:EvaluationMetric",
-        "backend.agent_k.core.models:EvolutionState",
-        "backend.agent_k.core.models:GenerationMetrics",
-        "backend.agent_k.core.models:KaggleMCPCall",
-        "backend.agent_k.core.models:LeaderboardAnalysis",
-        "backend.agent_k.core.models:LeaderboardEntry",
-        "backend.agent_k.core.models:LeaderboardSubmission",
-        "backend.agent_k.core.models:MemoryCall",
-        "backend.agent_k.core.models:MemoryEntry",
-        "backend.agent_k.core.models:MemoryState",
-        "backend.agent_k.core.models:MissionCriteria",
-        "backend.agent_k.core.models:MissionCriteria.validate_domains_disjoint",
-        "backend.agent_k.core.models:MissionPlan",
-        "backend.agent_k.core.models:PhasePlan",
-        "backend.agent_k.core.models:PlannedTask",
-        "backend.agent_k.core.models:ResearchFindings",
-        "backend.agent_k.core.models:SubjectDomain",
-        "backend.agent_k.core.models:Submission",
-        "backend.agent_k.core.models:ToolCall",
-        "backend.agent_k.core.models:WebSearchCall"
-      ],
-      "referencedIds": [
-        "agent_k.core.models"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/core/sage.py": {
-      "hash": "63ad16947986b91de8dd0902edf64af9a9386132b2825e3257414b2cafe9f371",
-      "lastModified": 1769431746550.4143,
-      "componentIds": [
-        "agent_k.core.sage",
-        "backend.agent_k.core.sage:Constraint",
-        "backend.agent_k.core.sage:Default",
-        "backend.agent_k.core.sage:Doc",
-        "backend.agent_k.core.sage:Range"
-      ],
-      "referencedIds": [
-        "agent_k.core.sage:Constraint",
-        "agent_k.core.sage:Default",
-        "agent_k.core.sage:Doc",
-        "agent_k.core.sage:Range"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/core/deps.py": {
-      "hash": "d55ead6e3aad5c0023c3fb3bced0957fe7544c0e0654485fd891982b0809cc62",
-      "lastModified": 1769431746554.044,
-      "componentIds": [
-        "agent_k.core.deps",
-        "backend.agent_k.core.deps:BaseDeps",
-        "backend.agent_k.core.deps:KaggleDeps",
-        "backend.agent_k.core.deps:KaggleDeps.platform_adapter"
-      ],
-      "referencedIds": [
-        "agent_k.core.deps:BaseDeps",
-        "agent_k.core.deps:KaggleDeps"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/embeddings/embedder.py": {
-      "hash": "bfb308701db79cc5c9ae81056d21a107d9032212983cdd6901a2b6046db35564",
-      "lastModified": 1769431746552.6392,
-      "componentIds": [
-        "agent_k.embeddings.embedder",
-        "backend.agent_k.embeddings.embedder:EmbedQueryResult",
-        "backend.agent_k.embeddings.embedder:Embedder",
-        "backend.agent_k.embeddings.embedder:Embedder.embed_documents",
-        "backend.agent_k.embeddings.embedder:Embedder.embed_query",
-        "backend.agent_k.embeddings.embedder:get_embedder"
-      ],
-      "referencedIds": [
-        "agent_k.embeddings.embedder:Embedder",
-        "agent_k.embeddings.embedder:embed_documents",
-        "agent_k.embeddings.embedder:embed_query",
-        "agent_k.embeddings.embedder:get_embedder"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice",
-        "pattern"
-      ]
-    },
-    "backend/agent_k/embeddings/__init__.py": {
-      "hash": "806ce2c0c806fc38289cf12372c02ab458a3b2f7964d8d47b8264a042f99cc90",
-      "lastModified": 1769395074073.2834,
-      "componentIds": [
-        "agent_k.embeddings"
-      ],
-      "referencedIds": [
-        "agent_k.embeddings"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/embeddings/retriever.py": {
-      "hash": "e32bcee431972d0a596bb9258e97ad54481424c7f63a2cf729ce666a0b61fce9",
-      "lastModified": 1769431746550.9092,
-      "componentIds": [
-        "agent_k.embeddings.retriever",
-        "backend.agent_k.embeddings.retriever:RAGRetriever",
-        "backend.agent_k.embeddings.retriever:RetrievalResult"
-      ],
-      "referencedIds": [
-        "agent_k.embeddings.retriever:RAGRetriever",
-        "agent_k.embeddings.retriever:RetrievalResult"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/embeddings/store.py": {
-      "hash": "ebe0fc4832afced2e1c9961e42f4982b3d3beda0eeae42b48986de1daf121227",
-      "lastModified": 1769431746552.3325,
-      "componentIds": [
-        "agent_k.embeddings.store",
-        "backend.agent_k.embeddings.store:VectorRecord",
-        "backend.agent_k.embeddings.store:VectorStore",
-        "backend.agent_k.embeddings.store:VectorStore.upsert"
-      ],
-      "referencedIds": [
-        "agent_k.embeddings.store:InMemoryVectorStore",
-        "agent_k.embeddings.store:VectorRecord",
-        "agent_k.embeddings.store:VectorStore"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/infra/providers.py": {
-      "hash": "730fd3595dcaa6d0cd77f97cdfb18a7db3a64b47ac6ebfcf0b08e13d7bc9b84e",
-      "lastModified": 1769431746554.0864,
-      "componentIds": [
-        "agent_k.infra.providers",
-        "backend.agent_k.infra.providers:create_openrouter_model",
-        "backend.agent_k.infra.providers:get_model",
-        "backend.agent_k.infra.providers:is_devstral_model"
-      ],
-      "referencedIds": [
-        "- id: agent_k.infra.config\n    when: \"General configuration; this module builds model instances.\"\n",
-        "agent_k.infra.providers:DEVSTRAL_BASE_URL",
-        "agent_k.infra.providers:DEVSTRAL_MODEL_ID",
-        "agent_k.infra.providers:create_devstral_model",
-        "agent_k.infra.providers:create_openrouter_model",
-        "agent_k.infra.providers:get_model",
-        "agent_k.infra.providers:is_devstral_model"
-      ],
-      "tags": [
-        "agent-guidance",
-        "canonical-home",
-        "dev",
-        "factory-for",
-        "graph",
-        "human-review",
-        "notice",
-        "similar"
-      ]
-    },
-    "backend/agent_k/infra/__init__.py": {
-      "hash": "bdc53c0441deb5d7855a341cc6db516ec7de5d3a67f7817a96c9eba15e6039d6",
-      "lastModified": 1769395074070.1135,
-      "componentIds": [
-        "agent_k.infra"
-      ],
-      "referencedIds": [
-        "agent_k.infra"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/infra/config.py": {
-      "hash": "d8fdf6c109a51891b049757d9d7127e2bc19f5346b991b88999f4cf30a8f66d3",
-      "lastModified": 1769431746552.33,
-      "componentIds": [
-        "agent_k.infra.config",
-        "backend.agent_k.infra.config:Settings",
-        "backend.agent_k.infra.config:load_settings"
-      ],
-      "referencedIds": [
-        "agent_k.infra.config"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/infra/instrumentation.py": {
-      "hash": "27afbc72a16c1ef4a4840634c7991f4cbced4a3509fa397cc2f2099d7b4abf01",
-      "lastModified": 1769431746551.6543,
-      "componentIds": [
-        "agent_k.infra.instrumentation",
-        "backend.agent_k.infra.instrumentation:Metrics",
-        "backend.agent_k.infra.instrumentation:Metrics.record_agent_run",
-        "backend.agent_k.infra.instrumentation:Metrics.record_api_call",
-        "backend.agent_k.infra.instrumentation:Metrics.record_submission",
-        "backend.agent_k.infra.instrumentation:P",
-        "backend.agent_k.infra.instrumentation:R"
-      ],
-      "referencedIds": [
-        "agent_k.infra.instrumentation"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/infra/logging.py": {
-      "hash": "b23d6423668889fb0f76e530e3553a2e9e4a4e8990cab80a76f2d93ad41f684e",
-      "lastModified": 1769431746552.8145,
-      "componentIds": [
-        "agent_k.infra.logging",
-        "backend.agent_k.infra.logging:get_logger"
-      ],
-      "referencedIds": [
-        "agent_k.infra.logging"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/evals/evaluators.py": {
-      "hash": "7d309d3a1ac89a37c7f04e050c398a448cff7f082378cdd2ab0dac613075dd50",
-      "lastModified": 1769431746554.3953,
-      "componentIds": [
-        "agent_k.evals.evaluators",
-        "backend.agent_k.evals.evaluators:CompetitionSelected",
-        "backend.agent_k.evals.evaluators:CompetitionSelected.evaluate",
-        "backend.agent_k.evals.evaluators:FitnessImprovement",
-        "backend.agent_k.evals.evaluators:FitnessImprovement.evaluate",
-        "backend.agent_k.evals.evaluators:ValidPython",
-        "backend.agent_k.evals.evaluators:ValidPython.evaluate"
-      ],
-      "referencedIds": [
-        "agent_k.evals.evaluators"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/evals/__init__.py": {
-      "hash": "d125101be5e0cc2e487ece70666c1d5dc0a553850a1b0f73f200893811dd990d",
-      "lastModified": 1769395074066.8794,
-      "componentIds": [
-        "agent_k.evals"
-      ],
-      "referencedIds": [
-        "agent_k.evals"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/evals/datasets.py": {
-      "hash": "c7edb3e89f3d5b30c8e0ffeab5556f27ab8d61f50bfaec398449b7ab46221dc7",
-      "lastModified": 1769431746552.7676,
-      "componentIds": [
-        "agent_k.evals.datasets",
-        "backend.agent_k.evals.datasets:load_dataset"
-      ],
-      "referencedIds": [
-        "agent_k.evals.datasets"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/ui/__init__.py": {
-      "hash": "a49720430666a14d75873c41d96e2682d611e050f322294b5f2f1614e5e7bc2b",
-      "lastModified": 1769395074066.1982,
-      "componentIds": [
-        "agent_k.ui"
-      ],
-      "referencedIds": [
-        "agent_k.ui"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
-    },
-    "backend/agent_k/ui/agui.py": {
-      "hash": "0f619fe714b3bf5865f0ed7c9217ccaf16cd63c3981233896548e83d97c43a2c",
-      "lastModified": 1769431793686.9333,
-      "componentIds": [
-        "agent_k.ui.agui",
-        "backend.agent_k.ui.agui:AgentKEvent",
-        "backend.agent_k.ui.agui:AgentKEvent.to_sse",
-        "backend.agent_k.ui.agui:ChatHandler",
-        "backend.agent_k.ui.agui:ChatHandler.handle",
-        "backend.agent_k.ui.agui:ChatHandler.parse_mission_criteria",
-        "backend.agent_k.ui.agui:CompetitionFetchRequest",
-        "backend.agent_k.ui.agui:CompetitionSearchRequest",
-        "backend.agent_k.ui.agui:EventEmitter",
-        "backend.agent_k.ui.agui:EventEmitter.close",
-        "backend.agent_k.ui.agui:EventEmitter.emit_checkpoint_created",
-        "backend.agent_k.ui.agui:EventEmitter.emit_convergence_detected",
-        "backend.agent_k.ui.agui:EventEmitter.emit_generation_start",
-        "backend.agent_k.ui.agui:EventEmitter.emit_memory_retrieve",
-        "backend.agent_k.ui.agui:EventEmitter.emit_memory_store",
-        "backend.agent_k.ui.agui:EventEmitter.emit_phase_complete",
-        "backend.agent_k.ui.agui:EventEmitter.emit_phase_error",
-        "backend.agent_k.ui.agui:EventEmitter.emit_phase_start",
-        "backend.agent_k.ui.agui:EventEmitter.emit_recovery_complete",
-        "backend.agent_k.ui.agui:EventEmitter.emit_task_progress",
-        "backend.agent_k.ui.agui:EventEmitter.emit_task_start",
-        "backend.agent_k.ui.agui:EventEmitter.emit_tool_error",
-        "backend.agent_k.ui.agui:EventEmitter.emit_tool_result",
-        "backend.agent_k.ui.agui:EventEmitter.emit_tool_thinking",
-        "backend.agent_k.ui.agui:EventEmitter.stream",
-        "backend.agent_k.ui.agui:IntentClassifier",
-        "backend.agent_k.ui.agui:IntentClassifier.classify",
-        "backend.agent_k.ui.agui:MissionCriteriaParser",
-        "backend.agent_k.ui.agui:MissionCriteriaParser.parse",
-        "backend.agent_k.ui.agui:MissionIntentOutput",
-        "backend.agent_k.ui.agui:MissionIntentResult",
-        "backend.agent_k.ui.agui:MissionRequest",
-        "backend.agent_k.ui.agui:TaskEmissionContext",
-        "backend.agent_k.ui.agui:TaskEmissionContext.emit_progress",
-        "backend.agent_k.ui.agui:create_app",
-        "backend.agent_k.ui.agui:create_app.abort_mission",
-        "backend.agent_k.ui.agui:create_app.fetch_competition",
-        "backend.agent_k.ui.agui:create_app.get_best_results",
-        "backend.agent_k.ui.agui:create_app.get_mission_status",
-        "backend.agent_k.ui.agui:create_app.handle_chat",
-        "backend.agent_k.ui.agui:create_app.health_check",
-        "backend.agent_k.ui.agui:create_app.resume_mission",
-        "backend.agent_k.ui.agui:create_app.search_competitions",
-        "backend.agent_k.ui.agui:create_app.start_mission",
-        "backend.agent_k.ui.agui:create_app.stream_mission",
-        "backend.agent_k.ui.agui:main",
-        "backend.agent_k.ui.agui:parse_mission_intent",
-        "backend.agent_k.ui.agui:stream_text_response",
-        "backend.agent_k.ui.agui:transform_to_vercel_stream"
-      ],
-      "referencedIds": [
-        "- id: agent_k.mission.nodes\n    when: \"Mission graph logic; this module exposes HTTP/SSE UI.\"\n",
-        "agent_k.ui.agui:EventEmitter",
-        "agent_k.ui.agui:create_app"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice",
-        "pattern",
-        "similar"
-      ]
-    },
-    "backend/tools/sageextract.py": {
-      "hash": "1bcc5b6ca5ea85e4881ca82c65206582da7b28f99a4cf99f5146172b25e6608d",
-      "lastModified": 1769424211832.79,
-      "componentIds": [
-        "agent_k.tools.sageextract",
-        "backend.tools.sageextract:DocBlock",
-        "backend.tools.sageextract:LineToken",
-        "backend.tools.sageextract:ModuleInfo",
-        "backend.tools.sageextract:ParsedDoc",
-        "backend.tools.sageextract:YamlLine",
-        "backend.tools.sageextract:main",
-        "backend.tools.sageextract:run"
-      ],
-      "referencedIds": [
-        "agent_k.tools.sageextract:main",
-        "agent_k.tools.sageextract:run"
-      ],
-      "tags": [
-        "agent-guidance",
-        "dev",
-        "graph",
-        "human-review",
-        "notice"
-      ]
+        "backend.cli",
+        "backend.cli:health_check"
+      ],
+      "referencedIds": [],
+      "tags": []
     },
     "backend/scripts/fetch_kaggle_submissions.py": {
       "hash": "c831fa821c402014e640ec6c571a4fe3422f50a32e4e8e48b0bfd077407c8292",
@@ -1669,23 +130,6 @@
         "backend.examples.competition:prepare_competition_data",
         "backend.examples.competition:resolve_competition_id",
         "backend.examples.competition:save_state"
-      ],
-      "referencedIds": [],
-      "tags": []
-    },
-    ".agent_k_memory/best_solution.py": {
-      "hash": "9403d6abd279b0281e348e876eef439db3d78854a0d411bb7eb3f93d7d050731",
-      "lastModified": 1767328044345.9624,
-      "componentIds": [],
-      "referencedIds": [],
-      "tags": []
-    },
-    "backend/cli.py": {
-      "hash": "2807f9bf27cf5b34c62b8996316524b03ddfb785c8d5bca1e71b25ecc3e14574",
-      "lastModified": 1769394959660.4763,
-      "componentIds": [
-        "backend.cli",
-        "backend.cli:health_check"
       ],
       "referencedIds": [],
       "tags": []
@@ -2459,6 +903,1562 @@
       "componentIds": [],
       "referencedIds": [],
       "tags": []
+    },
+    ".agent_k_memory/best_solution.py": {
+      "hash": "9403d6abd279b0281e348e876eef439db3d78854a0d411bb7eb3f93d7d050731",
+      "lastModified": 1767328044345.9624,
+      "componentIds": [],
+      "referencedIds": [],
+      "tags": []
+    },
+    "backend/tools/sageextract.py": {
+      "hash": "1bcc5b6ca5ea85e4881ca82c65206582da7b28f99a4cf99f5146172b25e6608d",
+      "lastModified": 1769424211832.79,
+      "componentIds": [
+        "agent_k.tools.sageextract",
+        "backend.tools.sageextract:DocBlock",
+        "backend.tools.sageextract:LineToken",
+        "backend.tools.sageextract:ModuleInfo",
+        "backend.tools.sageextract:ParsedDoc",
+        "backend.tools.sageextract:YamlLine",
+        "backend.tools.sageextract:main",
+        "backend.tools.sageextract:run"
+      ],
+      "referencedIds": [
+        "agent_k.tools.sageextract:main",
+        "agent_k.tools.sageextract:run"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/__init__.py": {
+      "hash": "bcd0718f10ba1f312688f35300b5dd2bb986f4eec332ded78b7ed62cebefc119",
+      "lastModified": 1769395074050.2913,
+      "componentIds": [
+        "agent_k"
+      ],
+      "referencedIds": [
+        "agent_k"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/_version.py": {
+      "hash": "5d75679c2be8a5520b9bcf9fa46ae80d0595e85511a1690cd338cc644553613d",
+      "lastModified": 1769421400078.057,
+      "componentIds": [
+        "agent_k._version"
+      ],
+      "referencedIds": [
+        "agent_k._version:__version__"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/core/data.py": {
+      "hash": "45f523e1f224afc84c6c3d0b6b3bf3e24068b255eb294d8b174d772c89895632",
+      "lastModified": 1769431746552.8364,
+      "componentIds": [
+        "agent_k.core.data",
+        "backend.agent_k.core.data:CompetitionSchema",
+        "backend.agent_k.core.data:infer_competition_schema",
+        "backend.agent_k.core.data:locate_data_files"
+      ],
+      "referencedIds": [
+        "agent_k.core.data"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/core/tracking.py": {
+      "hash": "d160be0a442969f5f5e4c67e0259963fedcf16b83c0f5c238c5d709cc68e23e2",
+      "lastModified": 1769431746554.0166,
+      "componentIds": [
+        "agent_k.core.tracking",
+        "backend.agent_k.core.tracking:ExperimentMetadata",
+        "backend.agent_k.core.tracking:ExperimentRecord",
+        "backend.agent_k.core.tracking:ExperimentSummary",
+        "backend.agent_k.core.tracking:ExperimentTracker",
+        "backend.agent_k.core.tracking:ExperimentTracker.db_path",
+        "backend.agent_k.core.tracking:ExperimentTracker.find_latest_by_config_signature",
+        "backend.agent_k.core.tracking:ExperimentTracker.list_experiments",
+        "backend.agent_k.core.tracking:ExperimentTracker.list_submissions",
+        "backend.agent_k.core.tracking:ExperimentTracker.record_experiment",
+        "backend.agent_k.core.tracking:ExperimentTracker.record_hint_attempt",
+        "backend.agent_k.core.tracking:ExperimentTracker.record_submission",
+        "backend.agent_k.core.tracking:HintAttemptRecord",
+        "backend.agent_k.core.tracking:HintEffectivenessTracker",
+        "backend.agent_k.core.tracking:HintEffectivenessTracker.amplify_hint",
+        "backend.agent_k.core.tracking:HintEffectivenessTracker.get_last_attempt",
+        "backend.agent_k.core.tracking:HintEffectivenessTracker.get_success_rate",
+        "backend.agent_k.core.tracking:HintEffectivenessTracker.is_amplified",
+        "backend.agent_k.core.tracking:HintEffectivenessTracker.is_suppressed",
+        "backend.agent_k.core.tracking:HintEffectivenessTracker.load",
+        "backend.agent_k.core.tracking:HintEffectivenessTracker.record_attempt",
+        "backend.agent_k.core.tracking:HintEffectivenessTracker.save",
+        "backend.agent_k.core.tracking:HintEffectivenessTracker.suppress_hint",
+        "backend.agent_k.core.tracking:HintEffectivenessTracker.suppressed_hints",
+        "backend.agent_k.core.tracking:KaggleSubmissionRecord",
+        "backend.agent_k.core.tracking:extract_solution_metadata"
+      ],
+      "referencedIds": [
+        "agent_k.core.tracking:ExperimentRecord",
+        "agent_k.core.tracking:ExperimentTracker",
+        "agent_k.core.tracking:HintEffectivenessTracker",
+        "agent_k.core.tracking:create_experiment_tracker"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/core/hints.py": {
+      "hash": "b765c1f92fbebc301ba3d3a1faeda725424dedcac72b9f12f57a03f7fe1d3206",
+      "lastModified": 1769431746554.1653,
+      "componentIds": [
+        "agent_k.core.hints",
+        "backend.agent_k.core.hints:ColumnProfile",
+        "backend.agent_k.core.hints:ColumnProfile.to_dict",
+        "backend.agent_k.core.hints:ColumnType",
+        "backend.agent_k.core.hints:DatasetProfile",
+        "backend.agent_k.core.hints:DatasetProfile.from_dict",
+        "backend.agent_k.core.hints:DatasetProfile.to_dict",
+        "backend.agent_k.core.hints:DistributionStats",
+        "backend.agent_k.core.hints:DistributionStats.to_dict",
+        "backend.agent_k.core.hints:HintCategory",
+        "backend.agent_k.core.hints:HintResult",
+        "backend.agent_k.core.hints:MissingPattern",
+        "backend.agent_k.core.hints:PreprocessingHint",
+        "backend.agent_k.core.hints:PreprocessingHint.from_dict",
+        "backend.agent_k.core.hints:PreprocessingHint.to_dict",
+        "backend.agent_k.core.hints:detect_applied_hints",
+        "backend.agent_k.core.hints:generate_preprocessing_hints"
+      ],
+      "referencedIds": [
+        "agent_k.core.hints"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/core/exceptions.py": {
+      "hash": "26de7478d37d1b1435f5842dc5e61aaf49f2c1d3ab0188526c00c48d8f9cb0bd",
+      "lastModified": 1769431746553.657,
+      "componentIds": [
+        "agent_k.core.exceptions",
+        "backend.agent_k.core.exceptions:AdapterError",
+        "backend.agent_k.core.exceptions:AgentError",
+        "backend.agent_k.core.exceptions:AgentExecutionError",
+        "backend.agent_k.core.exceptions:AgentKError",
+        "backend.agent_k.core.exceptions:AuthenticationError",
+        "backend.agent_k.core.exceptions:CheckpointError",
+        "backend.agent_k.core.exceptions:CompetitionError",
+        "backend.agent_k.core.exceptions:CompetitionNotFoundError",
+        "backend.agent_k.core.exceptions:CompetitionRulesNotAcceptedError",
+        "backend.agent_k.core.exceptions:ConvergenceError",
+        "backend.agent_k.core.exceptions:DeadlinePassedError",
+        "backend.agent_k.core.exceptions:EvolutionError",
+        "backend.agent_k.core.exceptions:FitnessEvaluationError",
+        "backend.agent_k.core.exceptions:GraphError",
+        "backend.agent_k.core.exceptions:MemoryCapacityError",
+        "backend.agent_k.core.exceptions:MemoryError",
+        "backend.agent_k.core.exceptions:OutputValidationError",
+        "backend.agent_k.core.exceptions:PhaseTimeoutError",
+        "backend.agent_k.core.exceptions:PlatformConnectionError",
+        "backend.agent_k.core.exceptions:PopulationExtinctError",
+        "backend.agent_k.core.exceptions:RateLimitError",
+        "backend.agent_k.core.exceptions:StateTransitionError",
+        "backend.agent_k.core.exceptions:SubmissionError",
+        "backend.agent_k.core.exceptions:ToolExecutionError",
+        "backend.agent_k.core.exceptions:classify_error"
+      ],
+      "referencedIds": [
+        "agent_k.core.exceptions"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/core/settings.py": {
+      "hash": "424a5bca94cd208706db7c9a61bf2a82a95d6aed6c1711f48f67314f2942bf4e",
+      "lastModified": 1769431746551.7292,
+      "componentIds": [
+        "agent_k.core.settings",
+        "backend.agent_k.core.settings:AgentKSettings"
+      ],
+      "referencedIds": [
+        "agent_k.core.settings"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/toolsets/tracking.py": {
+      "hash": "e8178ac0031d46a214cbd2c02c662a05002cfaa94cc87b394294dd556e3ae3db",
+      "lastModified": 1769423806813.0386,
+      "componentIds": [
+        "agent_k.toolsets.tracking"
+      ],
+      "referencedIds": [
+        "- id: agent_k.core.tracking\n    when: \"Core tracking storage APIs; this module exposes tool wrappers.\"\n",
+        "agent_k.toolsets.tracking:tracking_best_experiment",
+        "agent_k.toolsets.tracking:tracking_list_experiments",
+        "agent_k.toolsets.tracking:tracking_record_experiment",
+        "agent_k.toolsets.tracking:tracking_toolset"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice",
+        "similar"
+      ]
+    },
+    "backend/agent_k/toolsets/search.py": {
+      "hash": "c04f6b0f2fcb1c4ce4a1596c8586226e7eabcfad9fed7b8db0d568c2c1a2c6bd",
+      "lastModified": 1769431746550.9714,
+      "componentIds": [
+        "agent_k.toolsets.search",
+        "backend.agent_k.toolsets.search:build_kaggle_search_query"
+      ],
+      "referencedIds": [
+        "- id: agent_k.toolsets.browser\n    when: \"Use for browsing fetched pages rather than constructing queries.\"\n",
+        "agent_k.toolsets.search:build_kaggle_search_query",
+        "agent_k.toolsets.search:build_scholarly_query",
+        "agent_k.toolsets.search:create_web_fetch_tool",
+        "agent_k.toolsets.search:create_web_search_tool",
+        "agent_k.toolsets.search:prepare_web_fetch",
+        "agent_k.toolsets.search:prepare_web_search"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice",
+        "similar"
+      ]
+    },
+    "backend/agent_k/toolsets/scholarly.py": {
+      "hash": "88b74db8b99bc4933f17ead51c592af1cbe7a52cd6207c6220359dda492c4c07",
+      "lastModified": 1769395074231.0251,
+      "componentIds": [
+        "agent_k.toolsets.scholarly"
+      ],
+      "referencedIds": [
+        "agent_k.toolsets.scholarly"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/toolsets/browser.py": {
+      "hash": "99838a91c3487c38b6034a0c5aeaed12be71ff4be31230ab45d9673d31ab6dd2",
+      "lastModified": 1769395074230.84,
+      "componentIds": [
+        "agent_k.toolsets.browser"
+      ],
+      "referencedIds": [
+        "agent_k.toolsets.browser"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/core/types.py": {
+      "hash": "a601b70984ce51bd915f6d30d379e04b0a385e87319f8af82c988f022a4e5ae8",
+      "lastModified": 1769419721933.3535,
+      "componentIds": [
+        "agent_k.core.types",
+        "backend.agent_k.core.types:AgentDepsT",
+        "backend.agent_k.core.types:InputT_contra",
+        "backend.agent_k.core.types:OutputT",
+        "backend.agent_k.core.types:OutputT_co",
+        "backend.agent_k.core.types:P",
+        "backend.agent_k.core.types:R",
+        "backend.agent_k.core.types:StateT"
+      ],
+      "referencedIds": [
+        "agent_k.core.types"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/core/strategy.py": {
+      "hash": "9f532e50a3379ef562a50929bb210e66427f1ca7a752b82134bdfdb7212320bc",
+      "lastModified": 1769431746551.3652,
+      "componentIds": [
+        "agent_k.core.strategy",
+        "backend.agent_k.core.strategy:FitnessInput",
+        "backend.agent_k.core.strategy:FitnessPolicy",
+        "backend.agent_k.core.strategy:ProblemProfile",
+        "backend.agent_k.core.strategy:ProblemType",
+        "backend.agent_k.core.strategy:TechniquePolicy",
+        "backend.agent_k.core.strategy:apply_solution_policy",
+        "backend.agent_k.core.strategy:build_fitness_function",
+        "backend.agent_k.core.strategy:build_problem_profile",
+        "backend.agent_k.core.strategy:build_technique_policy"
+      ],
+      "referencedIds": [
+        "agent_k.core.strategy"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/core/__init__.py": {
+      "hash": "8ee851c05c002eedad13a70ae963102cc42e3d55e13b254d31e694d025e947e5",
+      "lastModified": 1769395074088.4685,
+      "componentIds": [
+        "agent_k.core"
+      ],
+      "referencedIds": [
+        "agent_k.core"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/core/constants.py": {
+      "hash": "ea3d19f23898f469c4b9f47548f18a888c98c4c5df7ffedc8d2d6e7d3659e1bc",
+      "lastModified": 1776466222153.315,
+      "componentIds": [
+        "agent_k.core.constants"
+      ],
+      "referencedIds": [
+        "agent_k.core.constants"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/core/feedback.py": {
+      "hash": "a4fa9d5c038b7f6df91f849012d29038258fce3ab1d2227e0e7421d31fd41250",
+      "lastModified": 1769431746550.4263,
+      "componentIds": [
+        "agent_k.core.feedback",
+        "backend.agent_k.core.feedback:SubmissionOrchestrator.analyze_changes",
+        "backend.agent_k.core.feedback:SubmissionOrchestrator.mutation_weights",
+        "backend.agent_k.core.feedback:SubmissionOrchestrator.recommend_next_batch"
+      ],
+      "referencedIds": [
+        "agent_k.core.feedback"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/core/solution.py": {
+      "hash": "63f5f58761e891587e050f42f27aad7442fbd6879a91acaa592f00b60d436679",
+      "lastModified": 1769431746550.5642,
+      "componentIds": [
+        "agent_k.core.solution",
+        "backend.agent_k.core.solution:ExecutionResult",
+        "backend.agent_k.core.solution:parse_baseline_score"
+      ],
+      "referencedIds": [
+        "agent_k.core.solution"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/core/protocols.py": {
+      "hash": "f1b5560c682f9a805b5319fa5fb4dae093813ecbd84c4397428161ff6674fb22",
+      "lastModified": 1769395074080.931,
+      "componentIds": [
+        "agent_k.core.protocols",
+        "backend.agent_k.core.protocols:PlatformAdapter",
+        "backend.agent_k.core.protocols:PlatformAdapter.authenticate",
+        "backend.agent_k.core.protocols:PlatformAdapter.download_data",
+        "backend.agent_k.core.protocols:PlatformAdapter.get_competition",
+        "backend.agent_k.core.protocols:PlatformAdapter.get_leaderboard",
+        "backend.agent_k.core.protocols:PlatformAdapter.get_submission_status",
+        "backend.agent_k.core.protocols:PlatformAdapter.platform_name",
+        "backend.agent_k.core.protocols:PlatformAdapter.submit"
+      ],
+      "referencedIds": [
+        "agent_k.core.protocols"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice",
+        "pattern"
+      ]
+    },
+    "backend/agent_k/core/models.py": {
+      "hash": "7a93b7b12ff065ba9f950323cf2fb1caf68cfdac9b14546ca3c2a022591a5e76",
+      "lastModified": 1769431746553.8271,
+      "componentIds": [
+        "agent_k.core.models",
+        "backend.agent_k.core.models:Checkpoint",
+        "backend.agent_k.core.models:CodeExecutorCall",
+        "backend.agent_k.core.models:Competition",
+        "backend.agent_k.core.models:Competition.days_remaining",
+        "backend.agent_k.core.models:Competition.is_active",
+        "backend.agent_k.core.models:Competition.validate_deadline_timezone",
+        "backend.agent_k.core.models:CompetitionType",
+        "backend.agent_k.core.models:ErrorEvent",
+        "backend.agent_k.core.models:EvaluationMetric",
+        "backend.agent_k.core.models:EvolutionState",
+        "backend.agent_k.core.models:GenerationMetrics",
+        "backend.agent_k.core.models:KaggleMCPCall",
+        "backend.agent_k.core.models:LeaderboardAnalysis",
+        "backend.agent_k.core.models:LeaderboardEntry",
+        "backend.agent_k.core.models:LeaderboardSubmission",
+        "backend.agent_k.core.models:MemoryCall",
+        "backend.agent_k.core.models:MemoryEntry",
+        "backend.agent_k.core.models:MemoryState",
+        "backend.agent_k.core.models:MissionCriteria",
+        "backend.agent_k.core.models:MissionCriteria.validate_domains_disjoint",
+        "backend.agent_k.core.models:MissionPlan",
+        "backend.agent_k.core.models:PhasePlan",
+        "backend.agent_k.core.models:PlannedTask",
+        "backend.agent_k.core.models:ResearchFindings",
+        "backend.agent_k.core.models:SubjectDomain",
+        "backend.agent_k.core.models:Submission",
+        "backend.agent_k.core.models:ToolCall",
+        "backend.agent_k.core.models:WebSearchCall"
+      ],
+      "referencedIds": [
+        "agent_k.core.models"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/core/sage.py": {
+      "hash": "63ad16947986b91de8dd0902edf64af9a9386132b2825e3257414b2cafe9f371",
+      "lastModified": 1769431746550.4143,
+      "componentIds": [
+        "agent_k.core.sage",
+        "backend.agent_k.core.sage:Constraint",
+        "backend.agent_k.core.sage:Default",
+        "backend.agent_k.core.sage:Doc",
+        "backend.agent_k.core.sage:Range"
+      ],
+      "referencedIds": [
+        "agent_k.core.sage:Constraint",
+        "agent_k.core.sage:Default",
+        "agent_k.core.sage:Doc",
+        "agent_k.core.sage:Range"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/core/deps.py": {
+      "hash": "d55ead6e3aad5c0023c3fb3bced0957fe7544c0e0654485fd891982b0809cc62",
+      "lastModified": 1769431746554.044,
+      "componentIds": [
+        "agent_k.core.deps",
+        "backend.agent_k.core.deps:BaseDeps",
+        "backend.agent_k.core.deps:KaggleDeps",
+        "backend.agent_k.core.deps:KaggleDeps.platform_adapter"
+      ],
+      "referencedIds": [
+        "agent_k.core.deps:BaseDeps",
+        "agent_k.core.deps:KaggleDeps"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/embeddings/embedder.py": {
+      "hash": "bfb308701db79cc5c9ae81056d21a107d9032212983cdd6901a2b6046db35564",
+      "lastModified": 1769431746552.6392,
+      "componentIds": [
+        "agent_k.embeddings.embedder",
+        "backend.agent_k.embeddings.embedder:EmbedQueryResult",
+        "backend.agent_k.embeddings.embedder:Embedder",
+        "backend.agent_k.embeddings.embedder:Embedder.embed_documents",
+        "backend.agent_k.embeddings.embedder:Embedder.embed_query",
+        "backend.agent_k.embeddings.embedder:get_embedder"
+      ],
+      "referencedIds": [
+        "agent_k.embeddings.embedder:Embedder",
+        "agent_k.embeddings.embedder:embed_documents",
+        "agent_k.embeddings.embedder:embed_query",
+        "agent_k.embeddings.embedder:get_embedder"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice",
+        "pattern"
+      ]
+    },
+    "backend/agent_k/toolsets/kaggle.py": {
+      "hash": "fc30a672ee44c4f04e520f2d53bb9eeb129217b36cf31a4fdd8aa904537a828a",
+      "lastModified": 1769423806813.2744,
+      "componentIds": [
+        "agent_k.toolsets.kaggle",
+        "backend.agent_k.toolsets.kaggle:P",
+        "backend.agent_k.toolsets.kaggle:ToolResultT"
+      ],
+      "referencedIds": [
+        "- id: agent_k.adapters.kaggle\n    when: \"Adapter implementation backing these tools.\"\n",
+        "agent_k.toolsets.kaggle:kaggle_get_competition",
+        "agent_k.toolsets.kaggle:kaggle_get_leaderboard",
+        "agent_k.toolsets.kaggle:kaggle_list_datasets",
+        "agent_k.toolsets.kaggle:kaggle_search_competitions",
+        "agent_k.toolsets.kaggle:kaggle_toolset"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice",
+        "similar"
+      ]
+    },
+    "backend/agent_k/toolsets/__init__.py": {
+      "hash": "9e6fc562fe164e1eda9fd54f7d6f0120c34f087ed0d3ff26e3d03275ab0640bd",
+      "lastModified": 1769431746551.372,
+      "componentIds": [
+        "agent_k.toolsets",
+        "backend.agent_k.toolsets:DepsT"
+      ],
+      "referencedIds": [
+        "- id: agent_k.toolsets.kaggle\n    when: \"Specific Kaggle tool implementations.\"\n",
+        "agent_k.toolsets:TOOLSET_REGISTRY",
+        "agent_k.toolsets:compose_toolsets",
+        "agent_k.toolsets:create_production_toolset"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice",
+        "similar"
+      ]
+    },
+    "backend/agent_k/toolsets/code.py": {
+      "hash": "5e4e512da44e47b184c0cac6ae201563e8f9e2168d8eafdb841c9f666568aac7",
+      "lastModified": 1769431746553.0452,
+      "componentIds": [
+        "agent_k.toolsets.code",
+        "backend.agent_k.toolsets.code:create_code_execution_tool"
+      ],
+      "referencedIds": [
+        "agent_k.toolsets.code:code_toolset",
+        "agent_k.toolsets.code:create_code_execution_tool",
+        "agent_k.toolsets.code:prepare_code_execution_tool"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/toolsets/memory.py": {
+      "hash": "fee933d6d15f93e28499f0ef603b887b069e42b1be361f5ed8005a511aa15463",
+      "lastModified": 1769431746554.762,
+      "componentIds": [
+        "agent_k.toolsets.memory",
+        "backend.agent_k.toolsets.memory:AgentKMemoryTool",
+        "backend.agent_k.toolsets.memory:AgentKMemoryTool.create",
+        "backend.agent_k.toolsets.memory:AgentKMemoryTool.delete",
+        "backend.agent_k.toolsets.memory:AgentKMemoryTool.insert",
+        "backend.agent_k.toolsets.memory:AgentKMemoryTool.rename",
+        "backend.agent_k.toolsets.memory:AgentKMemoryTool.str_replace",
+        "backend.agent_k.toolsets.memory:AgentKMemoryTool.view"
+      ],
+      "referencedIds": [
+        "- id: agent_k.embeddings.store\n    when: \"Vector store persistence; this module is file-backed memory tool.\"\n",
+        "agent_k.toolsets.memory:AgentKMemoryTool",
+        "agent_k.toolsets.memory:create_memory_backend",
+        "agent_k.toolsets.memory:prepare_memory_tool",
+        "agent_k.toolsets.memory:register_memory_tool"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice",
+        "similar"
+      ]
+    },
+    "backend/agent_k/__main__.py": {
+      "hash": "4516e2e7e490990bce79825cc646ed13157a139ccc8fffc9b8985e034ffffed5",
+      "lastModified": 1769420189695.8535,
+      "componentIds": [
+        "agent_k.__main__",
+        "backend.agent_k.__main__:main"
+      ],
+      "referencedIds": [
+        "agent_k.__main__"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/embeddings/__init__.py": {
+      "hash": "806ce2c0c806fc38289cf12372c02ab458a3b2f7964d8d47b8264a042f99cc90",
+      "lastModified": 1769395074073.2834,
+      "componentIds": [
+        "agent_k.embeddings"
+      ],
+      "referencedIds": [
+        "agent_k.embeddings"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/embeddings/retriever.py": {
+      "hash": "e32bcee431972d0a596bb9258e97ad54481424c7f63a2cf729ce666a0b61fce9",
+      "lastModified": 1769431746550.9092,
+      "componentIds": [
+        "agent_k.embeddings.retriever",
+        "backend.agent_k.embeddings.retriever:RAGRetriever",
+        "backend.agent_k.embeddings.retriever:RetrievalResult"
+      ],
+      "referencedIds": [
+        "agent_k.embeddings.retriever:RAGRetriever",
+        "agent_k.embeddings.retriever:RetrievalResult"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/embeddings/store.py": {
+      "hash": "ebe0fc4832afced2e1c9961e42f4982b3d3beda0eeae42b48986de1daf121227",
+      "lastModified": 1769431746552.3325,
+      "componentIds": [
+        "agent_k.embeddings.store",
+        "backend.agent_k.embeddings.store:VectorRecord",
+        "backend.agent_k.embeddings.store:VectorStore",
+        "backend.agent_k.embeddings.store:VectorStore.upsert"
+      ],
+      "referencedIds": [
+        "agent_k.embeddings.store:InMemoryVectorStore",
+        "agent_k.embeddings.store:VectorRecord",
+        "agent_k.embeddings.store:VectorStore"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/evolution/evaluator.py": {
+      "hash": "832c9a81e153292810325b967b9a67a253ecd21a55a6fea5f98e2c5ba2c1b6d5",
+      "lastModified": 1769431746551.3418,
+      "componentIds": [
+        "agent_k.evolution.evaluator",
+        "backend.agent_k.evolution.evaluator:evaluate",
+        "backend.agent_k.evolution.evaluator:evaluate_stage1",
+        "backend.agent_k.evolution.evaluator:evaluate_stage2"
+      ],
+      "referencedIds": [
+        "agent_k.evolution.evaluator"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/evolution/loss.py": {
+      "hash": "bb4d04d0c166b4cf1c7a137aa9e9a0a260a3a3ae1d41d89ea40cacb103b2d45e",
+      "lastModified": 1769431746550.8147,
+      "componentIds": [
+        "agent_k.evolution.loss",
+        "backend.agent_k.evolution.loss:build_lightgbm_objective_params"
+      ],
+      "referencedIds": [
+        "agent_k.evolution.loss"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/infra/providers.py": {
+      "hash": "730fd3595dcaa6d0cd77f97cdfb18a7db3a64b47ac6ebfcf0b08e13d7bc9b84e",
+      "lastModified": 1769431746554.0864,
+      "componentIds": [
+        "agent_k.infra.providers",
+        "backend.agent_k.infra.providers:create_openrouter_model",
+        "backend.agent_k.infra.providers:get_model",
+        "backend.agent_k.infra.providers:is_devstral_model"
+      ],
+      "referencedIds": [
+        "- id: agent_k.infra.config\n    when: \"General configuration; this module builds model instances.\"\n",
+        "agent_k.infra.providers:DEVSTRAL_BASE_URL",
+        "agent_k.infra.providers:DEVSTRAL_MODEL_ID",
+        "agent_k.infra.providers:create_devstral_model",
+        "agent_k.infra.providers:create_openrouter_model",
+        "agent_k.infra.providers:get_model",
+        "agent_k.infra.providers:is_devstral_model"
+      ],
+      "tags": [
+        "agent-guidance",
+        "canonical-home",
+        "dev",
+        "factory-for",
+        "graph",
+        "human-review",
+        "notice",
+        "similar"
+      ]
+    },
+    "backend/agent_k/adapters/openevolve.py": {
+      "hash": "3f4771e03de3f118a4ce10abc6d986fdc83164fde0a5f3328f37d2c72bc0a6d4",
+      "lastModified": 1769431746553.166,
+      "componentIds": [
+        "agent_k.adapters.openevolve",
+        "backend.agent_k.adapters.openevolve:OpenEvolveAdapter",
+        "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.authenticate",
+        "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.download_data",
+        "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.get_best_solution",
+        "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.get_leaderboard",
+        "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.get_submission_status",
+        "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.platform_name",
+        "backend.agent_k.adapters.openevolve:OpenEvolveAdapter.submit",
+        "backend.agent_k.adapters.openevolve:OpenEvolveEvolutionConfig",
+        "backend.agent_k.adapters.openevolve:OpenEvolveJobState",
+        "backend.agent_k.adapters.openevolve:OpenEvolveJobStatus",
+        "backend.agent_k.adapters.openevolve:OpenEvolveRunner",
+        "backend.agent_k.adapters.openevolve:OpenEvolveSettings",
+        "backend.agent_k.adapters.openevolve:OpenEvolveSolution"
+      ],
+      "referencedIds": [
+        "- id: agent_k.evolution.framework\n    when: \"Evolution utilities outside adapter context.\"\n",
+        "agent_k.adapters.openevolve:OpenEvolveAdapter",
+        "agent_k.adapters.openevolve:OpenEvolveEvolutionConfig",
+        "agent_k.adapters.openevolve:OpenEvolveRunner",
+        "agent_k.adapters.openevolve:OpenEvolveSettings"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice",
+        "similar"
+      ]
+    },
+    "backend/agent_k/evolution/features.py": {
+      "hash": "29fb7b0a7fc44d0349f269783812d7ca98b92150c8ff54e52d84fe85238429ca",
+      "lastModified": 1769431746552.4443,
+      "componentIds": [
+        "agent_k.evolution.features",
+        "backend.agent_k.evolution.features:BinningGene",
+        "backend.agent_k.evolution.features:DomainFeatureGene",
+        "backend.agent_k.evolution.features:FeatureEvolver",
+        "backend.agent_k.evolution.features:FeatureEvolver.evolve",
+        "backend.agent_k.evolution.features:FeatureGenome",
+        "backend.agent_k.evolution.features:FeatureSelectionIndividual",
+        "backend.agent_k.evolution.features:FeatureSelectionIndividual.selected_count",
+        "backend.agent_k.evolution.features:FeatureSelector",
+        "backend.agent_k.evolution.features:FeatureSelector.evolve",
+        "backend.agent_k.evolution.features:InteractionGene",
+        "backend.agent_k.evolution.features:RatioGene",
+        "backend.agent_k.evolution.features:TransformGene"
+      ],
+      "referencedIds": [
+        "agent_k.evolution.features"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/evolution/__init__.py": {
+      "hash": "34c458a07d32a23ace815d9a945f2c72a11850b668c8e9594a9c90b310055b9c",
+      "lastModified": 1769395074214.4238,
+      "componentIds": [
+        "agent_k.evolution"
+      ],
+      "referencedIds": [
+        "agent_k.evolution"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/evolution/framework.py": {
+      "hash": "80b4787e6e307bceefbeeeb19066fe083c9a618f4003b4547f2c46f4329dd575",
+      "lastModified": 1769431746554.3906,
+      "componentIds": [
+        "agent_k.evolution.framework",
+        "backend.agent_k.evolution.framework:CrossoverFn",
+        "backend.agent_k.evolution.framework:DescriptorFn",
+        "backend.agent_k.evolution.framework:EvolutionaryFramework",
+        "backend.agent_k.evolution.framework:EvolutionaryFramework.run",
+        "backend.agent_k.evolution.framework:FitnessFn",
+        "backend.agent_k.evolution.framework:GenomeT",
+        "backend.agent_k.evolution.framework:HyperparamEvolver.evolve",
+        "backend.agent_k.evolution.framework:Individual",
+        "backend.agent_k.evolution.framework:Individual.with_genome",
+        "backend.agent_k.evolution.framework:MapElitesArchive",
+        "backend.agent_k.evolution.framework:MapElitesArchive.add",
+        "backend.agent_k.evolution.framework:MapElitesArchive.cells",
+        "backend.agent_k.evolution.framework:MapElitesArchive.sample",
+        "backend.agent_k.evolution.framework:MutationFn",
+        "backend.agent_k.evolution.framework:Population",
+        "backend.agent_k.evolution.framework:Population.best",
+        "backend.agent_k.evolution.framework:Population.evaluate",
+        "backend.agent_k.evolution.framework:Population.tournament"
+      ],
+      "referencedIds": [
+        "agent_k.evolution.framework"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/adapters/kaggle.py": {
+      "hash": "fea0d2eaa47ae7531a70dea69b2dbc57ddc6ab205edee9da85197069fb88b62a",
+      "lastModified": 1769431746551.754,
+      "componentIds": [
+        "agent_k.adapters.kaggle",
+        "backend.agent_k.adapters.kaggle:KaggleAdapter",
+        "backend.agent_k.adapters.kaggle:KaggleAdapter.authenticate",
+        "backend.agent_k.adapters.kaggle:KaggleAdapter.download_data",
+        "backend.agent_k.adapters.kaggle:KaggleAdapter.get_competition_by_url",
+        "backend.agent_k.adapters.kaggle:KaggleAdapter.get_leaderboard",
+        "backend.agent_k.adapters.kaggle:KaggleAdapter.get_submission_status",
+        "backend.agent_k.adapters.kaggle:KaggleAdapter.platform_name",
+        "backend.agent_k.adapters.kaggle:KaggleAdapter.submit",
+        "backend.agent_k.adapters.kaggle:KaggleSettings",
+        "backend.agent_k.adapters.kaggle:KaggleSettings.api_key",
+        "backend.agent_k.adapters.kaggle:KaggleSettings.username"
+      ],
+      "referencedIds": [
+        "- id: agent_k.toolsets.kaggle\n    when: \"Toolset wrappers over this adapter for agent tools.\"\n",
+        "agent_k.adapters.kaggle:KaggleAdapter",
+        "agent_k.adapters.kaggle:KaggleSettings",
+        "agent_k.core.protocols:PlatformAdapter"
+      ],
+      "tags": [
+        "agent-guidance",
+        "collaborators",
+        "concurrency",
+        "dev",
+        "graph",
+        "human-review",
+        "implements",
+        "inheritdoc",
+        "invariants",
+        "logging",
+        "notice",
+        "pattern",
+        "sensitivity",
+        "similar",
+        "source"
+      ]
+    },
+    "backend/agent_k/adapters/__init__.py": {
+      "hash": "d8dd0680cf97d1f4c1ad0ac6ddc35a5c13b1634977cc74b274fe0481d8f8c93b",
+      "lastModified": 1769395074194.9307,
+      "componentIds": [
+        "agent_k.adapters"
+      ],
+      "referencedIds": [
+        "agent_k.adapters"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/mission/state.py": {
+      "hash": "bf95a7f5b2c63670781fb2ca9a0f477a48344a3365f59fc11e889349580a608b",
+      "lastModified": 1769431746550.8276,
+      "componentIds": [
+        "agent_k.mission.state",
+        "backend.agent_k.mission.state:GraphContext",
+        "backend.agent_k.mission.state:MissionResult",
+        "backend.agent_k.mission.state:MissionState"
+      ],
+      "referencedIds": [
+        "- id: agent_k.mission.nodes\n    when: \"Nodes drive phase transitions; this module holds state.\"\n",
+        "agent_k.mission.state:GraphContext",
+        "agent_k.mission.state:MissionResult",
+        "agent_k.mission.state:MissionState"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice",
+        "similar"
+      ]
+    },
+    "backend/agent_k/mission/nodes.py": {
+      "hash": "9a146878950ad98b700f74501ac2e3bbd7fa6d13dabd041179aa1cfd349f21ad",
+      "lastModified": 1769431746558.131,
+      "componentIds": [
+        "agent_k.mission.nodes",
+        "backend.agent_k.mission.nodes:DiscoveryNode",
+        "backend.agent_k.mission.nodes:DiscoveryNode.run",
+        "backend.agent_k.mission.nodes:PrototypeNode",
+        "backend.agent_k.mission.nodes:PrototypeNode.run",
+        "backend.agent_k.mission.nodes:ResearchNode",
+        "backend.agent_k.mission.nodes:ResearchNode.run",
+        "backend.agent_k.mission.nodes:SubmissionNode",
+        "backend.agent_k.mission.nodes:SubmissionNode.run"
+      ],
+      "referencedIds": [
+        "- id: agent_k.agents.lycurgus\n    when: \"Lycurgus orchestrates nodes; this module defines node behavior.\"\n",
+        "agent_k.agents.evolver:EvolverAgent",
+        "agent_k.agents.lobbyist:LobbyistAgent",
+        "agent_k.agents.scientist:ScientistAgent",
+        "agent_k.mission.nodes:DiscoveryNode",
+        "agent_k.mission.nodes:EvolutionNode",
+        "agent_k.mission.nodes:PrototypeNode",
+        "agent_k.mission.nodes:ResearchNode",
+        "agent_k.mission.nodes:SubmissionNode",
+        "agent_k.mission.state:MissionState"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice",
+        "similar"
+      ]
+    },
+    "backend/agent_k/mission/__init__.py": {
+      "hash": "045475a97b76d768d3d78b112cd169b6b644ee33f51c1df6fd10a46d856f8c38",
+      "lastModified": 1769395074171.8064,
+      "componentIds": [
+        "agent_k.mission"
+      ],
+      "referencedIds": [
+        "agent_k.mission"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/mission/persistence.py": {
+      "hash": "98f2671d68fdb2b6b05be7b52b7ccc8d2edd066e6cc22b60db5c098531a35dbc",
+      "lastModified": 1769431746554.6382,
+      "componentIds": [
+        "agent_k.mission.persistence",
+        "backend.agent_k.mission.persistence:MissionPersistence",
+        "backend.agent_k.mission.persistence:MissionPersistence.has_snapshots",
+        "backend.agent_k.mission.persistence:MissionPersistence.load_latest_result",
+        "backend.agent_k.mission.persistence:MissionPersistence.load_latest_snapshot",
+        "backend.agent_k.mission.persistence:MissionPersistence.load_latest_state",
+        "backend.agent_k.mission.persistence:MissionPersistence.load_next",
+        "backend.agent_k.mission.persistence:MissionPersistence.snapshot_end",
+        "backend.agent_k.mission.persistence:MissionPersistence.snapshot_node"
+      ],
+      "referencedIds": [
+        "- id: agent_k.core.tracking\n    when: \"Tracking experiment metrics; this module persists mission state.\"\n",
+        "agent_k.mission.persistence:CHECKPOINT_DIR",
+        "agent_k.mission.persistence:MissionPersistence",
+        "agent_k.mission.persistence:create_persistence"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice",
+        "similar"
+      ]
+    },
+    "backend/agent_k/agents/base.py": {
+      "hash": "c88b346dfcd62f86d2208673d0ad7ba9acd315964ad37924f5a7d537daab41f9",
+      "lastModified": 1769431746550.2551,
+      "componentIds": [
+        "agent_k.agents.base",
+        "backend.agent_k.agents.base:AgentDeps",
+        "backend.agent_k.agents.base:BaseAgentMixin",
+        "backend.agent_k.agents.base:MemoryMixin"
+      ],
+      "referencedIds": [
+        "agent_k.agents.base:AgentDeps",
+        "agent_k.agents.base:BaseAgentMixin",
+        "agent_k.agents.base:MemoryMixin",
+        "agent_k.agents.base:prepare_output_tools_strict",
+        "agent_k.agents.base:universal_tool_preparation",
+        "agent_k.toolsets.memory:AgentKMemoryTool",
+        "agent_k.toolsets.memory:create_memory_backend",
+        "agent_k.toolsets.memory:register_memory_tool"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/agents/lobbyist.py": {
+      "hash": "19aa2aa9ddd59c4fb6566da95f2c41804a5bc7d5022753850d711523182db808",
+      "lastModified": 1769431746551.0623,
+      "componentIds": [
+        "agent_k.agents.lobbyist",
+        "backend.agent_k.agents.lobbyist:DiscoveryResult",
+        "backend.agent_k.agents.lobbyist:LobbyistAgent",
+        "backend.agent_k.agents.lobbyist:LobbyistAgent.agent",
+        "backend.agent_k.agents.lobbyist:LobbyistAgent.settings",
+        "backend.agent_k.agents.lobbyist:LobbyistDeps",
+        "backend.agent_k.agents.lobbyist:LobbyistSettings",
+        "backend.agent_k.agents.lobbyist:LobbyistSettings.model_settings"
+      ],
+      "referencedIds": [
+        "- id: agent_k.agents.scientist\n    when: \"Use for research/analysis, not discovery.\"\n",
+        "agent_k.agents.lobbyist:DiscoveryResult",
+        "agent_k.agents.lobbyist:LobbyistAgent",
+        "agent_k.agents.lobbyist:LobbyistDeps",
+        "agent_k.agents.lobbyist:LobbyistSettings",
+        "agent_k.agents.lobbyist:lobbyist_agent",
+        "agent_k.core.protocols:PlatformAdapter",
+        "agent_k.toolsets.kaggle:kaggle_toolset",
+        "agent_k.ui.agui:EventEmitter"
+      ],
+      "tags": [
+        "agent-guidance",
+        "collaborators",
+        "concurrency",
+        "dev",
+        "graph",
+        "human-review",
+        "invariants",
+        "notice",
+        "pattern",
+        "similar"
+      ]
+    },
+    "backend/agent_k/agents/scientist.py": {
+      "hash": "2f478c8cee15b4b4465fc929e33ad273bad1d74e62aca51186da14ebf673f473",
+      "lastModified": 1769431746553.8938,
+      "componentIds": [
+        "agent_k.agents.scientist",
+        "backend.agent_k.agents.scientist:LeaderboardAnalysis",
+        "backend.agent_k.agents.scientist:ResearchFinding",
+        "backend.agent_k.agents.scientist:ResearchReport",
+        "backend.agent_k.agents.scientist:ScientistAgent",
+        "backend.agent_k.agents.scientist:ScientistAgent.agent",
+        "backend.agent_k.agents.scientist:ScientistAgent.analyze_data_characteristics",
+        "backend.agent_k.agents.scientist:ScientistAgent.settings",
+        "backend.agent_k.agents.scientist:ScientistDeps",
+        "backend.agent_k.agents.scientist:ScientistDeps.refresh_leaderboard",
+        "backend.agent_k.agents.scientist:ScientistSettings",
+        "backend.agent_k.agents.scientist:ScientistSettings.model_settings"
+      ],
+      "referencedIds": [
+        "- id: agent_k.agents.lobbyist\n    when: \"Use for competition discovery rather than research synthesis.\"\n- id: agent_k.agents.evolver\n    when: \"Use for solution optimization rather than research.\"\n",
+        "agent_k.agents.scientist:LeaderboardAnalysis",
+        "agent_k.agents.scientist:ResearchFinding",
+        "agent_k.agents.scientist:ResearchReport",
+        "agent_k.agents.scientist:ScientistAgent",
+        "agent_k.agents.scientist:ScientistDeps",
+        "agent_k.agents.scientist:ScientistSettings",
+        "agent_k.agents.scientist:get_external_data_policy",
+        "agent_k.agents.scientist:scientist_agent",
+        "agent_k.core.protocols:PlatformAdapter",
+        "agent_k.toolsets.kaggle:kaggle_toolset",
+        "agent_k.toolsets.search:prepare_web_fetch",
+        "agent_k.toolsets.search:prepare_web_search"
+      ],
+      "tags": [
+        "agent-guidance",
+        "collaborators",
+        "concurrency",
+        "dev",
+        "effects",
+        "graph",
+        "human-review",
+        "invariants",
+        "notice",
+        "pattern",
+        "similar"
+      ]
+    },
+    "backend/agent_k/agents/evolver.py": {
+      "hash": "f7cd0f54dc0a1d0b09f202492ddcbf30fb781253e5b0fbc68a784d76ef9231ad",
+      "lastModified": 1769431746558.741,
+      "componentIds": [
+        "agent_k.agents.evolver",
+        "backend.agent_k.agents.evolver:EvolutionArchiveEntry",
+        "backend.agent_k.agents.evolver:EvolutionFailure",
+        "backend.agent_k.agents.evolver:EvolutionResult",
+        "backend.agent_k.agents.evolver:EvolverAgent",
+        "backend.agent_k.agents.evolver:EvolverAgent.agent",
+        "backend.agent_k.agents.evolver:EvolverAgent.settings",
+        "backend.agent_k.agents.evolver:EvolverDeps",
+        "backend.agent_k.agents.evolver:EvolverSettings",
+        "backend.agent_k.agents.evolver:EvolverSettings.model_settings",
+        "backend.agent_k.agents.evolver:EvolverSettings.validate_evolution_params"
+      ],
+      "referencedIds": [
+        "- id: agent_k.agents.scientist\n    when: \"Use for research synthesis rather than optimization.\"\n- id: agent_k.evolution.framework\n    when: \"Framework utilities for evolution outside the agent context.\"\n",
+        "agent_k.adapters.openevolve:OpenEvolveRunner",
+        "agent_k.agents.evolver:EVOLUTION_OUTPUT_TYPE",
+        "agent_k.agents.evolver:EvolutionFailure",
+        "agent_k.agents.evolver:EvolutionResult",
+        "agent_k.agents.evolver:EvolverAgent",
+        "agent_k.agents.evolver:EvolverDeps",
+        "agent_k.agents.evolver:EvolverSettings",
+        "agent_k.agents.evolver:evolver_agent",
+        "agent_k.core.protocols:PlatformAdapter",
+        "agent_k.toolsets.code:code_toolset",
+        "agent_k.ui.agui:EventEmitter"
+      ],
+      "tags": [
+        "agent-guidance",
+        "collaborators",
+        "concurrency",
+        "dev",
+        "graph",
+        "human-review",
+        "invariants",
+        "notice",
+        "pattern",
+        "similar"
+      ]
+    },
+    "backend/agent_k/agents/prompts.py": {
+      "hash": "5f6f4e93ecacb79fd0374442e6073dfc44fa5ea55216178e65443af639a0f96d",
+      "lastModified": 1769422053414.835,
+      "componentIds": [
+        "agent_k.agents.prompts"
+      ],
+      "referencedIds": [
+        "agent_k.agents.prompts"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/agents/__init__.py": {
+      "hash": "1fa6ad6eaa25162e249a1927eb0c62bf4e4452eecbe4bb21e9c5092e65624e68",
+      "lastModified": 1769421384321.7559,
+      "componentIds": [
+        "agent_k.agents",
+        "backend.agent_k.agents:get_agent"
+      ],
+      "referencedIds": [
+        "- id: agent_k.mission.nodes\n    when: \"Mission nodes orchestrate phases; this module only registers agents.\"\n",
+        "agent_k.agents.evolver:EvolverAgent",
+        "agent_k.agents.lobbyist:LobbyistAgent",
+        "agent_k.agents.lycurgus:LycurgusOrchestrator",
+        "agent_k.agents.scientist:ScientistAgent",
+        "agent_k.agents:AGENT_REGISTRY",
+        "agent_k.agents:get_agent",
+        "agent_k.agents:register_agent"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "errors",
+        "graph",
+        "human-review",
+        "notice",
+        "similar"
+      ]
+    },
+    "backend/agent_k/agents/lycurgus.py": {
+      "hash": "4439587ddbaa075089704ad798dedec5dc9dd3cb9ac86ef114b612b0c04f6cb1",
+      "lastModified": 1776465015448.3457,
+      "componentIds": [
+        "agent_k.agents.lycurgus",
+        "backend.agent_k.agents.lycurgus:LycurgusDeps",
+        "backend.agent_k.agents.lycurgus:LycurgusOrchestrator",
+        "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.abort_mission",
+        "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.config",
+        "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.current_phase",
+        "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.from_config_file",
+        "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.is_active",
+        "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.resume_mission",
+        "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.state",
+        "backend.agent_k.agents.lycurgus:LycurgusOrchestrator.validate_competition_id",
+        "backend.agent_k.agents.lycurgus:LycurgusSettings",
+        "backend.agent_k.agents.lycurgus:LycurgusSettings.from_file",
+        "backend.agent_k.agents.lycurgus:MissionStatus",
+        "backend.agent_k.agents.lycurgus:validate_mission_result"
+      ],
+      "referencedIds": [
+        "- id: agent_k.mission.nodes\n    when: \"Mission nodes define phases; this module orchestrates them.\"\n",
+        "agent_k.agents.lycurgus:LycurgusDeps",
+        "agent_k.agents.lycurgus:LycurgusOrchestrator",
+        "agent_k.agents.lycurgus:LycurgusSettings",
+        "agent_k.agents.lycurgus:MissionStatus",
+        "agent_k.agents.lycurgus:orchestrate",
+        "agent_k.agents.lycurgus:validate_mission_result",
+        "agent_k.mission.nodes:DiscoveryNode",
+        "agent_k.mission.nodes:EvolutionNode",
+        "agent_k.mission.nodes:PrototypeNode",
+        "agent_k.mission.nodes:ResearchNode",
+        "agent_k.mission.nodes:SubmissionNode",
+        "agent_k.ui.agui:EventEmitter"
+      ],
+      "tags": [
+        "agent-guidance",
+        "collaborators",
+        "concurrency",
+        "dev",
+        "graph",
+        "human-review",
+        "invariants",
+        "notice",
+        "pattern",
+        "similar"
+      ]
+    },
+    "backend/agent_k/infra/logging.py": {
+      "hash": "b23d6423668889fb0f76e530e3553a2e9e4a4e8990cab80a76f2d93ad41f684e",
+      "lastModified": 1769431746552.8145,
+      "componentIds": [
+        "agent_k.infra.logging",
+        "backend.agent_k.infra.logging:get_logger"
+      ],
+      "referencedIds": [
+        "agent_k.infra.logging"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/evals/evaluators.py": {
+      "hash": "7d309d3a1ac89a37c7f04e050c398a448cff7f082378cdd2ab0dac613075dd50",
+      "lastModified": 1769431746554.3953,
+      "componentIds": [
+        "agent_k.evals.evaluators",
+        "backend.agent_k.evals.evaluators:CompetitionSelected",
+        "backend.agent_k.evals.evaluators:CompetitionSelected.evaluate",
+        "backend.agent_k.evals.evaluators:FitnessImprovement",
+        "backend.agent_k.evals.evaluators:FitnessImprovement.evaluate",
+        "backend.agent_k.evals.evaluators:ValidPython",
+        "backend.agent_k.evals.evaluators:ValidPython.evaluate"
+      ],
+      "referencedIds": [
+        "agent_k.evals.evaluators"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/evals/__init__.py": {
+      "hash": "d125101be5e0cc2e487ece70666c1d5dc0a553850a1b0f73f200893811dd990d",
+      "lastModified": 1769395074066.8794,
+      "componentIds": [
+        "agent_k.evals"
+      ],
+      "referencedIds": [
+        "agent_k.evals"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/evals/datasets.py": {
+      "hash": "c7edb3e89f3d5b30c8e0ffeab5556f27ab8d61f50bfaec398449b7ab46221dc7",
+      "lastModified": 1769431746552.7676,
+      "componentIds": [
+        "agent_k.evals.datasets",
+        "backend.agent_k.evals.datasets:load_dataset"
+      ],
+      "referencedIds": [
+        "agent_k.evals.datasets"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/ui/__init__.py": {
+      "hash": "a49720430666a14d75873c41d96e2682d611e050f322294b5f2f1614e5e7bc2b",
+      "lastModified": 1769395074066.1982,
+      "componentIds": [
+        "agent_k.ui"
+      ],
+      "referencedIds": [
+        "agent_k.ui"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/ui/agui.py": {
+      "hash": "0f619fe714b3bf5865f0ed7c9217ccaf16cd63c3981233896548e83d97c43a2c",
+      "lastModified": 1769431793686.9333,
+      "componentIds": [
+        "agent_k.ui.agui",
+        "backend.agent_k.ui.agui:AgentKEvent",
+        "backend.agent_k.ui.agui:AgentKEvent.to_sse",
+        "backend.agent_k.ui.agui:ChatHandler",
+        "backend.agent_k.ui.agui:ChatHandler.handle",
+        "backend.agent_k.ui.agui:ChatHandler.parse_mission_criteria",
+        "backend.agent_k.ui.agui:CompetitionFetchRequest",
+        "backend.agent_k.ui.agui:CompetitionSearchRequest",
+        "backend.agent_k.ui.agui:EventEmitter",
+        "backend.agent_k.ui.agui:EventEmitter.close",
+        "backend.agent_k.ui.agui:EventEmitter.emit_checkpoint_created",
+        "backend.agent_k.ui.agui:EventEmitter.emit_convergence_detected",
+        "backend.agent_k.ui.agui:EventEmitter.emit_generation_start",
+        "backend.agent_k.ui.agui:EventEmitter.emit_memory_retrieve",
+        "backend.agent_k.ui.agui:EventEmitter.emit_memory_store",
+        "backend.agent_k.ui.agui:EventEmitter.emit_phase_complete",
+        "backend.agent_k.ui.agui:EventEmitter.emit_phase_error",
+        "backend.agent_k.ui.agui:EventEmitter.emit_phase_start",
+        "backend.agent_k.ui.agui:EventEmitter.emit_recovery_complete",
+        "backend.agent_k.ui.agui:EventEmitter.emit_task_progress",
+        "backend.agent_k.ui.agui:EventEmitter.emit_task_start",
+        "backend.agent_k.ui.agui:EventEmitter.emit_tool_error",
+        "backend.agent_k.ui.agui:EventEmitter.emit_tool_result",
+        "backend.agent_k.ui.agui:EventEmitter.emit_tool_thinking",
+        "backend.agent_k.ui.agui:EventEmitter.stream",
+        "backend.agent_k.ui.agui:IntentClassifier",
+        "backend.agent_k.ui.agui:IntentClassifier.classify",
+        "backend.agent_k.ui.agui:MissionCriteriaParser",
+        "backend.agent_k.ui.agui:MissionCriteriaParser.parse",
+        "backend.agent_k.ui.agui:MissionIntentOutput",
+        "backend.agent_k.ui.agui:MissionIntentResult",
+        "backend.agent_k.ui.agui:MissionRequest",
+        "backend.agent_k.ui.agui:TaskEmissionContext",
+        "backend.agent_k.ui.agui:TaskEmissionContext.emit_progress",
+        "backend.agent_k.ui.agui:create_app",
+        "backend.agent_k.ui.agui:create_app.abort_mission",
+        "backend.agent_k.ui.agui:create_app.fetch_competition",
+        "backend.agent_k.ui.agui:create_app.get_best_results",
+        "backend.agent_k.ui.agui:create_app.get_mission_status",
+        "backend.agent_k.ui.agui:create_app.handle_chat",
+        "backend.agent_k.ui.agui:create_app.health_check",
+        "backend.agent_k.ui.agui:create_app.resume_mission",
+        "backend.agent_k.ui.agui:create_app.search_competitions",
+        "backend.agent_k.ui.agui:create_app.start_mission",
+        "backend.agent_k.ui.agui:create_app.stream_mission",
+        "backend.agent_k.ui.agui:main",
+        "backend.agent_k.ui.agui:parse_mission_intent",
+        "backend.agent_k.ui.agui:stream_text_response",
+        "backend.agent_k.ui.agui:transform_to_vercel_stream"
+      ],
+      "referencedIds": [
+        "- id: agent_k.mission.nodes\n    when: \"Mission graph logic; this module exposes HTTP/SSE UI.\"\n",
+        "agent_k.ui.agui:EventEmitter",
+        "agent_k.ui.agui:create_app"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice",
+        "pattern",
+        "similar"
+      ]
+    },
+    "backend/agent_k/infra/instrumentation.py": {
+      "hash": "27afbc72a16c1ef4a4840634c7991f4cbced4a3509fa397cc2f2099d7b4abf01",
+      "lastModified": 1769431746551.6543,
+      "componentIds": [
+        "agent_k.infra.instrumentation",
+        "backend.agent_k.infra.instrumentation:Metrics",
+        "backend.agent_k.infra.instrumentation:Metrics.record_agent_run",
+        "backend.agent_k.infra.instrumentation:Metrics.record_api_call",
+        "backend.agent_k.infra.instrumentation:Metrics.record_submission",
+        "backend.agent_k.infra.instrumentation:P",
+        "backend.agent_k.infra.instrumentation:R"
+      ],
+      "referencedIds": [
+        "agent_k.infra.instrumentation"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/infra/config.py": {
+      "hash": "d8fdf6c109a51891b049757d9d7127e2bc19f5346b991b88999f4cf30a8f66d3",
+      "lastModified": 1769431746552.33,
+      "componentIds": [
+        "agent_k.infra.config",
+        "backend.agent_k.infra.config:Settings",
+        "backend.agent_k.infra.config:load_settings"
+      ],
+      "referencedIds": [
+        "agent_k.infra.config"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
+    },
+    "backend/agent_k/infra/__init__.py": {
+      "hash": "bdc53c0441deb5d7855a341cc6db516ec7de5d3a67f7817a96c9eba15e6039d6",
+      "lastModified": 1769395074070.1135,
+      "componentIds": [
+        "agent_k.infra"
+      ],
+      "referencedIds": [
+        "agent_k.infra"
+      ],
+      "tags": [
+        "agent-guidance",
+        "dev",
+        "graph",
+        "human-review",
+        "notice"
+      ]
     }
   }
 }

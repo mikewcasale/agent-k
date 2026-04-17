@@ -23,25 +23,17 @@ export const evolutionModels: EvolutionModelOption[] = [
     icon: "brain",
   },
   {
-    id: "openrouter:mistralai/devstral-2512:free",
-    label: "Devstral 2512",
-    description: "Fast code mutations.",
+    id: "openrouter:openai/gpt-oss-120b:free",
+    label: "GPT-OSS 120B",
+    description: "Free-tier large open model with reliable function calling.",
     provider: "OpenRouter",
     icon: "code",
     freeTier: true,
   },
   {
-    id: "openrouter:qwen/qwen3-coder:free",
-    label: "Qwen3 Coder",
-    description: "Free-tier code model with strong function calling.",
-    provider: "OpenRouter",
-    icon: "code",
-    freeTier: true,
-  },
-  {
-    id: "openrouter:kwaipilot/kat-coder-pro:free",
-    label: "KAT Coder Pro",
-    description: "Free-tier code specialist.",
+    id: "openrouter:openai/gpt-oss-20b:free",
+    label: "GPT-OSS 20B",
+    description: "Smaller free open model for fast mutations.",
     provider: "OpenRouter",
     icon: "code",
     freeTier: true,
@@ -56,7 +48,6 @@ export const evolutionModels: EvolutionModelOption[] = [
 ];
 
 export const DEFAULT_EVOLUTION_MODELS: string[] = [
-  "openrouter:mistralai/devstral-2512:free",
-  "openrouter:kwaipilot/kat-coder-pro:free",
-  "openrouter:qwen/qwen3-coder:free",
+  "openrouter:openai/gpt-oss-120b:free",
+  "openrouter:openai/gpt-oss-20b:free",
 ];

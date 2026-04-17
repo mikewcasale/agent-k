@@ -96,3 +96,41 @@ jobs:
           POSTGRES_URL: "postgres://dummy:dummy@localhost:5432/dummy"
           AUTH_SECRET: "dummy-secret-for-build"
 
+  # Smoke tests against the live deployment. Runs only on push to main so
+  # PR CI stays fast; verifies that what shipped actually works in prod.
+  smoke:
+    name: Smoke (live agents-k.com)
+    needs: [backend, frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Wait for live deployment to be healthy
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fs https://agent-k-api.onrender.com/health > /dev/null; then
+              echo "API healthy"; break
+            fi
+            echo "[$i] waiting for agent-k-api…"; sleep 10
+          done
+      - name: Run smoke tests against agents-k.com
+        run: pnpm test:smoke
+        env:
+          SMOKE_BASE_URL: https://agents-k.com
+

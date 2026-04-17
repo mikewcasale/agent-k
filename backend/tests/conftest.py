@@ -19,6 +19,7 @@ import pytest
 # Ensure provider keys are present during test collection to avoid import errors.
 os.environ.setdefault("ANTHROPIC_API_KEY", "test-anthropic-key")
 os.environ.setdefault("OPENAI_API_KEY", "test-openai-key")
+os.environ.setdefault("OPENROUTER_API_KEY", "test-openrouter-key")
 
 # Re-export dirty_equals for convenience
 if TYPE_CHECKING:

@@ -3,11 +3,11 @@
   "type": "function",
   "summary": "Fixture for managing environment variables in tests.",
   "source": "backend/tests/conftest.py",
-  "line": 77,
+  "line": 78,
   "path": "backend/tests/conftest.py",
   "location": {
     "path": "backend/tests/conftest.py",
-    "line": 77,
+    "line": 78,
     "character": 7
   }
 }

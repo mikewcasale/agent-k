@@ -3,11 +3,11 @@
   "type": "method",
   "summary": "Reset all modified environment variables to original values.",
   "source": "backend/tests/conftest.py",
-  "line": 67,
+  "line": 68,
   "path": "backend/tests/conftest.py",
   "location": {
     "path": "backend/tests/conftest.py",
-    "line": 67,
+    "line": 68,
     "character": 11
   }
 }

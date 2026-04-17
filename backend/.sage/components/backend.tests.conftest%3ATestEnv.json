@@ -3,11 +3,11 @@
   "type": "class",
   "summary": "Helper for managing environment variables in tests.",
   "source": "backend/tests/conftest.py",
-  "line": 50,
+  "line": 51,
   "path": "backend/tests/conftest.py",
   "location": {
     "path": "backend/tests/conftest.py",
-    "line": 50,
+    "line": 51,
     "character": 7
   }
 }

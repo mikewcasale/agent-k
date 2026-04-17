@@ -3,11 +3,11 @@
   "type": "function",
   "summary": "Provide mock leaderboard data for testing.",
   "source": "backend/tests/conftest.py",
-  "line": 229,
+  "line": 230,
   "path": "backend/tests/conftest.py",
   "location": {
     "path": "backend/tests/conftest.py",
-    "line": 229,
+    "line": 230,
     "character": 7
   }
 }

@@ -23,6 +23,7 @@ import {
 import { buildCompetitionSubmissionsUrl } from "@/lib/utils/kaggle";
 
 const MAX_RESULTS = 3;
+const VIEW_ALL_LIMIT = 100;
 
 type CategoryMeta = {
   label: string;
@@ -195,10 +196,13 @@ export function BestResults() {
     };
   }, []);
 
+  const [showAll, setShowAll] = useState(false);
+  const sorted = useMemo(() => sortBestResults(results), [results]);
   const entries = useMemo(
-    () => sortBestResults(results).slice(0, MAX_RESULTS),
-    [results]
+    () => sorted.slice(0, showAll ? VIEW_ALL_LIMIT : MAX_RESULTS),
+    [sorted, showAll]
   );
+  const hasMore = sorted.length > MAX_RESULTS;
 
   return (
     <section className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
@@ -209,12 +213,16 @@ export function BestResults() {
           </span>
           Best Results
         </h2>
-        <button
-          className="flex items-center gap-1 font-medium text-muted-foreground text-xs transition-colors hover:text-blue-500"
-          type="button"
-        >
-          View All <ArrowRight className="size-3" />
-        </button>
+        {hasMore ? (
+          <button
+            className="flex items-center gap-1 font-medium text-muted-foreground text-xs transition-colors hover:text-blue-500"
+            onClick={() => setShowAll((prev) => !prev)}
+            type="button"
+          >
+            {showAll ? "Show Less" : "View All"}
+            <ArrowRight className="size-3" />
+          </button>
+        ) : null}
       </div>
       <div className="overflow-x-auto rounded-xl border border-border">
         {entries.length === 0 ? (

@@ -3,11 +3,11 @@
   "type": "function",
   "summary": "Provide a list of mock competitions for testing.",
   "source": "backend/tests/conftest.py",
-  "line": 219,
+  "line": 220,
   "path": "backend/tests/conftest.py",
   "location": {
     "path": "backend/tests/conftest.py",
-    "line": 219,
+    "line": 220,
     "character": 7
   }
 }

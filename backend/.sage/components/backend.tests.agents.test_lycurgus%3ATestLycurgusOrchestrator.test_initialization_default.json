@@ -3,11 +3,11 @@
   "type": "method",
   "summary": "Orchestrator should initialize with devstral model.",
   "source": "backend/tests/agents/test_lycurgus.py",
-  "line": 87,
+  "line": 89,
   "path": "backend/tests/agents/test_lycurgus.py",
   "location": {
     "path": "backend/tests/agents/test_lycurgus.py",
-    "line": 87,
+    "line": 89,
     "character": 11
   }
 }

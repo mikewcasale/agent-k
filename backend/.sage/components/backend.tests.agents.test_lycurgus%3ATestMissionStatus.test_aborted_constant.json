@@ -3,11 +3,11 @@
   "type": "method",
   "summary": "ABORTED constant should be defined.",
   "source": "backend/tests/agents/test_lycurgus.py",
-  "line": 75,
+  "line": 77,
   "path": "backend/tests/agents/test_lycurgus.py",
   "location": {
     "path": "backend/tests/agents/test_lycurgus.py",
-    "line": 75,
+    "line": 77,
     "character": 11
   }
 }

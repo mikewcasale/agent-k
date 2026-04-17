@@ -3,11 +3,11 @@
   "type": "method",
   "summary": "Orchestrator should accept custom config.",
   "source": "backend/tests/agents/test_lycurgus.py",
-  "line": 99,
+  "line": 101,
   "path": "backend/tests/agents/test_lycurgus.py",
   "location": {
     "path": "backend/tests/agents/test_lycurgus.py",
-    "line": 99,
+    "line": 101,
     "character": 11
   }
 }

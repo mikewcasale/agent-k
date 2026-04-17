@@ -3,11 +3,11 @@
   "type": "class",
   "summary": "Tests for the async context manager functionality.",
   "source": "backend/tests/agents/test_lycurgus.py",
-  "line": 225,
+  "line": 227,
   "path": "backend/tests/agents/test_lycurgus.py",
   "location": {
     "path": "backend/tests/agents/test_lycurgus.py",
-    "line": 225,
+    "line": 227,
     "character": 7
   }
 }

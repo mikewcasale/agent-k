@@ -3,11 +3,11 @@
   "type": "class",
   "summary": "Tests for the MissionStatus class.",
   "source": "backend/tests/agents/test_lycurgus.py",
-  "line": 64,
+  "line": 66,
   "path": "backend/tests/agents/test_lycurgus.py",
   "location": {
     "path": "backend/tests/agents/test_lycurgus.py",
-    "line": 64,
+    "line": 66,
     "character": 7
   }
 }

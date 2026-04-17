@@ -3,11 +3,11 @@
   "type": "function",
   "summary": "Path to test assets directory.",
   "source": "backend/tests/conftest.py",
-  "line": 162,
+  "line": 163,
   "path": "backend/tests/conftest.py",
   "location": {
     "path": "backend/tests/conftest.py",
-    "line": 162,
+    "line": 163,
     "character": 7
   }
 }

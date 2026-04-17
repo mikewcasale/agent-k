@@ -3,11 +3,11 @@
   "type": "class",
   "summary": "Tests for the LycurgusOrchestrator class.",
   "source": "backend/tests/agents/test_lycurgus.py",
-  "line": 80,
+  "line": 82,
   "path": "backend/tests/agents/test_lycurgus.py",
   "location": {
     "path": "backend/tests/agents/test_lycurgus.py",
-    "line": 80,
+    "line": 82,
     "character": 7
   }
 }

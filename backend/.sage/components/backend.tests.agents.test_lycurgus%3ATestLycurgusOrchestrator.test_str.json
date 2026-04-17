@@ -3,11 +3,11 @@
   "type": "method",
   "summary": "Str should show status.",
   "source": "backend/tests/agents/test_lycurgus.py",
-  "line": 131,
+  "line": 133,
   "path": "backend/tests/agents/test_lycurgus.py",
   "location": {
     "path": "backend/tests/agents/test_lycurgus.py",
-    "line": 131,
+    "line": 133,
     "character": 11
   }
 }

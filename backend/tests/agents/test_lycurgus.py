@@ -26,9 +26,11 @@ class TestLycurgusSettings:
 
     def test_default_config(self) -> None:
         """Config should have sensible defaults."""
+        from agent_k.core.constants import DEFAULT_MODEL
+
         config = LycurgusSettings()
 
-        assert config.default_model == "anthropic:claude-sonnet-4-5"
+        assert config.default_model == DEFAULT_MODEL
         assert config.max_evolution_rounds == 100
 
     def test_custom_config(self) -> None:

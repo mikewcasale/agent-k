@@ -3,11 +3,11 @@
   "type": "class",
   "summary": "Mock competition data for testing.",
   "source": "backend/tests/conftest.py",
-  "line": 177,
+  "line": 178,
   "path": "backend/tests/conftest.py",
   "location": {
     "path": "backend/tests/conftest.py",
-    "line": 177,
+    "line": 178,
     "character": 7
   }
 }

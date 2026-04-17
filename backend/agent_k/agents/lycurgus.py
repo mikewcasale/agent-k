@@ -242,7 +242,7 @@ class LycurgusOrchestrator:
         - "self._state is None when idle."
     """
 
-    _default_model: ClassVar[str] = "anthropic:claude-sonnet-4-5"
+    _default_model: ClassVar[str] = DEFAULT_MODEL
     _max_evolution_rounds: ClassVar[int] = 100
     _supported_competition_types: ClassVar[frozenset[str]] = frozenset({"featured", "research", "playground"})
 

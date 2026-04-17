@@ -3,11 +3,11 @@
   "type": "function",
   "summary": "Create a mock event emitter for testing.",
   "source": "backend/tests/conftest.py",
-  "line": 124,
+  "line": 125,
   "path": "backend/tests/conftest.py",
   "location": {
     "path": "backend/tests/conftest.py",
-    "line": 124,
+    "line": 125,
     "character": 7
   }
 }

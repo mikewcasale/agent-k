@@ -75,7 +75,7 @@ EVOLUTION_POPULATION_SIZE: Final[int] = 50
 CONVERGENCE_THRESHOLD_GENERATIONS: Final[int] = 15
 
 # Models and platforms
-DEFAULT_MODEL: Final[str] = os.getenv("DEFAULT_MODEL", "anthropic:claude-sonnet-4-5")
+DEFAULT_MODEL: Final[str] = os.getenv("DEFAULT_MODEL", "openrouter:qwen/qwen3-coder:free")
 # Devstral model for local LM Studio server
 DEVSTRAL_MODEL: Final[str] = "devstral:local"
 DEFAULT_KAGGLE_MCP_URL: Final[str] = "https://mcp.kaggle.com"

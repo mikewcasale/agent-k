@@ -3,11 +3,11 @@
   "type": "method",
   "summary": "is_active should be False without mission.",
   "source": "backend/tests/agents/test_lycurgus.py",
-  "line": 143,
+  "line": 145,
   "path": "backend/tests/agents/test_lycurgus.py",
   "location": {
     "path": "backend/tests/agents/test_lycurgus.py",
-    "line": 143,
+    "line": 145,
     "character": 11
   }
 }

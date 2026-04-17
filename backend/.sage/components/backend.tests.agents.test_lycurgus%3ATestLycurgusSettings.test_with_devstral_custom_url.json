@@ -3,11 +3,11 @@
   "type": "method",
   "summary": "with_devstral should accept custom base URL.",
   "source": "backend/tests/agents/test_lycurgus.py",
-  "line": 47,
+  "line": 49,
   "path": "backend/tests/agents/test_lycurgus.py",
   "location": {
     "path": "backend/tests/agents/test_lycurgus.py",
-    "line": 47,
+    "line": 49,
     "character": 11
   }
 }

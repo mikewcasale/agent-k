@@ -3,11 +3,11 @@
   "type": "method",
   "summary": "Status should be created with required fields.",
   "source": "backend/tests/agents/test_lycurgus.py",
-  "line": 67,
+  "line": 69,
   "path": "backend/tests/agents/test_lycurgus.py",
   "location": {
     "path": "backend/tests/agents/test_lycurgus.py",
-    "line": 67,
+    "line": 69,
     "character": 11
   }
 }

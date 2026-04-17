@@ -3,11 +3,11 @@
   "type": "method",
   "summary": "Repr should show useful information.",
   "source": "backend/tests/agents/test_lycurgus.py",
-  "line": 120,
+  "line": 122,
   "path": "backend/tests/agents/test_lycurgus.py",
   "location": {
     "path": "backend/tests/agents/test_lycurgus.py",
-    "line": 120,
+    "line": 122,
     "character": 11
   }
 }

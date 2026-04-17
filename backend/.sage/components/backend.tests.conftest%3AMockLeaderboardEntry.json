@@ -3,11 +3,11 @@
   "type": "class",
   "summary": "Mock leaderboard entry for testing.",
   "source": "backend/tests/conftest.py",
-  "line": 201,
+  "line": 202,
   "path": "backend/tests/conftest.py",
   "location": {
     "path": "backend/tests/conftest.py",
-    "line": 201,
+    "line": 202,
     "character": 7
   }
 }

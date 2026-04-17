@@ -3,11 +3,11 @@
   "type": "function",
   "summary": "Create event loop for session-scoped async fixtures.",
   "source": "backend/tests/conftest.py",
-  "line": 91,
+  "line": 92,
   "path": "backend/tests/conftest.py",
   "location": {
     "path": "backend/tests/conftest.py",
-    "line": 91,
+    "line": 92,
     "character": 7
   }
 }

@@ -47,6 +47,11 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.12.0"
+      # Default model spec for all agents. Free OpenRouter model so the platform
+      # works without paid Anthropic/OpenAI credits. Override in Render Dashboard
+      # to use a paid model (e.g. anthropic:claude-sonnet-4-5) if credits exist.
+      - key: DEFAULT_MODEL
+        value: "openrouter:qwen/qwen3-coder:free"
       # === AI MODEL API KEYS ===
       # Set these in Render Dashboard or add to agent-k-secrets group
       - key: ANTHROPIC_API_KEY

@@ -3,11 +3,11 @@
   "type": "method",
   "summary": "Orchestrator should load from config file.",
   "source": "backend/tests/agents/test_lycurgus.py",
-  "line": 209,
+  "line": 211,
   "path": "backend/tests/agents/test_lycurgus.py",
   "location": {
     "path": "backend/tests/agents/test_lycurgus.py",
-    "line": 209,
+    "line": 211,
     "character": 11
   }
 }

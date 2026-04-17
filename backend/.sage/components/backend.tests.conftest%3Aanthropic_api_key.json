@@ -3,11 +3,11 @@
   "type": "function",
   "summary": "Get Anthropic API key from environment or use mock value.",
   "source": "backend/tests/conftest.py",
-  "line": 144,
+  "line": 145,
   "path": "backend/tests/conftest.py",
   "location": {
     "path": "backend/tests/conftest.py",
-    "line": 144,
+    "line": 145,
     "character": 7
   }
 }

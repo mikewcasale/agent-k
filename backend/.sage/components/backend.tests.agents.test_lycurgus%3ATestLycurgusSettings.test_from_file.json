@@ -3,11 +3,11 @@
   "type": "method",
   "summary": "Config should load from JSON file.",
   "source": "backend/tests/agents/test_lycurgus.py",
-  "line": 53,
+  "line": 55,
   "path": "backend/tests/agents/test_lycurgus.py",
   "location": {
     "path": "backend/tests/agents/test_lycurgus.py",
-    "line": 53,
+    "line": 55,
     "character": 11
   }
 }

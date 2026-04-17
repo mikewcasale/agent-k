@@ -3,11 +3,11 @@
   "type": "method",
   "summary": "Valid competition IDs should pass validation.",
   "source": "backend/tests/agents/test_lycurgus.py",
-  "line": 163,
+  "line": 165,
   "path": "backend/tests/agents/test_lycurgus.py",
   "location": {
     "path": "backend/tests/agents/test_lycurgus.py",
-    "line": 163,
+    "line": 165,
     "character": 11
   }
 }

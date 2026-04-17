@@ -3,11 +3,11 @@
   "type": "function",
   "summary": "Provide a mock HTTP client for testing.",
   "source": "backend/tests/conftest.py",
-  "line": 100,
+  "line": 101,
   "path": "backend/tests/conftest.py",
   "location": {
     "path": "backend/tests/conftest.py",
-    "line": 100,
+    "line": 101,
     "character": 7
   }
 }

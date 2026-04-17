@@ -98,7 +98,7 @@ class LobbyistSettings(BaseSettings):
     temperature: float = Field(default=0.2, ge=0.0, le=2.0, description="Sampling temperature for discovery prompts")
     max_tokens: int = Field(default=2048, ge=1, description="Maximum tokens for responses")
     tool_retries: int = Field(default=2, ge=0, description="Tool retry attempts")
-    output_retries: int = Field(default=1, ge=0, description="Output validation retry attempts")
+    output_retries: int = Field(default=4, ge=0, description="Output validation retry attempts")
     max_results: int = Field(default=50, ge=1, description="Maximum competitions to return")
 
     @property

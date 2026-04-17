@@ -384,7 +384,7 @@ class EvolverSettings(BaseSettings):
         description="Timeout for executing a candidate solution (seconds)",
     )
     tool_retries: int = Field(default=3, ge=0, description="Tool retry attempts")
-    output_retries: int = Field(default=2, ge=0, description="Output validation retry attempts")
+    output_retries: int = Field(default=4, ge=0, description="Output validation retry attempts")
     population_size: int = Field(default=EVOLUTION_POPULATION_SIZE, ge=1, description="Population size for evolution")
     max_generations: int = Field(default=MAX_EVOLUTION_GENERATIONS, ge=1, description="Maximum evolution generations")
     min_generations: int = Field(default=0, ge=0, description="Minimum generations before convergence checks")

@@ -180,7 +180,7 @@ class ScientistSettings(BaseSettings):
     temperature: float = Field(default=0.3, ge=0.0, le=2.0, description="Sampling temperature for research prompts")
     max_tokens: int = Field(default=4096, ge=1, description="Maximum tokens for responses")
     tool_retries: int = Field(default=2, ge=0, description="Tool retry attempts")
-    output_retries: int = Field(default=1, ge=0, description="Output validation retry attempts")
+    output_retries: int = Field(default=4, ge=0, description="Output validation retry attempts")
     max_paper_results: int = Field(default=10, ge=1, description="Maximum papers to retrieve")
     max_notebook_results: int = Field(default=10, ge=1, description="Maximum notebooks to retrieve")
 

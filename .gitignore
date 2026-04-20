@@ -186,3 +186,5 @@ backend/fastapi_docstring_spec.md
 # backend/.sage/
 audit.md
 .sourcery.yaml
+/.claude
+p.md

@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.adapters.kaggle:KaggleAdapter.get_leaderboard",
-  "line": 273,
+  "id": "agent_k.adapters.kaggle:KaggleAdapter._backoff_delay",
+  "line": 489,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Get competition leaderboard.",
+  "summary": "Compute backoff delay, honoring ``Retry-After`` when available.",
   "type": "method"
 }

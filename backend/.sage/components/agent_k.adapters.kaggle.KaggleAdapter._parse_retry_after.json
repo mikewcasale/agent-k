@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.adapters.kaggle:KaggleAdapter.get_leaderboard",
-  "line": 273,
+  "id": "agent_k.adapters.kaggle:KaggleAdapter._parse_retry_after",
+  "line": 502,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Get competition leaderboard.",
+  "summary": "Parse a ``Retry-After`` header value into seconds, when numeric.",
   "type": "method"
 }

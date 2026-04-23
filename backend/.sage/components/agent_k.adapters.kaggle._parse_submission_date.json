@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Kaggle emits either ISO-8601 (\"2024-01-01T12:00:00Z\") or\nspace-separated (\"2024-01-01 12:00:00\") timestamps. Returns None\nwhen the value is missing or unparseable instead of raising.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.adapters.kaggle:_parse_submission_date",
+  "line": 564,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/adapters/kaggle.py",
+  "summary": "Parse a Kaggle leaderboard SubmissionDate value into a datetime.",
+  "type": "function"
+}

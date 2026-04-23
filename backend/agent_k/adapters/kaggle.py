@@ -68,6 +68,10 @@ __all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
+_LEADERBOARD_TEAM_NAME_COLUMNS: Final[tuple[str, ...]] = ("TeamName", "team_name", "Team", "TeamId", "team_id")
+_LEADERBOARD_SCORE_COLUMNS: Final[tuple[str, ...]] = ("Score", "score", "PublicScore", "public_score", "Value", "value")
+_LEADERBOARD_DATE_COLUMNS: Final[tuple[str, ...]] = ("SubmissionDate", "submission_date", "LastSubmission")
+_LEADERBOARD_ENTRY_COUNT_COLUMNS: Final[tuple[str, ...]] = ("SubmissionCount", "submission_count", "Entries", "entries")
 
 
 class KaggleSettings(BaseSettings):
@@ -274,36 +278,17 @@ class KaggleAdapter(PlatformAdapter):
             self._raise_rules_not_accepted(response, competition_id)
             response.raise_for_status()
 
-            entries: list[LeaderboardEntry] = []
             content = response.content
             if response.headers.get("content-type", "").startswith("application/zip") or content[:2] == b"PK":
                 with zipfile.ZipFile(io.BytesIO(content)) as archive:
                     csv_name = next((name for name in archive.namelist() if name.lower().endswith(".csv")), None)
                     if not csv_name:
-                        return entries
+                        return []
                     csv_text = archive.read(csv_name).decode("utf-8", errors="ignore")
             else:
                 csv_text = response.text
 
-            reader = csv.reader(io.StringIO(csv_text))
-            if next(reader, None) is None:
-                return entries
-
-            for i, row in enumerate(reader, start=1):
-                if i > limit:
-                    break
-                if not row:
-                    continue
-                team_name = row[1] if len(row) > 1 else "Unknown"
-                score = 0.0
-                if len(row) > 2:
-                    try:
-                        score = float(row[2])
-                    except ValueError:
-                        score = 0.0
-                entries.append(LeaderboardEntry(rank=i, team_name=team_name, score=score))
-
-            return entries
+            return _parse_leaderboard_csv(csv_text, competition_id=competition_id, limit=limit)
 
     async def submit(self, competition_id: str, file_path: str, message: str = "") -> Submission:
         """Submit solution to Kaggle competition."""
@@ -556,3 +541,124 @@ class KaggleAdapter(PlatformAdapter):
             tags=tags,
             url=data.get("url"),
         )
+
+
+def _pick_column(fieldnames: list[str], candidates: tuple[str, ...]) -> str | None:
+    """Return the first matching column name from ``fieldnames``.
+
+    Matching is case-insensitive and ignores surrounding whitespace so that
+    Kaggle's ``Score`` and a legacy ``score`` header both resolve.
+
+    @dev: |
+        Used to locate team/score/date columns in the leaderboard CSV.
+    """
+    lookup = {name.strip().lower(): name for name in fieldnames if isinstance(name, str)}
+    for candidate in candidates:
+        actual = lookup.get(candidate.strip().lower())
+        if actual is not None:
+            return actual
+    return None
+
+
+def _parse_submission_date(raw: str | None) -> datetime | None:
+    """Parse a Kaggle leaderboard SubmissionDate value into a datetime.
+
+    @dev: |
+        Kaggle emits either ISO-8601 ("2024-01-01T12:00:00Z") or
+        space-separated ("2024-01-01 12:00:00") timestamps. Returns None
+        when the value is missing or unparseable instead of raising.
+    """
+    if not raw:
+        return None
+    text = raw.strip()
+    if not text:
+        return None
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00").replace(" ", "T"))
+    except ValueError:
+        return None
+
+
+def _parse_leaderboard_csv(csv_text: str, *, competition_id: str, limit: int) -> list[LeaderboardEntry]:
+    """Parse a Kaggle leaderboard CSV payload into ``LeaderboardEntry`` rows.
+
+    Kaggle's public leaderboard download has a header row such as
+    ``TeamId,TeamName,SubmissionDate,Score``. Earlier positional parsing
+    mis-read ``SubmissionDate`` as the score, silently zeroing every entry.
+    This helper resolves columns by header name and falls back to a strict
+    positional layout only when the header is missing or unrecognised.
+
+    @dev: |
+        Returns at most ``limit`` entries. Malformed rows are skipped with a
+        logfire warning so a single bad line does not discard the leaderboard.
+    """
+    reader = csv.reader(io.StringIO(csv_text))
+    header = next(reader, None)
+    if header is None:
+        return []
+
+    team_col = _pick_column(header, _LEADERBOARD_TEAM_NAME_COLUMNS)
+    score_col = _pick_column(header, _LEADERBOARD_SCORE_COLUMNS)
+    has_header = score_col is not None or team_col is not None
+
+    team_idx: int | None = None
+    score_idx: int | None = None
+    date_idx: int | None = None
+    entries_idx: int | None = None
+
+    if has_header:
+        date_col = _pick_column(header, _LEADERBOARD_DATE_COLUMNS)
+        entries_col = _pick_column(header, _LEADERBOARD_ENTRY_COUNT_COLUMNS)
+        team_idx = header.index(team_col) if team_col else None
+        score_idx = header.index(score_col) if score_col else None
+        date_idx = header.index(date_col) if date_col else None
+        entries_idx = header.index(entries_col) if entries_col else None
+        if score_idx is None:
+            logfire.warning("kaggle_leaderboard_missing_score_column", competition_id=competition_id, header=header)
+    else:
+        # No recognizable header; treat the consumed row as the first entry.
+        reader = iter([header, *reader])
+
+    entries: list[LeaderboardEntry] = []
+    rank = 0
+    for row in reader:
+        if not row or all(not cell.strip() for cell in row):
+            continue
+        rank += 1
+        if rank > limit:
+            break
+        try:
+            team_name = row[team_idx] if team_idx is not None and team_idx < len(row) else ""
+            if not team_name:
+                team_name = row[1] if len(row) > 1 else "Unknown"
+            score_raw = row[score_idx] if score_idx is not None and score_idx < len(row) else ""
+            if not score_raw and score_idx is None and len(row) >= 4:
+                score_raw = row[3]
+            try:
+                score = float(score_raw) if score_raw else 0.0
+            except ValueError:
+                score = 0.0
+            last_submission = (
+                _parse_submission_date(row[date_idx]) if date_idx is not None and date_idx < len(row) else None
+            )
+            entry_count = 1
+            if entries_idx is not None and entries_idx < len(row):
+                try:
+                    entry_count = max(1, int(row[entries_idx]))
+                except (TypeError, ValueError):
+                    entry_count = 1
+            entries.append(
+                LeaderboardEntry(
+                    rank=rank,
+                    team_name=team_name or "Unknown",
+                    score=score,
+                    entries=entry_count,
+                    last_submission=last_submission,
+                )
+            )
+        except Exception as exc:
+            logfire.warning("kaggle_leaderboard_row_skipped", competition_id=competition_id, rank=rank, error=str(exc))
+            rank -= 1
+            continue
+
+    return entries

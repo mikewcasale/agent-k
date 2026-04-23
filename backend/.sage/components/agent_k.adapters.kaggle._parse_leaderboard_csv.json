@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Returns at most ``limit`` entries. Malformed rows are skipped with a\nlogfire warning so a single bad line does not discard the leaderboard.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.adapters.kaggle:_parse_leaderboard_csv",
+  "line": 583,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/adapters/kaggle.py",
+  "summary": "Parse a Kaggle leaderboard CSV payload into ``LeaderboardEntry`` rows.",
+  "type": "function"
+}

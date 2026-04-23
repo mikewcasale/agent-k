@@ -3,15 +3,15 @@
   "anti_patterns": null,
   "canonical_home": null,
   "custom": null,
-  "dev": null,
+  "dev": "Used to locate team/score/date columns in the leaderboard CSV.",
   "graph": null,
   "human_review": null,
-  "id": "agent_k.adapters.kaggle:KaggleAdapter.search_competitions",
-  "line": 204,
+  "id": "agent_k.adapters.kaggle:_pick_column",
+  "line": 547,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Search Kaggle competitions.",
-  "type": "method"
+  "summary": "Return the first matching column name from ``fieldnames``.",
+  "type": "function"
 }

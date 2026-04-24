@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.infra.providers:is_devstral_model",
-  "line": 189,
+  "line": 193,
   "notice": "Returns true when the model spec targets Devstral.",
   "pattern": null,
   "similar": null,

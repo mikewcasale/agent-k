@@ -14,10 +14,21 @@ from pydantic_ai.models.openai import OpenAIChatModel
 from agent_k.infra.providers import (
     DEVSTRAL_BASE_URL,
     DEVSTRAL_MODEL_ID,
+    OPENROUTER_FREE_MODELS,
     create_devstral_model,
     create_openrouter_model,
     get_model,
     is_devstral_model,
+)
+
+# Slugs returned by OpenRouter as 404 / "period has ended" / persistently rate-limited
+# in prior live runs. Listed here so any future re-introduction trips a regression.
+_KNOWN_DEAD_OPENROUTER_SLUGS: frozenset[str] = frozenset(
+    {
+        "openrouter:mistralai/devstral-2512:free",
+        "openrouter:qwen/qwen3-coder:free",
+        "openrouter:kwaipilot/kat-coder-pro:free",
+    }
 )
 
 __all__ = ()
@@ -111,6 +122,31 @@ class TestGetModel:
         result = get_model("openrouter:mistralai/devstral-small-2505")
 
         assert isinstance(result, OpenAIChatModel)
+
+
+class TestOpenRouterFreeModels:
+    """Regression tests for the OPENROUTER_FREE_MODELS catalog.
+
+    The catalog feeds OpenEvolve's default model selection (and any caller that
+    wants a free coding-capable slug). Stale entries here have caused production
+    missions to fail at the Evolution phase with 404 from OpenRouter when the
+    upstream "free" tier lapsed.
+    """
+
+    def test_catalog_is_non_empty(self) -> None:
+        """At least one free model must always be available as a fallback."""
+        assert OPENROUTER_FREE_MODELS, "OPENROUTER_FREE_MODELS must not be empty"
+
+    def test_all_entries_use_openrouter_free_tier(self) -> None:
+        """Every entry must be a free OpenRouter slug."""
+        for key, spec in OPENROUTER_FREE_MODELS.items():
+            assert spec.startswith("openrouter:"), f"{key} must use openrouter: provider, got {spec!r}"
+            assert spec.endswith(":free"), f"{key} must point to a :free tier, got {spec!r}"
+
+    def test_no_known_dead_slugs(self) -> None:
+        """Reject any slug that has previously failed live and was retired."""
+        intersection = set(OPENROUTER_FREE_MODELS.values()) & _KNOWN_DEAD_OPENROUTER_SLUGS
+        assert not intersection, f"OPENROUTER_FREE_MODELS contains retired slugs: {sorted(intersection)}"
 
 
 class TestIsDevstralModel:

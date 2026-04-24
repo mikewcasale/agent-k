@@ -10,11 +10,37 @@ from pathlib import Path
 
 import pytest
 
-from agent_k.adapters.openevolve import OpenEvolveAdapter, OpenEvolveJobState, OpenEvolveSettings
+from agent_k.adapters.openevolve import (
+    _DEFAULT_OPENEVOLVE_MODEL,
+    OpenEvolveAdapter,
+    OpenEvolveJobState,
+    OpenEvolveSettings,
+)
+from agent_k.infra.providers import OPENROUTER_FREE_MODELS
 
 __all__ = ()
 
 pytestmark = pytest.mark.anyio
+
+
+class TestDefaultOpenEvolveModel:
+    """Regression tests for the OpenEvolve default-model fallback.
+
+    When callers omit ``model_specs``, the runner falls back to this constant.
+    A stale value here previously caused live missions to 404 mid-evolution.
+    """
+
+    def test_default_is_a_known_free_model(self) -> None:
+        """Default must resolve to an entry in OPENROUTER_FREE_MODELS."""
+        assert _DEFAULT_OPENEVOLVE_MODEL in OPENROUTER_FREE_MODELS.values(), (
+            f"_DEFAULT_OPENEVOLVE_MODEL {_DEFAULT_OPENEVOLVE_MODEL!r} must be one of "
+            f"OPENROUTER_FREE_MODELS values {sorted(OPENROUTER_FREE_MODELS.values())!r}"
+        )
+
+    def test_default_is_openrouter_free_tier(self) -> None:
+        """Default must be a free OpenRouter slug."""
+        assert _DEFAULT_OPENEVOLVE_MODEL.startswith("openrouter:")
+        assert _DEFAULT_OPENEVOLVE_MODEL.endswith(":free")
 
 
 class TestOpenEvolveAdapter:

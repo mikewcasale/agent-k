@@ -40,7 +40,7 @@ import io
 import re
 import zipfile
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
 from urllib.parse import quote
@@ -68,6 +68,57 @@ __all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
+_MAX_SEARCH_PAGES: Final[int] = 20
+_DEFAULT_DEADLINE: Final[datetime] = datetime(2099, 12, 31, 23, 59, 59, tzinfo=UTC)
+_CATEGORY_ALIASES: Final[dict[str, CompetitionType]] = {
+    "featured": CompetitionType.FEATURED,
+    "research": CompetitionType.RESEARCH,
+    "gettingstarted": CompetitionType.GETTING_STARTED,
+    "playground": CompetitionType.PLAYGROUND,
+    "community": CompetitionType.COMMUNITY,
+}
+
+
+def _normalize_category_key(raw: Any) -> str:
+    """Collapse a Kaggle category label to a canonical lookup key.
+
+    Handles PascalCase (``"Getting Started"``), camelCase (``"gettingStarted"``),
+    kebab-case (``"getting-started"``), and snake_case variants by lowercasing
+    and stripping whitespace / punctuation separators.
+    """
+    if not isinstance(raw, str):
+        return ""
+    return "".join(ch for ch in raw.lower() if ch.isalnum())
+
+
+def _parse_deadline(raw: Any, *, default: datetime = _DEFAULT_DEADLINE) -> datetime:
+    """Parse a Kaggle deadline value into a timezone-aware datetime.
+
+    Kaggle returns deadlines as ISO-8601 strings, occasionally with a trailing
+    ``Z``, and sometimes as ``null`` for open-ended / still-being-configured
+    competitions. This helper normalizes all of those into a UTC-aware
+    ``datetime``; unparseable values fall back to ``default``.
+    """
+    if raw is None:
+        return default
+    if isinstance(raw, datetime):
+        return raw if raw.tzinfo is not None else raw.replace(tzinfo=UTC)
+    if not isinstance(raw, str):
+        return default
+
+    text = raw.strip()
+    if not text:
+        return default
+
+    # ``datetime.fromisoformat`` in 3.11+ accepts trailing ``Z``, but not every
+    # payload Kaggle emits is strictly ISO-8601 — normalize defensively.
+    candidate = text.replace("Z", "+00:00") if text.endswith("Z") else text
+    try:
+        parsed = datetime.fromisoformat(candidate)
+    except ValueError:
+        logfire.warning("kaggle_deadline_parse_failed", raw=text[:64])
+        return default
+    return parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=UTC)
 
 
 class KaggleSettings(BaseSettings):
@@ -199,8 +250,8 @@ class KaggleAdapter(PlatformAdapter):
     ) -> AsyncIterator[Competition]:
         """Search Kaggle competitions."""
         with logfire.span("kaggle.search_competitions", categories=categories):
-            page = 1
-            while True:
+            previous_refs: tuple[str, ...] | None = None
+            for page in range(1, _MAX_SEARCH_PAGES + 1):
                 params: dict[str, Any] = {"page": page}
                 if categories:
                     params["category"] = categories[0]  # Kaggle API supports single category
@@ -211,7 +262,19 @@ class KaggleAdapter(PlatformAdapter):
                 data = response.json()
 
                 if not data:
-                    break
+                    return
+
+                # Detect a stuck/repeating paginator by fingerprinting page refs;
+                # Kaggle has been observed to ignore ``page`` when filters collide.
+                current_refs = tuple(
+                    str(item.get("ref", "") or item.get("url", "") or item.get("id", ""))
+                    for item in data
+                    if isinstance(item, dict)
+                )
+                if previous_refs is not None and current_refs == previous_refs:
+                    logfire.warning("kaggle_search_pagination_stalled", page=page, item_count=len(current_refs))
+                    return
+                previous_refs = current_refs
 
                 for item in data:
                     # Skip if item is not a dict (malformed data)
@@ -234,8 +297,8 @@ class KaggleAdapter(PlatformAdapter):
                         continue
 
                     yield competition
-
-                page += 1
+            else:
+                logfire.warning("kaggle_search_pagination_cap_reached", max_pages=_MAX_SEARCH_PAGES)
 
     async def get_competition(self, competition_id: str) -> Competition:
         """Get competition details from Kaggle."""
@@ -461,14 +524,9 @@ class KaggleAdapter(PlatformAdapter):
 
     def _parse_competition(self, data: dict[str, Any]) -> Competition:
         """Parse Kaggle API response into Competition model."""
-        # Map Kaggle category to our enum
-        category_map = {
-            "Featured": CompetitionType.FEATURED,
-            "Research": CompetitionType.RESEARCH,
-            "Getting Started": CompetitionType.GETTING_STARTED,
-            "Playground": CompetitionType.PLAYGROUND,
-            "Community": CompetitionType.COMMUNITY,
-        }
+        # Map Kaggle category to our enum (tolerant of PascalCase / camelCase /
+        # kebab-case / snake_case forms Kaggle uses across endpoints).
+        category_type = _CATEGORY_ALIASES.get(_normalize_category_key(data.get("category")), CompetitionType.COMMUNITY)
 
         # Map Kaggle metric to our enum
         metric_map = {
@@ -546,13 +604,13 @@ class KaggleAdapter(PlatformAdapter):
             id=comp_id,
             title=data.get("title", ""),
             description=data.get("description"),
-            competition_type=category_map.get(data.get("category", ""), CompetitionType.COMMUNITY),
+            competition_type=category_type,
             metric=metric,
             metric_direction=metric_direction,
-            deadline=datetime.fromisoformat(data.get("deadline", "2099-12-31T23:59:59+00:00").replace("Z", "+00:00")),
+            deadline=_parse_deadline(data.get("deadline")),
             prize_pool=prize_pool,
-            max_team_size=data.get("maxTeamSize", 1),
-            max_daily_submissions=data.get("maxDailySubmissions", 5),
+            max_team_size=data.get("maxTeamSize") or 1,
+            max_daily_submissions=data.get("maxDailySubmissions") or 5,
             tags=tags,
             url=data.get("url"),
         )

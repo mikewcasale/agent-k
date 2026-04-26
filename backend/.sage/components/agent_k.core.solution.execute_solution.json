@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.solution:execute_solution",
-  "line": 113,
+  "line": 126,
   "notice": "Runs Python code in an isolated subprocess with timeout support.",
   "pattern": null,
   "similar": null,

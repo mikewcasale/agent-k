@@ -32,6 +32,7 @@ from __future__ import annotations as _annotations
 import ast
 import asyncio
 import json
+import math
 import os
 import re
 import shutil
@@ -43,6 +44,8 @@ from typing import TYPE_CHECKING, Any, Final
 
 import logfire
 from openevolve.evaluation_result import EvaluationResult
+
+from agent_k.core.solution import FLOAT_TOKEN_PATTERN
 
 if TYPE_CHECKING:
     from agent_k.core.hints import PreprocessingHint
@@ -282,9 +285,19 @@ def _compute_cv_variance(stdout: str) -> float:
     Returns:
         Variance of CV fold scores, or 0.0 if not found.
     """
-    # Look for patterns like "Fold 1: 0.85", "Fold 2: 0.83", etc.
-    fold_pattern = re.compile(r"Fold\s+\d+[:\s]+([0-9.]+)")
-    fold_scores = [float(match) for match in fold_pattern.findall(stdout)]
+    # Look for patterns like "Fold 1: 0.85", "Fold 2: 0.83", etc. Accepts
+    # signed decimals and scientific notation; rejects malformed tokens and
+    # non-finite values so a single bad fold does not poison the variance.
+    fold_pattern = re.compile(rf"Fold\s+\d+[:\s]+({FLOAT_TOKEN_PATTERN})")
+    fold_scores: list[float] = []
+    for token in fold_pattern.findall(stdout):
+        try:
+            value = float(token)
+        except ValueError:
+            continue
+        if not math.isfinite(value):
+            continue
+        fold_scores.append(value)
 
     if len(fold_scores) < 2:
         # Not enough fold scores to compute variance

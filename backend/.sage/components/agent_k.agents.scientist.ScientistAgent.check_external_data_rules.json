@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.scientist:ScientistAgent.check_external_data_rules",
-  "line": 617,
+  "line": 623,
   "notice": "Fetches rules and infers external data policy.",
   "pattern": null,
   "similar": null,

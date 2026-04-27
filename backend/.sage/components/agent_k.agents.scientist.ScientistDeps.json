@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.scientist:ScientistDeps",
-  "line": 195,
+  "line": 201,
   "notice": "Dependencies for the Scientist agent.",
   "pattern": {
     "name": "dependency-container",

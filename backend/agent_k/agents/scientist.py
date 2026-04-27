@@ -158,6 +158,12 @@ _KERNEL_TECHNIQUE_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
     "cross_validation": re.compile(r"\b(KFold|StratifiedKFold|cross_val_score|cross_validate)\b", re.IGNORECASE),
 }
 _MISSING_VALUE_TOKENS: Final[frozenset[str]] = frozenset({"", "na", "nan", "null", "none"})
+# Kaggle kernel URLs return from the API as either absolute (https://www.kaggle.com/code/owner/slug)
+# or relative (/code/owner/slug, /owner/slug). Anchoring on either kaggle.com or the path start
+# keeps both shapes addressable. The previous pattern double-escaped the dot and never matched.
+_KAGGLE_KERNEL_URL_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"(?:kaggle\.com|^)/(?:code/)?(?P<owner>[^/]+)/(?P<slug>[^/?#]+)"
+)
 
 
 class ScientistSettings(BaseSettings):
@@ -783,7 +789,7 @@ class ScientistAgent(MemoryMixin):
     def _extract_kernel_ref(self, url: str) -> str | None:
         if not url:
             return None
-        match = re.search(r"kaggle\\.com/(?:code/)?(?P<owner>[^/]+)/(?P<slug>[^/?#]+)", url)
+        match = _KAGGLE_KERNEL_URL_PATTERN.search(url)
         if not match:
             return None
         return f"{match.group('owner')}/{match.group('slug')}"

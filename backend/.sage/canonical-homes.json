@@ -19,7 +19,7 @@
     "for": [
       "scientist agent construction"
     ],
-    "line": 656,
+    "line": 662,
     "notes": "Use ScientistAgent() or module singleton.",
     "source": "agent_k/agents/scientist.py"
   },

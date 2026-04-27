@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.scientist:ScientistAgent.analyze_top_kernels",
-  "line": 457,
+  "line": 463,
   "notice": "Downloads and summarizes kernel code to identify techniques.",
   "pattern": null,
   "similar": null,

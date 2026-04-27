@@ -64,9 +64,6 @@ __all__ = ("KaggleDeps", "kaggle_toolset")
 
 kaggle_toolset: FunctionToolset[Any] = FunctionToolset(id="kaggle")
 
-# Cache for competition data
-_cache: dict[str, Competition] = {}
-
 
 def _error_dict_response(error: str) -> dict[str, Any]:
     return {"error": error}
@@ -244,13 +241,14 @@ async def kaggle_get_competition(
     """Get detailed information about a specific Kaggle competition.
 
     @notice: |
-        Fetches competition metadata and caches results.
+        Fetches competition metadata and caches results on the request deps.
     """
     with logfire.span("kaggle_get_competition", competition_id=competition_id):
         adapter = _require_adapter(ctx)
 
-        if competition_id in _cache:
-            comp = _cache[competition_id]
+        cached = _cached_competition(ctx, competition_id)
+        if cached is not None:
+            comp = cached
         else:
             comp = await adapter.get_competition(competition_id)
             _store_competition(ctx, comp)
@@ -329,10 +327,24 @@ def _resolve_adapter(ctx: RunContext[Any]) -> PlatformAdapter | None:
 
 
 def _store_competition(ctx: RunContext[Any], competition: Competition) -> None:
-    _cache[competition.id] = competition
-    search_cache = getattr(ctx.deps, "search_cache", None)
-    if isinstance(search_cache, dict):
+    search_cache = _resolve_search_cache(ctx)
+    if search_cache is not None:
         search_cache[competition.id] = competition
+
+
+def _cached_competition(ctx: RunContext[Any], competition_id: str) -> Competition | None:
+    from agent_k.core.models import Competition as CompetitionModel
+
+    search_cache = _resolve_search_cache(ctx)
+    if search_cache is None:
+        return None
+    cached = search_cache.get(competition_id)
+    return cached if isinstance(cached, CompetitionModel) else None
+
+
+def _resolve_search_cache(ctx: RunContext[Any]) -> dict[str, Any] | None:
+    cache = getattr(ctx.deps, "search_cache", None)
+    return cache if isinstance(cache, dict) else None
 
 
 async def _emit_tool_event(

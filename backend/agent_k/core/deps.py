@@ -30,8 +30,8 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     import httpx
@@ -98,6 +98,7 @@ class KaggleDeps(BaseDeps):
 
     kaggle_adapter: KaggleAdapter
     max_results: int = 50
+    search_cache: dict[str, Any] = field(default_factory=dict)
 
     @property
     def platform_adapter(self) -> KaggleAdapter:

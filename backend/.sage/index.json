@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-04-27T03:19:39.987801+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -6738,31 +6738,31 @@
       },
       {
         "component": "agent_k.toolsets.kaggle:kaggle_search_competitions",
-        "line": 196,
+        "line": 193,
         "name": "notice",
         "value": "Returns metadata for competitions matching search criteria."
       },
       {
         "component": "agent_k.toolsets.kaggle:kaggle_search_competitions",
-        "line": 199,
+        "line": 196,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"], \"state\": [\"in-module cache\"]}"
       },
       {
         "component": "agent_k.toolsets.kaggle:kaggle_get_competition",
-        "line": 246,
+        "line": 243,
         "name": "notice",
-        "value": "Fetches competition metadata and caches results."
+        "value": "Fetches competition metadata and caches results on the request deps."
       },
       {
         "component": "agent_k.toolsets.kaggle:kaggle_get_leaderboard",
-        "line": 276,
+        "line": 274,
         "name": "notice",
         "value": "Returns leaderboard entries ordered by rank."
       },
       {
         "component": "agent_k.toolsets.kaggle:kaggle_list_datasets",
-        "line": 302,
+        "line": 300,
         "name": "notice",
         "value": "Returns file metadata for competition datasets."
       }

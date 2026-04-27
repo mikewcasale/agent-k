@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.scientist:ScientistAgent.__init__",
-  "line": 355,
+  "line": 361,
   "notice": "Builds the agent singleton and registers tools.",
   "pattern": null,
   "similar": null,

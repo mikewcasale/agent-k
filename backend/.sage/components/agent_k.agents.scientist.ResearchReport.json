@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.scientist:ResearchReport",
-  "line": 289,
+  "line": 295,
   "notice": "Complete research report for a competition.",
   "pattern": {
     "name": "output-model",

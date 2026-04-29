@@ -66,7 +66,18 @@ from pydantic_ai import Agent, DeferredToolRequests, ModelRetry, ModelSettings, 
 from pydantic_ai.builtin_tools import MCPServerTool
 from pydantic_ai.toolsets import FunctionToolset
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from sklearn.metrics import log_loss, mean_absolute_error, mean_squared_error, mean_squared_log_error, roc_auc_score
+from sklearn.metrics import (
+    accuracy_score,
+    average_precision_score,
+    f1_score,
+    log_loss,
+    mean_absolute_error,
+    mean_squared_error,
+    mean_squared_log_error,
+    ndcg_score,
+    r2_score,
+    roc_auc_score,
+)
 
 from agent_k.adapters.openevolve import OpenEvolveRunner
 from agent_k.agents import register_agent
@@ -2613,10 +2624,34 @@ def _prepare_validation_split(
     return train_df, val_features, y_val, resolved_id
 
 
+_METRIC_ALIASES: Final[dict[str, str]] = {
+    "rocauc": "auc",
+    "averageprecision": "map",
+    "f1score": "f1",
+    "mlogloss": "logloss",
+    "multiclasslogloss": "logloss",
+    "crossentropy": "logloss",
+    "rsquared": "r2",
+}
+
+
+def _normalize_metric_key(metric: str) -> str:
+    """Normalize a metric label into a canonical lookup key."""
+    key = str(metric).lower().replace("_", "").replace(" ", "").replace("-", "")
+    return _METRIC_ALIASES.get(key, key)
+
+
 def _score_submission(
     *, submission_path: Path, metric: str, id_column: str, target_columns: list[str], y_val: pd.DataFrame
 ) -> float:
-    """Score a submission.csv against y_val using the competition metric."""
+    """Score a submission.csv against y_val using the competition metric.
+
+    Supports the full EvaluationMetric catalog (rmse, mae, rmsle, log_loss,
+    auc, accuracy, f1, map, ndcg) plus common regression aliases (mse, r2)
+    and label variants (roc_auc, mlogloss, etc.). Single-target metrics
+    raise ValueError when multiple target columns are supplied; multi-target
+    classification metrics average per-column scores.
+    """
     submission = pd.read_csv(submission_path)
     if id_column not in submission.columns:
         raise ValueError(f"submission.csv missing id column '{id_column}'")
@@ -2635,23 +2670,52 @@ def _score_submission(
     if not np.isfinite(y_pred).all():
         y_pred = np.nan_to_num(y_pred, nan=0.0, posinf=0.0, neginf=0.0)
 
-    key = metric.lower().replace("_", "").replace(" ", "")
-    if key in {"rmsle"}:
-        y_pred = np.clip(y_pred, 0.0, None)
-        return float(np.sqrt(mean_squared_log_error(y_true, y_pred)))
-    if key in {"rmse"}:
+    key = _normalize_metric_key(metric)
+    n_targets = y_true.shape[1]
+
+    if key == "rmse":
         return float(np.sqrt(mean_squared_error(y_true, y_pred)))
-    if key in {"mae"}:
+    if key == "mse":
+        return float(mean_squared_error(y_true, y_pred))
+    if key == "mae":
         return float(mean_absolute_error(y_true, y_pred))
-    if key in {"logloss"}:
-        if y_true.shape[1] != 1:
+    if key == "rmsle":
+        y_pred_clipped = np.clip(y_pred, 0.0, None)
+        return float(np.sqrt(mean_squared_log_error(y_true, y_pred_clipped)))
+    if key == "r2":
+        return float(r2_score(y_true, y_pred))
+
+    if key == "logloss":
+        if n_targets != 1:
             raise ValueError("logloss only supported for single-target problems")
-        y_pred = np.clip(y_pred, 1e-6, 1 - 1e-6)
-        return float(log_loss(y_true[:, 0], y_pred[:, 0]))
-    if key in {"auc"}:
-        if y_true.shape[1] != 1:
+        y_pred_clipped = np.clip(y_pred, 1e-6, 1 - 1e-6)
+        return float(log_loss(y_true[:, 0], y_pred_clipped[:, 0]))
+    if key == "auc":
+        if n_targets != 1:
             raise ValueError("auc only supported for single-target problems")
         return float(roc_auc_score(y_true[:, 0], y_pred[:, 0]))
+    if key == "map":
+        if n_targets != 1:
+            raise ValueError("map only supported for single-target problems")
+        return float(average_precision_score(y_true[:, 0], y_pred[:, 0]))
+    if key == "ndcg":
+        # Treat the merged predictions as a single ranked list across all targets.
+        return float(ndcg_score(y_true.reshape(1, -1), y_pred.reshape(1, -1)))
+
+    if key == "accuracy":
+        y_true_int = y_true.astype(int)
+        y_pred_int = (y_pred >= 0.5).astype(int)
+        if n_targets == 1:
+            return float(accuracy_score(y_true_int[:, 0], y_pred_int[:, 0]))
+        scores = [accuracy_score(y_true_int[:, i], y_pred_int[:, i]) for i in range(n_targets)]
+        return float(sum(scores) / n_targets)
+    if key == "f1":
+        y_true_int = y_true.astype(int)
+        y_pred_int = (y_pred >= 0.5).astype(int)
+        if n_targets == 1:
+            return float(f1_score(y_true_int[:, 0], y_pred_int[:, 0], zero_division=0))
+        scores = [f1_score(y_true_int[:, i], y_pred_int[:, i], zero_division=0) for i in range(n_targets)]
+        return float(sum(scores) / n_targets)
 
     raise ValueError(f"Unsupported metric: {metric}")
 

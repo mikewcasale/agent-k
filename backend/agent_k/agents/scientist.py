@@ -158,6 +158,7 @@ _KERNEL_TECHNIQUE_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
     "cross_validation": re.compile(r"\b(KFold|StratifiedKFold|cross_val_score|cross_validate)\b", re.IGNORECASE),
 }
 _MISSING_VALUE_TOKENS: Final[frozenset[str]] = frozenset({"", "na", "nan", "null", "none"})
+_CSV_SUMMARY_SAMPLE_ROWS: Final[int] = 100
 
 
 class ScientistSettings(BaseSettings):
@@ -853,21 +854,23 @@ class ScientistAgent(MemoryMixin):
     def _summarize_csv(self, path: Path) -> dict[str, Any]:
         with path.open("r", encoding="utf-8", newline="") as handle:
             reader = csv.reader(handle)
-            rows = list(reader)
+            try:
+                header = next(reader)
+            except StopIteration:
+                return {"row_count": 0, "column_count": 0}
 
-        if not rows:
-            return {"row_count": 0, "column_count": 0}
-
-        header = rows[0]
-        sample_rows = rows[1:101]
-        missing_counts = {col: 0 for col in header}
-        for row in sample_rows:
-            for col, value in zip(header, row, strict=False):
-                if value.strip().lower() in _MISSING_VALUE_TOKENS:
-                    missing_counts[col] += 1
+            missing_counts: dict[str, int] = dict.fromkeys(header, 0)
+            row_count = 0
+            for row in reader:
+                row_count += 1
+                if row_count > _CSV_SUMMARY_SAMPLE_ROWS:
+                    continue
+                for col, value in zip(header, row, strict=False):
+                    if value.strip().lower() in _MISSING_VALUE_TOKENS:
+                        missing_counts[col] += 1
 
         return {
-            "row_count": len(rows) - 1,
+            "row_count": row_count,
             "column_count": len(header),
             "columns": header,
             "missing_values": {col: count for col, count in missing_counts.items() if count > 0},

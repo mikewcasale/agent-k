@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.scientist:ScientistAgent.analyze_data_characteristics",
-  "line": 573,
+  "line": 574,
   "notice": "Profiles datasets and derives preprocessing hints.",
   "pattern": null,
   "similar": null,

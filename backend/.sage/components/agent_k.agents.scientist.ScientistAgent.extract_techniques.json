@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.scientist:ScientistAgent.extract_techniques",
-  "line": 495,
+  "line": 496,
   "notice": "Scans code for common ML techniques and feature engineering patterns.",
   "pattern": null,
   "similar": null,

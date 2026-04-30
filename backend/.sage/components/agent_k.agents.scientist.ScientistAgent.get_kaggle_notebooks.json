@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.scientist:ScientistAgent.get_kaggle_notebooks",
-  "line": 426,
+  "line": 427,
   "notice": "Retrieves competition notebooks ordered by vote count or freshness.",
   "pattern": null,
   "similar": null,

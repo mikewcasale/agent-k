@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.adapters.kaggle:KaggleAdapter.authenticate",
-  "line": 290,
+  "id": "agent_k.adapters.kaggle:_normalize_metric_key",
+  "line": 131,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Authenticate with Kaggle API.",
-  "type": "method"
+  "summary": "Collapse a Kaggle evaluation-metric label to a canonical lookup key.",
+  "type": "function"
 }

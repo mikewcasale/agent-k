@@ -50,6 +50,7 @@ import json
 import math
 import os
 import shutil
+import statistics
 import tempfile
 import traceback
 from collections import Counter
@@ -2510,8 +2511,8 @@ def _build_leaderboard_analysis(
     ]
 
     return LeaderboardAnalysis(
-        top_score=max(scores),
-        median_score=sorted_scores[total // 2],
+        top_score=ranked[0],
+        median_score=statistics.median(scores),
         target_score=target_score,
         target_percentile=target_percentile,
         total_teams=total,

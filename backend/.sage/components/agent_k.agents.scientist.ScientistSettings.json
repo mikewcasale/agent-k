@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.scientist:ScientistSettings",
-  "line": 164,
+  "line": 165,
   "notice": "Configuration for the Scientist agent.",
   "pattern": {
     "name": "settings",

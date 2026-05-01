@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-05-01T23:29:42.723209+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -65,7 +65,7 @@
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 319,
+        "line": 320,
         "rationale": "Single instance keeps memory/tool registration consistent.",
         "source": "agent_k/agents/scientist.py",
         "violations": [
@@ -161,7 +161,7 @@
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps",
-        "line": 195,
+        "line": 196,
         "rationale": "Groups runtime services for research tools.",
         "source": "agent_k/agents/scientist.py",
         "violations": [
@@ -654,7 +654,7 @@
     "graph-node": [
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 115,
+        "line": 116,
         "rationale": "Encapsulates discovery phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -663,7 +663,7 @@
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 273,
+        "line": 274,
         "rationale": "Encapsulates research phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -672,7 +672,7 @@
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 419,
+        "line": 420,
         "rationale": "Encapsulates prototype phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -681,7 +681,7 @@
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 900,
+        "line": 901,
         "rationale": "Encapsulates evolution phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -690,7 +690,7 @@
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1602,
+        "line": 1603,
         "rationale": "Encapsulates submission phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -983,7 +983,7 @@
       },
       {
         "component": "agent_k.agents.scientist:ResearchFinding",
-        "line": 241,
+        "line": 242,
         "rationale": "Consistent schema for research findings.",
         "source": "agent_k/agents/scientist.py",
         "violations": [
@@ -992,7 +992,7 @@
       },
       {
         "component": "agent_k.agents.scientist:LeaderboardAnalysis",
-        "line": 265,
+        "line": 266,
         "rationale": "Stable schema for leaderboard summaries.",
         "source": "agent_k/agents/scientist.py",
         "violations": [
@@ -1001,7 +1001,7 @@
       },
       {
         "component": "agent_k.agents.scientist:ResearchReport",
-        "line": 289,
+        "line": 290,
         "rationale": "Aggregates research findings into a stable schema.",
         "source": "agent_k/agents/scientist.py",
         "violations": [
@@ -1273,7 +1273,7 @@
       },
       {
         "component": "agent_k.agents.scientist:ScientistSettings",
-        "line": 164,
+        "line": 165,
         "rationale": "Centralizes research agent configuration.",
         "source": "agent_k/agents/scientist.py",
         "violations": [

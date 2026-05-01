@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.scientist:get_external_data_policy",
-  "line": 887,
+  "line": 892,
   "notice": "Retrieves competition rules and infers external data allowance.",
   "pattern": null,
   "similar": null,

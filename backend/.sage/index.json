@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-05-01T23:29:42.722487+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -2266,289 +2266,289 @@
       },
       {
         "component": "agent_k.agents.scientist:ScientistSettings",
-        "line": 166,
+        "line": 167,
         "name": "notice",
         "value": "Configuration for the Scientist agent."
       },
       {
         "component": "agent_k.agents.scientist:ScientistSettings",
-        "line": 169,
+        "line": 170,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.scientist:ScientistSettings",
-        "line": 172,
+        "line": 173,
         "name": "pattern",
         "value": "{\"name\": \"settings\", \"rationale\": \"Centralizes research agent configuration.\", \"violations\": \"Per-run overrides lead to inconsistent outputs.\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps",
-        "line": 197,
+        "line": 198,
         "name": "notice",
         "value": "Dependencies for the Scientist agent."
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps",
-        "line": 200,
+        "line": 201,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps",
-        "line": 203,
+        "line": 204,
         "name": "pattern",
         "value": "{\"name\": \"dependency-container\", \"rationale\": \"Groups runtime services for research tools.\", \"violations\": \"Hidden globals make research runs nondeterministic.\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps",
-        "line": 208,
+        "line": 209,
         "name": "collaborators",
         "value": "{\"required\": [\"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\", \"agent_k.core.models:Competition\"], \"optional\": [\"agent_k.core.models:LeaderboardEntry\"], \"injection\": \"constructor\", \"life"
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps.refresh_leaderboard",
-        "line": 228,
+        "line": 229,
         "name": "notice",
         "value": "Updates the cached leaderboard in-place."
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps.refresh_leaderboard",
-        "line": 231,
+        "line": 232,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"], \"state\": [\"self.leaderboard\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ResearchFinding",
-        "line": 243,
+        "line": 244,
         "name": "notice",
         "value": "Individual research finding."
       },
       {
         "component": "agent_k.agents.scientist:ResearchFinding",
-        "line": 246,
+        "line": 247,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.scientist:ResearchFinding",
-        "line": 249,
+        "line": 250,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Consistent schema for research findings.\", \"violations\": \"Ad-hoc dicts are hard to validate.\"}"
       },
       {
         "component": "agent_k.agents.scientist:LeaderboardAnalysis",
-        "line": 267,
+        "line": 268,
         "name": "notice",
         "value": "Analysis of competition leaderboard."
       },
       {
         "component": "agent_k.agents.scientist:LeaderboardAnalysis",
-        "line": 270,
+        "line": 271,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.scientist:LeaderboardAnalysis",
-        "line": 273,
+        "line": 274,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Stable schema for leaderboard summaries.\", \"violations\": \"Inconsistent shapes break downstream synthesis.\"}"
       },
       {
         "component": "agent_k.agents.scientist:ResearchReport",
-        "line": 291,
+        "line": 292,
         "name": "notice",
         "value": "Complete research report for a competition."
       },
       {
         "component": "agent_k.agents.scientist:ResearchReport",
-        "line": 294,
+        "line": 295,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.scientist:ResearchReport",
-        "line": 297,
+        "line": 298,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Aggregates research findings into a stable schema.\", \"violations\": \"Free-form outputs hinder automation.\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 321,
+        "line": 322,
         "name": "notice",
         "value": "Performs leaderboard, literature, and notebook analysis.\nUse the module-level scientist_agent or agent registry."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 325,
+        "line": 326,
         "name": "dev",
         "value": "Registers research tools and synthesizes outputs into ResearchReport."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 328,
+        "line": 329,
         "name": "pattern",
         "value": "{\"name\": \"agent-singleton\", \"rationale\": \"Single instance keeps memory/tool registration consistent.\", \"violations\": \"Multiple instances duplicate tool registrations.\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 333,
+        "line": 334,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.core.models:Competition\"], \"optional\": [\"httpx:AsyncClient\"], \"injection\": \"deps via RunContext\", \"lifecycle\": \"Module-level singleton "
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 342,
+        "line": 343,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates internal caches and tool registration.\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 347,
+        "line": 348,
         "name": "invariants",
         "value": "[\"self._agent is initialized after __init__ completes.\", \"self._toolset registers research tools exactly once.\"]"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.__init__",
-        "line": 357,
+        "line": 358,
         "name": "notice",
         "value": "Builds the agent singleton and registers tools."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.__init__",
-        "line": 360,
+        "line": 361,
         "name": "dev",
         "value": "Initializes memory backend, toolset, and pydantic-ai Agent."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.__init__",
-        "line": 363,
+        "line": 364,
         "name": "state_changes",
         "value": "[\"self._settings\", \"self._toolset\", \"self._agent\"]"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_leaderboard",
-        "line": 393,
+        "line": 394,
         "name": "notice",
         "value": "Computes distribution stats and common approaches from leaderboard entries."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_leaderboard",
-        "line": 396,
+        "line": 397,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request (optional)\"], \"state\": [\"ctx.deps.leaderboard\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.get_kaggle_notebooks",
-        "line": 428,
+        "line": 433,
         "name": "notice",
         "value": "Retrieves competition notebooks ordered by vote count or freshness."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.get_kaggle_notebooks",
-        "line": 431,
+        "line": 436,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_top_kernels",
-        "line": 459,
+        "line": 464,
         "name": "notice",
         "value": "Downloads and summarizes kernel code to identify techniques."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_top_kernels",
-        "line": 462,
+        "line": 467,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.extract_techniques",
-        "line": 497,
+        "line": 502,
         "name": "notice",
         "value": "Scans code for common ML techniques and feature engineering patterns."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.extract_techniques",
-        "line": 500,
+        "line": 505,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.synthesize_strategy",
-        "line": 516,
+        "line": 521,
         "name": "notice",
         "value": "Aggregates extracted techniques into prioritized action items."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.synthesize_strategy",
-        "line": 519,
+        "line": 524,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_data_characteristics",
-        "line": 575,
+        "line": 580,
         "name": "notice",
         "value": "Profiles datasets and derives preprocessing hints."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_data_characteristics",
-        "line": 578,
+        "line": 583,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\", \"local filesystem access\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.check_external_data_rules",
-        "line": 619,
+        "line": 624,
         "name": "notice",
         "value": "Fetches rules and infers external data policy."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.check_external_data_rules",
-        "line": 622,
+        "line": 627,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.compute_baseline_estimate",
-        "line": 639,
+        "line": 644,
         "name": "notice",
         "value": "Uses leaderboard median and a difficulty multiplier."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.compute_baseline_estimate",
-        "line": 642,
+        "line": 647,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent._create_agent",
-        "line": 658,
+        "line": 663,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.agents.scientist:ScientistAgent\", \"rationale\": \"Centralizes agent wiring and toolset preparation.\", \"singleton\": true, \"cache_key\": \"module\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent._create_agent",
-        "line": 664,
+        "line": 669,
         "name": "canonical_home",
         "value": "{\"for\": [\"scientist agent construction\"], \"notes\": \"Use ScientistAgent() or module singleton.\"}"
       },
       {
         "component": "agent_k.agents.scientist:get_external_data_policy",
-        "line": 889,
+        "line": 894,
         "name": "notice",
         "value": "Retrieves competition rules and infers external data allowance."
       },
       {
         "component": "agent_k.agents.scientist:get_external_data_policy",
-        "line": 892,
+        "line": 897,
         "name": "dev",
         "value": "Uses simple heuristics and caches results when provided."
       },
       {
         "component": "agent_k.agents.scientist:get_external_data_policy",
-        "line": 895,
+        "line": 900,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"], \"state\": [\"cache (optional)\"]}"
       }
@@ -6150,181 +6150,181 @@
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 123,
+        "line": 124,
         "name": "notice",
         "value": "Discovery phase node."
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 126,
+        "line": 127,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 129,
+        "line": 130,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates discovery phase logic in the mission graph.\", \"violations\": \"Discovery logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 134,
+        "line": 135,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.lobbyist:LobbyistAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifec"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 144,
+        "line": 145,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 149,
+        "line": 150,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 281,
+        "line": 282,
         "name": "notice",
         "value": "Research phase node."
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 284,
+        "line": 285,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 287,
+        "line": 288,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates research phase logic in the mission graph.\", \"violations\": \"Research logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 292,
+        "line": 293,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.scientist:ScientistAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lif"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 302,
+        "line": 303,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 307,
+        "line": 308,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 427,
+        "line": 428,
         "name": "notice",
         "value": "Prototype phase node."
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 430,
+        "line": 431,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 433,
+        "line": 434,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates prototype phase logic in the mission graph.\", \"violations\": \"Prototype logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 438,
+        "line": 439,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.solution:execute_solution\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 447,
+        "line": 448,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 452,
+        "line": 453,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 908,
+        "line": 909,
         "name": "notice",
         "value": "Evolution phase node."
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 911,
+        "line": 912,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 914,
+        "line": 915,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates evolution phase logic in the mission graph.\", \"violations\": \"Evolution logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 919,
+        "line": 920,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.evolver:EvolverAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated pe"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 928,
+        "line": 929,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 933,
+        "line": 934,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1610,
+        "line": 1611,
         "name": "notice",
         "value": "Submission phase node."
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1613,
+        "line": 1614,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1616,
+        "line": 1617,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates submission phase logic in the mission graph.\", \"violations\": \"Submission logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1621,
+        "line": 1622,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.agents.evolver:EvolverAgent\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated pe"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1630,
+        "line": 1631,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1635,
+        "line": 1636,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       }

@@ -68,6 +68,112 @@ __all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
+_METRIC_ALIASES: Final[dict[str, EvaluationMetric]] = {
+    # Classification - accuracy
+    "accuracy": EvaluationMetric.ACCURACY,
+    "categorizationaccuracy": EvaluationMetric.ACCURACY,
+    "classificationaccuracy": EvaluationMetric.ACCURACY,
+    # Classification - AUC
+    "auc": EvaluationMetric.AUC,
+    "aucroc": EvaluationMetric.AUC,
+    "aucrate": EvaluationMetric.AUC,
+    "areaundercurve": EvaluationMetric.AUC,
+    "areaundertheroccurve": EvaluationMetric.AUC,
+    # Classification - log loss
+    "logloss": EvaluationMetric.LOG_LOSS,
+    "binarylogloss": EvaluationMetric.LOG_LOSS,
+    "multiclassloss": EvaluationMetric.LOG_LOSS,
+    "multiclasslogloss": EvaluationMetric.LOG_LOSS,
+    # Classification - F1 / F-score
+    "f1": EvaluationMetric.F1,
+    "f1score": EvaluationMetric.F1,
+    "meanf1score": EvaluationMetric.F1,
+    "macrof1": EvaluationMetric.F1,
+    "microf1": EvaluationMetric.F1,
+    "samplesf1": EvaluationMetric.F1,
+    "weightedf1": EvaluationMetric.F1,
+    "fscore": EvaluationMetric.F1,
+    "meanfscore": EvaluationMetric.F1,
+    "meanfscorebeta": EvaluationMetric.F1,
+    "fbeta": EvaluationMetric.F1,
+    "fbetascore": EvaluationMetric.F1,
+    # Regression - RMSE / RMSLE / MAE
+    "rmse": EvaluationMetric.RMSE,
+    "rootmeansquarederror": EvaluationMetric.RMSE,
+    "rmsle": EvaluationMetric.RMSLE,
+    "rootmeansquaredlogerror": EvaluationMetric.RMSLE,
+    "rootmeansquaredlogarithmicerror": EvaluationMetric.RMSLE,
+    "mae": EvaluationMetric.MAE,
+    "meanabsoluteerror": EvaluationMetric.MAE,
+    # Ranking - MAP / NDCG
+    "map": EvaluationMetric.MAP,
+    "mapk": EvaluationMetric.MAP,
+    "meanaverageprecision": EvaluationMetric.MAP,
+    "meanaverageprecisionk": EvaluationMetric.MAP,
+    "ndcg": EvaluationMetric.NDCG,
+    "ndcgk": EvaluationMetric.NDCG,
+    "normalizeddiscountedcumulativegain": EvaluationMetric.NDCG,
+}
+_METRIC_DIRECTIONS: Final[dict[EvaluationMetric, str]] = {
+    EvaluationMetric.ACCURACY: "maximize",
+    EvaluationMetric.AUC: "maximize",
+    EvaluationMetric.F1: "maximize",
+    EvaluationMetric.LOG_LOSS: "minimize",
+    EvaluationMetric.RMSE: "minimize",
+    EvaluationMetric.MAE: "minimize",
+    EvaluationMetric.RMSLE: "minimize",
+    EvaluationMetric.MAP: "maximize",
+    EvaluationMetric.NDCG: "maximize",
+}
+
+
+def _normalize_metric_key(raw: Any) -> str:
+    """Collapse a Kaggle evaluation-metric label to a canonical lookup key.
+
+    Strips whitespace, punctuation (``-``, ``_``, ``@``, ``/``), and lowercases
+    so variants like ``"Mean F1 Score"``, ``"MeanF1Score"``, ``"F1@K"``, and
+    ``"f1_macro"`` all collapse to the same canonical token before alias
+    lookup.
+    """
+    if not isinstance(raw, str):
+        return ""
+    return "".join(ch for ch in raw.lower() if ch.isalnum())
+
+
+def _resolve_metric(raw: Any) -> EvaluationMetric:
+    """Resolve a raw Kaggle evaluation-metric label into the matching enum.
+
+    Looks up the normalized key in ``_METRIC_ALIASES`` first, then falls back
+    to ordered substring heuristics so less common Kaggle phrasings (e.g.
+    ``"Symmetric Mean Absolute Percentage Error"``, ``"AUC ROC"``,
+    ``"Mean F-Score @ Beta"``) still route to the closest supported metric.
+    Unknown labels default to ``EvaluationMetric.ACCURACY`` to preserve
+    historical behavior for unclassifiable competitions.
+    """
+    key = _normalize_metric_key(raw)
+    if key in _METRIC_ALIASES:
+        return _METRIC_ALIASES[key]
+    if not key:
+        return EvaluationMetric.ACCURACY
+    # Order matters: more specific substrings first so e.g. "rmsle" doesn't
+    # match the "rmse" / "meansquared" branches.
+    if "rmsle" in key or "rootmeansquaredlog" in key or "logarithmic" in key:
+        return EvaluationMetric.RMSLE
+    if "ndcg" in key or "normalizeddiscounted" in key:
+        return EvaluationMetric.NDCG
+    if "averageprecision" in key or key.startswith("map"):
+        return EvaluationMetric.MAP
+    if "rmse" in key or "rootmeansquared" in key or "meansquared" in key:
+        return EvaluationMetric.RMSE
+    if "mae" in key or "meanabsolute" in key:
+        return EvaluationMetric.MAE
+    if "logloss" in key or "logarithmicloss" in key:
+        return EvaluationMetric.LOG_LOSS
+    if "auc" in key or "areaunder" in key:
+        return EvaluationMetric.AUC
+    if "f1" in key or "fbeta" in key or "fscore" in key:
+        return EvaluationMetric.F1
+    return EvaluationMetric.ACCURACY
 
 
 class KaggleSettings(BaseSettings):
@@ -470,43 +576,10 @@ class KaggleAdapter(PlatformAdapter):
             "Community": CompetitionType.COMMUNITY,
         }
 
-        # Map Kaggle metric to our enum
-        metric_map = {
-            "accuracy": EvaluationMetric.ACCURACY,
-            "auc": EvaluationMetric.AUC,
-            "logloss": EvaluationMetric.LOG_LOSS,
-            "rmse": EvaluationMetric.RMSE,
-            "mae": EvaluationMetric.MAE,
-            "rmsle": EvaluationMetric.RMSLE,
-        }
-        metric_raw = str(data.get("evaluationMetric", "accuracy")).strip()
-        metric_key = metric_raw.lower()
-        metric = metric_map.get(metric_key)
-        if metric is None:
-            if "logarithmic" in metric_key or "rmsle" in metric_key:
-                metric = EvaluationMetric.RMSLE
-            elif "mean squared" in metric_key or "rmse" in metric_key:
-                metric = EvaluationMetric.RMSE
-            elif "mean absolute" in metric_key or "mae" in metric_key:
-                metric = EvaluationMetric.MAE
-            elif "log loss" in metric_key or "logloss" in metric_key:
-                metric = EvaluationMetric.LOG_LOSS
-            elif "auc" in metric_key:
-                metric = EvaluationMetric.AUC
-            else:
-                metric = EvaluationMetric.ACCURACY
-        metric_direction_map = {
-            EvaluationMetric.ACCURACY: "maximize",
-            EvaluationMetric.AUC: "maximize",
-            EvaluationMetric.F1: "maximize",
-            EvaluationMetric.LOG_LOSS: "minimize",
-            EvaluationMetric.RMSE: "minimize",
-            EvaluationMetric.MAE: "minimize",
-            EvaluationMetric.RMSLE: "minimize",
-            EvaluationMetric.MAP: "maximize",
-            EvaluationMetric.NDCG: "maximize",
-        }
-        metric_direction = metric_direction_map.get(metric, "maximize")
+        # Map Kaggle metric to our enum (alias-aware so F1 / MAP@K / NDCG@K and
+        # other label variants don't silently collapse to ACCURACY).
+        metric = _resolve_metric(data.get("evaluationMetric", "accuracy"))
+        metric_direction = _METRIC_DIRECTIONS.get(metric, "maximize")
 
         # Parse tags - they may be strings or dicts with 'name' key
         raw_tags = data.get("tags", [])

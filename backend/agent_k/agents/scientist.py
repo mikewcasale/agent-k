@@ -49,6 +49,7 @@ from __future__ import annotations as _annotations
 
 import csv
 import re
+import statistics
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -408,13 +409,17 @@ class ScientistAgent(MemoryMixin):
                 return {"error": "No leaderboard data available"}
 
             scores = [e.score for e in leaderboard]
+            metric_direction = ctx.deps.competition.metric_direction
+            top_score = min(scores) if metric_direction == "minimize" else max(scores)
+            top_entries = sorted(leaderboard, key=lambda e: e.rank)[:10]
             return {
                 "total_teams": len(leaderboard),
-                "top_score": max(scores),
-                "median_score": sorted(scores)[len(scores) // 2],
+                "metric_direction": metric_direction,
+                "top_score": top_score,
+                "median_score": statistics.median(scores),
                 "score_range": max(scores) - min(scores),
-                "top_10_scores": [e.score for e in leaderboard[:10]],
-                "top_teams": [{"rank": e.rank, "team": e.team_name, "score": e.score} for e in leaderboard[:10]],
+                "top_10_scores": [e.score for e in top_entries],
+                "top_teams": [{"rank": e.rank, "team": e.team_name, "score": e.score} for e in top_entries],
             }
 
     async def get_kaggle_notebooks(

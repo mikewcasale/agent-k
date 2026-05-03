@@ -427,26 +427,15 @@ class ScientistAgent(MemoryMixin):
 
         @notice: |
             Retrieves competition notebooks ordered by vote count or freshness.
+            Returns an empty list when the Kaggle kernels API yields no results;
+            never fabricates notebook entries from leaderboard data.
 
         @effects:
             io:
                 - Kaggle API request
         """
         with logfire.span("scientist.get_notebooks"):
-            notebooks = await self._fetch_kaggle_notebooks(ctx, sort_by=sort_by, max_results=max_results)
-            if notebooks:
-                return notebooks
-
-            await ctx.deps.refresh_leaderboard()
-            return [
-                {
-                    "title": f"{ctx.deps.competition.title} solution by {entry.team_name}",
-                    "votes": max(1, (len(ctx.deps.leaderboard) - entry.rank + 1) * 5),
-                    "author": entry.team_name,
-                    "techniques": self._infer_techniques_from_text(" ".join(ctx.deps.competition.tags)),
-                }
-                for entry in ctx.deps.leaderboard[:max_results]
-            ]
+            return await self._fetch_kaggle_notebooks(ctx, sort_by=sort_by, max_results=max_results)
 
     async def analyze_top_kernels(
         self,
@@ -734,22 +723,37 @@ class ScientistAgent(MemoryMixin):
     async def _fetch_kaggle_notebooks(
         self, ctx: RunContext[ScientistDeps], *, sort_by: str, max_results: int
     ) -> list[dict[str, Any]]:
-        params: dict[str, str | int] = {
-            "competition": ctx.deps.competition.id,
-            "sortBy": sort_by,
-            "pageSize": max_results,
-        }
+        competition_id = ctx.deps.competition.id
+        params: dict[str, str | int] = {"competition": competition_id, "sortBy": sort_by, "pageSize": max_results}
 
         auth = self._extract_kaggle_auth(ctx.deps.platform_adapter)
         if not auth:
+            logfire.warning("kaggle_notebooks_unauthenticated", competition_id=competition_id)
             return []
 
-        response = await ctx.deps.http_client.get(_KAGGLE_KERNELS_ENDPOINT, params=params, auth=auth)
+        try:
+            response = await ctx.deps.http_client.get(_KAGGLE_KERNELS_ENDPOINT, params=params, auth=auth)
+        except httpx.HTTPError as exc:
+            logfire.warning("kaggle_notebooks_request_failed", competition_id=competition_id, error=str(exc))
+            return []
+
         if response.status_code != 200:
+            logfire.warning("kaggle_notebooks_non_200", competition_id=competition_id, status=response.status_code)
+            return []
+
+        try:
+            payload = response.json()
+        except ValueError as exc:
+            logfire.warning("kaggle_notebooks_decode_failed", competition_id=competition_id, error=str(exc))
+            return []
+        if not isinstance(payload, list):
+            logfire.warning("kaggle_notebooks_unexpected_payload", competition_id=competition_id)
             return []
 
         results: list[dict[str, Any]] = []
-        for item in response.json():
+        for item in payload:
+            if not isinstance(item, dict):
+                continue
             ref = item.get("ref") or item.get("id") or item.get("kernelId")
             results.append(
                 {
@@ -770,10 +774,22 @@ class ScientistAgent(MemoryMixin):
         if not auth:
             return None
         for key in ("kernelId", "kernelSlug"):
-            response = await ctx.deps.http_client.get(_KAGGLE_KERNEL_VIEW_ENDPOINT, params={key: kernel_ref}, auth=auth)
+            try:
+                response = await ctx.deps.http_client.get(
+                    _KAGGLE_KERNEL_VIEW_ENDPOINT, params={key: kernel_ref}, auth=auth
+                )
+            except httpx.HTTPError as exc:
+                logfire.warning("kaggle_kernel_view_failed", kernel_ref=kernel_ref, error=str(exc))
+                continue
             if response.status_code != 200:
                 continue
-            payload = response.json()
+            try:
+                payload = response.json()
+            except ValueError as exc:
+                logfire.warning("kaggle_kernel_view_decode_failed", kernel_ref=kernel_ref, error=str(exc))
+                continue
+            if not isinstance(payload, dict):
+                continue
             for code_key in _KAGGLE_KERNEL_CODE_KEYS:
                 value = payload.get(code_key)
                 if isinstance(value, str) and value.strip():

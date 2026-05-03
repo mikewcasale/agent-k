@@ -8,7 +8,7 @@
   "human_review": null,
   "id": "agent_k.agents.scientist:ScientistAgent.get_kaggle_notebooks",
   "line": 426,
-  "notice": "Retrieves competition notebooks ordered by vote count or freshness.",
+  "notice": "Retrieves competition notebooks ordered by vote count or freshness.\nReturns an empty list when the Kaggle kernels API yields no results;\nnever fabricates notebook entries from leaderboard data.",
   "pattern": null,
   "similar": null,
   "source": "agent_k/agents/scientist.py",

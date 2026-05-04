@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-05-04T22:11:04.127288+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -2650,55 +2650,55 @@
       },
       {
         "component": "agent_k.core.data:CompetitionSchema",
-        "line": 50,
+        "line": 54,
         "name": "notice",
         "value": "Schema details inferred from competition data files."
       },
       {
         "component": "agent_k.core.data:CompetitionSchema",
-        "line": 53,
+        "line": 57,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.data:CompetitionSchema",
-        "line": 56,
+        "line": 60,
         "name": "pattern",
         "value": "{\"name\": \"schema-model\", \"rationale\": \"Captures inferred column layout for downstream steps.\", \"violations\": \"Ad-hoc dicts drift from actual data shape.\"}"
       },
       {
         "component": "agent_k.core.data:infer_competition_schema",
-        "line": 70,
+        "line": 74,
         "name": "notice",
         "value": "Analyzes CSV headers to determine ID column and target columns."
       },
       {
         "component": "agent_k.core.data:infer_competition_schema",
-        "line": 73,
+        "line": 77,
         "name": "dev",
         "value": "Compares train vs test headers to identify target columns.\nFalls back to sample submission columns if no difference found."
       },
       {
         "component": "agent_k.core.data:locate_data_files",
-        "line": 99,
+        "line": 103,
         "name": "notice",
         "value": "Finds train, test, and sample submission files from a list of paths."
       },
       {
         "component": "agent_k.core.data:locate_data_files",
-        "line": 102,
+        "line": 106,
         "name": "dev",
-        "value": "Automatically extracts ZIP files and searches for files by name pattern.\nRaises FileNotFoundError if required files are not found."
+        "value": "Automatically extracts ZIP files and matches role-specific filenames\nusing a token-aware scoring scheme so that, for example, ``train_test.csv``\nwill not be selected as the test file when ``test.csv``"
       },
       {
         "component": "agent_k.core.data:stage_competition_data",
-        "line": 135,
+        "line": 206,
         "name": "notice",
         "value": "Copies or links data files to a destination with standardized names."
       },
       {
         "component": "agent_k.core.data:stage_competition_data",
-        "line": 138,
+        "line": 209,
         "name": "dev",
         "value": "Creates train.csv, test.csv, sample_submission.csv in destination.\nUses hard links when possible to save disk space."
       }

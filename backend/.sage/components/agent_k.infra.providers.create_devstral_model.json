@@ -12,7 +12,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.infra.providers:create_devstral_model",
-  "line": 80,
+  "line": 82,
   "notice": "Creates an OpenAIChatModel configured for Devstral.",
   "pattern": null,
   "similar": null,

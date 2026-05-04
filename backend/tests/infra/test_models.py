@@ -12,8 +12,10 @@ import pytest
 from pydantic_ai.models.openai import OpenAIChatModel
 
 from agent_k.infra.providers import (
+    DEFAULT_OPENROUTER_FREE_MODEL,
     DEVSTRAL_BASE_URL,
     DEVSTRAL_MODEL_ID,
+    OPENROUTER_FREE_MODELS,
     create_devstral_model,
     create_openrouter_model,
     get_model,
@@ -111,6 +113,27 @@ class TestGetModel:
         result = get_model("openrouter:mistralai/devstral-small-2505")
 
         assert isinstance(result, OpenAIChatModel)
+
+
+class TestOpenRouterFreeModels:
+    """Tests for OPENROUTER_FREE_MODELS registry."""
+
+    def test_only_live_slugs(self) -> None:
+        """Registry should only contain currently-live free OpenRouter slugs."""
+        dead_slugs = {
+            "openrouter:mistralai/devstral-2512:free",
+            "openrouter:kwaipilot/kat-coder-pro:free",
+            "openrouter:qwen/qwen3-coder:free",
+        }
+        assert dead_slugs.isdisjoint(OPENROUTER_FREE_MODELS.values())
+
+    def test_default_resolves_to_registry(self) -> None:
+        """Default free model must be one of the registered live slugs."""
+        assert DEFAULT_OPENROUTER_FREE_MODEL in OPENROUTER_FREE_MODELS.values()
+
+    def test_default_uses_openrouter_prefix(self) -> None:
+        """Default free model must use the openrouter: prefix for adapter parsing."""
+        assert DEFAULT_OPENROUTER_FREE_MODEL.startswith("openrouter:")
 
 
 class TestIsDevstralModel:

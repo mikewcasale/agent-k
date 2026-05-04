@@ -31,16 +31,20 @@ from __future__ import annotations as _annotations
 
 import csv
 import os
+import re
 import shutil
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Sequence
 
 __all__ = ("CompetitionSchema", "infer_competition_schema", "locate_data_files", "stage_competition_data")
+
+_DATA_FILE_SUFFIXES: Final[frozenset[str]] = frozenset({".csv", ".tsv", ".parquet", ".feather", ".json", ".jsonl"})
+_TOKEN_SPLIT: Final[re.Pattern[str]] = re.compile(r"[^a-z0-9]+")
 
 
 @dataclass(frozen=True, slots=True)
@@ -100,8 +104,12 @@ def locate_data_files(paths: Iterable[str | Path]) -> tuple[Path, Path, Path]:
         Finds train, test, and sample submission files from a list of paths.
 
     @dev: |
-        Automatically extracts ZIP files and searches for files by name pattern.
-        Raises FileNotFoundError if required files are not found.
+        Automatically extracts ZIP files and matches role-specific filenames
+        using a token-aware scoring scheme so that, for example, ``train_test.csv``
+        will not be selected as the test file when ``test.csv`` is also present,
+        and a single file is never returned for two different roles.
+
+        Raises FileNotFoundError if required files cannot be uniquely resolved.
     """
     files: list[Path] = []
 
@@ -111,20 +119,83 @@ def locate_data_files(paths: Iterable[str | Path]) -> tuple[Path, Path, Path]:
         if path.suffix.lower() == ".zip" and path.exists():
             files.extend(_safe_extract_zip(path, path.parent))
 
-    def pick(token: str) -> Path | None:
-        for path in files:
-            if token in path.name.lower():
-                return path
-        return None
-
-    train_path = pick("train")
-    test_path = pick("test")
-    sample_path = pick("sample_submission") or pick("submission")
+    used: set[Path] = set()
+    sample_path = _pick_role(files, used, ("sample_submission", "samplesubmission"), fallback=("submission",))
+    train_path = _pick_role(files, used, ("train", "training"))
+    test_path = _pick_role(files, used, ("test", "testing", "eval", "evaluation"))
 
     if not train_path or not test_path or not sample_path:
         raise FileNotFoundError("Required competition data files not found")
 
     return train_path, test_path, sample_path
+
+
+def _pick_role(
+    files: list[Path], used: set[Path], primary: Sequence[str], *, fallback: Sequence[str] = ()
+) -> Path | None:
+    """Pick the best file for a role using token-aware ranking.
+
+    Ranks unused files by how well their stem matches the role's tokens
+    (exact > token-at-start > token-at-end > token-as-word). ``primary``
+    tokens always outrank ``fallback`` tokens. The chosen file is added to
+    ``used`` so subsequent role picks cannot re-select it.
+    """
+    candidates: list[tuple[tuple[int, int], Path]] = []
+    for path in files:
+        if path in used:
+            continue
+        if path.suffix.lower() not in _DATA_FILE_SUFFIXES:
+            continue
+        stem = path.stem.lower()
+        score = _score_role_match(stem, primary)
+        if score == 0 and fallback:
+            score = max(0, _score_role_match(stem, fallback) - 1)
+        if score <= 0:
+            continue
+        candidates.append(((score, -len(path.name)), path))
+
+    if not candidates:
+        return None
+    candidates.sort(key=lambda item: item[0], reverse=True)
+    chosen = candidates[0][1]
+    used.add(chosen)
+    return chosen
+
+
+def _score_role_match(stem: str, tokens: Sequence[str]) -> int:
+    """Score a filename stem against role tokens.
+
+    Each token is itself tokenized so multi-word patterns like
+    ``sample_submission`` match the joined stem and not just individual parts.
+
+    Returns 0 when no token matches as a discrete word in the stem. Substring
+    matches inside larger tokens (e.g., "test" inside "testimony") are ignored
+    so that role detection cannot be hijacked by unrelated filenames.
+    """
+    parts = [part for part in _TOKEN_SPLIT.split(stem) if part]
+    if not parts:
+        return 0
+    best = 0
+    for token in tokens:
+        token_parts = [part for part in _TOKEN_SPLIT.split(token) if part]
+        if not token_parts:
+            continue
+        n = len(token_parts)
+        if parts == token_parts:
+            return 4
+        if len(parts) <= n:
+            continue
+        if parts[:n] == token_parts:
+            best = max(best, 3)
+            continue
+        if parts[-n:] == token_parts:
+            best = max(best, 2)
+            continue
+        for i in range(1, len(parts) - n):
+            if parts[i : i + n] == token_parts:
+                best = max(best, 1)
+                break
+    return best
 
 
 def stage_competition_data(

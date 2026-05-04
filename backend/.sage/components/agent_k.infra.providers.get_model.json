@@ -12,7 +12,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.infra.providers:get_model",
-  "line": 140,
+  "line": 142,
   "notice": "Resolves model specs into provider-specific model objects when needed.",
   "pattern": null,
   "similar": null,

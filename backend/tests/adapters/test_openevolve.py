@@ -10,7 +10,14 @@ from pathlib import Path
 
 import pytest
 
-from agent_k.adapters.openevolve import OpenEvolveAdapter, OpenEvolveJobState, OpenEvolveSettings
+from agent_k.adapters.openevolve import (
+    _DEFAULT_OPENEVOLVE_MODEL,
+    OpenEvolveAdapter,
+    OpenEvolveJobState,
+    OpenEvolveSettings,
+    _resolve_model_specs,
+)
+from agent_k.infra.providers import DEFAULT_OPENROUTER_FREE_MODEL
 
 __all__ = ()
 
@@ -71,6 +78,26 @@ class TestOpenEvolveAdapter:
         assert len(files) == 3
         for file_path in files:
             assert Path(file_path).exists()
+
+    def test_default_model_is_live_free_slug(self) -> None:
+        """OpenEvolve default model must be the live free OpenRouter slug."""
+        assert _DEFAULT_OPENEVOLVE_MODEL == DEFAULT_OPENROUTER_FREE_MODEL
+        assert _DEFAULT_OPENEVOLVE_MODEL.startswith("openrouter:openai/gpt-oss")
+
+    def test_resolve_model_specs_falls_back_to_live_default(self) -> None:
+        """Empty/whitespace specs should fall back to the live default, not a dead slug."""
+        assert _resolve_model_specs([]) == [_DEFAULT_OPENEVOLVE_MODEL]
+        assert _resolve_model_specs(["", "   "]) == [_DEFAULT_OPENEVOLVE_MODEL]
+
+    def test_resolve_model_specs_drops_anthropic(self) -> None:
+        """Anthropic specs are not supported by OpenEvolve and must be filtered."""
+        result = _resolve_model_specs(["anthropic:claude-3-haiku-20240307"])
+        assert result == [_DEFAULT_OPENEVOLVE_MODEL]
+
+    def test_resolve_model_specs_preserves_provided_specs(self) -> None:
+        """Provided specs should be preserved verbatim when valid."""
+        provided = ["openrouter:openai/gpt-oss-20b:free", "openai:gpt-4o"]
+        assert _resolve_model_specs(provided) == provided
 
     async def test_evolution_job_lifecycle(self) -> None:
         """Evolution job should complete and return a solution."""

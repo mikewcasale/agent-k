@@ -205,27 +205,26 @@ class FeatureEvolver:
         Evolve feature engineering pipelines with mutation and crossover.
 
     @dev: |
-        See module for implementation details and extension points.
+        Domain features are caller-supplied so the evolver stays generic across
+        ML problem types. Defaults to no domain features when none are provided.
 
         @pattern:
             name: evolver
             rationale: "Coordinates evolutionary search over feature genomes."
     """
 
-    _default_domains: tuple[DomainFeatureGene, ...] = (
-        DomainFeatureGene("TotalSF", ("TotalBsmtSF", "1stFlrSF", "2ndFlrSF")),
-        DomainFeatureGene("TotalBath", ("FullBath", "HalfBath", "BsmtFullBath", "BsmtHalfBath")),
-        DomainFeatureGene("Age", ("YearBuilt", "YrSold")),
-        DomainFeatureGene("Remod_Age", ("YearRemodAdd", "YrSold")),
-        DomainFeatureGene("QualityScore", ("OverallQual", "OverallCond")),
-    )
-
     def __init__(
-        self, feature_names: list[str], *, rng: random.Random | None = None, population_size: int = 12
+        self,
+        feature_names: list[str],
+        *,
+        rng: random.Random | None = None,
+        population_size: int = 12,
+        domain_features: tuple[DomainFeatureGene, ...] = (),
     ) -> None:
         self._feature_names = feature_names
         self._rng = rng or random.Random()
         self._population_size = population_size
+        self._domain_features: tuple[DomainFeatureGene, ...] = tuple(domain_features)
         self._population = self._initialize_population()
 
     def evolve(self, *, generations: int = 4, fitness_fn: FitnessFn[FeatureGenome] | None = None) -> dict[str, Any]:
@@ -254,7 +253,7 @@ class FeatureEvolver:
             interactions=[InteractionGene(selected[0], selected[-1])] if len(selected) > 2 else [],
             ratios=ratios,
             binnings=[BinningGene(selected[0], "equal_frequency", bins=10)] if selected else [],
-            domain_features=list(self._default_domains)[:2],
+            domain_features=list(self._domain_features[:2]),
             selected_features=selected,
         )
 

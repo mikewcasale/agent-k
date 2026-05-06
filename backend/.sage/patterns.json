@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-05-06T00:13:29.454401+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -1219,7 +1219,7 @@
     "selector": [
       {
         "component": "agent_k.evolution.features:FeatureSelector",
-        "line": 303,
+        "line": 302,
         "rationale": "Pareto-based feature selection with population evolution.",
         "source": "agent_k/evolution/features.py",
         "violations": []

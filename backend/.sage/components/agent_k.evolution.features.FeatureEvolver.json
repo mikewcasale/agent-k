@@ -3,7 +3,7 @@
   "anti_patterns": null,
   "canonical_home": null,
   "custom": null,
-  "dev": "See module for implementation details and extension points.",
+  "dev": "Domain features are caller-supplied so the evolver stays generic across\nML problem types. Defaults to no domain features when none are provided.",
   "graph": null,
   "human_review": null,
   "id": "agent_k.evolution.features:FeatureEvolver",

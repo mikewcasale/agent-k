@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.ui.agui:TaskEmissionContext",
-  "line": 546,
+  "line": 536,
   "notice": "Context manager for task-scoped event emission.",
   "pattern": {
     "name": "context-model",

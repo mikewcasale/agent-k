@@ -234,6 +234,18 @@
   },
   {
     "consumes": [],
+    "id": "agent_k.core.discovery",
+    "line": 1,
+    "pattern": "domain-matching",
+    "provides": [
+      "agent_k.core.discovery:DOMAIN_KEYWORDS",
+      "agent_k.core.discovery:match_competition_domains",
+      "agent_k.core.discovery:normalize_domain_key"
+    ],
+    "source": "agent_k/core/discovery.py"
+  },
+  {
+    "consumes": [],
     "id": "agent_k.core.exceptions",
     "line": 1,
     "pattern": "exception-hierarchy",

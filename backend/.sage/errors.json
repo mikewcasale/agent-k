@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "code": "V005",
+    "component": "agent_k.core.discovery:normalize_domain_key",
+    "level": "WARN",
+    "line": 61,
+    "message": "Public component missing @notice or @dev",
+    "source": "agent_k/core/discovery.py"
+  }
+]

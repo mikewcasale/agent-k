@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.ui.agui:stream_text_response",
-  "line": 936,
+  "line": 926,
   "notice": "Stream a simple text response in Vercel AI format.",
   "pattern": null,
   "similar": null,

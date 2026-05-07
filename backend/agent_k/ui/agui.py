@@ -53,6 +53,7 @@ from pydantic_ai import Agent
 
 from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
 from agent_k.core.constants import DEFAULT_MODEL, MISSION_PHASES
+from agent_k.core.discovery import match_competition_domains
 from agent_k.core.exceptions import AgentKError, AuthenticationError, CompetitionNotFoundError, classify_error
 from agent_k.core.models import Competition, CompetitionType, LeaderboardSubmission, MissionCriteria
 from agent_k.core.sage import Doc
@@ -90,17 +91,6 @@ DEFAULT_HOST: Final[str] = "0.0.0.0"
 DEFAULT_PORT: Final[int] = 9000
 APP_MODULE: Final[str] = "agent_k.ui.agui:app"
 MAX_COMPETITION_RESULTS: Final[int] = 25
-_DOMAIN_KEYWORDS: Final[dict[str, tuple[str, ...]]] = {
-    "finance": ("finance", "financial", "trading", "stock", "market"),
-    "medical": ("medical", "health", "healthcare", "clinical", "diagnosis"),
-    "weather": ("weather", "climate", "forecast"),
-    "computer_vision": ("computer vision", "vision", "image", "cv"),
-    "nlp": ("nlp", "text", "language", "transformer"),
-    "tabular": ("tabular", "structured", "csv", "table"),
-    "time_series": ("time series", "timeseries", "temporal", "forecast"),
-    "audio": ("audio", "speech", "sound", "acoustic"),
-    "geospatial": ("geospatial", "geo", "spatial", "gis", "satellite"),
-}
 
 _MISSION_KEYWORDS: Final[tuple[str, ...]] = (
     "find",
@@ -1403,23 +1393,8 @@ def _build_kaggle_adapter() -> KaggleAdapter:
     return KaggleAdapter(KaggleSettings(username=username, api_key=api_key))
 
 
-def _normalize_domain(domain: str) -> str:
-    return domain.strip().lower().replace(" ", "_").replace("-", "_")
-
-
 def _matches_domains(competition: Competition, domains: list[str]) -> bool:
-    if not domains:
-        return True
-    tags = {tag.lower() for tag in competition.tags}
-    description = competition.description or ""
-    haystack = f"{competition.title} {description}".lower()
-    for domain in domains:
-        key = _normalize_domain(domain)
-        keywords = _DOMAIN_KEYWORDS.get(key, (key,))
-        for keyword in keywords:
-            if keyword in tags or keyword in haystack:
-                return True
-    return False
+    return match_competition_domains(competition, domains)
 
 
 def _serialize_competition(competition: Competition) -> dict[str, Any]:

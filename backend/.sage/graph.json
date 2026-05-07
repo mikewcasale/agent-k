@@ -416,6 +416,21 @@
       "type": "provides"
     },
     {
+      "source": "agent_k.core.discovery",
+      "target": "agent_k.core.discovery:DOMAIN_KEYWORDS",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.discovery",
+      "target": "agent_k.core.discovery:match_competition_domains",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.discovery",
+      "target": "agent_k.core.discovery:normalize_domain_key",
+      "type": "provides"
+    },
+    {
       "source": "agent_k.core.exceptions",
       "target": "agent_k.core.exceptions",
       "type": "provides"
@@ -921,7 +936,7 @@
       "type": "similar"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831739+00:00",
+  "generated": "2026-05-07T02:23:55.338837+00:00",
   "nodes": [
     {
       "id": "agent_k",
@@ -1024,6 +1039,12 @@
       "label": "deps",
       "pattern": "dependency-container",
       "source": "agent_k/core/deps.py"
+    },
+    {
+      "id": "agent_k.core.discovery",
+      "label": "discovery",
+      "pattern": "domain-matching",
+      "source": "agent_k/core/discovery.py"
     },
     {
       "id": "agent_k.core.exceptions",

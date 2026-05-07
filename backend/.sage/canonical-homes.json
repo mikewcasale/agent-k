@@ -11,7 +11,7 @@
     "for": [
       "lobbyist agent construction"
     ],
-    "line": 345,
+    "line": 346,
     "notes": "Use LobbyistAgent() or module singleton.",
     "source": "agent_k/agents/lobbyist.py"
   },
@@ -83,7 +83,7 @@
     "for": [
       "AG-UI application construction"
     ],
-    "line": 1007,
+    "line": 997,
     "notes": "Use create_app to initialize the FastAPI server.",
     "source": "agent_k/ui/agui.py"
   }

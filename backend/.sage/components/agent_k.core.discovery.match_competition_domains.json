@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Matching strategy per keyword:\n- Tag set: case-insensitive equality (tags are curated phrases).\n- Multi-word keywords (e.g. ``\"computer vision\"``): substring match\n  against the lowercased title+description haystack so phrases survive\n  intact.\n- Single-word keywords: token-level membership against the haystack.\n  This avoids the historical substring false positives where\n  ``\"ai\"`` matched ``\"audio\"`` or ``\"ml\"`` matched ``\"html\"``.\n\nAn empty ``domains`` list always matches (no filter applied).",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.discovery:match_competition_domains",
+  "line": 75,
+  "notice": "Token-aware match against tags, title, and description.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/discovery.py",
+  "summary": "Return ``True`` when ``competition`` matches any requested domain.",
+  "type": "function"
+}

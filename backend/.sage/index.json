@@ -1,5 +1,5 @@
 {
-  "component_count": 59,
+  "component_count": 60,
   "components": [
     {
       "consumes": [],
@@ -233,6 +233,18 @@
         "agent_k.core.deps:KaggleDeps"
       ],
       "source": "agent_k/core/deps.py"
+    },
+    {
+      "consumes": [],
+      "id": "agent_k.core.discovery",
+      "line": 1,
+      "pattern": "domain-matching",
+      "provides": [
+        "agent_k.core.discovery:DOMAIN_KEYWORDS",
+        "agent_k.core.discovery:match_competition_domains",
+        "agent_k.core.discovery:normalize_domain_key"
+      ],
+      "source": "agent_k/core/discovery.py"
     },
     {
       "consumes": [],
@@ -705,7 +717,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-05-07T02:23:55.338266+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -724,6 +736,7 @@
     "agent_k/core/constants.py",
     "agent_k/core/data.py",
     "agent_k/core/deps.py",
+    "agent_k/core/discovery.py",
     "agent_k/core/exceptions.py",
     "agent_k/core/feedback.py",
     "agent_k/core/hints.py",
@@ -767,7 +780,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1098,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -1804,181 +1817,181 @@
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistSettings",
-        "line": 84,
+        "line": 85,
         "name": "notice",
         "value": "Configuration for the Lobbyist agent."
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistSettings",
-        "line": 87,
+        "line": 88,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistSettings",
-        "line": 90,
+        "line": 91,
         "name": "pattern",
         "value": "{\"name\": \"settings\", \"rationale\": \"Centralizes discovery agent configuration.\", \"violations\": \"Ad-hoc per-run overrides lead to inconsistent behavior.\"}"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistDeps",
-        "line": 114,
+        "line": 115,
         "name": "notice",
         "value": "Dependencies for the Lobbyist agent."
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistDeps",
-        "line": 117,
+        "line": 118,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistDeps",
-        "line": 120,
+        "line": 121,
         "name": "pattern",
         "value": "{\"name\": \"dependency-container\", \"rationale\": \"Groups runtime services for discovery tools.\", \"violations\": \"Hidden globals make tests and tooling brittle.\"}"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistDeps",
-        "line": 125,
+        "line": 126,
         "name": "collaborators",
         "value": "{\"required\": [\"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.toolsets.memory:AgentKMemoryTool\"], \"injection\": \"constructor\", \"lif"
       },
       {
         "component": "agent_k.agents.lobbyist:DiscoveryResult",
-        "line": 145,
+        "line": 146,
         "name": "notice",
         "value": "Result of competition discovery."
       },
       {
         "component": "agent_k.agents.lobbyist:DiscoveryResult",
-        "line": 148,
+        "line": 149,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.lobbyist:DiscoveryResult",
-        "line": 151,
+        "line": 152,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Stable schema for discovery outputs.\", \"violations\": \"Ad-hoc dict outputs are hard to validate.\"}"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent",
-        "line": 169,
+        "line": 170,
         "name": "notice",
         "value": "Discovers Kaggle competitions matching mission criteria.\nUse the module-level lobbyist_agent or agent registry."
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent",
-        "line": 173,
+        "line": 174,
         "name": "dev",
         "value": "Registers discovery tools on initialization and wires memory/toolsets."
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent",
-        "line": 176,
+        "line": 177,
         "name": "pattern",
         "value": "{\"name\": \"agent-singleton\", \"rationale\": \"Single instance ensures consistent memory/tool registration.\", \"violations\": \"Multiple instances cause duplicated tool registrations.\"}"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent",
-        "line": 181,
+        "line": 182,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"httpx:AsyncClient\"], \"injection\": \"deps via RunContext\", \"lifecycle\": \"Module-level singleton at "
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent",
-        "line": 190,
+        "line": 191,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates internal caches and tool registrations.\"}"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent",
-        "line": 195,
+        "line": 196,
         "name": "invariants",
         "value": "[\"self._agent is initialized after __init__ completes.\", \"self._toolset registers discovery tools exactly once.\"]"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.__init__",
-        "line": 203,
+        "line": 204,
         "name": "notice",
         "value": "Builds the agent singleton and registers tools."
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.__init__",
-        "line": 206,
+        "line": 207,
         "name": "dev",
         "value": "Initializes memory backend, toolset, and pydantic-ai Agent."
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.__init__",
-        "line": 209,
+        "line": 210,
         "name": "state_changes",
         "value": "[\"self._settings\", \"self._toolset\", \"self._agent\"]"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.search_kaggle_competitions",
-        "line": 241,
+        "line": 242,
         "name": "notice",
         "value": "Queries the platform adapter for competition listings."
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.search_kaggle_competitions",
-        "line": 244,
+        "line": 245,
         "name": "dev",
         "value": "Emits telemetry events before and after the search."
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.search_kaggle_competitions",
-        "line": 247,
+        "line": 248,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API requests\"], \"state\": [\"ctx.deps.search_cache\"]}"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.get_competition_details",
-        "line": 284,
+        "line": 285,
         "name": "notice",
         "value": "Fetches the competition details via the platform adapter."
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.get_competition_details",
-        "line": 287,
+        "line": 288,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.score_competition_fit",
-        "line": 306,
+        "line": 307,
         "name": "notice",
         "value": "Computes a heuristic fit score from cached competition metadata."
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.score_competition_fit",
-        "line": 309,
+        "line": 310,
         "name": "dev",
         "value": "Returns a structured dict with score and reasoning."
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.score_competition_fit",
-        "line": 312,
+        "line": 313,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent._create_agent",
-        "line": 347,
+        "line": 348,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.agents.lobbyist:LobbyistAgent\", \"rationale\": \"Centralizes agent wiring and toolset preparation.\", \"singleton\": true, \"cache_key\": \"module\"}"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent._create_agent",
-        "line": 353,
+        "line": 354,
         "name": "canonical_home",
         "value": "{\"for\": [\"lobbyist agent construction\"], \"notes\": \"Use LobbyistAgent() or module singleton.\"}"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent._register_tools",
-        "line": 386,
+        "line": 387,
         "name": "effects",
         "value": "{\"state\": [\"self._toolset\"]}"
       }
@@ -2781,6 +2794,56 @@
         "line": 89,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.adapters.kaggle:KaggleAdapter\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"httpx:AsyncClient\"], \"injection\": \"constructor\", \"lifecycle\": \"Allocated per agent run.\"}"
+      }
+    ],
+    "agent_k/core/discovery.py": [
+      {
+        "component": "agent_k.core.discovery",
+        "line": 3,
+        "name": "notice",
+        "value": "Domain matching utilities for competition discovery."
+      },
+      {
+        "component": "agent_k.core.discovery",
+        "line": 6,
+        "name": "dev",
+        "value": "Centralizes the keyword expansion and token-aware matching used by both\nthe Lobbyist scoring tool and the AG-UI competition filter so the two\ncode paths agree on what \"this competition matches that do"
+      },
+      {
+        "component": "agent_k.core.discovery",
+        "line": 11,
+        "name": "graph",
+        "value": "{\"id\": \"agent_k.core.discovery\", \"provides\": [\"agent_k.core.discovery:DOMAIN_KEYWORDS\", \"agent_k.core.discovery:match_competition_domains\", \"agent_k.core.discovery:normalize_domain_key\"], \"pattern\": \""
+      },
+      {
+        "component": "agent_k.core.discovery",
+        "line": 19,
+        "name": "agent_guidance",
+        "value": "{\"do\": [\"Use agent_k.core.discovery as the canonical home for this capability.\"], \"do_not\": [\"Create parallel modules without updating @similar or @graph.\"]}"
+      },
+      {
+        "component": "agent_k.core.discovery",
+        "line": 25,
+        "name": "human_review",
+        "value": "{\"last_verified\": \"2026-05-07\", \"owners\": [\"agent-k-core\"]}"
+      },
+      {
+        "component": "agent_k.core.discovery:normalize_domain_key",
+        "line": 63,
+        "name": "dev",
+        "value": "Lowercases, strips, and collapses whitespace and hyphens to underscores\nso variants like ``\"Computer Vision\"`` and ``\"computer-vision\"`` both\nresolve to ``\"computer_vision\"``."
+      },
+      {
+        "component": "agent_k.core.discovery:match_competition_domains",
+        "line": 77,
+        "name": "notice",
+        "value": "Token-aware match against tags, title, and description."
+      },
+      {
+        "component": "agent_k.core.discovery:match_competition_domains",
+        "line": 80,
+        "name": "dev",
+        "value": "Matching strategy per keyword:\n- Tag set: case-insensitive equality (tags are curated phrases).\n- Multi-word keywords (e.g. ``\"computer vision\"``): substring match\n  against the lowercased title+descr"
       }
     ],
     "agent_k/core/exceptions.py": [
@@ -7152,277 +7215,277 @@
       },
       {
         "component": "agent_k.ui.agui:MissionRequest",
-        "line": 220,
+        "line": 210,
         "name": "notice",
         "value": "Request to start a new mission."
       },
       {
         "component": "agent_k.ui.agui:MissionRequest",
-        "line": 223,
+        "line": 213,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:MissionRequest",
-        "line": 226,
+        "line": 216,
         "name": "pattern",
         "value": "{\"name\": \"request-model\", \"rationale\": \"Frozen Pydantic model for mission start requests.\"}"
       },
       {
         "component": "agent_k.ui.agui:CompetitionSearchRequest",
-        "line": 245,
+        "line": 235,
         "name": "notice",
         "value": "Request payload for competition search."
       },
       {
         "component": "agent_k.ui.agui:CompetitionSearchRequest",
-        "line": 248,
+        "line": 238,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:CompetitionSearchRequest",
-        "line": 251,
+        "line": 241,
         "name": "pattern",
         "value": "{\"name\": \"request-model\", \"rationale\": \"Frozen Pydantic model for competition search requests.\"}"
       },
       {
         "component": "agent_k.ui.agui:CompetitionFetchRequest",
-        "line": 267,
+        "line": 257,
         "name": "notice",
         "value": "Request payload for fetching competition details by URL."
       },
       {
         "component": "agent_k.ui.agui:CompetitionFetchRequest",
-        "line": 270,
+        "line": 260,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:CompetitionFetchRequest",
-        "line": 273,
+        "line": 263,
         "name": "pattern",
         "value": "{\"name\": \"request-model\", \"rationale\": \"Frozen Pydantic model for competition fetch requests.\"}"
       },
       {
         "component": "agent_k.ui.agui:AgentKEvent",
-        "line": 285,
+        "line": 275,
         "name": "notice",
         "value": "Event to be streamed to the frontend."
       },
       {
         "component": "agent_k.ui.agui:AgentKEvent",
-        "line": 288,
+        "line": 278,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:AgentKEvent",
-        "line": 291,
+        "line": 281,
         "name": "pattern",
         "value": "{\"name\": \"event-model\", \"rationale\": \"Frozen Pydantic model for SSE event streaming.\"}"
       },
       {
         "component": "agent_k.ui.agui:MissionIntentOutput",
-        "line": 310,
+        "line": 300,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Frozen Pydantic model for agent structured output.\"}"
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 339,
+        "line": 329,
         "name": "notice",
         "value": "Emitter for AG-UI events."
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 342,
+        "line": 332,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 345,
+        "line": 335,
         "name": "pattern",
         "value": "{\"name\": \"event-emitter\", \"rationale\": \"Centralizes event streaming for the UI.\", \"violations\": \"Direct SSE writes bypass buffering and tracing.\"}"
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 350,
+        "line": 340,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates internal queue and closed state.\"}"
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 355,
+        "line": 345,
         "name": "invariants",
         "value": "[\"Events are only enqueued when not closed.\"]"
       },
       {
         "component": "agent_k.ui.agui:EventEmitter.emit",
-        "line": 369,
+        "line": 359,
         "name": "notice",
         "value": "Enqueues an event for SSE streaming."
       },
       {
         "component": "agent_k.ui.agui:TaskEmissionContext",
-        "line": 550,
+        "line": 540,
         "name": "notice",
         "value": "Context manager for task-scoped event emission."
       },
       {
         "component": "agent_k.ui.agui:TaskEmissionContext",
-        "line": 553,
+        "line": 543,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:TaskEmissionContext",
-        "line": 556,
+        "line": 546,
         "name": "pattern",
         "value": "{\"name\": \"context-model\", \"rationale\": \"Async context manager for task lifecycle events.\"}"
       },
       {
         "component": "agent_k.ui.agui:MissionIntentResult",
-        "line": 595,
+        "line": 585,
         "name": "notice",
         "value": "Result of mission intent parsing."
       },
       {
         "component": "agent_k.ui.agui:MissionIntentResult",
-        "line": 598,
+        "line": 588,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:MissionIntentResult",
-        "line": 601,
+        "line": 591,
         "name": "pattern",
         "value": "{\"name\": \"result-model\", \"rationale\": \"Dataclass for intent classification result.\"}"
       },
       {
         "component": "agent_k.ui.agui:IntentClassifier",
-        "line": 614,
+        "line": 604,
         "name": "notice",
         "value": "Classify whether a message requests a mission."
       },
       {
         "component": "agent_k.ui.agui:IntentClassifier",
-        "line": 617,
+        "line": 607,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:IntentClassifier",
-        "line": 620,
+        "line": 610,
         "name": "pattern",
         "value": "{\"name\": \"classifier\", \"rationale\": \"Dataclass for LLM-backed intent classification.\"}"
       },
       {
         "component": "agent_k.ui.agui:MissionCriteriaParser",
-        "line": 669,
+        "line": 659,
         "name": "notice",
         "value": "Parse mission criteria from intent output."
       },
       {
         "component": "agent_k.ui.agui:MissionCriteriaParser",
-        "line": 672,
+        "line": 662,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:MissionCriteriaParser",
-        "line": 675,
+        "line": 665,
         "name": "pattern",
         "value": "{\"name\": \"parser\", \"rationale\": \"Dataclass for extracting mission criteria from intent.\"}"
       },
       {
         "component": "agent_k.ui.agui:ChatHandler",
-        "line": 701,
+        "line": 691,
         "name": "notice",
         "value": "Handle chat requests for mission and non-mission modes."
       },
       {
         "component": "agent_k.ui.agui:ChatHandler",
-        "line": 704,
+        "line": 694,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:ChatHandler",
-        "line": 707,
+        "line": 697,
         "name": "pattern",
         "value": "{\"name\": \"handler\", \"rationale\": \"Dataclass coordinating intent classification and parsing.\"}"
       },
       {
         "component": "agent_k.ui.agui:parse_mission_intent",
-        "line": 868,
+        "line": 858,
         "name": "notice",
         "value": "Parse chat messages to detect mission intent and extract criteria."
       },
       {
         "component": "agent_k.ui.agui:parse_mission_intent",
-        "line": 871,
+        "line": 861,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.ui.agui:transform_to_vercel_stream",
-        "line": 892,
+        "line": 882,
         "name": "notice",
         "value": "Transform EventEmitter output to Vercel AI Data Stream format."
       },
       {
         "component": "agent_k.ui.agui:transform_to_vercel_stream",
-        "line": 895,
+        "line": 885,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.ui.agui:stream_text_response",
-        "line": 946,
+        "line": 936,
         "name": "notice",
         "value": "Stream a simple text response in Vercel AI format."
       },
       {
         "component": "agent_k.ui.agui:stream_text_response",
-        "line": 949,
+        "line": 939,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.ui.agui:create_app",
-        "line": 1009,
+        "line": 999,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.ui.agui:create_app",
-        "line": 1012,
+        "line": 1002,
         "name": "notice",
         "value": "Constructs the FastAPI app with routes and middleware."
       },
       {
         "component": "agent_k.ui.agui:create_app",
-        "line": 1015,
+        "line": 1005,
         "name": "factory_for",
         "value": "{\"id\": \"fastapi:FastAPI\", \"rationale\": \"Centralizes AG-UI app wiring.\", \"singleton\": false, \"cache_key\": \"app\"}"
       },
       {
         "component": "agent_k.ui.agui:create_app",
-        "line": 1021,
+        "line": 1011,
         "name": "canonical_home",
         "value": "{\"for\": [\"AG-UI application construction\"], \"notes\": \"Use create_app to initialize the FastAPI server.\"}"
       },
       {
         "component": "agent_k.ui.agui:main",
-        "line": 1768,
+        "line": 1743,
         "name": "notice",
         "value": "Run the AG-UI server."
       },
       {
         "component": "agent_k.ui.agui:main",
-        "line": 1771,
+        "line": 1746,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       }

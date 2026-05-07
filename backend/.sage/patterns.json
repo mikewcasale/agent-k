@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-05-07T02:23:55.339098+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -56,7 +56,7 @@
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent",
-        "line": 167,
+        "line": 168,
         "rationale": "Single instance ensures consistent memory/tool registration.",
         "source": "agent_k/agents/lobbyist.py",
         "violations": [
@@ -96,7 +96,7 @@
     "classifier": [
       {
         "component": "agent_k.ui.agui:IntentClassifier",
-        "line": 612,
+        "line": 602,
         "rationale": "Dataclass for LLM-backed intent classification.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -116,7 +116,7 @@
     "context-model": [
       {
         "component": "agent_k.ui.agui:TaskEmissionContext",
-        "line": 546,
+        "line": 536,
         "rationale": "Async context manager for task lifecycle events.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -143,7 +143,7 @@
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistDeps",
-        "line": 112,
+        "line": 113,
         "rationale": "Groups runtime services for discovery tools.",
         "source": "agent_k/agents/lobbyist.py",
         "violations": [
@@ -346,7 +346,7 @@
     "event-emitter": [
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 332,
+        "line": 322,
         "rationale": "Centralizes event streaming for the UI.",
         "source": "agent_k/ui/agui.py",
         "violations": [
@@ -357,7 +357,7 @@
     "event-model": [
       {
         "component": "agent_k.ui.agui:AgentKEvent",
-        "line": 283,
+        "line": 273,
         "rationale": "Frozen Pydantic model for SSE event streaming.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -701,7 +701,7 @@
     "handler": [
       {
         "component": "agent_k.ui.agui:ChatHandler",
-        "line": 699,
+        "line": 689,
         "rationale": "Dataclass coordinating intent classification and parsing.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -965,7 +965,7 @@
       },
       {
         "component": "agent_k.agents.lobbyist:DiscoveryResult",
-        "line": 143,
+        "line": 144,
         "rationale": "Stable schema for discovery outputs.",
         "source": "agent_k/agents/lobbyist.py",
         "violations": [
@@ -1037,7 +1037,7 @@
       },
       {
         "component": "agent_k.ui.agui:MissionIntentOutput",
-        "line": 308,
+        "line": 298,
         "rationale": "Frozen Pydantic model for agent structured output.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -1046,7 +1046,7 @@
     "parser": [
       {
         "component": "agent_k.ui.agui:MissionCriteriaParser",
-        "line": 667,
+        "line": 657,
         "rationale": "Dataclass for extracting mission criteria from intent.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -1156,21 +1156,21 @@
     "request-model": [
       {
         "component": "agent_k.ui.agui:MissionRequest",
-        "line": 218,
+        "line": 208,
         "rationale": "Frozen Pydantic model for mission start requests.",
         "source": "agent_k/ui/agui.py",
         "violations": []
       },
       {
         "component": "agent_k.ui.agui:CompetitionSearchRequest",
-        "line": 243,
+        "line": 233,
         "rationale": "Frozen Pydantic model for competition search requests.",
         "source": "agent_k/ui/agui.py",
         "violations": []
       },
       {
         "component": "agent_k.ui.agui:CompetitionFetchRequest",
-        "line": 265,
+        "line": 255,
         "rationale": "Frozen Pydantic model for competition fetch requests.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -1179,7 +1179,7 @@
     "result-model": [
       {
         "component": "agent_k.ui.agui:MissionIntentResult",
-        "line": 593,
+        "line": 583,
         "rationale": "Dataclass for intent classification result.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -1255,7 +1255,7 @@
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistSettings",
-        "line": 82,
+        "line": 83,
         "rationale": "Centralizes discovery agent configuration.",
         "source": "agent_k/agents/lobbyist.py",
         "violations": [

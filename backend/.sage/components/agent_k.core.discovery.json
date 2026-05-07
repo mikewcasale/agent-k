@@ -1,0 +1,37 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.core.discovery as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Centralizes the keyword expansion and token-aware matching used by both\nthe Lobbyist scoring tool and the AG-UI competition filter so the two\ncode paths agree on what \"this competition matches that domain\" means.",
+  "graph": {
+    "id": "agent_k.core.discovery",
+    "pattern": "domain-matching",
+    "provides": [
+      "agent_k.core.discovery:DOMAIN_KEYWORDS",
+      "agent_k.core.discovery:match_competition_domains",
+      "agent_k.core.discovery:normalize_domain_key"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-05-07",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.core.discovery",
+  "line": 1,
+  "notice": "Domain matching utilities for competition discovery.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/discovery.py",
+  "summary": "Domain matching utilities for competition discovery.",
+  "type": "module"
+}

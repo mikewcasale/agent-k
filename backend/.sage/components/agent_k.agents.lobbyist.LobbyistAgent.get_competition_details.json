@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.lobbyist:LobbyistAgent.get_competition_details",
-  "line": 282,
+  "line": 283,
   "notice": "Fetches the competition details via the platform adapter.",
   "pattern": null,
   "similar": null,

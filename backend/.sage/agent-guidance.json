@@ -1,5 +1,5 @@
 {
-  "count": 59,
+  "count": 60,
   "entries": [
     {
       "component": "agent_k",
@@ -187,6 +187,17 @@
       ],
       "line": 1,
       "source": "agent_k/core/deps.py"
+    },
+    {
+      "component": "agent_k.core.discovery",
+      "do": [
+        "Use agent_k.core.discovery as the canonical home for this capability."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph."
+      ],
+      "line": 1,
+      "source": "agent_k/core/discovery.py"
     },
     {
       "component": "agent_k.core.exceptions",
@@ -651,6 +662,6 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831787+00:00",
+  "generated": "2026-05-07T02:23:55.338981+00:00",
   "version": "1.3.6"
 }

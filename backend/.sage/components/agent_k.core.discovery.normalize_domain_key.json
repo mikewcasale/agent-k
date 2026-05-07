@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Lowercases, strips, and collapses whitespace and hyphens to underscores\nso variants like ``\"Computer Vision\"`` and ``\"computer-vision\"`` both\nresolve to ``\"computer_vision\"``.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.discovery:normalize_domain_key",
+  "line": 61,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/discovery.py",
+  "summary": "Normalize a domain label for ``DOMAIN_KEYWORDS`` lookup.",
+  "type": "function"
+}

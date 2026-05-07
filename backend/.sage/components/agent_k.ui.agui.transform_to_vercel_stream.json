@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.ui.agui:transform_to_vercel_stream",
-  "line": 879,
+  "line": 869,
   "notice": "Transform EventEmitter output to Vercel AI Data Stream format.",
   "pattern": null,
   "similar": null,

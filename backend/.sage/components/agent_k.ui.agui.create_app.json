@@ -12,7 +12,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.ui.agui:create_app",
-  "line": 1007,
+  "line": 997,
   "notice": "Constructs the FastAPI app with routes and middleware.",
   "pattern": null,
   "similar": null,

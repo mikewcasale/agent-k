@@ -54,6 +54,7 @@ from agent_k.agents import register_agent
 from agent_k.agents.base import MemoryMixin, universal_tool_preparation
 from agent_k.agents.prompts import LOBBYIST_SYSTEM_PROMPT
 from agent_k.core.constants import DEFAULT_MODEL
+from agent_k.core.discovery import match_competition_domains
 from agent_k.core.models import Competition
 from agent_k.core.sage import Doc, Range
 from agent_k.infra.providers import get_model
@@ -319,7 +320,7 @@ class LobbyistAgent(MemoryMixin):
 
         score = 0.0
         reasons: list[str] = []
-        if any(domain.lower() in " ".join(competition.tags).lower() for domain in target_domains):
+        if match_competition_domains(competition, target_domains):
             score += 0.4
             reasons.append("matches_domain")
 

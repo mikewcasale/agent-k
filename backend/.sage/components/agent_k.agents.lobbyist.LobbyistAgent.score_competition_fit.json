@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.lobbyist:LobbyistAgent.score_competition_fit",
-  "line": 304,
+  "line": 305,
   "notice": "Computes a heuristic fit score from cached competition metadata.",
   "pattern": null,
   "similar": null,

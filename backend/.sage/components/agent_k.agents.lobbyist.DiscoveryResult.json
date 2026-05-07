@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.lobbyist:DiscoveryResult",
-  "line": 143,
+  "line": 144,
   "notice": "Result of competition discovery.",
   "pattern": {
     "name": "output-model",

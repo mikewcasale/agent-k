@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.ui.agui:EventEmitter.emit",
-  "line": 367,
+  "line": 357,
   "notice": "Enqueues an event for SSE streaming.",
   "pattern": null,
   "similar": null,

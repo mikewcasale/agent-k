@@ -70,6 +70,26 @@ SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
 
 
+def _resolve_safe_target(dest_path: Path, file_name: str) -> Path | None:
+    """Resolve ``file_name`` under ``dest_path``, returning None if it escapes.
+
+    The Kaggle data-list API returns file names verbatim. A malformed or
+    malicious entry containing absolute paths, ``..`` segments, or NUL bytes
+    could otherwise cause writes outside the staging directory.
+    """
+    if not file_name or "\x00" in file_name:
+        return None
+    candidate = Path(file_name)
+    if candidate.is_absolute() or candidate.drive:
+        return None
+    try:
+        target = (dest_path / candidate).resolve()
+        target.relative_to(dest_path.resolve())
+    except (OSError, ValueError):
+        return None
+    return target
+
+
 class KaggleSettings(BaseSettings):
     """Settings for Kaggle adapter.
 
@@ -418,10 +438,17 @@ class KaggleAdapter(PlatformAdapter):
                 if not file_name:
                     continue
 
+                file_path = _resolve_safe_target(dest_path, file_name)
+                if file_path is None:
+                    logfire.warning(
+                        "kaggle_download_unsafe_filename", competition_id=competition_id, file_name=str(file_name)[:200]
+                    )
+                    continue
+
                 if not file_url:
                     file_url = f"/competitions/data/download/{competition_id}/{quote(file_name)}"
 
-                file_path = dest_path / file_name
+                file_path.parent.mkdir(parents=True, exist_ok=True)
                 async with self._client.stream("GET", file_url, follow_redirects=True) as file_response:
                     self._raise_rules_not_accepted(file_response, competition_id)
                     file_response.raise_for_status()

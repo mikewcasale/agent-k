@@ -6,12 +6,13 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
+from pathlib import Path
 from typing import Any
 
 import httpx
 import pytest
 
-from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
+from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings, _resolve_safe_target
 
 __all__ = ()
 
@@ -88,3 +89,71 @@ class TestKaggleAdapterFromEnv:
 
         # The from_env method should handle missing credentials
         # Test depends on implementation
+
+
+class TestResolveSafeTarget:
+    """Tests for path traversal hardening in download targets."""
+
+    def test_basename_resolves_under_dest(self, tmp_path: Path) -> None:
+        """A plain basename should resolve under the destination directory."""
+        result = _resolve_safe_target(tmp_path, "train.csv")
+        assert result is not None
+        assert result == (tmp_path / "train.csv").resolve()
+
+    def test_nested_subpath_allowed_when_under_dest(self, tmp_path: Path) -> None:
+        """A nested relative path that stays under dest should be allowed."""
+        result = _resolve_safe_target(tmp_path, "train/part-001.csv")
+        assert result is not None
+        assert result == (tmp_path / "train" / "part-001.csv").resolve()
+
+    @pytest.mark.parametrize(
+        "unsafe_name",
+        ["../escape.csv", "../../etc/passwd", "nested/../../escape.csv", "/etc/passwd", "", "with\x00null.csv"],
+    )
+    def test_rejects_unsafe_names(self, tmp_path: Path, unsafe_name: str) -> None:
+        """Paths that escape dest, are absolute, or contain NUL must be rejected."""
+        assert _resolve_safe_target(tmp_path, unsafe_name) is None
+
+
+class TestDownloadDataPathSafety:
+    """End-to-end checks for download_data path validation."""
+
+    async def test_skips_traversal_entries_and_writes_safe_files(self, tmp_path: Path) -> None:
+        """download_data should only write files that resolve under destination."""
+        list_payload = {
+            "files": [
+                {"name": "train.csv"},
+                {"name": "../escape.csv"},
+                {"name": "/etc/passwd"},
+                {"name": "nested/inner.csv"},
+            ]
+        }
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            path = request.url.path
+            if path.endswith("/competitions/data/list/test-comp"):
+                return httpx.Response(200, json=list_payload)
+            if "train.csv" in path:
+                return httpx.Response(200, content=b"id,target\n1,0\n")
+            if "inner.csv" in path:
+                return httpx.Response(200, content=b"col\n1\n")
+            return httpx.Response(404)
+
+        config = KaggleSettings(username="user", api_key="key")
+        adapter = KaggleAdapter(config)
+        adapter._client = httpx.AsyncClient(
+            base_url=config.base_url, transport=httpx.MockTransport(handler), auth=(config.username, config.api_key)
+        )
+        try:
+            destination = tmp_path / "data"
+            downloaded = await adapter.download_data("test-comp", str(destination))
+        finally:
+            await adapter._client.aclose()
+
+        downloaded_names = sorted(Path(p).name for p in downloaded)
+        assert downloaded_names == ["inner.csv", "train.csv"]
+        assert (destination / "train.csv").exists()
+        assert (destination / "nested" / "inner.csv").exists()
+        # The traversal targets must not have been written.
+        assert not (tmp_path / "escape.csv").exists()
+        assert not Path("/etc/passwd-kaggle-test").exists()

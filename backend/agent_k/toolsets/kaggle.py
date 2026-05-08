@@ -312,13 +312,20 @@ async def kaggle_list_datasets(
         if response.status_code != 200:
             raise RuntimeError(f"Failed to list datasets: {response.status_code}")
 
-        files = response.json()
-        return {
-            "competition_id": competition_id,
-            "files": [
-                {"name": f.get("name"), "size": f.get("totalBytes"), "description": f.get("description")} for f in files
-            ],
-        }
+        payload = response.json()
+        raw_files = payload.get("files", []) if isinstance(payload, dict) else payload
+        files: list[dict[str, Any]] = []
+        for entry in raw_files or []:
+            if isinstance(entry, str):
+                files.append({"name": entry, "size": None, "description": None})
+                continue
+            if not isinstance(entry, dict):
+                continue
+            name = entry.get("name") or entry.get("nameNullable")
+            if not name:
+                continue
+            files.append({"name": name, "size": entry.get("totalBytes"), "description": entry.get("description")})
+        return {"competition_id": competition_id, "files": files}
 
 
 def _resolve_adapter(ctx: RunContext[Any]) -> PlatformAdapter | None:

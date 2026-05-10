@@ -10,7 +10,9 @@ import csv
 import zipfile
 from typing import TYPE_CHECKING
 
-from agent_k.core.data import infer_competition_schema, locate_data_files, stage_competition_data
+import pytest
+
+from agent_k.core.data import _safe_extract_zip, infer_competition_schema, locate_data_files, stage_competition_data
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -100,3 +102,75 @@ def test_stage_competition_data(tmp_path: Path) -> None:
     assert staged["train"].exists()
     assert staged["test"].exists()
     assert staged["sample"].exists()
+
+
+def _make_zip_with_member(zip_path: Path, member_name: str, payload: bytes = b"x") -> None:
+    """Write a zip whose archive entries can include traversal/absolute names."""
+    with zipfile.ZipFile(zip_path, "w") as archive:
+        info = zipfile.ZipInfo(filename=member_name)
+        archive.writestr(info, payload)
+
+
+def test_safe_extract_zip_rejects_sibling_prefix_escape(tmp_path: Path) -> None:
+    """Sibling directories sharing the destination's prefix must be rejected.
+
+    Regression for the prior `str.startswith` check, which permitted
+    destination=/tmp/data to extract into /tmp/data2/...
+    """
+    destination = tmp_path / "data"
+    destination.mkdir()
+    sibling = tmp_path / "data2"
+    sibling.mkdir()
+
+    zip_path = tmp_path / "evil.zip"
+    _make_zip_with_member(zip_path, "../data2/sneak.csv", payload=b"id\n1\n")
+
+    with pytest.raises(ValueError, match="escapes destination"):
+        _safe_extract_zip(zip_path, destination)
+
+    assert not (sibling / "sneak.csv").exists()
+
+
+def test_safe_extract_zip_rejects_parent_traversal(tmp_path: Path) -> None:
+    destination = tmp_path / "stage"
+    destination.mkdir()
+
+    zip_path = tmp_path / "evil.zip"
+    _make_zip_with_member(zip_path, "../escape.csv", payload=b"x\n")
+
+    with pytest.raises(ValueError, match="escapes destination"):
+        _safe_extract_zip(zip_path, destination)
+
+    assert not (tmp_path / "escape.csv").exists()
+
+
+def test_safe_extract_zip_rejects_absolute_path(tmp_path: Path) -> None:
+    destination = tmp_path / "stage"
+    destination.mkdir()
+    outside = tmp_path / "outside.csv"
+
+    zip_path = tmp_path / "evil.zip"
+    _make_zip_with_member(zip_path, str(outside), payload=b"x\n")
+
+    with pytest.raises(ValueError, match="escapes destination"):
+        _safe_extract_zip(zip_path, destination)
+
+    assert not outside.exists()
+
+
+def test_safe_extract_zip_allows_legitimate_nested_paths(tmp_path: Path) -> None:
+    destination = tmp_path / "stage"
+    destination.mkdir()
+
+    zip_path = tmp_path / "ok.zip"
+    with zipfile.ZipFile(zip_path, "w") as archive:
+        archive.writestr("nested/dir/data.csv", b"id\n1\n")
+        archive.writestr("top.csv", b"id\n2\n")
+
+    extracted = _safe_extract_zip(zip_path, destination)
+
+    nested = destination / "nested" / "dir" / "data.csv"
+    top = destination / "top.csv"
+    assert nested.exists()
+    assert top.exists()
+    assert {p.resolve() for p in extracted} == {nested.resolve(), top.resolve()}

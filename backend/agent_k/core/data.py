@@ -176,7 +176,9 @@ def _safe_extract_zip(archive_path: Path, destination: Path) -> list[Path]:
             if member.is_dir() or member.filename.endswith("/"):
                 continue
             target_path = (destination / member.filename).resolve()
-            if not str(target_path).startswith(str(destination_resolved)):
+            # Use is_relative_to instead of str.startswith to avoid sibling-prefix
+            # bypass (e.g. destination=/tmp/data permitting /tmp/data2/escape.csv).
+            if not target_path.is_relative_to(destination_resolved):
                 raise ValueError(f"Zip entry escapes destination: {member.filename}")
             archive.extract(member, destination)
             extracted.append(target_path)

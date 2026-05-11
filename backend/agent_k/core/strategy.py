@@ -60,6 +60,9 @@ _CLASSIFICATION_METRICS: Final[frozenset[EvaluationMetric]] = frozenset(
 )
 _VISION_TAGS: Final[frozenset[str]] = frozenset({"vision", "computer vision", "image", "images"})
 _TEXT_TAGS: Final[frozenset[str]] = frozenset({"nlp", "text", "language"})
+_TIMESERIES_TAGS: Final[frozenset[str]] = frozenset(
+    {"time series", "time-series", "timeseries", "forecasting", "temporal", "sequence"}
+)
 
 type FitnessFunction = Callable[["FitnessInput"], float]
 
@@ -85,6 +88,8 @@ class ProblemType(StrEnum):
     VISION_CLASSIFICATION = "vision_classification"
     TEXT_REGRESSION = "text_regression"
     TEXT_CLASSIFICATION = "text_classification"
+    TIMESERIES_REGRESSION = "timeseries_regression"
+    TIMESERIES_CLASSIFICATION = "timeseries_classification"
     UNKNOWN = "unknown"
 
 
@@ -195,8 +200,10 @@ def build_problem_profile(competition: Competition, schema: CompetitionSchema) -
         Creates a ProblemProfile from competition metadata and data schema.
 
     @dev: |
-        Infers problem type (tabular/vision/text, classification/regression)
-        from competition tags and evaluation metric.
+        Infers problem type (tabular/vision/text/timeseries, classification/regression)
+        from competition tags and evaluation metric. Vision and text tags take
+        precedence over timeseries when both are present, since modality-specific
+        models trump tabular techniques regardless of temporal ordering.
     """
     metric = competition.metric
     is_classification = metric in _CLASSIFICATION_METRICS
@@ -207,6 +214,8 @@ def build_problem_profile(competition: Competition, schema: CompetitionSchema) -
         problem_type = ProblemType.VISION_CLASSIFICATION if is_classification else ProblemType.VISION_REGRESSION
     elif tags & _TEXT_TAGS:
         problem_type = ProblemType.TEXT_CLASSIFICATION if is_classification else ProblemType.TEXT_REGRESSION
+    elif tags & _TIMESERIES_TAGS:
+        problem_type = ProblemType.TIMESERIES_CLASSIFICATION if is_classification else ProblemType.TIMESERIES_REGRESSION
     else:
         problem_type = ProblemType.TABULAR_CLASSIFICATION if is_classification else ProblemType.TABULAR_REGRESSION
 
@@ -277,7 +286,12 @@ def build_fitness_policy(
         penalty_weight = min(0.2, 0.05 + criteria.min_improvements_required * 0.02)
 
     if complexity_threshold is None:
-        if profile.problem_type in {ProblemType.TABULAR_CLASSIFICATION, ProblemType.TABULAR_REGRESSION}:
+        if profile.problem_type in {
+            ProblemType.TABULAR_CLASSIFICATION,
+            ProblemType.TABULAR_REGRESSION,
+            ProblemType.TIMESERIES_CLASSIFICATION,
+            ProblemType.TIMESERIES_REGRESSION,
+        }:
             complexity_threshold = 800
         else:
             complexity_threshold = 600

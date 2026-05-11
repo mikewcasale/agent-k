@@ -18,10 +18,11 @@ from agent_k.core.strategy import (
     build_fitness_function,
     build_fitness_policy,
     build_problem_profile,
+    build_technique_policy,
 )
 
 
-def _competition(metric: EvaluationMetric) -> Competition:
+def _competition(metric: EvaluationMetric, tags: frozenset[str] = frozenset({"tabular"})) -> Competition:
     return Competition(
         id="sample-competition",
         title="Sample Competition",
@@ -33,7 +34,7 @@ def _competition(metric: EvaluationMetric) -> Competition:
         prize_pool=None,
         max_team_size=1,
         max_daily_submissions=5,
-        tags=frozenset({"tabular"}),
+        tags=tags,
         url=None,
     )
 
@@ -71,6 +72,57 @@ def test_fitness_factory_penalizes_runtime_and_complexity() -> None:
     penalized = FitnessInput(cv_score=0.5, runtime_ms=1500, complexity=20, valid=True, stage="full", code="print('ok')")
 
     assert fitness_fn(penalized) < fitness_fn(base)
+
+
+def test_build_problem_profile_timeseries_regression() -> None:
+    """Forecasting tags map to timeseries regression, not tabular."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.RMSE, tags=frozenset({"tabular", "forecasting"})),
+        CompetitionSchema(id_column="id", target_columns=["target"], train_target_columns=["target"]),
+    )
+    assert profile.problem_type == ProblemType.TIMESERIES_REGRESSION
+    assert profile.is_classification is False
+
+
+def test_build_problem_profile_timeseries_classification() -> None:
+    """Time-series tags with a classification metric map to timeseries classification."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.AUC, tags=frozenset({"time series"})),
+        CompetitionSchema(id_column="id", target_columns=["target"], train_target_columns=["target"]),
+    )
+    assert profile.problem_type == ProblemType.TIMESERIES_CLASSIFICATION
+    assert profile.is_classification is True
+
+
+def test_build_problem_profile_vision_outranks_timeseries() -> None:
+    """Vision tags take precedence over timeseries tags when both are present."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.ACCURACY, tags=frozenset({"vision", "forecasting"})),
+        CompetitionSchema(id_column="id", target_columns=["target"], train_target_columns=["target"]),
+    )
+    assert profile.problem_type == ProblemType.VISION_CLASSIFICATION
+
+
+def test_technique_policy_timeseries_disables_target_transform_and_clipping() -> None:
+    """Timeseries policies skip target transforms and outlier clipping on targets."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.RMSE, tags=frozenset({"forecasting"})),
+        CompetitionSchema(id_column="id", target_columns=["target"], train_target_columns=["target"]),
+    )
+    policy = build_technique_policy(profile)
+    assert policy.problem_type == ProblemType.TIMESERIES_REGRESSION
+    assert policy.enable_target_transform is False
+    assert policy.enable_outlier_clipping is False
+
+
+def test_fitness_policy_timeseries_uses_tabular_complexity_budget() -> None:
+    """Timeseries shares the tabular complexity budget since LightGBM lag features remain typical."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.RMSE, tags=frozenset({"forecasting"})),
+        CompetitionSchema(id_column="id", target_columns=["target"], train_target_columns=["target"]),
+    )
+    policy = build_fitness_policy(profile, None, max_runtime_ms=None)
+    assert policy.complexity_threshold == 800
 
 
 def test_apply_solution_policy_is_noop() -> None:

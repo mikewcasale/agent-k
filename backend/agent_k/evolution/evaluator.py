@@ -305,14 +305,22 @@ def _model_family_score(code: str) -> float:
 
 
 def _fitness_from_score(cv_score: float | None, metric_direction: str) -> float:
-    """Convert CV score to fitness (higher is better)."""
+    """Convert CV score to fitness (higher is better, bounded in [0, 1] for minimize).
+
+    Maps both directions onto a higher-is-better fitness so OpenEvolve ranking,
+    cascade thresholds, and stage2 gates work uniformly. Failures (cv_score=None)
+    return 0.0, which is strictly worse than any successful evaluation.
+
+    The inverse transform lives in `EvolverAgent._score_from_fitness`; keep them
+    in sync if either is updated.
+    """
     if cv_score is None:
         return 0.0
 
+    score = float(cv_score)
     if metric_direction == "maximize":
-        return float(cv_score)
-    else:
-        return -float(cv_score)
+        return max(score, 0.0)
+    return 1.0 / (1.0 + max(score, 0.0))
 
 
 def evaluate(program_path: str) -> EvaluationResult:

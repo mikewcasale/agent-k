@@ -12,6 +12,6 @@
   "pattern": null,
   "similar": null,
   "source": "agent_k/evolution/evaluator.py",
-  "summary": "Convert CV score to fitness (higher is better).",
+  "summary": "Convert CV score to fitness (higher is better, bounded in [0, 1] for minimize).",
   "type": "function"
 }

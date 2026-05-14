@@ -108,6 +108,8 @@ _BASE_DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = ("xgboost", "catboost")
 _DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = (
     _BASE_DISALLOWED_LIBRARIES if _LIGHTGBM_AVAILABLE else (*_BASE_DISALLOWED_LIBRARIES, "lightgbm")
 )
+_SUBMISSION_POLL_ATTEMPTS: Final[int] = 24
+_SUBMISSION_POLL_INTERVAL_SECONDS: Final[float] = 5.0
 
 
 @dataclass
@@ -1784,10 +1786,30 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
 
                 state.final_submission_id = submission.id
 
-                # Wait for score
-                for _ in range(10):  # Poll for score
-                    await asyncio.sleep(5)
-                    status = await platform_adapter.get_submission_status(competition_id, submission.id)
+                # Poll for score; break early when Kaggle reports an error or a score.
+                submission_error: str | None = None
+                for attempt in range(_SUBMISSION_POLL_ATTEMPTS):
+                    await asyncio.sleep(_SUBMISSION_POLL_INTERVAL_SECONDS)
+                    try:
+                        status = await platform_adapter.get_submission_status(competition_id, submission.id)
+                    except Exception as exc:
+                        logfire.warning(
+                            "submission_status_poll_failed",
+                            competition_id=competition_id,
+                            submission_id=submission.id,
+                            attempt=attempt,
+                            error=str(exc),
+                        )
+                        continue
+                    if status.status == "error":
+                        submission_error = status.error_message or "Kaggle reported submission error"
+                        logfire.warning(
+                            "submission_failed",
+                            competition_id=competition_id,
+                            submission_id=submission.id,
+                            error=submission_error,
+                        )
+                        break
                     if status.public_score is not None:
                         state.final_score = status.public_score
                         break
@@ -1804,6 +1826,7 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                             competition_id=competition_id,
                             source="fitness",
                             score=fallback_score,
+                            submission_error=submission_error,
                         )
                     elif state.prototype_score is not None:
                         state.final_score = state.prototype_score
@@ -1812,14 +1835,16 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                             competition_id=competition_id,
                             source="prototype",
                             score=state.prototype_score,
+                            submission_error=submission_error,
                         )
 
                 # Get rank
                 leaderboard = await platform_adapter.get_leaderboard(competition_id, limit=10000)
-                for entry in leaderboard:
-                    if entry.score == state.final_score:
-                        state.final_rank = entry.rank
-                        break
+                if state.final_score is not None:
+                    for entry in leaderboard:
+                        if math.isclose(entry.score, state.final_score, rel_tol=1e-9, abs_tol=1e-12):
+                            state.final_rank = entry.rank
+                            break
 
                 best_fitness = None
                 if state.evolution_state and state.evolution_state.best_solution:

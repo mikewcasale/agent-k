@@ -68,6 +68,30 @@ __all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
+_KAGGLE_SUBMISSION_STATUS_CODES: Final[dict[int, str]] = {
+    0: "pending",
+    1: "pending",
+    2: "complete",
+    3: "error",
+    4: "error",
+}
+_KAGGLE_SUBMISSION_STATUS_LABELS: Final[dict[str, str]] = {
+    "pending": "pending",
+    "queued": "pending",
+    "running": "pending",
+    "complete": "complete",
+    "completed": "complete",
+    "succeeded": "complete",
+    "scored": "complete",
+    "success": "complete",
+    "error": "error",
+    "errored": "error",
+    "failed": "error",
+    "failure": "error",
+    "cancelled": "error",
+    "canceled": "error",
+}
+_KAGGLE_SUBMISSION_ERROR_KEYS: Final[tuple[str, ...]] = ("errorDescription", "submitErrorMessage", "errorMessage")
 
 
 class KaggleSettings(BaseSettings):
@@ -378,15 +402,13 @@ class KaggleAdapter(PlatformAdapter):
             response = await self._request("GET", f"/competitions/submissions/list/{competition_id}")
             response.raise_for_status()
 
-            for item in response.json():
+            payload = response.json()
+            items = payload if isinstance(payload, list) else []
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
                 if item.get("ref") == submission_id:
-                    return Submission(
-                        id=submission_id,
-                        competition_id=competition_id,
-                        file_name=item.get("fileName", ""),
-                        status="complete" if item.get("hasPublicScore") else "pending",
-                        public_score=item.get("publicScore"),
-                    )
+                    return _parse_submission_item(item, competition_id=competition_id, submission_id=submission_id)
 
             return Submission(
                 id=submission_id, competition_id=competition_id, file_name="", status="pending", public_score=None
@@ -556,3 +578,81 @@ class KaggleAdapter(PlatformAdapter):
             tags=tags,
             url=data.get("url"),
         )
+
+
+def _parse_submission_item(item: dict[str, Any], *, competition_id: str, submission_id: str) -> Submission:
+    """Parse a Kaggle submission list entry into a Submission model."""
+    status = _classify_submission_status(item)
+    public_score = _coerce_score(item.get("publicScore"))
+    private_score = _coerce_score(item.get("privateScore"))
+    error_message = _extract_error_message(item)
+
+    if status == "error" and error_message is None:
+        # Kaggle occasionally returns an error status without a message.
+        error_message = "Submission rejected by Kaggle"
+    if status == "complete" and public_score is None and not item.get("hasPublicScore"):
+        # Defensive: refuse to call a submission "complete" when no score is present.
+        status = "pending"
+
+    return Submission(
+        id=submission_id,
+        competition_id=competition_id,
+        file_name=str(item.get("fileName") or ""),
+        status=status,
+        public_score=public_score,
+        private_score=private_score,
+        error_message=error_message,
+    )
+
+
+def _classify_submission_status(item: dict[str, Any]) -> str:
+    """Classify a Kaggle submission item into pending/complete/error."""
+    raw_status = item.get("status")
+    if isinstance(raw_status, bool):
+        # bool is a subclass of int; treat as unknown to avoid false mapping.
+        raw_status = None
+
+    if isinstance(raw_status, int):
+        mapped = _KAGGLE_SUBMISSION_STATUS_CODES.get(raw_status)
+        if mapped is not None:
+            return mapped
+    if isinstance(raw_status, str):
+        mapped = _KAGGLE_SUBMISSION_STATUS_LABELS.get(raw_status.strip().lower())
+        if mapped is not None:
+            return mapped
+
+    if _extract_error_message(item) is not None:
+        return "error"
+    if item.get("hasPublicScore") or _coerce_score(item.get("publicScore")) is not None:
+        return "complete"
+    return "pending"
+
+
+def _coerce_score(value: Any) -> float | None:
+    """Coerce a Kaggle score field (often a string) into a float when possible."""
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        score = float(value)
+    else:
+        text = str(value).strip()
+        if not text:
+            return None
+        try:
+            score = float(text)
+        except ValueError:
+            return None
+    if score != score or score in {float("inf"), float("-inf")}:  # NaN or inf
+        return None
+    return score
+
+
+def _extract_error_message(item: dict[str, Any]) -> str | None:
+    """Extract a non-empty error description from a Kaggle submission entry."""
+    for key in _KAGGLE_SUBMISSION_ERROR_KEYS:
+        value = item.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    return None

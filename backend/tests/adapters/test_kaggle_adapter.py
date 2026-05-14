@@ -11,7 +11,14 @@ from typing import Any
 import httpx
 import pytest
 
-from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
+from agent_k.adapters.kaggle import (
+    KaggleAdapter,
+    KaggleSettings,
+    _classify_submission_status,
+    _coerce_score,
+    _extract_error_message,
+    _parse_submission_item,
+)
 
 __all__ = ()
 
@@ -88,3 +95,86 @@ class TestKaggleAdapterFromEnv:
 
         # The from_env method should handle missing credentials
         # Test depends on implementation
+
+
+class TestSubmissionParsing:
+    """Tests for Kaggle submission status parsing helpers."""
+
+    def test_coerce_score_handles_strings_and_numbers(self) -> None:
+        """Scores arrive as strings from Kaggle and must coerce to floats."""
+        assert _coerce_score("0.78532") == pytest.approx(0.78532)
+        assert _coerce_score(0.5) == pytest.approx(0.5)
+        assert _coerce_score(1) == pytest.approx(1.0)
+        assert _coerce_score(None) is None
+        assert _coerce_score("") is None
+        assert _coerce_score("not-a-number") is None
+        assert _coerce_score(True) is None
+        assert _coerce_score(float("nan")) is None
+        assert _coerce_score(float("inf")) is None
+
+    def test_extract_error_message_prefers_first_populated(self) -> None:
+        """Error messages may live under several keys; pick the first populated one."""
+        assert _extract_error_message({"errorDescription": " row count mismatch "}) == "row count mismatch"
+        assert _extract_error_message({"errorDescription": "", "submitErrorMessage": "bad header"}) == "bad header"
+        assert _extract_error_message({}) is None
+        assert _extract_error_message({"errorDescription": None}) is None
+
+    def test_classify_status_uses_numeric_code(self) -> None:
+        """Kaggle's integer status enum must map to our string statuses."""
+        assert _classify_submission_status({"status": 1}) == "pending"
+        assert _classify_submission_status({"status": 2}) == "complete"
+        assert _classify_submission_status({"status": 3}) == "error"
+        assert _classify_submission_status({"status": 4}) == "error"
+
+    def test_classify_status_uses_string_label(self) -> None:
+        """String status labels are normalized case-insensitively."""
+        assert _classify_submission_status({"status": "Complete"}) == "complete"
+        assert _classify_submission_status({"status": "FAILED"}) == "error"
+        assert _classify_submission_status({"status": "queued"}) == "pending"
+
+    def test_classify_status_falls_back_to_score_presence(self) -> None:
+        """Without an explicit status, presence of a public score signals completion."""
+        assert _classify_submission_status({"hasPublicScore": True}) == "complete"
+        assert _classify_submission_status({"publicScore": "0.42"}) == "complete"
+        assert _classify_submission_status({}) == "pending"
+
+    def test_classify_status_detects_error_from_message(self) -> None:
+        """An error description without an explicit status should still flag the failure."""
+        assert _classify_submission_status({"errorDescription": "Invalid submission"}) == "error"
+
+    def test_parse_submission_complete(self) -> None:
+        """A complete submission produces a populated Submission model."""
+        item = {"ref": "abc", "fileName": "submission.csv", "status": 2, "publicScore": "0.91", "privateScore": "0.89"}
+        submission = _parse_submission_item(item, competition_id="comp", submission_id="abc")
+        assert submission.status == "complete"
+        assert submission.public_score == pytest.approx(0.91)
+        assert submission.private_score == pytest.approx(0.89)
+        assert submission.file_name == "submission.csv"
+        assert submission.error_message is None
+
+    def test_parse_submission_error_propagates_message(self) -> None:
+        """Errors from Kaggle must surface on the Submission model."""
+        item = {
+            "ref": "abc",
+            "fileName": "submission.csv",
+            "status": 3,
+            "errorDescription": "Submission must contain 1000 rows",
+        }
+        submission = _parse_submission_item(item, competition_id="comp", submission_id="abc")
+        assert submission.status == "error"
+        assert submission.public_score is None
+        assert submission.error_message == "Submission must contain 1000 rows"
+
+    def test_parse_submission_error_without_message_uses_default(self) -> None:
+        """An error status without a message still flags the submission as failed."""
+        item = {"ref": "abc", "status": "failed"}
+        submission = _parse_submission_item(item, competition_id="comp", submission_id="abc")
+        assert submission.status == "error"
+        assert submission.error_message is not None and submission.error_message.strip()
+
+    def test_parse_submission_complete_without_score_demotes_to_pending(self) -> None:
+        """Don't claim completion when Kaggle has not produced a score yet."""
+        item = {"ref": "abc", "status": "complete", "hasPublicScore": False, "publicScore": None}
+        submission = _parse_submission_item(item, competition_id="comp", submission_id="abc")
+        assert submission.status == "pending"
+        assert submission.public_score is None

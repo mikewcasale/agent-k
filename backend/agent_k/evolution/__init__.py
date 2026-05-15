@@ -49,7 +49,13 @@ from .framework import (
     MapElitesArchive,
     Population,
 )
-from .loss import LossFunctionEvolver, LossGenome, build_lightgbm_objective_params
+from .loss import (
+    LightGBMObjective,
+    LossFunctionEvolver,
+    LossGenome,
+    build_lightgbm_objective,
+    build_lightgbm_objective_params,
+)
 
 __all__ = (
     "BinningGene",
@@ -64,11 +70,13 @@ __all__ = (
     "HyperparamSpace",
     "Individual",
     "InteractionGene",
+    "LightGBMObjective",
     "LossFunctionEvolver",
     "LossGenome",
     "MapElitesArchive",
     "Population",
     "RatioGene",
     "TransformGene",
+    "build_lightgbm_objective",
     "build_lightgbm_objective_params",
 )

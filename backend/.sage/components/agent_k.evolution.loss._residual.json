@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.evolution.loss:LossFunctionEvolver.evolve",
-  "line": 114,
+  "id": "agent_k.evolution.loss:_residual",
+  "line": 205,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/evolution/loss.py",
-  "summary": "Run evolution for a fixed number of generations.",
-  "type": "method"
+  "summary": "Return ``y_pred - y_true`` for either LightGBM calling convention.",
+  "type": "function"
 }

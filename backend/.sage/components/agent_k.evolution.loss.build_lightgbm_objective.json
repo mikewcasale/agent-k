@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The returned callable returns ``(grad, hess)`` arrays and accepts both\ninvocation conventions: ``lightgbm.train`` passes ``(y_pred, Dataset)``\nwhile the scikit-learn API passes ``(y_true, y_pred)``. ``quantile``\ngenomes yield an asymmetric pinball objective; every other objective\nyields an asymmetric Huber objective whose ``mae_rmse_blend``\ninterpolates between Huber (robust, MAE-leaning) and squared-error\n(RMSE) gradients. ``asymmetric_weight`` scales the gradient and hessian\nfor over-predictions so the search can favor under- or over-shooting.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:build_lightgbm_objective",
+  "line": 182,
+  "notice": "Build a LightGBM custom objective callable from an evolved genome.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Build a LightGBM custom objective callable from an evolved genome.",
+  "type": "function"
+}

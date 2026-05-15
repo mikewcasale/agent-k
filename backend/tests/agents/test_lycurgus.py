@@ -62,6 +62,50 @@ class TestLycurgusSettings:
         assert config.default_model == "test:model"
         assert config.max_evolution_rounds == 25
 
+    def test_default_http_settings(self) -> None:
+        """Config should expose sensible research HTTP client defaults."""
+        config = LycurgusSettings()
+
+        assert config.http_timeout_seconds == 30.0
+        assert config.http_max_connections == 20
+
+    def test_from_file_http_settings(self, tmp_path: Path) -> None:
+        """Config should load research HTTP settings from JSON file."""
+        config_file = tmp_path / "config.json"
+        config_file.write_text('{"http_timeout_seconds": 45.0, "http_max_connections": 8}')
+
+        config = LycurgusSettings.from_file(config_file)
+
+        assert config.http_timeout_seconds == 45.0
+        assert config.http_max_connections == 8
+
+
+class TestBuildResearchHttpClient:
+    """Tests for the build_research_http_client factory."""
+
+    async def test_applies_explicit_timeout(self) -> None:
+        """Client should use the configured timeout instead of httpx defaults."""
+        from agent_k.agents.lycurgus import build_research_http_client
+
+        client = build_research_http_client(timeout_seconds=45.0)
+        try:
+            assert client.timeout.read == 45.0
+            assert client.timeout.write == 45.0
+            assert client.timeout.pool == 45.0
+            assert client.timeout.connect == 10.0
+        finally:
+            await client.aclose()
+
+    async def test_connect_timeout_capped_by_overall_timeout(self) -> None:
+        """Connect timeout should never exceed the overall timeout."""
+        from agent_k.agents.lycurgus import build_research_http_client
+
+        client = build_research_http_client(timeout_seconds=3.0)
+        try:
+            assert client.timeout.connect == 3.0
+        finally:
+            await client.aclose()
+
 
 class TestMissionStatus:
     """Tests for the MissionStatus class."""

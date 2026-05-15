@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.lycurgus:LycurgusOrchestrator",
-  "line": 197,
+  "line": 252,
   "notice": "Coordinates discovery, research, prototype, evolution, and submission phases.",
   "pattern": {
     "name": "orchestrator",

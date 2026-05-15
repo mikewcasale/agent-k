@@ -17,6 +17,14 @@
   },
   {
     "for": [
+      "research HTTP client construction"
+    ],
+    "line": 112,
+    "notes": "Use build_research_http_client for orchestrator HTTP clients.",
+    "source": "agent_k/agents/lycurgus.py"
+  },
+  {
+    "for": [
       "scientist agent construction"
     ],
     "line": 656,

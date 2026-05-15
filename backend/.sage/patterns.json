@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-05-15T23:11:41.111729+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -152,7 +152,7 @@
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusDeps",
-        "line": 147,
+        "line": 202,
         "rationale": "Groups runtime services for orchestration.",
         "source": "agent_k/agents/lycurgus.py",
         "violations": [
@@ -911,7 +911,7 @@
     "orchestrator": [
       {
         "component": "agent_k.agents.lycurgus:LycurgusOrchestrator",
-        "line": 197,
+        "line": 252,
         "rationale": "Centralized coordinator for multi-agent mission state.",
         "source": "agent_k/agents/lycurgus.py",
         "violations": [
@@ -974,7 +974,7 @@
       },
       {
         "component": "agent_k.agents.lycurgus:MissionStatus",
-        "line": 176,
+        "line": 231,
         "rationale": "Stable status payload for UI updates.",
         "source": "agent_k/agents/lycurgus.py",
         "violations": [
@@ -1264,7 +1264,7 @@
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusSettings",
-        "line": 99,
+        "line": 141,
         "rationale": "Centralizes orchestration configuration.",
         "source": "agent_k/agents/lycurgus.py",
         "violations": [

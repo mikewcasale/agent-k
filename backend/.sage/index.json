@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-05-15T23:11:41.110735+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1094,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -2021,176 +2021,200 @@
         "value": "{\"last_verified\": \"2026-01-26\", \"owners\": [\"agent-k-core\"]}"
       },
       {
+        "component": "agent_k.agents.lycurgus:build_research_http_client",
+        "line": 114,
+        "name": "dev",
+        "value": "httpx defaults to a 5-second timeout on every phase of a request, which\nis too aggressive for fetching competition pages, scholarly results, and\nleaderboard CSVs and causes flaky mid-mission failures."
+      },
+      {
+        "component": "agent_k.agents.lycurgus:build_research_http_client",
+        "line": 121,
+        "name": "notice",
+        "value": "Returns an httpx.AsyncClient with explicit timeouts and pool limits."
+      },
+      {
+        "component": "agent_k.agents.lycurgus:build_research_http_client",
+        "line": 124,
+        "name": "factory_for",
+        "value": "{\"id\": \"httpx:AsyncClient\", \"rationale\": \"Centralizes research HTTP client configuration.\", \"singleton\": false, \"cache_key\": \"timeout_seconds\"}"
+      },
+      {
+        "component": "agent_k.agents.lycurgus:build_research_http_client",
+        "line": 130,
+        "name": "canonical_home",
+        "value": "{\"for\": [\"research HTTP client construction\"], \"notes\": \"Use build_research_http_client for orchestrator HTTP clients.\"}"
+      },
+      {
         "component": "agent_k.agents.lycurgus:LycurgusSettings",
-        "line": 101,
+        "line": 143,
         "name": "notice",
         "value": "Settings for the Lycurgus orchestrator."
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusSettings",
-        "line": 104,
+        "line": 146,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusSettings",
-        "line": 107,
+        "line": 149,
         "name": "pattern",
         "value": "{\"name\": \"settings\", \"rationale\": \"Centralizes orchestration configuration.\", \"violations\": \"Per-run overrides lead to inconsistent missions.\"}"
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusSettings.from_file",
-        "line": 123,
+        "line": 175,
         "name": "notice",
         "value": "Loads orchestration settings from a JSON file."
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusSettings.with_devstral",
-        "line": 138,
+        "line": 193,
         "name": "notice",
         "value": "Sets the default model to Devstral (local or custom URL)."
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusDeps",
-        "line": 149,
+        "line": 204,
         "name": "notice",
         "value": "Dependencies for the Lycurgus orchestrator."
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusDeps",
-        "line": 152,
+        "line": 207,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusDeps",
-        "line": 155,
+        "line": 210,
         "name": "pattern",
         "value": "{\"name\": \"dependency-container\", \"rationale\": \"Groups runtime services for orchestration.\", \"violations\": \"Hidden globals make orchestration brittle.\"}"
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusDeps",
-        "line": 160,
+        "line": 215,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.ui.agui:EventEmitter\", \"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"constructor\", \"lifecycle\": \"Allocated per orchestrator run.\"}"
       },
       {
         "component": "agent_k.agents.lycurgus:MissionStatus",
-        "line": 178,
+        "line": 233,
         "name": "notice",
         "value": "Mission status snapshot."
       },
       {
         "component": "agent_k.agents.lycurgus:MissionStatus",
-        "line": 181,
+        "line": 236,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.lycurgus:MissionStatus",
-        "line": 184,
+        "line": 239,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Stable status payload for UI updates.\", \"violations\": \"Ad-hoc status dicts hinder UI consumers.\"}"
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusOrchestrator",
-        "line": 211,
+        "line": 266,
         "name": "notice",
         "value": "Coordinates discovery, research, prototype, evolution, and submission phases."
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusOrchestrator",
-        "line": 214,
+        "line": 269,
         "name": "dev",
         "value": "Uses pydantic-graph nodes to drive mission lifecycle."
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusOrchestrator",
-        "line": 217,
+        "line": 272,
         "name": "pattern",
         "value": "{\"name\": \"orchestrator\", \"rationale\": \"Centralized coordinator for multi-agent mission state.\", \"violations\": \"Decentralized orchestration leads to inconsistent transitions.\"}"
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusOrchestrator",
-        "line": 222,
+        "line": 277,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.mission.nodes:DiscoveryNode\", \"agent_k.mission.nodes:ResearchNode\", \"agent_k.mission.nodes:PrototypeNode\", \"agent_k.mission.nodes:EvolutionNode\", \"agent_k.mission.nodes:Submissi"
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusOrchestrator",
-        "line": 235,
+        "line": 290,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates orchestration state and shared resources.\"}"
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusOrchestrator",
-        "line": 240,
+        "line": 295,
         "name": "invariants",
         "value": "[\"self._graph is initialized before orchestration runs.\", \"self._state is None when idle.\"]"
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusOrchestrator.__init__",
-        "line": 276,
+        "line": 331,
         "name": "notice",
         "value": "Initializes orchestration state and prepares agents/graph."
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusOrchestrator.__init__",
-        "line": 279,
+        "line": 334,
         "name": "dev",
         "value": "Lazily initializes adapters if not supplied."
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusOrchestrator.__init__",
-        "line": 282,
+        "line": 337,
         "name": "state_changes",
         "value": "[\"self._agents\", \"self._graph\", \"self._state\"]"
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusOrchestrator.from_config_file",
-        "line": 325,
+        "line": 380,
         "name": "notice",
         "value": "Builds an orchestrator from a JSON config file."
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusOrchestrator.with_custom_agents",
-        "line": 337,
+        "line": 392,
         "name": "notice",
         "value": "Injects custom agent instances for orchestration."
       },
       {
         "component": "agent_k.agents.lycurgus:LycurgusOrchestrator.validate_competition_id",
-        "line": 348,
+        "line": 403,
         "name": "notice",
         "value": "Returns true for lowercase alphanumeric slugs with dashes."
       },
       {
         "component": "agent_k.agents.lycurgus:orchestrate",
-        "line": 711,
+        "line": 773,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.agents.lycurgus:orchestrate",
-        "line": 714,
+        "line": 776,
         "name": "notice",
         "value": "Executes a mission end-to-end using the orchestrator."
       },
       {
         "component": "agent_k.agents.lycurgus:orchestrate",
-        "line": 717,
+        "line": 779,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API requests\"]}"
       },
       {
         "component": "agent_k.agents.lycurgus:validate_mission_result",
-        "line": 727,
+        "line": 789,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.agents.lycurgus:validate_mission_result",
-        "line": 730,
+        "line": 792,
         "name": "notice",
         "value": "Passthrough validator for mission results."
       }

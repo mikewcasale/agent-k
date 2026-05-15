@@ -88,11 +88,53 @@ __all__ = (
     "LYCURGUS_SYSTEM_PROMPT",
     "MissionStatus",
     "SCHEMA_VERSION",
+    "build_research_http_client",
     "orchestrate",
     "validate_mission_result",
 )
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
+
+RESEARCH_HTTP_TIMEOUT_SECONDS: Final[float] = 30.0
+"""Read/write/pool timeout for the shared research HTTP client."""
+
+RESEARCH_HTTP_CONNECT_TIMEOUT_SECONDS: Final[float] = 10.0
+"""Connect timeout so dead hosts fail fast instead of stalling a mission."""
+
+RESEARCH_HTTP_MAX_CONNECTIONS: Final[int] = 20
+"""Connection pool ceiling for the shared research HTTP client."""
+
+
+def build_research_http_client(
+    timeout_seconds: Annotated[float, Doc("Read/write/pool timeout in seconds.")] = RESEARCH_HTTP_TIMEOUT_SECONDS,
+    max_connections: Annotated[int, Doc("Maximum simultaneous connections.")] = RESEARCH_HTTP_MAX_CONNECTIONS,
+) -> httpx.AsyncClient:
+    """Build the shared HTTP client used by research toolsets.
+
+    @dev: |
+        httpx defaults to a 5-second timeout on every phase of a request, which
+        is too aggressive for fetching competition pages, scholarly results, and
+        leaderboard CSVs and causes flaky mid-mission failures. This applies a
+        generous read/write timeout while keeping a short connect timeout so
+        genuinely unreachable hosts still fail fast.
+
+        @notice: |
+            Returns an httpx.AsyncClient with explicit timeouts and pool limits.
+
+        @factory-for:
+            id: httpx:AsyncClient
+            rationale: "Centralizes research HTTP client configuration."
+            singleton: false
+            cache-key: timeout_seconds
+
+        @canonical-home:
+            for:
+                - "research HTTP client construction"
+            notes: "Use build_research_http_client for orchestrator HTTP clients."
+    """
+    timeout = httpx.Timeout(timeout_seconds, connect=min(RESEARCH_HTTP_CONNECT_TIMEOUT_SECONDS, timeout_seconds))
+    limits = httpx.Limits(max_connections=max_connections, max_keepalive_connections=max(1, max_connections // 2))
+    return httpx.AsyncClient(timeout=timeout, limits=limits)
 
 
 class LycurgusSettings(BaseSettings):
@@ -115,6 +157,16 @@ class LycurgusSettings(BaseSettings):
     max_evolution_rounds: int = Field(
         default=100, ge=1, le=MAX_MISSION_EVOLUTION_ROUNDS, description="Maximum evolution rounds for missions"
     )
+    http_timeout_seconds: float = Field(
+        default=RESEARCH_HTTP_TIMEOUT_SECONDS,
+        gt=0,
+        description="Read/write timeout (seconds) for the shared research HTTP client",
+    )
+    http_max_connections: int = Field(
+        default=RESEARCH_HTTP_MAX_CONNECTIONS,
+        ge=1,
+        description="Maximum simultaneous connections for the shared research HTTP client",
+    )
 
     @classmethod
     def from_file(cls, path: Annotated[Path, Doc("Path to JSON settings file.")]) -> LycurgusSettings:
@@ -124,9 +176,12 @@ class LycurgusSettings(BaseSettings):
             Loads orchestration settings from a JSON file.
         """
         data = json.loads(path.read_text(encoding="utf-8"))
+        defaults = cls()
         return cls(
-            default_model=data.get("default_model", cls().default_model),
-            max_evolution_rounds=data.get("max_evolution_rounds", cls().max_evolution_rounds),
+            default_model=data.get("default_model", defaults.default_model),
+            max_evolution_rounds=data.get("max_evolution_rounds", defaults.max_evolution_rounds),
+            http_timeout_seconds=data.get("http_timeout_seconds", defaults.http_timeout_seconds),
+            http_max_connections=data.get("http_max_connections", defaults.http_max_connections),
         )
 
     @classmethod
@@ -669,7 +724,14 @@ class LycurgusOrchestrator:
             self._event_emitter = EventEmitter()
 
         if self._http_client is None:
-            self._http_client = httpx.AsyncClient()
+            self._http_client = build_research_http_client(
+                timeout_seconds=self._config.http_timeout_seconds, max_connections=self._config.http_max_connections
+            )
+            self._logger.info(
+                "research_http_client_created",
+                timeout_seconds=self._config.http_timeout_seconds,
+                max_connections=self._config.http_max_connections,
+            )
 
         if self._platform_adapter is None:
             self._platform_adapter = self._create_platform_adapter()

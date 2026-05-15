@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.lycurgus:LycurgusSettings.with_devstral",
-  "line": 136,
+  "line": 191,
   "notice": "Sets the default model to Devstral (local or custom URL).",
   "pattern": null,
   "similar": null,

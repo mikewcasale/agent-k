@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.lycurgus:LycurgusOrchestrator.with_custom_agents",
-  "line": 335,
+  "line": 390,
   "notice": "Injects custom agent instances for orchestration.",
   "pattern": null,
   "similar": null,

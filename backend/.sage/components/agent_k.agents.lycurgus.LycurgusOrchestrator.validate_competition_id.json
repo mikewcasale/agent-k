@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.lycurgus:LycurgusOrchestrator.validate_competition_id",
-  "line": 346,
+  "line": 401,
   "notice": "Returns true for lowercase alphanumeric slugs with dashes.",
   "pattern": null,
   "similar": null,

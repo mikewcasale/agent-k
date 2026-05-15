@@ -1,0 +1,22 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": {
+    "for": [
+      "research HTTP client construction"
+    ],
+    "notes": "Use build_research_http_client for orchestrator HTTP clients."
+  },
+  "custom": null,
+  "dev": "httpx defaults to a 5-second timeout on every phase of a request, which\nis too aggressive for fetching competition pages, scholarly results, and\nleaderboard CSVs and causes flaky mid-mission failures. This applies a\ngenerous read/write timeout while keeping a short connect timeout so\ngenuinely unreachable hosts still fail fast.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.lycurgus:build_research_http_client",
+  "line": 112,
+  "notice": "Returns an httpx.AsyncClient with explicit timeouts and pool limits.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/lycurgus.py",
+  "summary": "Build the shared HTTP client used by research toolsets.",
+  "type": "function"
+}

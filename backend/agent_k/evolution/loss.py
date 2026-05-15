@@ -30,15 +30,37 @@ Licensed under the MIT License.
 from __future__ import annotations as _annotations
 
 import random
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Final
+
+import numpy as np
+from numpy.typing import NDArray
 
 from agent_k.evolution.framework import FitnessFn, Individual, Population
 
 type LossObjective = str
 """LightGBM objective identifiers."""
 
-__all__ = ("LossFunctionEvolver", "LossGenome", "build_lightgbm_objective_params")
+type GradHess = tuple[NDArray[np.float64], NDArray[np.float64]]
+"""Gradient and hessian arrays returned by a LightGBM custom objective."""
+
+type LightGBMObjective = Callable[[Any, Any], GradHess]
+"""Custom objective callable accepted by ``lightgbm.train`` via ``params['objective']``."""
+
+__all__ = (
+    "LightGBMObjective",
+    "LossFunctionEvolver",
+    "LossGenome",
+    "build_lightgbm_objective",
+    "build_lightgbm_objective_params",
+)
+
+_MIN_HESSIAN: Final[float] = 1e-6
+"""Lower bound on the hessian so LightGBM never divides by zero."""
+
+_QUANTILE_HESSIAN: Final[float] = 1.0
+"""Constant hessian for the pinball loss, mirroring LightGBM's built-in quantile objective."""
 
 
 @dataclass(slots=True)
@@ -136,24 +158,94 @@ class LossFunctionEvolver:
 
 
 def build_lightgbm_objective_params(genome: LossGenome) -> dict[str, Any]:
-    """Create LightGBM objective params from a LossGenome.
+    """Create LightGBM params for a genome's built-in objective.
 
     @notice: |
-        Create LightGBM objective params from a LossGenome.
+        Create LightGBM params for a genome's built-in objective.
 
     @dev: |
-        See module for behavior details and invariants.
+        Emits only parameters LightGBM recognizes: ``objective`` plus ``alpha``
+        for the ``huber`` (transition point) and ``quantile`` (target quantile)
+        objectives. Genome-only fields such as ``asymmetric_weight`` are not
+        valid LightGBM params; use :func:`build_lightgbm_objective` to apply
+        them through a custom objective callable instead.
     """
-    params: dict[str, Any] = {
-        "objective": genome.objective,
-        "asymmetric_weight": genome.asymmetric_weight,
-        "mae_rmse_blend": genome.mae_rmse_blend,
-    }
+    params: dict[str, Any] = {"objective": genome.objective}
     if genome.objective == "quantile":
         params["alpha"] = genome.quantile_alpha
-    if genome.objective == "huber":
-        params["huber_delta"] = genome.huber_delta
+    elif genome.objective == "huber":
+        params["alpha"] = genome.huber_delta
     return params
+
+
+def build_lightgbm_objective(genome: LossGenome) -> LightGBMObjective:
+    """Build a LightGBM custom objective callable from an evolved genome.
+
+    @notice: |
+        Build a LightGBM custom objective callable from an evolved genome.
+
+    @dev: |
+        The returned callable returns ``(grad, hess)`` arrays and accepts both
+        invocation conventions: ``lightgbm.train`` passes ``(y_pred, Dataset)``
+        while the scikit-learn API passes ``(y_true, y_pred)``. ``quantile``
+        genomes yield an asymmetric pinball objective; every other objective
+        yields an asymmetric Huber objective whose ``mae_rmse_blend``
+        interpolates between Huber (robust, MAE-leaning) and squared-error
+        (RMSE) gradients. ``asymmetric_weight`` scales the gradient and hessian
+        for over-predictions so the search can favor under- or over-shooting.
+    """
+    if genome.objective == "quantile":
+        return _build_quantile_objective(alpha=genome.quantile_alpha, over_weight=genome.asymmetric_weight)
+    return _build_asymmetric_huber_objective(
+        delta=genome.huber_delta, mae_rmse_blend=genome.mae_rmse_blend, over_weight=genome.asymmetric_weight
+    )
+
+
+def _residual(first: Any, second: Any) -> NDArray[np.float64]:
+    """Return ``y_pred - y_true`` for either LightGBM calling convention."""
+    get_label = getattr(second, "get_label", None)
+    if callable(get_label):
+        # lightgbm.train convention: (y_pred, Dataset).
+        pred = np.asarray(first, dtype=np.float64)
+        true = np.asarray(get_label(), dtype=np.float64)
+    else:
+        # scikit-learn convention: (y_true, y_pred).
+        true = np.asarray(first, dtype=np.float64)
+        pred = np.asarray(second, dtype=np.float64)
+    return pred - true
+
+
+def _build_asymmetric_huber_objective(*, delta: float, mae_rmse_blend: float, over_weight: float) -> LightGBMObjective:
+    safe_delta = max(float(delta), _MIN_HESSIAN)
+    blend = _clip(float(mae_rmse_blend), 0.0, 1.0)
+    safe_weight = max(float(over_weight), _MIN_HESSIAN)
+
+    def objective(first: Any, second: Any) -> GradHess:
+        residual = _residual(first, second)
+        clipped = np.clip(residual, -safe_delta, safe_delta)
+        huber_hess = (np.abs(residual) <= safe_delta).astype(np.float64)
+        grad = blend * residual + (1.0 - blend) * clipped
+        hess = blend + (1.0 - blend) * huber_hess
+        weight = np.where(residual > 0.0, safe_weight, 1.0)
+        grad = grad * weight
+        hess = np.maximum(hess * weight, _MIN_HESSIAN)
+        return grad, hess
+
+    return objective
+
+
+def _build_quantile_objective(*, alpha: float, over_weight: float) -> LightGBMObjective:
+    safe_alpha = _clip(float(alpha), _MIN_HESSIAN, 1.0 - _MIN_HESSIAN)
+    safe_weight = max(float(over_weight), _MIN_HESSIAN)
+
+    def objective(first: Any, second: Any) -> GradHess:
+        residual = _residual(first, second)
+        weight = np.where(residual > 0.0, safe_weight, 1.0)
+        grad = np.where(residual > 0.0, 1.0 - safe_alpha, -safe_alpha) * weight
+        hess = np.full_like(residual, _QUANTILE_HESSIAN) * weight
+        return grad, hess
+
+    return objective
 
 
 def _clip(value: float, lower: float, upper: float) -> float:

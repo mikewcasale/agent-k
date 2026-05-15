@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-05-15T04:16:38.273286+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1092,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -5674,51 +5674,63 @@
       },
       {
         "component": "agent_k.evolution.loss:LossGenome",
-        "line": 48,
+        "line": 70,
         "name": "notice",
         "value": "Genome for evolving custom objective functions."
       },
       {
         "component": "agent_k.evolution.loss:LossGenome",
-        "line": 51,
-        "name": "dev",
-        "value": "See module for implementation details and extension points."
-      },
-      {
-        "component": "agent_k.evolution.loss:LossGenome",
-        "line": 54,
-        "name": "pattern",
-        "value": "{\"name\": \"genome-model\", \"rationale\": \"Dataclass for LightGBM loss function parameters.\"}"
-      },
-      {
-        "component": "agent_k.evolution.loss:LossFunctionEvolver",
-        "line": 70,
-        "name": "notice",
-        "value": "Evolve LightGBM loss function parameters via genetic search."
-      },
-      {
-        "component": "agent_k.evolution.loss:LossFunctionEvolver",
         "line": 73,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
-        "component": "agent_k.evolution.loss:LossFunctionEvolver",
+        "component": "agent_k.evolution.loss:LossGenome",
         "line": 76,
+        "name": "pattern",
+        "value": "{\"name\": \"genome-model\", \"rationale\": \"Dataclass for LightGBM loss function parameters.\"}"
+      },
+      {
+        "component": "agent_k.evolution.loss:LossFunctionEvolver",
+        "line": 92,
+        "name": "notice",
+        "value": "Evolve LightGBM loss function parameters via genetic search."
+      },
+      {
+        "component": "agent_k.evolution.loss:LossFunctionEvolver",
+        "line": 95,
+        "name": "dev",
+        "value": "See module for implementation details and extension points."
+      },
+      {
+        "component": "agent_k.evolution.loss:LossFunctionEvolver",
+        "line": 98,
         "name": "pattern",
         "value": "{\"name\": \"evolver\", \"rationale\": \"Coordinates evolutionary search over loss function genomes.\"}"
       },
       {
         "component": "agent_k.evolution.loss:build_lightgbm_objective_params",
-        "line": 141,
+        "line": 163,
         "name": "notice",
-        "value": "Create LightGBM objective params from a LossGenome."
+        "value": "Create LightGBM params for a genome's built-in objective."
       },
       {
         "component": "agent_k.evolution.loss:build_lightgbm_objective_params",
-        "line": 144,
+        "line": 166,
         "name": "dev",
-        "value": "See module for behavior details and invariants."
+        "value": "Emits only parameters LightGBM recognizes: ``objective`` plus ``alpha``\nfor the ``huber`` (transition point) and ``quantile`` (target quantile)\nobjectives. Genome-only fields such as ``asymmetric_weig"
+      },
+      {
+        "component": "agent_k.evolution.loss:build_lightgbm_objective",
+        "line": 184,
+        "name": "notice",
+        "value": "Build a LightGBM custom objective callable from an evolved genome."
+      },
+      {
+        "component": "agent_k.evolution.loss:build_lightgbm_objective",
+        "line": 187,
+        "name": "dev",
+        "value": "The returned callable returns ``(grad, hess)`` arrays and accepts both\ninvocation conventions: ``lightgbm.train`` passes ``(y_pred, Dataset)``\nwhile the scikit-learn API passes ``(y_true, y_pred)``. `"
       }
     ],
     "agent_k/infra/__init__.py": [

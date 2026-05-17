@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.evolution.framework:MapElitesArchive.cells",
-  "line": 125,
+  "id": "agent_k.evolution.framework:_fitness_value",
+  "line": 66,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/evolution/framework.py",
-  "summary": "Return the current archive cells.",
-  "type": "method"
+  "summary": "Return ranking fitness, treating unevaluated individuals as worst-ranked.",
+  "type": "function"
 }

@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.evolution.framework:Individual",
-  "line": 67,
+  "line": 78,
   "notice": "Evolutionary individual with lineage tracking.",
   "pattern": {
     "name": "individual-model",

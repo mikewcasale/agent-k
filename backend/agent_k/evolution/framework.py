@@ -84,10 +84,17 @@ class Individual(Generic[GenomeT]):
     lineage: list[str] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
 
-    def with_genome(self, genome: GenomeT, *, parents: tuple[str, str] | None = None) -> Individual[GenomeT]:
-        """Create a child individual while updating lineage."""
+    def with_genome(
+        self, genome: GenomeT, *, parents: tuple[str, str] | None = None, fitness: float | None = None
+    ) -> Individual[GenomeT]:
+        """Create a child individual while updating lineage.
+
+        @dev: |
+            Pass ``fitness`` only when the child genome is an unmodified clone
+            of an already-evaluated parent so re-evaluation can be skipped.
+        """
         lineage = [*self.lineage, self.identifier]
-        return Individual(genome=genome, parents=parents, lineage=lineage)
+        return Individual(genome=genome, fitness=fitness, parents=parents, lineage=lineage)
 
 
 class MapElitesArchive(Generic[GenomeT]):
@@ -214,15 +221,21 @@ class Population(Generic[GenomeT]):
         while len(next_generation) < len(self.individuals):
             parent_a = self.tournament(size=tournament_size)
             parent_b = self.tournament(size=tournament_size)
-            if self.rng.random() < crossover_rate:
+            crossed = self.rng.random() < crossover_rate
+            if crossed:
                 genome = crossover_fn(parent_a.genome, parent_b.genome, self.rng)
                 parents = (parent_a.identifier, parent_b.identifier)
             else:
                 genome = parent_a.genome
                 parents = None
-            if self.rng.random() < mutation_rate:
+            mutated = self.rng.random() < mutation_rate
+            if mutated:
                 genome = mutation_fn(genome, self.rng)
-            child = parent_a.with_genome(genome, parents=parents)
+            # An unmodified clone shares parent_a's genome, so it shares its
+            # fitness; carry it over so evaluate() skips a redundant (and often
+            # expensive) re-evaluation of an identical genome.
+            inherited_fitness = None if crossed or mutated else parent_a.fitness
+            child = parent_a.with_genome(genome, parents=parents, fitness=inherited_fitness)
             next_generation.append(child)
 
         self.individuals = next_generation

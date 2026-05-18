@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.evolution.framework:HyperparamEvolver",
-  "line": 272,
+  "line": 285,
   "notice": "Evolutionary hyperparameter optimizer with adaptive mutation rates.",
   "pattern": {
     "name": "evolver",

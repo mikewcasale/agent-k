@@ -14,7 +14,8 @@ from pydantic import ValidationError
 from pydantic_ai import Agent
 
 from agent_k.agents import get_agent
-from agent_k.agents.lobbyist import DiscoveryResult, LobbyistDeps, lobbyist_agent
+from agent_k.agents.lobbyist import DiscoveryResult, LobbyistDeps, LobbyistSettings, lobbyist_agent
+from agent_k.core.constants import LLM_REQUEST_TIMEOUT_SECONDS
 from agent_k.core.models import Competition, CompetitionType, EvaluationMetric
 
 __all__ = ()
@@ -91,3 +92,18 @@ class TestLobbyistAgentSingleton:
         """Agent should be configured with a name."""
         assert isinstance(lobbyist_agent, Agent)
         assert lobbyist_agent.name == "lobbyist"
+
+
+class TestLobbyistSettings:
+    """Tests for Lobbyist settings."""
+
+    def test_model_settings_includes_request_timeout(self) -> None:
+        """model_settings should carry the per-request LLM timeout."""
+        settings = LobbyistSettings()
+        assert settings.request_timeout == LLM_REQUEST_TIMEOUT_SECONDS
+        assert settings.model_settings["timeout"] == LLM_REQUEST_TIMEOUT_SECONDS
+
+    def test_request_timeout_rejects_non_positive(self) -> None:
+        """request_timeout must be strictly positive."""
+        with pytest.raises(ValidationError):
+            LobbyistSettings(request_timeout=0.0)

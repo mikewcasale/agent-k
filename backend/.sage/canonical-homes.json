@@ -3,7 +3,7 @@
     "for": [
       "evolver agent construction"
     ],
-    "line": 1052,
+    "line": 1060,
     "notes": "Use EvolverAgent() or module singleton.",
     "source": "agent_k/agents/evolver.py"
   },
@@ -11,7 +11,7 @@
     "for": [
       "lobbyist agent construction"
     ],
-    "line": 345,
+    "line": 348,
     "notes": "Use LobbyistAgent() or module singleton.",
     "source": "agent_k/agents/lobbyist.py"
   },
@@ -19,7 +19,7 @@
     "for": [
       "scientist agent construction"
     ],
-    "line": 656,
+    "line": 659,
     "notes": "Use ScientistAgent() or module singleton.",
     "source": "agent_k/agents/scientist.py"
   },

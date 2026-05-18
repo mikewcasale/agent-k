@@ -64,7 +64,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from agent_k.agents import register_agent
 from agent_k.agents.base import MemoryMixin, universal_tool_preparation
 from agent_k.agents.prompts import SCIENTIST_SYSTEM_PROMPT
-from agent_k.core.constants import DEFAULT_MODEL
+from agent_k.core.constants import DEFAULT_MODEL, LLM_REQUEST_TIMEOUT_SECONDS
 from agent_k.core.data import locate_data_files
 from agent_k.core.hints import DatasetProfile, build_dataset_profile, generate_preprocessing_hints
 from agent_k.core.sage import Doc, Range
@@ -183,11 +183,14 @@ class ScientistSettings(BaseSettings):
     output_retries: int = Field(default=4, ge=0, description="Output validation retry attempts")
     max_paper_results: int = Field(default=10, ge=1, description="Maximum papers to retrieve")
     max_notebook_results: int = Field(default=10, ge=1, description="Maximum notebooks to retrieve")
+    request_timeout: float = Field(
+        default=LLM_REQUEST_TIMEOUT_SECONDS, gt=0.0, description="Per-request LLM call timeout (seconds)"
+    )
 
     @property
     def model_settings(self) -> ModelSettings:
         """Build ModelSettings for the configured model."""
-        return ModelSettings(temperature=self.temperature, max_tokens=self.max_tokens)
+        return ModelSettings(temperature=self.temperature, max_tokens=self.max_tokens, timeout=self.request_timeout)
 
 
 @dataclass

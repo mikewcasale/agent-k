@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.lobbyist:LobbyistAgent",
-  "line": 167,
+  "line": 170,
   "notice": "Discovers Kaggle competitions matching mission criteria.\nUse the module-level lobbyist_agent or agent registry.",
   "pattern": {
     "name": "agent-singleton",

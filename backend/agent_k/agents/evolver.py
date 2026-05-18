@@ -76,6 +76,7 @@ from agent_k.core.constants import (
     DEFAULT_KAGGLE_MCP_URL,
     DEFAULT_MODEL,
     EVOLUTION_POPULATION_SIZE,
+    LLM_REQUEST_TIMEOUT_SECONDS,
     MAX_EVOLUTION_GENERATIONS,
     SOLUTION_EXECUTION_TIMEOUT_SECONDS,
 )
@@ -385,6 +386,9 @@ class EvolverSettings(BaseSettings):
     )
     tool_retries: int = Field(default=3, ge=0, description="Tool retry attempts")
     output_retries: int = Field(default=4, ge=0, description="Output validation retry attempts")
+    request_timeout: float = Field(
+        default=LLM_REQUEST_TIMEOUT_SECONDS, gt=0.0, description="Per-request LLM call timeout (seconds)"
+    )
     population_size: int = Field(default=EVOLUTION_POPULATION_SIZE, ge=1, description="Population size for evolution")
     max_generations: int = Field(default=MAX_EVOLUTION_GENERATIONS, ge=1, description="Maximum evolution generations")
     min_generations: int = Field(default=0, ge=0, description="Minimum generations before convergence checks")
@@ -422,7 +426,11 @@ class EvolverSettings(BaseSettings):
     @property
     def model_settings(self) -> ModelSettings:
         """Build ModelSettings from configuration."""
-        settings: ModelSettings = {"temperature": self.temperature, "max_tokens": self.max_tokens}
+        settings: ModelSettings = {
+            "temperature": self.temperature,
+            "max_tokens": self.max_tokens,
+            "timeout": self.request_timeout,
+        }
 
         if self.enable_thinking and "anthropic" in self.model:
             logfire.info("evolver_thinking_disabled", model=self.model, reason="anthropic_output_tools_incompatible")

@@ -39,6 +39,7 @@ __all__ = (
     "EVOLUTION_TIMEOUT_SECONDS",
     "SUBMISSION_TIMEOUT_SECONDS",
     "SOLUTION_EXECUTION_TIMEOUT_SECONDS",
+    "LLM_REQUEST_TIMEOUT_SECONDS",
     "MAX_COMPETITIONS_PER_SEARCH",
     "MAX_CONCURRENT_SUBMISSIONS",
     "MAX_EVOLUTION_GENERATIONS",
@@ -65,6 +66,9 @@ PROTOTYPE_TIMEOUT_SECONDS: Final[int] = 900
 EVOLUTION_TIMEOUT_SECONDS: Final[int] = 7200  # 2 hours
 SUBMISSION_TIMEOUT_SECONDS: Final[int] = 120
 SOLUTION_EXECUTION_TIMEOUT_SECONDS: Final[int] = 600
+# Per-request LLM call timeout. Bounds a single model HTTP request so a slow
+# or hung free-tier provider fails fast instead of blocking the SDK default.
+LLM_REQUEST_TIMEOUT_SECONDS: Final[float] = 180.0
 
 # Limits
 MAX_COMPETITIONS_PER_SEARCH: Final[int] = 50

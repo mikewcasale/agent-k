@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.lobbyist:LobbyistAgent.search_kaggle_competitions",
-  "line": 239,
+  "line": 242,
   "notice": "Queries the platform adapter for competition listings.",
   "pattern": null,
   "similar": null,

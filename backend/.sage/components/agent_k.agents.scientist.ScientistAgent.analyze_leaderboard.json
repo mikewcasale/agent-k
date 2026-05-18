@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.scientist:ScientistAgent.analyze_leaderboard",
-  "line": 391,
+  "line": 394,
   "notice": "Computes distribution stats and common approaches from leaderboard entries.",
   "pattern": null,
   "similar": null,

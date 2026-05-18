@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.evolver:EvolverAgent",
-  "line": 556,
+  "line": 564,
   "notice": "Optimizes prototype solutions via evolutionary search.\nUse the module-level evolver_agent or agent registry.",
   "pattern": {
     "name": "agent-singleton",

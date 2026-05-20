@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.mission.persistence:MissionPersistence._save_checkpoint",
-  "line": 167,
+  "line": 168,
   "notice": null,
   "pattern": null,
   "similar": null,

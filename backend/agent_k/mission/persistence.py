@@ -35,6 +35,7 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
+import os
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated, Any, Final
@@ -164,19 +165,26 @@ class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
             self.set_types(MissionState, MissionResult)
 
     async def _save_checkpoint(self, state: MissionState) -> None:
-        """Save state with timestamp and clean up old checkpoints."""
+        """Save state with timestamp and clean up old checkpoints.
+
+        Writes to a sibling `.tmp` file first and then atomically renames into
+        place via `os.replace`, so a crash mid-write leaves the previous
+        checkpoint intact instead of producing a truncated, unparseable file.
+        Microsecond-resolution timestamps prevent two snapshots fired in the
+        same second from overwriting each other.
+        """
         with logfire.span("mission.persistence.save", mission_id=self.mission_id):
-            timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S_%f")
             checkpoint_path = self.mission_dir / f"{CHECKPOINT_PREFIX}{timestamp}.json"
-            checkpoint_path.write_text(state.model_dump_json(indent=2), encoding="utf-8")
+            tmp_path = checkpoint_path.with_name(checkpoint_path.name + ".tmp")
+            tmp_path.write_text(state.model_dump_json(indent=2), encoding="utf-8")
+            os.replace(tmp_path, checkpoint_path)
             await self._cleanup_old_checkpoints()
 
     async def _cleanup_old_checkpoints(self) -> None:
-        checkpoints = sorted(
-            self.mission_dir.glob(f"{CHECKPOINT_PREFIX}*.json"), key=lambda p: p.stat().st_mtime, reverse=True
-        )
+        checkpoints = sorted(self.mission_dir.glob(f"{CHECKPOINT_PREFIX}*.json"), key=lambda p: p.name, reverse=True)
         for old_checkpoint in checkpoints[self.max_checkpoints :]:
-            old_checkpoint.unlink()
+            old_checkpoint.unlink(missing_ok=True)
 
 
 def create_persistence(

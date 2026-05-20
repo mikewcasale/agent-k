@@ -59,7 +59,7 @@
     "for": [
       "mission persistence construction"
     ],
-    "line": 185,
+    "line": 193,
     "notes": "Use create_persistence to ensure defaults.",
     "source": "agent_k/mission/persistence.py"
   },

@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.adapters.kaggle:KaggleAdapter.search_competitions",
-  "line": 211,
+  "id": "agent_k.adapters.kaggle:_extract_competition_items",
+  "line": 606,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Search Kaggle competitions.",
-  "type": "method"
+  "summary": "Normalize a competition-list payload into a list of items.",
+  "type": "function"
 }

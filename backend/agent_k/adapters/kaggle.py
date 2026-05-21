@@ -37,6 +37,7 @@ from __future__ import annotations as _annotations
 import asyncio
 import csv
 import io
+import json as _json
 import re
 import zipfile
 from dataclasses import dataclass, field
@@ -68,6 +69,16 @@ __all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
+_MAX_SEARCH_PAGES: Final[int] = 100
+"""Defensive ceiling on competition search pagination.
+
+Kaggle's ``/competitions/list`` endpoint normally signals the final page by
+returning an empty array, but a malformed or dict-wrapped payload would have
+no such terminator. The cap guarantees iteration terminates even if upstream
+behavior drifts.
+"""
+_COMPETITION_LIST_KEYS: Final[tuple[str, ...]] = ("competitions", "data", "results", "items")
+"""Keys to probe when the API returns a dict-wrapped competition list."""
 
 
 class KaggleSettings(BaseSettings):
@@ -197,10 +208,17 @@ class KaggleAdapter(PlatformAdapter):
         min_prize: int | None = None,
         active_only: bool = True,
     ) -> AsyncIterator[Competition]:
-        """Search Kaggle competitions."""
+        """Search Kaggle competitions.
+
+        Iterates the ``/competitions/list`` endpoint page-by-page and yields
+        normalized :class:`Competition` records. Pagination terminates on the
+        first empty page, when no new competition IDs surface (defensive
+        against an API that loops on the same page), or once
+        :data:`_MAX_SEARCH_PAGES` pages have been read.
+        """
         with logfire.span("kaggle.search_competitions", categories=categories):
-            page = 1
-            while True:
+            seen_ids: set[str] = set()
+            for page in range(1, _MAX_SEARCH_PAGES + 1):
                 params: dict[str, Any] = {"page": page}
                 if categories:
                     params["category"] = categories[0]  # Kaggle API supports single category
@@ -208,13 +226,20 @@ class KaggleAdapter(PlatformAdapter):
                     params["search"] = " ".join(keywords)
 
                 response = await self._request("GET", "/competitions/list", params=params)
-                data = response.json()
+                response.raise_for_status()
 
-                if not data:
-                    break
+                try:
+                    payload = response.json()
+                except _json.JSONDecodeError as exc:
+                    logfire.warning("kaggle_search_invalid_json", page=page, error=str(exc))
+                    return
 
-                for item in data:
-                    # Skip if item is not a dict (malformed data)
+                items = _extract_competition_items(payload)
+                if not items:
+                    return
+
+                page_new_ids = 0
+                for item in items:
                     if not isinstance(item, dict):
                         logfire.warning("skipping_malformed_competition", item=str(item)[:100])
                         continue
@@ -224,6 +249,11 @@ class KaggleAdapter(PlatformAdapter):
                     except Exception as exc:
                         logfire.warning("failed_to_parse_competition", error=str(exc))
                         continue
+
+                    if competition.id in seen_ids:
+                        continue
+                    seen_ids.add(competition.id)
+                    page_new_ids += 1
 
                     # Apply filters
                     if active_only and not competition.is_active:
@@ -235,7 +265,12 @@ class KaggleAdapter(PlatformAdapter):
 
                     yield competition
 
-                page += 1
+                if page_new_ids == 0:
+                    # API repeated a page or returned only duplicates; stop instead of looping forever.
+                    logfire.info("kaggle_search_pagination_stalled", page=page, total_seen=len(seen_ids))
+                    return
+
+            logfire.warning("kaggle_search_pagination_cap_reached", max_pages=_MAX_SEARCH_PAGES)
 
     async def get_competition(self, competition_id: str) -> Competition:
         """Get competition details from Kaggle."""
@@ -248,8 +283,17 @@ class KaggleAdapter(PlatformAdapter):
             response.raise_for_status()
             # Note: Kaggle API requires additional call for full details
             list_response = await self._request("GET", "/competitions/list", params={"search": competition_id})
+            list_response.raise_for_status()
 
-            for item in list_response.json():
+            try:
+                payload = list_response.json()
+            except _json.JSONDecodeError as exc:
+                logfire.warning("kaggle_get_competition_invalid_json", error=str(exc))
+                raise CompetitionNotFoundError(competition_id) from exc
+
+            for item in _extract_competition_items(payload):
+                if not isinstance(item, dict):
+                    continue
                 try:
                     competition = self._parse_competition(item)
                 except Exception as exc:
@@ -556,3 +600,22 @@ class KaggleAdapter(PlatformAdapter):
             tags=tags,
             url=data.get("url"),
         )
+
+
+def _extract_competition_items(payload: Any) -> list[Any]:
+    """Normalize a competition-list payload into a list of items.
+
+    The Kaggle API normally returns a JSON array, but mirrors or future API
+    versions occasionally wrap the array under a top-level key. Probing a
+    fixed set of candidate keys keeps the iterator resilient without
+    silently accepting unknown shapes.
+    """
+    if isinstance(payload, list):
+        return payload
+    if isinstance(payload, dict):
+        for key in _COMPETITION_LIST_KEYS:
+            value = payload.get(key)
+            if isinstance(value, list):
+                return value
+        logfire.warning("kaggle_search_unknown_payload_shape", keys=list(payload.keys())[:10])
+    return []

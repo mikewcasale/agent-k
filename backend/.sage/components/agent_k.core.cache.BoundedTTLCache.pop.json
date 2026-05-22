@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.cache:BoundedTTLCache.pop",
+  "line": 147,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/cache.py",
+  "summary": "Remove and return the value for ``key`` if present, else ``None``.",
+  "type": "method"
+}

@@ -203,6 +203,16 @@
   },
   {
     "consumes": [],
+    "id": "agent_k.core.cache",
+    "line": 1,
+    "pattern": "cache",
+    "provides": [
+      "agent_k.core.cache:BoundedTTLCache"
+    ],
+    "source": "agent_k/core/cache.py"
+  },
+  {
+    "consumes": [],
     "id": "agent_k.core.constants",
     "line": 1,
     "pattern": "constants",

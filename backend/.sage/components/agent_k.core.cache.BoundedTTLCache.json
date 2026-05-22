@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Entries are evicted on access if they exceed the TTL, and the\noldest entry is evicted on insert when the size cap is exceeded.\nTTL of zero disables expiry; a max_size of zero disables the cache.\nNot thread-safe; intended for asyncio single-loop use.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.cache:BoundedTTLCache",
+  "line": 58,
+  "notice": "LRU cache with hard size cap and per-entry TTL eviction.",
+  "pattern": {
+    "name": "cache",
+    "rationale": "Bounded TTL cache for upstream payloads.",
+    "violations": "Unbounded dict caches leak memory and serve stale data."
+  },
+  "similar": null,
+  "source": "agent_k/core/cache.py",
+  "summary": "LRU cache with hard size cap and per-entry TTL eviction.",
+  "type": "class"
+}

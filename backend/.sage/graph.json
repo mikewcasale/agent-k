@@ -396,6 +396,11 @@
       "type": "provides"
     },
     {
+      "source": "agent_k.core.cache",
+      "target": "agent_k.core.cache:BoundedTTLCache",
+      "type": "provides"
+    },
+    {
       "source": "agent_k.core.constants",
       "target": "agent_k.core.constants",
       "type": "provides"
@@ -921,7 +926,7 @@
       "type": "similar"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831739+00:00",
+  "generated": "2026-05-22T04:20:14.772415+00:00",
   "nodes": [
     {
       "id": "agent_k",
@@ -1006,6 +1011,12 @@
       "label": "core",
       "pattern": "core-facade",
       "source": "agent_k/core/__init__.py"
+    },
+    {
+      "id": "agent_k.core.cache",
+      "label": "cache",
+      "pattern": "cache",
+      "source": "agent_k/core/cache.py"
     },
     {
       "id": "agent_k.core.constants",

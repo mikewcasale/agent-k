@@ -39,12 +39,13 @@ from __future__ import annotations as _annotations
 
 import time
 from functools import wraps
-from typing import TYPE_CHECKING, Annotated, Any, ParamSpec, TypeVar, cast
+from typing import TYPE_CHECKING, Annotated, Any, Final, ParamSpec, TypeVar, cast
 
 import logfire
 from pydantic_ai import RunContext
 from pydantic_ai.toolsets import FunctionToolset
 
+from agent_k.core.cache import BoundedTTLCache
 from agent_k.core.deps import KaggleDeps
 from agent_k.core.sage import Doc, Range
 
@@ -64,8 +65,14 @@ __all__ = ("KaggleDeps", "kaggle_toolset")
 
 kaggle_toolset: FunctionToolset[Any] = FunctionToolset(id="kaggle")
 
-# Cache for competition data
-_cache: dict[str, Competition] = {}
+_COMPETITION_CACHE_MAX_SIZE: Final[int] = 256
+_COMPETITION_CACHE_TTL_SECONDS: Final[float] = 300.0
+# Process-wide cache for competition lookups. Bounded LRU + TTL prevents the
+# unbounded growth and indefinite-staleness pitfalls of a plain module dict
+# while preserving cross-call reuse within the refresh window.
+_cache: BoundedTTLCache[str, Competition] = BoundedTTLCache(
+    max_size=_COMPETITION_CACHE_MAX_SIZE, ttl_seconds=_COMPETITION_CACHE_TTL_SECONDS
+)
 
 
 def _error_dict_response(error: str) -> dict[str, Any]:
@@ -249,9 +256,8 @@ async def kaggle_get_competition(
     with logfire.span("kaggle_get_competition", competition_id=competition_id):
         adapter = _require_adapter(ctx)
 
-        if competition_id in _cache:
-            comp = _cache[competition_id]
-        else:
+        comp = _cache.get(competition_id)
+        if comp is None:
             comp = await adapter.get_competition(competition_id)
             _store_competition(ctx, comp)
 
@@ -329,7 +335,7 @@ def _resolve_adapter(ctx: RunContext[Any]) -> PlatformAdapter | None:
 
 
 def _store_competition(ctx: RunContext[Any], competition: Competition) -> None:
-    _cache[competition.id] = competition
+    _cache.set(competition.id, competition)
     search_cache = getattr(ctx.deps, "search_cache", None)
     if isinstance(search_cache, dict):
         search_cache[competition.id] = competition

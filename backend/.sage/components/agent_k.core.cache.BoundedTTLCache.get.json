@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.cache:BoundedTTLCache.get",
+  "line": 112,
+  "notice": "Refreshes LRU recency on hit and drops the entry on expiry.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/cache.py",
+  "summary": "Return the cached value for ``key`` or ``None`` if missing/expired.",
+  "type": "method"
+}

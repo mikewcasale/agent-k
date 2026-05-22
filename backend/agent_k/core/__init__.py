@@ -29,6 +29,7 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
+from .cache import BoundedTTLCache
 from .constants import (
     CHECKPOINT_INTERVAL_GENERATIONS,
     CONVERGENCE_THRESHOLD_GENERATIONS,
@@ -158,6 +159,7 @@ __all__ = (
     "SUBMISSION_TIMEOUT_SECONDS",
     "VALID_COMPETITION_TYPES",
     "AdapterError",
+    "BoundedTTLCache",
     "AgentError",
     "AgentExecutionError",
     "AgentKError",

@@ -1,5 +1,5 @@
 {
-  "component_count": 59,
+  "component_count": 60,
   "components": [
     {
       "consumes": [],
@@ -202,6 +202,16 @@
         "agent_k.core"
       ],
       "source": "agent_k/core/__init__.py"
+    },
+    {
+      "consumes": [],
+      "id": "agent_k.core.cache",
+      "line": 1,
+      "pattern": "cache",
+      "provides": [
+        "agent_k.core.cache:BoundedTTLCache"
+      ],
+      "source": "agent_k/core/cache.py"
     },
     {
       "consumes": [],
@@ -705,7 +715,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-05-22T04:20:14.771919+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -721,6 +731,7 @@
     "agent_k/agents/prompts.py",
     "agent_k/agents/scientist.py",
     "agent_k/core/__init__.py",
+    "agent_k/core/cache.py",
     "agent_k/core/constants.py",
     "agent_k/core/data.py",
     "agent_k/core/deps.py",
@@ -767,7 +778,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1101,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -2583,6 +2594,74 @@
         "line": 21,
         "name": "human_review",
         "value": "{\"last_verified\": \"2026-01-26\", \"owners\": [\"agent-k-core\"]}"
+      }
+    ],
+    "agent_k/core/cache.py": [
+      {
+        "component": "agent_k.core.cache",
+        "line": 3,
+        "name": "notice",
+        "value": "Bounded, TTL-aware caching primitives for AGENT-K."
+      },
+      {
+        "component": "agent_k.core.cache",
+        "line": 6,
+        "name": "dev",
+        "value": "Plain ``dict`` caches grow without bound and never refresh, which causes\nlong-running processes to leak memory and serve stale upstream data across\nmissions. ``BoundedTTLCache`` puts a hard ceiling on"
+      },
+      {
+        "component": "agent_k.core.cache",
+        "line": 12,
+        "name": "graph",
+        "value": "{\"id\": \"agent_k.core.cache\", \"provides\": [\"agent_k.core.cache:BoundedTTLCache\"], \"pattern\": \"cache\"}"
+      },
+      {
+        "component": "agent_k.core.cache",
+        "line": 18,
+        "name": "agent_guidance",
+        "value": "{\"do\": [\"Use BoundedTTLCache for any process-wide cache that holds upstream payloads.\"], \"do_not\": [\"Reintroduce raw module-level dicts as caches; they leak memory and serve stale data.\"]}"
+      },
+      {
+        "component": "agent_k.core.cache",
+        "line": 24,
+        "name": "human_review",
+        "value": "{\"last_verified\": \"2026-05-22\", \"owners\": [\"agent-k-core\"]}"
+      },
+      {
+        "component": "agent_k.core.cache:BoundedTTLCache",
+        "line": 60,
+        "name": "notice",
+        "value": "LRU cache with hard size cap and per-entry TTL eviction."
+      },
+      {
+        "component": "agent_k.core.cache:BoundedTTLCache",
+        "line": 63,
+        "name": "dev",
+        "value": "Entries are evicted on access if they exceed the TTL, and the\noldest entry is evicted on insert when the size cap is exceeded.\nTTL of zero disables expiry; a max_size of zero disables the cache.\nNot t"
+      },
+      {
+        "component": "agent_k.core.cache:BoundedTTLCache",
+        "line": 69,
+        "name": "pattern",
+        "value": "{\"name\": \"cache\", \"rationale\": \"Bounded TTL cache for upstream payloads.\", \"violations\": \"Unbounded dict caches leak memory and serve stale data.\"}"
+      },
+      {
+        "component": "agent_k.core.cache:BoundedTTLCache",
+        "line": 74,
+        "name": "concurrency",
+        "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates internal OrderedDict without locks.\"}"
+      },
+      {
+        "component": "agent_k.core.cache:BoundedTTLCache.get",
+        "line": 114,
+        "name": "notice",
+        "value": "Refreshes LRU recency on hit and drops the entry on expiry."
+      },
+      {
+        "component": "agent_k.core.cache:BoundedTTLCache.set",
+        "line": 134,
+        "name": "notice",
+        "value": "Refreshes the TTL on overwrite and trims to ``max_size`` when needed."
       }
     ],
     "agent_k/core/constants.py": [
@@ -6738,31 +6817,31 @@
       },
       {
         "component": "agent_k.toolsets.kaggle:kaggle_search_competitions",
-        "line": 196,
+        "line": 203,
         "name": "notice",
         "value": "Returns metadata for competitions matching search criteria."
       },
       {
         "component": "agent_k.toolsets.kaggle:kaggle_search_competitions",
-        "line": 199,
+        "line": 206,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"], \"state\": [\"in-module cache\"]}"
       },
       {
         "component": "agent_k.toolsets.kaggle:kaggle_get_competition",
-        "line": 246,
+        "line": 253,
         "name": "notice",
         "value": "Fetches competition metadata and caches results."
       },
       {
         "component": "agent_k.toolsets.kaggle:kaggle_get_leaderboard",
-        "line": 276,
+        "line": 282,
         "name": "notice",
         "value": "Returns leaderboard entries ordered by rank."
       },
       {
         "component": "agent_k.toolsets.kaggle:kaggle_list_datasets",
-        "line": 302,
+        "line": 308,
         "name": "notice",
         "value": "Returns file metadata for competition datasets."
       }

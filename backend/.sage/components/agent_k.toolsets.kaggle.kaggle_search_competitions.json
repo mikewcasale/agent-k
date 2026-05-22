@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.toolsets.kaggle:kaggle_search_competitions",
-  "line": 194,
+  "line": 201,
   "notice": "Returns metadata for competitions matching search criteria.",
   "pattern": null,
   "similar": null,

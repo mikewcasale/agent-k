@@ -1,6 +1,6 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
-  "pattern_count": 57,
+  "generated": "2026-05-22T04:20:14.772720+00:00",
+  "pattern_count": 58,
   "patterns": {
     "adapter": [
       {
@@ -91,6 +91,17 @@
         "rationale": "Generic archive for MAP-Elites diversity preservation.",
         "source": "agent_k/evolution/framework.py",
         "violations": []
+      }
+    ],
+    "cache": [
+      {
+        "component": "agent_k.core.cache:BoundedTTLCache",
+        "line": 58,
+        "rationale": "Bounded TTL cache for upstream payloads.",
+        "source": "agent_k/core/cache.py",
+        "violations": [
+          "Unbounded dict caches leak memory and serve stale data."
+        ]
       }
     ],
     "classifier": [

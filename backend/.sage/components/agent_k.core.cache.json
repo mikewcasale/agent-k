@@ -1,0 +1,35 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use BoundedTTLCache for any process-wide cache that holds upstream payloads."
+    ],
+    "do_not": [
+      "Reintroduce raw module-level dicts as caches; they leak memory and serve stale data."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Plain ``dict`` caches grow without bound and never refresh, which causes\nlong-running processes to leak memory and serve stale upstream data across\nmissions. ``BoundedTTLCache`` puts a hard ceiling on entry count using\ninsertion-order LRU eviction and refreshes entries after a configurable TTL.",
+  "graph": {
+    "id": "agent_k.core.cache",
+    "pattern": "cache",
+    "provides": [
+      "agent_k.core.cache:BoundedTTLCache"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-05-22",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.core.cache",
+  "line": 1,
+  "notice": "Bounded, TTL-aware caching primitives for AGENT-K.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/cache.py",
+  "summary": "Bounded, TTL-aware caching primitives for AGENT-K.",
+  "type": "module"
+}

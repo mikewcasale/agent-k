@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-05-22T23:10:47.453909+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -1354,7 +1354,7 @@
     "tracking-service": [
       {
         "component": "agent_k.core.tracking:HintEffectivenessTracker",
-        "line": 728,
+        "line": 770,
         "rationale": "Centralizes hint success tracking and suppression.",
         "source": "agent_k/core/tracking.py",
         "violations": [

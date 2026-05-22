@@ -449,6 +449,48 @@ class ExperimentTracker:
                 )
         return record
 
+    def find_latest_hint_attempt(self, competition_id: str, hint_id: str) -> HintAttemptRecord | None:
+        """Return the most recent persisted hint attempt for a competition.
+
+        @notice: |
+            Queries the hint_attempts table ordered by created_at descending.
+        """
+        with self._connect() as conn:
+            row = conn.execute(
+                f"""
+                SELECT id, competition_id, hint_id, applied, delta, generation, created_at
+                FROM {self._hint_table_name}
+                WHERE competition_id = ? AND hint_id = ?
+                ORDER BY created_at DESC
+                LIMIT 1
+                """,
+                (competition_id, hint_id),
+            ).fetchone()
+        return _row_to_hint_attempt(row) if row else None
+
+    def aggregate_hint_outcomes(self, competition_id: str, hint_id: str) -> tuple[int, int]:
+        """Return ``(success_count, failure_count)`` for an applied hint.
+
+        @notice: |
+            Counts persisted attempts with applied=1 and non-zero delta.
+        """
+        with self._connect() as conn:
+            row = conn.execute(
+                f"""
+                SELECT
+                    SUM(CASE WHEN delta > 0 THEN 1 ELSE 0 END) AS successes,
+                    SUM(CASE WHEN delta < 0 THEN 1 ELSE 0 END) AS failures
+                FROM {self._hint_table_name}
+                WHERE competition_id = ? AND hint_id = ? AND applied = 1
+                """,
+                (competition_id, hint_id),
+            ).fetchone()
+        if row is None:
+            return (0, 0)
+        successes = int(row["successes"] or 0)
+        failures = int(row["failures"] or 0)
+        return (successes, failures)
+
     def list_submissions(self, competition_id: str, *, limit: int = 50) -> list[KaggleSubmissionRecord]:
         """Return most recent submission records for a competition."""
         with self._connect() as conn:
@@ -776,28 +818,51 @@ class HintEffectivenessTracker:
         self.save()
 
     def get_success_rate(self, hint_id: str, competition_id: str) -> float:
-        """Return success rate for a hint within a competition."""
-        attempts = [
-            record
-            for record in self._records
-            if record.hint_id == hint_id
-            and record.competition_id == competition_id
-            and record.applied
-            and record.delta != 0
-        ]
-        if not attempts:
+        """Return success rate for a hint within a competition.
+
+        @notice: |
+            Uses persisted success/failure counts so the rate survives process
+            restarts. Falls back to the SQLite tracker if available and the
+            in-memory counts are empty.
+        """
+        key = (competition_id, hint_id)
+        successes = self._success_counts.get(key, 0)
+        failures = self._failure_counts.get(key, 0)
+        if successes == 0 and failures == 0 and self._experiment_tracker is not None:
+            try:
+                successes, failures = self._experiment_tracker.aggregate_hint_outcomes(competition_id, hint_id)
+            except sqlite3.Error as exc:
+                logfire.warning("hint_outcomes_query_failed", error=str(exc))
+                return 0.0
+        total = successes + failures
+        if total == 0:
             return 0.0
-        successes = sum(1 for record in attempts if record.delta > 0)
-        return successes / len(attempts)
+        return successes / total
 
     def get_last_attempt(self, hint_id: str, competition_id: str) -> HintAttemptRecord | None:
-        """Return the most recent attempt for a hint in a competition."""
-        attempts = [
+        """Return the most recent attempt for a hint in a competition.
+
+        @notice: |
+            Prefers persisted history via the SQLite tracker so recency survives
+            process restarts. Falls back to in-memory records when no tracker
+            is wired in.
+        """
+        in_memory = [
             record for record in self._records if record.hint_id == hint_id and record.competition_id == competition_id
         ]
-        if not attempts:
-            return None
-        return max(attempts, key=lambda record: record.created_at)
+        latest_memory = max(in_memory, key=lambda record: record.created_at) if in_memory else None
+        if self._experiment_tracker is None:
+            return latest_memory
+        try:
+            latest_db = self._experiment_tracker.find_latest_hint_attempt(competition_id, hint_id)
+        except sqlite3.Error as exc:
+            logfire.warning("hint_last_attempt_query_failed", error=str(exc))
+            return latest_memory
+        if latest_db is None:
+            return latest_memory
+        if latest_memory is None:
+            return latest_db
+        return latest_memory if latest_memory.created_at > latest_db.created_at else latest_db
 
     def suppress_hint(self, hint_id: str, competition_id: str) -> None:
         """Suppress a hint for a competition."""
@@ -819,12 +884,21 @@ class HintEffectivenessTracker:
         return hint_id in self._amplified[competition_id]
 
     def save(self) -> None:
-        """Persist hint statistics to disk."""
+        """Persist hint statistics to disk.
+
+        @notice: |
+            Serializes the union of success, failure, and suppression keys so
+            entries with only failures or only a suppression flag are retained.
+        """
         self._HINT_TRACKER_PATH.parent.mkdir(parents=True, exist_ok=True)
         data: dict[str, dict[str, dict[str, Any]]] = {}
-        for (comp_id, hint_id), count in self._success_counts.items():
+        keys: set[tuple[str, str]] = set(self._success_counts.keys()) | set(self._failure_counts.keys())
+        for comp_id, hint_ids in self._suppressed.items():
+            for hint_id in hint_ids:
+                keys.add((comp_id, hint_id))
+        for comp_id, hint_id in keys:
             data.setdefault(comp_id, {})[hint_id] = {
-                "success": count,
+                "success": self._success_counts.get((comp_id, hint_id), 0),
                 "failure": self._failure_counts.get((comp_id, hint_id), 0),
                 "suppressed": hint_id in self._suppressed.get(comp_id, set()),
             }
@@ -1080,6 +1154,19 @@ def _row_to_submission(row: sqlite3.Row) -> KaggleSubmissionRecord:
         model_config_hash=payload.get("model_config_hash"),
         feature_set_hash=payload.get("feature_set_hash"),
         hyperparameters=_load_json(payload.get("hyperparameters_json"), default={}),
+        created_at=datetime.fromisoformat(payload["created_at"]),
+    )
+
+
+def _row_to_hint_attempt(row: sqlite3.Row) -> HintAttemptRecord:
+    payload = dict(row)
+    return HintAttemptRecord(
+        record_id=payload["id"],
+        competition_id=payload["competition_id"],
+        hint_id=payload["hint_id"],
+        applied=bool(payload["applied"]),
+        delta=float(payload["delta"]),
+        generation=int(payload["generation"]),
         created_at=datetime.fromisoformat(payload["created_at"]),
     )
 

@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.core.tracking:HintEffectivenessTracker.is_amplified",
-  "line": 883,
-  "notice": null,
+  "id": "agent_k.core.tracking:ExperimentTracker.aggregate_hint_outcomes",
+  "line": 472,
+  "notice": "Counts persisted attempts with applied=1 and non-zero delta.",
   "pattern": null,
   "similar": null,
   "source": "agent_k/core/tracking.py",
-  "summary": "Check if a hint is amplified for a competition.",
+  "summary": "Return ``(success_count, failure_count)`` for an applied hint.",
   "type": "method"
 }

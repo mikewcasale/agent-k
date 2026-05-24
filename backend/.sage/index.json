@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-05-24T01:17:03.908060+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -6150,181 +6150,181 @@
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 123,
+        "line": 124,
         "name": "notice",
         "value": "Discovery phase node."
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 126,
+        "line": 127,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 129,
+        "line": 130,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates discovery phase logic in the mission graph.\", \"violations\": \"Discovery logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 134,
+        "line": 135,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.lobbyist:LobbyistAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifec"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 144,
+        "line": 145,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 149,
+        "line": 150,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 281,
+        "line": 282,
         "name": "notice",
         "value": "Research phase node."
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 284,
+        "line": 285,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 287,
+        "line": 288,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates research phase logic in the mission graph.\", \"violations\": \"Research logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 292,
+        "line": 293,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.scientist:ScientistAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lif"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 302,
+        "line": 303,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 307,
+        "line": 308,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 427,
+        "line": 428,
         "name": "notice",
         "value": "Prototype phase node."
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 430,
+        "line": 431,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 433,
+        "line": 434,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates prototype phase logic in the mission graph.\", \"violations\": \"Prototype logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 438,
+        "line": 439,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.solution:execute_solution\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 447,
+        "line": 448,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 452,
+        "line": 453,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 908,
+        "line": 909,
         "name": "notice",
         "value": "Evolution phase node."
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 911,
+        "line": 912,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 914,
+        "line": 915,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates evolution phase logic in the mission graph.\", \"violations\": \"Evolution logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 919,
+        "line": 920,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.evolver:EvolverAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated pe"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 928,
+        "line": 929,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 933,
+        "line": 934,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1610,
+        "line": 1611,
         "name": "notice",
         "value": "Submission phase node."
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1613,
+        "line": 1614,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1616,
+        "line": 1617,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates submission phase logic in the mission graph.\", \"violations\": \"Submission logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1621,
+        "line": 1622,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.agents.evolver:EvolverAgent\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated pe"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1630,
+        "line": 1631,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1635,
+        "line": 1636,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       }

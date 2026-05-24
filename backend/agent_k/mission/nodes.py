@@ -49,6 +49,7 @@ import importlib.util
 import json
 import math
 import os
+import re
 import shutil
 import tempfile
 import traceback
@@ -2069,6 +2070,24 @@ def _cleanup_session_data(mission_id: str) -> None:
         logfire.warning("session_cleanup_failed", error=str(exc))
 
 
+_RATE_LIMIT_MESSAGE_PATTERNS: Final[tuple[re.Pattern[str], ...]] = (
+    re.compile(r"\brate[\s_-]?limit", re.IGNORECASE),
+    re.compile(r"\brequest[\s_-]?limit", re.IGNORECASE),
+    re.compile(r"\bquota\b", re.IGNORECASE),
+    re.compile(r"\btoo many requests\b", re.IGNORECASE),
+    re.compile(r"\blimit reached\b", re.IGNORECASE),
+    re.compile(r"\b429\b", re.IGNORECASE),
+    re.compile(r"\binsufficient credits?\b", re.IGNORECASE),
+    re.compile(r"\bcredits?[\s_-]?(?:limit|exceeded|exhausted)\b", re.IGNORECASE),
+    re.compile(r"\binternal server error\b", re.IGNORECASE),
+    re.compile(r"\bservice unavailable\b", re.IGNORECASE),
+    re.compile(r"\bbad gateway\b", re.IGNORECASE),
+    re.compile(r"\bgateway timeout\b", re.IGNORECASE),
+    re.compile(r"\b(?:http|status|code|error)[\s_:-]+5\d\d\b", re.IGNORECASE),
+    re.compile(r"\b5\d\d\s+(?:error|response|status|server)\b", re.IGNORECASE),
+)
+
+
 def _is_rate_limit_error(error: Exception | str | None) -> bool:
     if not error:
         return False
@@ -2084,24 +2103,8 @@ def _is_rate_limit_error(error: Exception | str | None) -> bool:
         error_code = getattr(error, "code", None) or getattr(error, "error_code", None)
         if isinstance(error_code, str) and "rate" in error_code.lower():
             return True
-    message = str(error).lower()
-    triggers = (
-        "rate limit",
-        "rate_limit",
-        "request_limit",
-        "quota",
-        "too many requests",
-        "limit reached",
-        "exceeded",
-        "429",
-        "insufficient credits",
-        "credit limit",
-        "credits",
-        "internal server error",
-        "server error",
-        "500",
-    )
-    return any(trigger in message for trigger in triggers)
+    message = str(error)
+    return any(pattern.search(message) for pattern in _RATE_LIMIT_MESSAGE_PATTERNS)
 
 
 def _filter_disallowed_recommendations(recommendations: list[str]) -> list[str]:

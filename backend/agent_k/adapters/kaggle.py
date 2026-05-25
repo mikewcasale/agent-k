@@ -67,7 +67,12 @@ if TYPE_CHECKING:
 __all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
-_COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
+_COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(
+    # Accept both canonical /competitions/<slug> and short /c/<slug> forms;
+    # case-insensitive so shared URLs with capitalized scheme/host still parse.
+    r"kaggle\.com/(?:competitions|c)/([a-zA-Z0-9-]+)",
+    re.IGNORECASE,
+)
 
 
 class KaggleSettings(BaseSettings):

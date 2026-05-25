@@ -11,7 +11,7 @@ from typing import Any
 import httpx
 import pytest
 
-from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
+from agent_k.adapters.kaggle import _COMPETITION_URL_PATTERN, KaggleAdapter, KaggleSettings
 
 __all__ = ()
 
@@ -88,3 +88,55 @@ class TestKaggleAdapterFromEnv:
 
         # The from_env method should handle missing credentials
         # Test depends on implementation
+
+
+class TestCompetitionUrlPattern:
+    """Tests for the competition URL parsing regex."""
+
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "https://www.kaggle.com/competitions/titanic",
+            "https://kaggle.com/competitions/titanic",
+            "http://www.kaggle.com/competitions/titanic",
+            "www.kaggle.com/competitions/titanic",
+            "kaggle.com/competitions/titanic",
+            "https://www.kaggle.com/c/titanic",
+            "https://kaggle.com/c/titanic",
+            "kaggle.com/c/titanic",
+            "https://www.kaggle.com/competitions/titanic/data",
+            "https://www.kaggle.com/c/titanic/leaderboard",
+            "https://www.kaggle.com/competitions/titanic/discussion/12345",
+            "https://www.kaggle.com/c/titanic?utm_source=share",
+            "See https://www.kaggle.com/c/titanic for details",
+            "https://www.KAGGLE.com/C/titanic",
+        ],
+    )
+    def test_extracts_titanic_slug(self, url: str) -> None:
+        """All canonical and short Kaggle URLs should yield 'titanic'."""
+        match = _COMPETITION_URL_PATTERN.search(url)
+        assert match is not None, f"failed to parse {url!r}"
+        assert match.group(1) == "titanic"
+
+    def test_extracts_multiword_slug(self) -> None:
+        """Slugs with hyphens should parse intact."""
+        match = _COMPETITION_URL_PATTERN.search("https://www.kaggle.com/c/spaceship-titanic/leaderboard")
+        assert match is not None
+        assert match.group(1) == "spaceship-titanic"
+
+    @pytest.mark.parametrize(
+        "url",
+        [
+            "https://www.kaggle.com/code/user/notebook",
+            "https://www.kaggle.com/datasets/uciml/iris",
+            "https://www.kaggle.com/c-suite/test",
+            "https://www.kaggle.com/competitions",
+            "https://www.kaggle.com/",
+            "titanic",
+            "",
+            "not a url at all",
+        ],
+    )
+    def test_rejects_non_competition_urls(self, url: str) -> None:
+        """Non-competition or malformed URLs must not match."""
+        assert _COMPETITION_URL_PATTERN.search(url) is None

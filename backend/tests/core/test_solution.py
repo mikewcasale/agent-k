@@ -33,6 +33,19 @@ class TestParseBaselineScore:
             ("some text\nBaseline logLoss score: 1.2345\n", 1.2345),
             ("no score here", None),
             ("Baseline score: not-a-number", None),
+            # Scientific notation - common when print() formats very small/large floats.
+            ("Baseline RMSE score: 1.5e-04", 0.00015),
+            ("Baseline LogLoss score: 4.62E-1", 0.462),
+            ("Baseline RMSE score: 1e-5", 1e-5),
+            ("Baseline RMSE score: 1.23e+5", 123000.0),
+            ("Baseline LogLoss score: -3.5e-2", -0.035),
+            ("Baseline RMSE score: +0.5", 0.5),
+            ("Baseline RMSE score: .5", 0.5),
+            # Non-finite values must not pollute downstream fitness comparisons.
+            ("Baseline RMSE score: nan", None),
+            ("Baseline RMSE score: NaN", None),
+            ("Baseline RMSE score: inf", None),
+            ("Baseline RMSE score: -inf", None),
         ],
     )
     def test_parse_baseline_score(self, output: str, expected: float | None) -> None:

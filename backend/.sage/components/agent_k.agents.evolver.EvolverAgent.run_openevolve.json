@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.evolver:EvolverAgent.run_openevolve",
-  "line": 637,
+  "line": 657,
   "notice": "Delegates mutation and evaluation to OpenEvolve when enabled.",
   "pattern": null,
   "similar": null,

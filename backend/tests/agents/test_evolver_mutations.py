@@ -85,6 +85,24 @@ class TestHyperparameterMutation:
         assert match.group(1) != "0.1"
         assert "." in match.group(1)
 
+    def test_hyperparameter_mutation_handles_scientific_notation(self) -> None:
+        """Mutating ``learning_rate=1e-3`` must rewrite the full literal.
+
+        Previously the regex captured only the mantissa ``1``; clamping to
+        the ``(0.001, 1.0)`` bound replaced ``1`` with ``1``, leaving the
+        original literal intact (no-op) or jumping by orders of magnitude
+        when the regex view diverged from the actual value.
+        """
+        code = "model = LGBMRegressor(learning_rate=1e-3)"
+        mutated = _evolver._apply_hyperparameter_mutation(code, {"param": "learning_rate", "magnitude": 0.5})
+
+        # The literal ``1e-3`` should be fully consumed and replaced.
+        assert "learning_rate=1e-3" not in mutated
+        match = re.search(r"learning_rate\s*=\s*([+-]?(?:\d+\.\d*|\d+|\.\d+)(?:[eE][+-]?\d+)?)", mutated)
+        assert match is not None
+        parsed = float(match.group(1))
+        assert 0.001 <= parsed <= 1.0
+
 
 class TestStructuralMutation:
     """Tests for structural mutation helpers."""

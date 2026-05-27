@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-05-27T00:12:33.413170+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -47,7 +47,7 @@
     "agent-singleton": [
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 556,
+        "line": 576,
         "rationale": "Single instance keeps memory/tool registration consistent.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -76,7 +76,7 @@
     "archive-entry": [
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry",
-        "line": 317,
+        "line": 337,
         "rationale": "Encapsulates elite metadata for sampling.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -134,7 +134,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 436,
+        "line": 456,
         "rationale": "Groups runtime services and evolution state.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -869,7 +869,7 @@
     "metadata-model": [
       {
         "component": "agent_k.core.tracking:ExperimentMetadata",
-        "line": 134,
+        "line": 153,
         "rationale": "Frozen Pydantic model for solution metadata extraction.",
         "source": "agent_k/core/tracking.py",
         "violations": []
@@ -947,7 +947,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 501,
+        "line": 521,
         "rationale": "Stable schema for successful evolution outputs.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -956,7 +956,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 526,
+        "line": 546,
         "rationale": "Stable schema for failed evolution outputs.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -1133,21 +1133,21 @@
     "record-model": [
       {
         "component": "agent_k.core.tracking:ExperimentRecord",
-        "line": 157,
+        "line": 176,
         "rationale": "Pydantic model for experiment persistence.",
         "source": "agent_k/core/tracking.py",
         "violations": []
       },
       {
         "component": "agent_k.core.tracking:KaggleSubmissionRecord",
-        "line": 222,
+        "line": 241,
         "rationale": "Pydantic model for Kaggle submission persistence.",
         "source": "agent_k/core/tracking.py",
         "violations": []
       },
       {
         "component": "agent_k.core.tracking:HintAttemptRecord",
-        "line": 250,
+        "line": 269,
         "rationale": "Pydantic model for hint effectiveness tracking.",
         "source": "agent_k/core/tracking.py",
         "violations": []
@@ -1246,7 +1246,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 363,
+        "line": 383,
         "rationale": "Centralizes evolutionary optimization configuration.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -1345,7 +1345,7 @@
     "summary-model": [
       {
         "component": "agent_k.core.tracking:ExperimentSummary",
-        "line": 195,
+        "line": 214,
         "rationale": "Frozen Pydantic model for experiment listing.",
         "source": "agent_k/core/tracking.py",
         "violations": []
@@ -1354,7 +1354,7 @@
     "tracking-service": [
       {
         "component": "agent_k.core.tracking:HintEffectivenessTracker",
-        "line": 728,
+        "line": 747,
         "rationale": "Centralizes hint success tracking and suppression.",
         "source": "agent_k/core/tracking.py",
         "violations": [
@@ -1365,7 +1365,7 @@
     "tracking-store": [
       {
         "component": "agent_k.core.tracking:ExperimentTracker",
-        "line": 277,
+        "line": 296,
         "rationale": "Centralized persistence for experiment metadata.",
         "source": "agent_k/core/tracking.py",
         "violations": [

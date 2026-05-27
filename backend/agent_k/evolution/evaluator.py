@@ -32,6 +32,7 @@ from __future__ import annotations as _annotations
 import ast
 import asyncio
 import json
+import math
 import os
 import re
 import shutil
@@ -270,30 +271,45 @@ def _truncate(text: str, max_length: int) -> str:
     return text[:max_length] + "... [truncated]"
 
 
+_FOLD_SCORE_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"Fold\s+\d+[:\s]+([+-]?(?:\d+\.\d*|\d+|\.\d+)(?:[eE][+-]?\d+)?)"
+)
+
+
 def _compute_cv_variance(stdout: str) -> float:
     """Extract CV variance from output for stability tracking.
 
-    Parses stdout for CV fold scores and computes their variance.
-    Lower variance indicates more stable/robust solutions.
+    Parses stdout for CV fold scores and computes their sample variance
+    (Bessel-corrected, N-1) so the estimate matches the convention used by
+    ``numpy.var(..., ddof=1)``/``statistics.variance``. Lower variance
+    indicates more stable/robust solutions.
+
+    The fold regex accepts negative scores (common when reporting
+    sklearn ``neg_*`` metrics) and scientific notation (``1.5e-04``). Any
+    non-finite parses are filtered so a single ``nan`` fold does not poison
+    the metric for downstream aggregation.
 
     Args:
         stdout: Standard output from solution execution.
 
     Returns:
-        Variance of CV fold scores, or 0.0 if not found.
+        Sample variance of CV fold scores, or 0.0 if fewer than 2 parsable
+        finite fold scores are present.
     """
-    # Look for patterns like "Fold 1: 0.85", "Fold 2: 0.83", etc.
-    fold_pattern = re.compile(r"Fold\s+\d+[:\s]+([0-9.]+)")
-    fold_scores = [float(match) for match in fold_pattern.findall(stdout)]
+    fold_scores: list[float] = []
+    for raw in _FOLD_SCORE_PATTERN.findall(stdout):
+        try:
+            value = float(raw)
+        except ValueError:
+            continue
+        if math.isfinite(value):
+            fold_scores.append(value)
 
     if len(fold_scores) < 2:
-        # Not enough fold scores to compute variance
         return 0.0
 
-    # Compute variance
     mean_score = sum(fold_scores) / len(fold_scores)
-    variance = sum((score - mean_score) ** 2 for score in fold_scores) / len(fold_scores)
-    return float(variance)
+    return sum((score - mean_score) ** 2 for score in fold_scores) / (len(fold_scores) - 1)
 
 
 def _model_family_score(code: str) -> float:

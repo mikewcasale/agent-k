@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.tracking:ExperimentSummary",
-  "line": 195,
+  "line": 214,
   "notice": "Lightweight summary of a stored experiment.",
   "pattern": {
     "name": "summary-model",

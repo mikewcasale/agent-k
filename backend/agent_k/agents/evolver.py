@@ -178,40 +178,60 @@ _ERROR_HINT_PATTERNS: Final[tuple[tuple[re.Pattern[str], str, str], ...]] = (
 )
 _ERROR_FEEDBACK_MAX_CHARS: Final[int] = 800
 _FAILURE_SUMMARY_LIMIT: Final[int] = 3
+# Standard numeric grammar for float-valued hyperparameters. Required so that
+# values like ``learning_rate=1e-3`` are captured in full; the previous
+# ``[\d\.]+`` only matched the ``1`` portion, which caused mutation to clamp
+# the regex view to ``1`` and rewrite the literal as e.g. ``learning_rate=1e-3``
+# (no-op) or jump by orders of magnitude after bounds clamping.
+_FLOAT_VALUE_PATTERN: Final[str] = r"[+-]?(?:\d+\.\d*|\d+|\.\d+)(?:[eE][+-]?\d+)?"
+
+
+def _float_hyperparam_pattern(prefix: str) -> re.Pattern[str]:
+    return re.compile(rf"({prefix}\s*=\s*)({_FLOAT_VALUE_PATTERN})", re.IGNORECASE)
+
+
+def _int_hyperparam_pattern(prefix: str) -> re.Pattern[str]:
+    return re.compile(rf"({prefix}\s*=\s*)(\d+)", re.IGNORECASE)
+
+
+def _categorical_hyperparam_pattern(prefix: str) -> re.Pattern[str]:
+    return re.compile(rf"({prefix}\s*=\s*)(\"[^\"]+\"|'[^']+'|\w+)", re.IGNORECASE)
+
+
 _HYPERPARAM_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
-    "n_estimators": re.compile(r"(n_estimators\s*=\s*)(\d+)", re.IGNORECASE),
-    "learning_rate": re.compile(r"(learning_rate\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "max_depth": re.compile(r"(max_depth\s*=\s*)(\d+)", re.IGNORECASE),
-    "num_leaves": re.compile(r"(num_leaves\s*=\s*)(\d+)", re.IGNORECASE),
-    "min_child_samples": re.compile(r"(min_child_samples\s*=\s*)(\d+)", re.IGNORECASE),
-    "min_samples_leaf": re.compile(r"(min_samples_leaf\s*=\s*)(\d+)", re.IGNORECASE),
-    "min_samples_split": re.compile(r"(min_samples_split\s*=\s*)(\d+)", re.IGNORECASE),
-    "max_features": re.compile(r"(max_features\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "subsample": re.compile(r"(subsample\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "feature_fraction": re.compile(r"(feature_fraction\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "bagging_fraction": re.compile(r"(bagging_fraction\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "bagging_freq": re.compile(r"(bagging_freq\s*=\s*)(\d+)", re.IGNORECASE),
-    "colsample_bytree": re.compile(r"(colsample_bytree\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "n_neighbors": re.compile(r"(n_neighbors\s*=\s*)(\d+)", re.IGNORECASE),
-    "leaf_size": re.compile(r"(leaf_size\s*=\s*)(\d+)", re.IGNORECASE),
-    "p": re.compile(r"(?<!\w)(p\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "weights": re.compile(r"(weights\s*=\s*)(\"[^\"]+\"|'[^']+'|\w+)", re.IGNORECASE),
-    "metric": re.compile(r"(metric\s*=\s*)(\"[^\"]+\"|'[^']+'|\w+)", re.IGNORECASE),
-    "algorithm": re.compile(r"(algorithm\s*=\s*)(\"[^\"]+\"|'[^']+'|\w+)", re.IGNORECASE),
-    "objective": re.compile(r"(objective\s*=\s*)(\"[^\"]+\"|'[^']+'|\w+)", re.IGNORECASE),
-    "huber_delta": re.compile(r"(huber_delta\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "quantile_alpha": re.compile(r"(quantile_alpha\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "loss_weight": re.compile(r"(loss_weight\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "lambda_l1": re.compile(r"(lambda_l1\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "lambda_l2": re.compile(r"(lambda_l2\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "min_split_gain": re.compile(r"(min_split_gain\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "min_child_weight": re.compile(r"(min_child_weight\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "max_bin": re.compile(r"(max_bin\s*=\s*)(\d+)", re.IGNORECASE),
-    "variance_threshold": re.compile(r"(VarianceThreshold\(threshold\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "C": re.compile(r"(\bC\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "alpha": re.compile(r"(alpha\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "l1_ratio": re.compile(r"(l1_ratio\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "max_iter": re.compile(r"(max_iter\s*=\s*)(\d+)", re.IGNORECASE),
+    "n_estimators": _int_hyperparam_pattern("n_estimators"),
+    "learning_rate": _float_hyperparam_pattern("learning_rate"),
+    "max_depth": _int_hyperparam_pattern("max_depth"),
+    "num_leaves": _int_hyperparam_pattern("num_leaves"),
+    "min_child_samples": _int_hyperparam_pattern("min_child_samples"),
+    "min_samples_leaf": _int_hyperparam_pattern("min_samples_leaf"),
+    "min_samples_split": _int_hyperparam_pattern("min_samples_split"),
+    "max_features": _float_hyperparam_pattern("max_features"),
+    "subsample": _float_hyperparam_pattern("subsample"),
+    "feature_fraction": _float_hyperparam_pattern("feature_fraction"),
+    "bagging_fraction": _float_hyperparam_pattern("bagging_fraction"),
+    "bagging_freq": _int_hyperparam_pattern("bagging_freq"),
+    "colsample_bytree": _float_hyperparam_pattern("colsample_bytree"),
+    "n_neighbors": _int_hyperparam_pattern("n_neighbors"),
+    "leaf_size": _int_hyperparam_pattern("leaf_size"),
+    "p": _float_hyperparam_pattern(r"(?<!\w)p"),
+    "weights": _categorical_hyperparam_pattern("weights"),
+    "metric": _categorical_hyperparam_pattern("metric"),
+    "algorithm": _categorical_hyperparam_pattern("algorithm"),
+    "objective": _categorical_hyperparam_pattern("objective"),
+    "huber_delta": _float_hyperparam_pattern("huber_delta"),
+    "quantile_alpha": _float_hyperparam_pattern("quantile_alpha"),
+    "loss_weight": _float_hyperparam_pattern("loss_weight"),
+    "lambda_l1": _float_hyperparam_pattern("lambda_l1"),
+    "lambda_l2": _float_hyperparam_pattern("lambda_l2"),
+    "min_split_gain": _float_hyperparam_pattern("min_split_gain"),
+    "min_child_weight": _float_hyperparam_pattern("min_child_weight"),
+    "max_bin": _int_hyperparam_pattern("max_bin"),
+    "variance_threshold": _float_hyperparam_pattern(r"VarianceThreshold\(threshold"),
+    "C": _float_hyperparam_pattern(r"\bC"),
+    "alpha": _float_hyperparam_pattern("alpha"),
+    "l1_ratio": _float_hyperparam_pattern("l1_ratio"),
+    "max_iter": _int_hyperparam_pattern("max_iter"),
 }
 _HYPERPARAM_BOUNDS: Final[dict[str, tuple[float, float]]] = {
     "learning_rate": (0.001, 1.0),

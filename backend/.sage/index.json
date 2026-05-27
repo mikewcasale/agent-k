@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-05-27T00:12:33.412013+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -1514,253 +1514,253 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry",
-        "line": 319,
+        "line": 339,
         "name": "pattern",
         "value": "{\"name\": \"archive-entry\", \"rationale\": \"Encapsulates elite metadata for sampling.\", \"violations\": \"Unstructured elites make selection brittle.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry.to_payload",
-        "line": 338,
+        "line": 358,
         "name": "notice",
         "value": "Converts the archive entry into a JSON-serializable payload."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry.to_payload",
-        "line": 341,
+        "line": 361,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 365,
+        "line": 385,
         "name": "notice",
         "value": "Configuration for the Evolver agent."
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 368,
+        "line": 388,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 371,
+        "line": 391,
         "name": "pattern",
         "value": "{\"name\": \"settings\", \"rationale\": \"Centralizes evolutionary optimization configuration.\", \"violations\": \"Ad-hoc overrides lead to unstable evolution runs.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 438,
+        "line": 458,
         "name": "notice",
         "value": "Dependencies for the Evolver agent."
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 441,
+        "line": 461,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 444,
+        "line": 464,
         "name": "pattern",
         "value": "{\"name\": \"dependency-container\", \"rationale\": \"Groups runtime services and evolution state.\", \"violations\": \"Scattered state makes evolution hard to resume.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 449,
+        "line": 469,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\", \"agent_k.core.models:Competition\"], \"optional\": [\"agent_k.core.tracking:ExperimentTracker\", \"agent_k.core.hints:"
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 460,
+        "line": 480,
         "name": "invariants",
         "value": "[\"population_size >= 1\", \"max_generations >= min_generations\"]"
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 503,
+        "line": 523,
         "name": "notice",
         "value": "Result of evolution process."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 506,
+        "line": 526,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 509,
+        "line": 529,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Stable schema for successful evolution outputs.\", \"violations\": \"Free-form outputs hinder submission automation.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 528,
+        "line": 548,
         "name": "notice",
         "value": "Failure result for evolution process."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 531,
+        "line": 551,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 534,
+        "line": 554,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Stable schema for failed evolution outputs.\", \"violations\": \"Opaque errors make recovery harder.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 561,
+        "line": 581,
         "name": "notice",
         "value": "Optimizes prototype solutions via evolutionary search.\nUse the module-level evolver_agent or agent registry."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 565,
+        "line": 585,
         "name": "dev",
         "value": "Registers evolution tools and coordinates mutation/evaluation cycles."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 568,
+        "line": 588,
         "name": "pattern",
         "value": "{\"name\": \"agent-singleton\", \"rationale\": \"Single instance keeps memory/tool registration consistent.\", \"violations\": \"Multiple instances duplicate tool registrations.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 573,
+        "line": 593,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.adapters.openevolve:OpenEvolveRunner\"], \"injection\": \"deps via RunContext\", \"lifecycle\": "
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 582,
+        "line": 602,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates evolution state and caches.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 587,
+        "line": 607,
         "name": "invariants",
         "value": "[\"self._agent is initialized after __init__ completes.\", \"self._toolset registers evolution tools exactly once.\"]"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.__init__",
-        "line": 600,
+        "line": 620,
         "name": "notice",
         "value": "Builds the agent singleton and registers tools."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.__init__",
-        "line": 603,
+        "line": 623,
         "name": "dev",
         "value": "Initializes memory backend, toolset, and pydantic-ai Agent."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.__init__",
-        "line": 606,
+        "line": 626,
         "name": "state_changes",
         "value": "[\"self._settings\", \"self._toolset\", \"self._agent\"]"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.run_openevolve",
-        "line": 639,
+        "line": 659,
         "name": "notice",
         "value": "Delegates mutation and evaluation to OpenEvolve when enabled."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.run_openevolve",
-        "line": 642,
+        "line": 662,
         "name": "effects",
         "value": "{\"io\": [\"OpenEvolve API requests\"], \"state\": [\"deps.best_solution\", \"deps.best_fitness\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.mutate_solution",
-        "line": 724,
+        "line": 744,
         "name": "notice",
         "value": "Applies a mutation strategy and returns the mutated code."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.mutate_solution",
-        "line": 727,
+        "line": 747,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.evaluate_fitness",
-        "line": 773,
+        "line": 793,
         "name": "notice",
         "value": "Runs evaluation and emits fitness telemetry."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.evaluate_fitness",
-        "line": 776,
+        "line": 796,
         "name": "effects",
         "value": "{\"io\": [\"local execution\"], \"state\": [\"ctx.deps.best_fitness\", \"ctx.deps.best_solution\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.record_generation",
-        "line": 882,
+        "line": 902,
         "name": "notice",
         "value": "Appends generation metrics and emits telemetry."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.record_generation",
-        "line": 885,
+        "line": 905,
         "name": "effects",
         "value": "{\"state\": [\"ctx.deps.generation_history\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.check_convergence",
-        "line": 920,
+        "line": 940,
         "name": "notice",
         "value": "Determines whether fitness has plateaued or target score reached."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.check_convergence",
-        "line": 923,
+        "line": 943,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.sample_elites",
-        "line": 989,
+        "line": 1009,
         "name": "notice",
         "value": "Selects top and diverse elites from the archive."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.sample_elites",
-        "line": 992,
+        "line": 1012,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.submit_to_kaggle",
-        "line": 1011,
+        "line": 1031,
         "name": "notice",
         "value": "Writes a submission file and triggers adapter submission."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.submit_to_kaggle",
-        "line": 1014,
+        "line": 1034,
         "name": "effects",
         "value": "{\"io\": [\"local filesystem access\", \"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent._create_agent",
-        "line": 1054,
+        "line": 1074,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.agents.evolver:EvolverAgent\", \"rationale\": \"Centralizes agent wiring and toolset preparation.\", \"singleton\": true, \"cache_key\": \"module\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent._create_agent",
-        "line": 1060,
+        "line": 1080,
         "name": "canonical_home",
         "value": "{\"for\": [\"evolver agent construction\"], \"notes\": \"Use EvolverAgent() or module singleton.\"}"
       }
@@ -4526,175 +4526,175 @@
       },
       {
         "component": "agent_k.core.tracking:ExperimentMetadata",
-        "line": 136,
+        "line": 155,
         "name": "notice",
         "value": "Structured metadata extracted from a solution."
       },
       {
         "component": "agent_k.core.tracking:ExperimentMetadata",
-        "line": 139,
+        "line": 158,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.tracking:ExperimentMetadata",
-        "line": 142,
+        "line": 161,
         "name": "pattern",
         "value": "{\"name\": \"metadata-model\", \"rationale\": \"Frozen Pydantic model for solution metadata extraction.\"}"
       },
       {
         "component": "agent_k.core.tracking:ExperimentRecord",
-        "line": 159,
+        "line": 178,
         "name": "notice",
         "value": "Persistent record of an experiment or submission."
       },
       {
         "component": "agent_k.core.tracking:ExperimentRecord",
-        "line": 162,
+        "line": 181,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.tracking:ExperimentRecord",
-        "line": 165,
+        "line": 184,
         "name": "pattern",
         "value": "{\"name\": \"record-model\", \"rationale\": \"Pydantic model for experiment persistence.\"}"
       },
       {
         "component": "agent_k.core.tracking:ExperimentSummary",
-        "line": 197,
+        "line": 216,
         "name": "notice",
         "value": "Lightweight summary of a stored experiment."
       },
       {
         "component": "agent_k.core.tracking:ExperimentSummary",
-        "line": 200,
+        "line": 219,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.tracking:ExperimentSummary",
-        "line": 203,
+        "line": 222,
         "name": "pattern",
         "value": "{\"name\": \"summary-model\", \"rationale\": \"Frozen Pydantic model for experiment listing.\"}"
       },
       {
         "component": "agent_k.core.tracking:KaggleSubmissionRecord",
-        "line": 224,
+        "line": 243,
         "name": "notice",
         "value": "Persistent record of a Kaggle submission and leaderboard scores."
       },
       {
         "component": "agent_k.core.tracking:KaggleSubmissionRecord",
-        "line": 227,
+        "line": 246,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.tracking:KaggleSubmissionRecord",
-        "line": 230,
+        "line": 249,
         "name": "pattern",
         "value": "{\"name\": \"record-model\", \"rationale\": \"Pydantic model for Kaggle submission persistence.\"}"
       },
       {
         "component": "agent_k.core.tracking:HintAttemptRecord",
-        "line": 252,
+        "line": 271,
         "name": "notice",
         "value": "Track preprocessing hint usage and outcomes."
       },
       {
         "component": "agent_k.core.tracking:HintAttemptRecord",
-        "line": 255,
+        "line": 274,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.tracking:HintAttemptRecord",
-        "line": 258,
+        "line": 277,
         "name": "pattern",
         "value": "{\"name\": \"record-model\", \"rationale\": \"Pydantic model for hint effectiveness tracking.\"}"
       },
       {
         "component": "agent_k.core.tracking:ExperimentTracker",
-        "line": 279,
+        "line": 298,
         "name": "notice",
         "value": "SQLite-backed tracker for experiments and submissions."
       },
       {
         "component": "agent_k.core.tracking:ExperimentTracker",
-        "line": 282,
+        "line": 301,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.tracking:ExperimentTracker",
-        "line": 285,
+        "line": 304,
         "name": "pattern",
         "value": "{\"name\": \"tracking-store\", \"rationale\": \"Centralized persistence for experiment metadata.\", \"violations\": \"Distributed tracking logic causes inconsistent history.\"}"
       },
       {
         "component": "agent_k.core.tracking:ExperimentTracker",
-        "line": 290,
+        "line": 309,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Uses SQLite connections without cross-process locking.\"}"
       },
       {
         "component": "agent_k.core.tracking:ExperimentTracker",
-        "line": 295,
+        "line": 314,
         "name": "invariants",
         "value": "[\"Database schema is initialized before writes.\"]"
       },
       {
         "component": "agent_k.core.tracking:HintEffectivenessTracker",
-        "line": 730,
+        "line": 749,
         "name": "notice",
         "value": "Track and aggregate hint performance across generations."
       },
       {
         "component": "agent_k.core.tracking:HintEffectivenessTracker",
-        "line": 733,
+        "line": 752,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.tracking:HintEffectivenessTracker",
-        "line": 736,
+        "line": 755,
         "name": "pattern",
         "value": "{\"name\": \"tracking-service\", \"rationale\": \"Centralizes hint success tracking and suppression.\", \"violations\": \"Distributed tracking makes suppression inconsistent.\"}"
       },
       {
         "component": "agent_k.core.tracking:create_experiment_tracker",
-        "line": 862,
+        "line": 881,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.core.tracking:create_experiment_tracker",
-        "line": 865,
+        "line": 884,
         "name": "notice",
         "value": "Returns a tracker configured with the default database path."
       },
       {
         "component": "agent_k.core.tracking:create_experiment_tracker",
-        "line": 868,
+        "line": 887,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.core.tracking:ExperimentTracker\", \"rationale\": \"Centralizes tracker defaults and storage path.\", \"singleton\": false, \"cache_key\": \"db_path\"}"
       },
       {
         "component": "agent_k.core.tracking:create_experiment_tracker",
-        "line": 874,
+        "line": 893,
         "name": "canonical_home",
         "value": "{\"for\": [\"experiment tracker construction\"], \"notes\": \"Use create_experiment_tracker to ensure defaults.\"}"
       },
       {
         "component": "agent_k.core.tracking:extract_solution_metadata",
-        "line": 885,
+        "line": 904,
         "name": "notice",
         "value": "Extract model and feature metadata from solution code."
       },
       {
         "component": "agent_k.core.tracking:extract_solution_metadata",
-        "line": 888,
+        "line": 907,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       }
@@ -5254,37 +5254,37 @@
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate",
-        "line": 321,
+        "line": 337,
         "name": "notice",
         "value": "Evaluate a program and return metrics and artifacts for OpenEvolve."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate",
-        "line": 324,
+        "line": 340,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage1",
-        "line": 403,
+        "line": 419,
         "name": "notice",
         "value": "Stage 1: Quick syntax and import validation."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage1",
-        "line": 406,
+        "line": 422,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage2",
-        "line": 501,
+        "line": 517,
         "name": "notice",
         "value": "Stage 2: Medium evaluation on subset of data."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage2",
-        "line": 504,
+        "line": 520,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       }

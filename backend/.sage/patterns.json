@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-05-28T02:14:08.663912+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -65,7 +65,7 @@
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 319,
+        "line": 321,
         "rationale": "Single instance keeps memory/tool registration consistent.",
         "source": "agent_k/agents/scientist.py",
         "violations": [

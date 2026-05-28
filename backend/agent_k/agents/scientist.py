@@ -278,8 +278,8 @@ class LeaderboardAnalysis(BaseModel):
 
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
-    top_score: float = Field(description="Best leaderboard score")
-    median_score: float = Field(description="Median leaderboard score")
+    top_score: float = Field(description="Best leaderboard score", allow_inf_nan=False)
+    median_score: float = Field(description="Median leaderboard score", allow_inf_nan=False)
     score_distribution: str = Field(description="Description of score distribution")
     common_approaches: list[str] = Field(description="Inferred common approaches")
     improvement_opportunities: list[str] = Field(description="Potential improvement areas")
@@ -311,7 +311,9 @@ class ResearchReport(BaseModel):
     )
     leaderboard_analysis: LeaderboardAnalysis | None = Field(default=None, description="Leaderboard analysis summary")
     recommended_approaches: list[str] = Field(default_factory=list, description="Recommended modeling approaches")
-    estimated_baseline_score: float | None = Field(default=None, description="Estimated baseline score")
+    estimated_baseline_score: float | None = Field(
+        default=None, description="Estimated baseline score", allow_inf_nan=False
+    )
     key_challenges: list[str] = Field(default_factory=list, description="Primary competition challenges")
 
 

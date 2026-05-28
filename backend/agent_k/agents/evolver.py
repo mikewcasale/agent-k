@@ -515,7 +515,7 @@ class EvolutionResult(BaseModel):
     model_config = ConfigDict(frozen=True, str_strip_whitespace=True, validate_default=True)
     schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
     best_solution: str = Field(description="Best solution code")
-    best_fitness: float = Field(description="Fitness score of best solution")
+    best_fitness: float = Field(description="Fitness score of best solution", allow_inf_nan=False)
     generations_completed: int = Field(default=0, ge=0, description="Number of generations completed")
     convergence_achieved: bool = Field(default=False, description="Whether convergence criteria were met")
     convergence_reason: str | None = Field(default=None, description="Reason for convergence if achieved")

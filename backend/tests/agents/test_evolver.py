@@ -6,7 +6,10 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
+import math
+
 import pytest
+from pydantic import ValidationError
 from pydantic_ai import Agent
 
 from agent_k.agents import get_agent
@@ -14,7 +17,7 @@ from agent_k.agents import get_agent
 __all__ = ()
 
 try:
-    from agent_k.agents.evolver import evolver_agent
+    from agent_k.agents.evolver import EvolutionResult, evolver_agent
 except TypeError as exc:
     if "MCPServerTool" in str(exc):
         pytest.skip(f"MCPServerTool API issue: {exc}", allow_module_level=True)
@@ -34,3 +37,23 @@ class TestEvolverAgentSingleton:
         """Agent should be configured with a name."""
         assert isinstance(evolver_agent, Agent)
         assert evolver_agent.name == "evolver"
+
+
+class TestEvolutionResultFinite:
+    """EvolutionResult must reject non-finite fitness scores from free models."""
+
+    def test_accepts_finite_fitness(self) -> None:
+        result = EvolutionResult(best_solution="print('hi')", best_fitness=0.85)
+        assert result.best_fitness == 0.85
+
+    def test_rejects_nan_fitness(self) -> None:
+        with pytest.raises(ValidationError):
+            EvolutionResult(best_solution="print('hi')", best_fitness=math.nan)
+
+    def test_rejects_positive_inf_fitness(self) -> None:
+        with pytest.raises(ValidationError):
+            EvolutionResult(best_solution="print('hi')", best_fitness=math.inf)
+
+    def test_rejects_negative_inf_fitness(self) -> None:
+        with pytest.raises(ValidationError):
+            EvolutionResult(best_solution="print('hi')", best_fitness=-math.inf)

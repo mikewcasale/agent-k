@@ -68,6 +68,13 @@ __all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
+# Kaggle's leaderboard download CSV header is "TeamId,TeamName,SubmissionDate,Score"
+# (see kaggle.api.kaggle_api_extended.competition_leaderboard_fields). The score
+# lives in the 4th column; older 3-column variants without a date column put the
+# score at index 2. Fall back to (1, 3, 2) when the header is unrecognized.
+_LEADERBOARD_DEFAULT_TEAM_NAME_IDX: Final[int] = 1
+_LEADERBOARD_DEFAULT_SCORE_IDX: Final[int] = 3
+_LEADERBOARD_DEFAULT_DATE_IDX: Final[int] = 2
 
 
 class KaggleSettings(BaseSettings):
@@ -286,22 +293,33 @@ class KaggleAdapter(PlatformAdapter):
                 csv_text = response.text
 
             reader = csv.reader(io.StringIO(csv_text))
-            if next(reader, None) is None:
+            header = next(reader, None)
+            if header is None:
                 return entries
 
-            for i, row in enumerate(reader, start=1):
-                if i > limit:
-                    break
+            team_idx, score_idx, date_idx = _resolve_leaderboard_columns(header)
+
+            for row in reader:
                 if not row:
                     continue
-                team_name = row[1] if len(row) > 1 else "Unknown"
-                score = 0.0
-                if len(row) > 2:
-                    try:
-                        score = float(row[2])
-                    except ValueError:
-                        score = 0.0
-                entries.append(LeaderboardEntry(rank=i, team_name=team_name, score=score))
+                score = _parse_leaderboard_score(row, score_idx)
+                if score is None:
+                    logfire.warning(
+                        "kaggle_leaderboard_row_skipped",
+                        competition_id=competition_id,
+                        reason="unparseable_score",
+                        row_index=len(entries) + 1,
+                    )
+                    continue
+                team_name = row[team_idx] if team_idx < len(row) and row[team_idx] else "Unknown"
+                last_submission = _parse_leaderboard_date(row, date_idx)
+                entries.append(
+                    LeaderboardEntry(
+                        rank=len(entries) + 1, team_name=team_name, score=score, last_submission=last_submission
+                    )
+                )
+                if len(entries) >= limit:
+                    break
 
             return entries
 
@@ -556,3 +574,61 @@ class KaggleAdapter(PlatformAdapter):
             tags=tags,
             url=data.get("url"),
         )
+
+
+def _resolve_leaderboard_columns(header: list[str]) -> tuple[int, int, int]:
+    """Resolve team-name, score, and submission-date column indices from a header.
+
+    Matches Kaggle's documented leaderboard fields ``teamId,teamName,submissionDate,score``
+    by name (case-insensitive, ignoring punctuation/whitespace), and falls back to
+    the historical column positions if the header is missing or unrecognized.
+    """
+    team_idx = _LEADERBOARD_DEFAULT_TEAM_NAME_IDX
+    score_idx = _LEADERBOARD_DEFAULT_SCORE_IDX
+    date_idx = _LEADERBOARD_DEFAULT_DATE_IDX
+    found_team = found_score = found_date = False
+    for idx, raw in enumerate(header):
+        normalized = re.sub(r"[^a-z0-9]", "", raw.lower())
+        if not found_score and "score" in normalized:
+            score_idx = idx
+            found_score = True
+        if not found_team and "teamname" in normalized:
+            team_idx = idx
+            found_team = True
+        if not found_date and ("submissiondate" in normalized or "lastsubmission" in normalized):
+            date_idx = idx
+            found_date = True
+    if not found_score and len(header) <= 3:
+        # Legacy 3-column variant: TeamId, TeamName, Score
+        score_idx = 2
+    return team_idx, score_idx, date_idx
+
+
+def _parse_leaderboard_score(row: list[str], score_idx: int) -> float | None:
+    """Parse a score from a leaderboard row, returning None if missing or invalid."""
+    if score_idx >= len(row):
+        return None
+    raw = row[score_idx].strip()
+    if not raw:
+        return None
+    try:
+        value = float(raw)
+    except ValueError:
+        return None
+    # Reject NaN/Inf so they don't poison downstream statistics.
+    if value != value or value in (float("inf"), float("-inf")):
+        return None
+    return value
+
+
+def _parse_leaderboard_date(row: list[str], date_idx: int) -> datetime | None:
+    """Parse a submission date from a leaderboard row, returning None on failure."""
+    if date_idx < 0 or date_idx >= len(row):
+        return None
+    raw = row[date_idx].strip()
+    if not raw:
+        return None
+    try:
+        return datetime.fromisoformat(raw.replace("Z", "+00:00").replace(" ", "T", 1))
+    except ValueError:
+        return None

@@ -18,10 +18,11 @@ from agent_k.core.strategy import (
     build_fitness_function,
     build_fitness_policy,
     build_problem_profile,
+    build_technique_policy,
 )
 
 
-def _competition(metric: EvaluationMetric) -> Competition:
+def _competition(metric: EvaluationMetric, *, tags: frozenset[str] = frozenset({"tabular"})) -> Competition:
     return Competition(
         id="sample-competition",
         title="Sample Competition",
@@ -33,9 +34,13 @@ def _competition(metric: EvaluationMetric) -> Competition:
         prize_pool=None,
         max_team_size=1,
         max_daily_submissions=5,
-        tags=frozenset({"tabular"}),
+        tags=tags,
         url=None,
     )
+
+
+def _schema() -> CompetitionSchema:
+    return CompetitionSchema(id_column="id", target_columns=["target"], train_target_columns=["target"])
 
 
 def test_build_problem_profile_regression() -> None:
@@ -90,3 +95,59 @@ def test_apply_solution_policy_is_noop() -> None:
     updated_again, notes_again = apply_solution_policy(updated, policy)
     assert updated_again == updated
     assert not notes_again
+
+
+def test_build_problem_profile_audio_classification() -> None:
+    """Audio tags should map to audio classification when the metric is classification."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.ACCURACY, tags=frozenset({"audio", "speech recognition"})), _schema()
+    )
+    assert profile.problem_type == ProblemType.AUDIO_CLASSIFICATION
+    assert profile.is_classification is True
+
+
+def test_build_problem_profile_audio_regression() -> None:
+    """Audio tags should map to audio regression when the metric is regression."""
+    profile = build_problem_profile(_competition(EvaluationMetric.RMSE, tags=frozenset({"music"})), _schema())
+    assert profile.problem_type == ProblemType.AUDIO_REGRESSION
+    assert profile.is_classification is False
+
+
+def test_build_problem_profile_audio_alternative_tags() -> None:
+    """All audio synonyms in the tag set should be detected."""
+    for tag in ("audio", "speech", "sound", "acoustic", "music", "voice"):
+        profile = build_problem_profile(_competition(EvaluationMetric.AUC, tags=frozenset({tag})), _schema())
+        assert profile.problem_type == ProblemType.AUDIO_CLASSIFICATION, f"tag {tag!r} did not map to audio"
+
+
+def test_build_problem_profile_vision_outranks_audio() -> None:
+    """Vision tags take precedence over audio tags when both appear."""
+    profile = build_problem_profile(_competition(EvaluationMetric.AUC, tags=frozenset({"vision", "audio"})), _schema())
+    assert profile.problem_type == ProblemType.VISION_CLASSIFICATION
+
+
+def test_build_problem_profile_text_outranks_audio() -> None:
+    """Text tags take precedence over audio tags when both appear."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.ACCURACY, tags=frozenset({"nlp", "audio"})), _schema()
+    )
+    assert profile.problem_type == ProblemType.TEXT_CLASSIFICATION
+
+
+def test_build_technique_policy_audio_disables_tabular_transforms() -> None:
+    """Audio profiles should not enable tabular-only target transform or outlier clipping."""
+    profile = build_problem_profile(_competition(EvaluationMetric.RMSE, tags=frozenset({"audio"})), _schema())
+    policy = build_technique_policy(profile)
+    assert policy.problem_type == ProblemType.AUDIO_REGRESSION
+    assert policy.enable_target_transform is False
+    assert policy.enable_outlier_clipping is False
+
+
+def test_build_fitness_policy_audio_uses_modality_complexity_budget() -> None:
+    """Audio profiles should share the non-tabular (lower) complexity threshold."""
+    audio_profile = build_problem_profile(_competition(EvaluationMetric.AUC, tags=frozenset({"audio"})), _schema())
+    tabular_profile = build_problem_profile(_competition(EvaluationMetric.AUC, tags=frozenset({"tabular"})), _schema())
+    audio_policy = build_fitness_policy(audio_profile, None, max_runtime_ms=None)
+    tabular_policy = build_fitness_policy(tabular_profile, None, max_runtime_ms=None)
+    assert audio_policy.complexity_threshold == 600
+    assert tabular_policy.complexity_threshold == 800

@@ -60,6 +60,9 @@ _CLASSIFICATION_METRICS: Final[frozenset[EvaluationMetric]] = frozenset(
 )
 _VISION_TAGS: Final[frozenset[str]] = frozenset({"vision", "computer vision", "image", "images"})
 _TEXT_TAGS: Final[frozenset[str]] = frozenset({"nlp", "text", "language"})
+_AUDIO_TAGS: Final[frozenset[str]] = frozenset(
+    {"audio", "speech", "sound", "acoustic", "music", "voice", "speech recognition"}
+)
 
 type FitnessFunction = Callable[["FitnessInput"], float]
 
@@ -85,6 +88,8 @@ class ProblemType(StrEnum):
     VISION_CLASSIFICATION = "vision_classification"
     TEXT_REGRESSION = "text_regression"
     TEXT_CLASSIFICATION = "text_classification"
+    AUDIO_REGRESSION = "audio_regression"
+    AUDIO_CLASSIFICATION = "audio_classification"
     UNKNOWN = "unknown"
 
 
@@ -207,6 +212,8 @@ def build_problem_profile(competition: Competition, schema: CompetitionSchema) -
         problem_type = ProblemType.VISION_CLASSIFICATION if is_classification else ProblemType.VISION_REGRESSION
     elif tags & _TEXT_TAGS:
         problem_type = ProblemType.TEXT_CLASSIFICATION if is_classification else ProblemType.TEXT_REGRESSION
+    elif tags & _AUDIO_TAGS:
+        problem_type = ProblemType.AUDIO_CLASSIFICATION if is_classification else ProblemType.AUDIO_REGRESSION
     else:
         problem_type = ProblemType.TABULAR_CLASSIFICATION if is_classification else ProblemType.TABULAR_REGRESSION
 

@@ -995,7 +995,7 @@ def detect_applied_hints(code: str, hints: Iterable[PreprocessingHint]) -> set[s
     for hint in hint_map.values():
         signatures = _extract_signatures(hint.code_snippet)
         for signature in signatures:
-            if re.search(rf"\\b{re.escape(signature)}\\b", code):
+            if re.search(rf"\b{re.escape(signature)}\b", code):
                 applied.add(hint.id)
                 break
 
@@ -1906,19 +1906,19 @@ def _hint_patterns(hint: PreprocessingHint) -> list[re.Pattern[str]]:
         "timeseries_cv": [r"TimeSeriesSplit", r"PurgedKFold"],
         "timeseries_stationarity": [r"adfuller"],
         "timeseries_seasonality": [r"seasonal_decompose", r"fourier"],
-        "timeseries_lag_features": [r"shift\\(", r"rolling"],
+        "timeseries_lag_features": [r"shift\(", r"rolling"],
         "vision_augmentation": [r"RandomRotation", r"RandomHorizontalFlip"],
         "vision_normalization": [r"Normalize"],
         "vision_transfer_learning": [r"pretrained", r"resnet", r"weights="],
         "nlp_tokenization": [r"tokenizer", r"AutoTokenizer"],
         "nlp_multilingual": [r"langdetect", r"multilingual"],
         "model_gradient_boosting": [r"LGBMRegressor", r"LGBMClassifier", r"lightgbm"],
-        "lightgbm_custom_rmsle": [r"rmsle_objective", r"objective\\s*=\\s*rmsle"],
+        "lightgbm_custom_rmsle": [r"rmsle_objective", r"objective\s*=\s*rmsle"],
         "model_knn_ensemble": [r"KNeighborsRegressor", r"KNeighborsClassifier"],
         "model_stacking": [r"StackingRegressor", r"StackingClassifier"],
         "knn_lightgbm_stack": [r"StackingRegressor", r"KNeighborsRegressor", r"LGBMRegressor"],
         "feature_importance_selection": [r"feature_importances_", r"select_by_importance"],
-        "remove_collinear": [r"remove_collinear", r"np\\.triu"],
+        "remove_collinear": [r"remove_collinear", r"np\.triu"],
         "data_enrichment_geo": [r"merge_external_data"],
         "data_enrichment_temporal": [r"external_time_series"],
         "data_enrichment_price": [r"inflation_index"],

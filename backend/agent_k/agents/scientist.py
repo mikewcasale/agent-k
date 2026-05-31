@@ -783,7 +783,7 @@ class ScientistAgent(MemoryMixin):
     def _extract_kernel_ref(self, url: str) -> str | None:
         if not url:
             return None
-        match = re.search(r"kaggle\\.com/(?:code/)?(?P<owner>[^/]+)/(?P<slug>[^/?#]+)", url)
+        match = re.search(r"kaggle\.com/(?:code/)?(?P<owner>[^/]+)/(?P<slug>[^/?#]+)", url)
         if not match:
             return None
         return f"{match.group('owner')}/{match.group('slug')}"

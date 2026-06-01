@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.tracking:ExperimentMetadata",
-  "line": 134,
+  "line": 138,
   "notice": "Structured metadata extracted from a solution.",
   "pattern": {
     "name": "metadata-model",

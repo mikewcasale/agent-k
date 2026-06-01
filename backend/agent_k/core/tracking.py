@@ -40,14 +40,18 @@ import re
 import sqlite3
 import uuid
 from collections import defaultdict
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Annotated, Any, Final
+from typing import TYPE_CHECKING, Annotated, Any, Final
 
 import logfire
 from pydantic import BaseModel, ConfigDict, Field
 
 from agent_k.core.sage import Doc
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 __all__ = (
     "ExperimentMetadata",
@@ -624,10 +628,17 @@ class ExperimentTracker:
             created_at=record.created_at,
         )
 
-    def _connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def _connect(self) -> Iterator[sqlite3.Connection]:
+        # sqlite3 connections used as context managers commit/rollback on exit
+        # but do NOT close. Wrap explicit close in a finally to prevent FD leaks.
         conn = sqlite3.connect(self._db_path)
         conn.row_factory = sqlite3.Row
-        return conn
+        try:
+            with conn:
+                yield conn
+        finally:
+            conn.close()
 
     def _initialize_schema(self) -> None:
         with self._connect() as conn:

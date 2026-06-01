@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.evolver:EvolverAgent.record_generation",
-  "line": 880,
+  "line": 892,
   "notice": "Appends generation metrics and emits telemetry.",
   "pattern": null,
   "similar": null,

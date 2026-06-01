@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-06-01T03:08:32.526540+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -47,7 +47,7 @@
     "agent-singleton": [
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 556,
+        "line": 568,
         "rationale": "Single instance keeps memory/tool registration consistent.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -76,7 +76,7 @@
     "archive-entry": [
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry",
-        "line": 317,
+        "line": 329,
         "rationale": "Encapsulates elite metadata for sampling.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -134,7 +134,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 436,
+        "line": 448,
         "rationale": "Groups runtime services and evolution state.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -947,7 +947,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 501,
+        "line": 513,
         "rationale": "Stable schema for successful evolution outputs.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -956,7 +956,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 526,
+        "line": 538,
         "rationale": "Stable schema for failed evolution outputs.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -1246,7 +1246,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 363,
+        "line": 375,
         "rationale": "Centralizes evolutionary optimization configuration.",
         "source": "agent_k/agents/evolver.py",
         "violations": [

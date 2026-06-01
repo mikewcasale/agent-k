@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.agents.evolver:EvolverAgent._normalize_model_imports",
-  "line": 2146,
+  "id": "agent_k.agents.evolver:_to_class_predictions",
+  "line": 2629,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/agents/evolver.py",
-  "summary": "Ensure sklearn model imports use the correct module.",
-  "type": "method"
+  "summary": "Coerce numeric predictions into discrete class labels matching y_true classes.",
+  "type": "function"
 }

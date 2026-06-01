@@ -66,7 +66,17 @@ from pydantic_ai import Agent, DeferredToolRequests, ModelRetry, ModelSettings, 
 from pydantic_ai.builtin_tools import MCPServerTool
 from pydantic_ai.toolsets import FunctionToolset
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from sklearn.metrics import log_loss, mean_absolute_error, mean_squared_error, mean_squared_log_error, roc_auc_score
+from sklearn.metrics import (
+    accuracy_score,
+    average_precision_score,
+    f1_score,
+    log_loss,
+    mean_absolute_error,
+    mean_squared_error,
+    mean_squared_log_error,
+    ndcg_score,
+    roc_auc_score,
+)
 
 from agent_k.adapters.openevolve import OpenEvolveRunner
 from agent_k.agents import register_agent
@@ -105,6 +115,8 @@ from agent_k.infra.providers import get_model
 from agent_k.toolsets import code_toolset, create_production_toolset, prepare_code_execution_tool, prepare_memory_tool
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from agent_k.core.models import Competition
     from agent_k.core.protocols import PlatformAdapter
     from agent_k.ui.agui import EventEmitter
@@ -2613,6 +2625,72 @@ def _prepare_validation_split(
     return train_df, val_features, y_val, resolved_id
 
 
+def _to_class_predictions(y_pred_col: np.ndarray, y_true_col: np.ndarray) -> np.ndarray:
+    """Coerce numeric predictions into discrete class labels matching y_true classes.
+
+    Submissions for classification competitions may carry either probabilities or
+    hard labels. Threshold probability-shaped predictions for binary targets and
+    round-to-nearest-valid-class for multi-class, so accuracy/F1 can compare like
+    with like instead of failing because preds are floats.
+    """
+    classes = np.unique(y_true_col)
+    if classes.size == 0:
+        return y_pred_col.astype(y_true_col.dtype)
+    if classes.size == 2 and np.all((y_pred_col >= 0.0) & (y_pred_col <= 1.0)):
+        upper = float(np.max(classes))
+        lower = float(np.min(classes))
+        return np.where(y_pred_col >= 0.5, upper, lower).astype(y_true_col.dtype)
+    rounded = np.rint(y_pred_col)
+    rounded = np.clip(rounded, float(np.min(classes)), float(np.max(classes)))
+    return rounded.astype(y_true_col.dtype)
+
+
+def _score_accuracy(y_true_col: np.ndarray, y_pred_col: np.ndarray) -> float:
+    labels = _to_class_predictions(y_pred_col, y_true_col)
+    return float(accuracy_score(y_true_col, labels))
+
+
+def _score_f1(y_true_col: np.ndarray, y_pred_col: np.ndarray) -> float:
+    labels = _to_class_predictions(y_pred_col, y_true_col)
+    classes = np.unique(y_true_col)
+    if classes.size <= 2:
+        pos_label = float(np.max(classes)) if classes.size else 1.0
+        return float(f1_score(y_true_col, labels, pos_label=pos_label, zero_division=0))
+    return float(f1_score(y_true_col, labels, average="weighted", zero_division=0))
+
+
+def _score_map(y_true_col: np.ndarray, y_pred_col: np.ndarray) -> float:
+    classes = np.unique(y_true_col)
+    if classes.size > 2:
+        raise ValueError("map only supported for binary-labeled targets")
+    if classes.size < 2:
+        return 0.0
+    pos_label = float(np.max(classes))
+    y_binary = (y_true_col == pos_label).astype(int)
+    return float(average_precision_score(y_binary, y_pred_col))
+
+
+def _score_ndcg(y_true_col: np.ndarray, y_pred_col: np.ndarray) -> float:
+    if y_true_col.size < 2:
+        return 0.0
+    y_true_pos = np.clip(y_true_col, 0.0, None)
+    return float(ndcg_score(y_true_pos.reshape(1, -1), y_pred_col.reshape(1, -1)))
+
+
+def _score_classification_per_target(
+    y_true: np.ndarray, y_pred: np.ndarray, scorer: Callable[[np.ndarray, np.ndarray], float]
+) -> float:
+    scores = [scorer(y_true[:, i], y_pred[:, i]) for i in range(y_true.shape[1])]
+    return float(np.mean(scores))
+
+
+def _score_ranking_per_target(
+    y_true: np.ndarray, y_pred: np.ndarray, scorer: Callable[[np.ndarray, np.ndarray], float]
+) -> float:
+    scores = [scorer(y_true[:, i], y_pred[:, i]) for i in range(y_true.shape[1])]
+    return float(np.mean(scores))
+
+
 def _score_submission(
     *, submission_path: Path, metric: str, id_column: str, target_columns: list[str], y_val: pd.DataFrame
 ) -> float:
@@ -2652,6 +2730,14 @@ def _score_submission(
         if y_true.shape[1] != 1:
             raise ValueError("auc only supported for single-target problems")
         return float(roc_auc_score(y_true[:, 0], y_pred[:, 0]))
+    if key == "accuracy":
+        return _score_classification_per_target(y_true, y_pred, _score_accuracy)
+    if key == "f1":
+        return _score_classification_per_target(y_true, y_pred, _score_f1)
+    if key in {"map", "meanaverageprecision"}:
+        return _score_ranking_per_target(y_true, y_pred, _score_map)
+    if key == "ndcg":
+        return _score_ranking_per_target(y_true, y_pred, _score_ndcg)
 
     raise ValueError(f"Unsupported metric: {metric}")
 

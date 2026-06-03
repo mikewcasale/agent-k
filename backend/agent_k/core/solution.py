@@ -213,12 +213,21 @@ async def _execute_with_builtin_tool(
     start_time = time.perf_counter()
     try:
         run_result = await agent.run(script)
-    except Exception:
+    except Exception as exc:
+        runtime_ms = int((time.perf_counter() - start_time) * 1000)
+        logfire.warning(
+            "builtin_code_execution_failed",
+            error=str(exc),
+            error_type=type(exc).__name__,
+            model_spec=model_spec,
+            runtime_ms=runtime_ms,
+        )
         return None
 
     runtime_ms = int((time.perf_counter() - start_time) * 1000)
     tool_content = _extract_code_execution_result(run_result.all_messages())
     if tool_content is None:
+        logfire.warning("builtin_code_execution_no_tool_call", model_spec=model_spec, runtime_ms=runtime_ms)
         return None
     return _parse_code_execution_result(tool_content, runtime_ms)
 

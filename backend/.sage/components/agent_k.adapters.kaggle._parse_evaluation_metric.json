@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.adapters.kaggle:KaggleAdapter.get_leaderboard",
-  "line": 360,
+  "id": "agent_k.adapters.kaggle:_parse_evaluation_metric",
+  "line": 88,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Get competition leaderboard.",
-  "type": "method"
+  "summary": "Map a free-form Kaggle metric name to an EvaluationMetric enum.",
+  "type": "function"
 }

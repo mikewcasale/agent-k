@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.adapters.kaggle:KaggleAdapter.get_leaderboard",
-  "line": 360,
+  "id": "agent_k.adapters.kaggle:_parse_deadline",
+  "line": 146,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Get competition leaderboard.",
-  "type": "method"
+  "summary": "Parse a Kaggle deadline value into a timezone-aware datetime.",
+  "type": "function"
 }

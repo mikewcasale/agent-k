@@ -16,7 +16,9 @@
     "pattern": "adapter",
     "provides": [
       "agent_k.adapters.kaggle:KaggleAdapter",
-      "agent_k.adapters.kaggle:KaggleSettings"
+      "agent_k.adapters.kaggle:KaggleSettings",
+      "agent_k.adapters.kaggle:_parse_evaluation_metric",
+      "agent_k.adapters.kaggle:_parse_deadline"
     ]
   },
   "human_review": {

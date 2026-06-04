@@ -32,6 +32,16 @@
     },
     {
       "source": "agent_k.adapters.kaggle",
+      "target": "agent_k.adapters.kaggle:_parse_evaluation_metric",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.adapters.kaggle",
+      "target": "agent_k.adapters.kaggle:_parse_deadline",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.adapters.kaggle",
       "target": "agent_k.toolsets.kaggle",
       "type": "similar"
     },
@@ -921,7 +931,7 @@
       "type": "similar"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831739+00:00",
+  "generated": "2026-06-04T02:14:59.123827+00:00",
   "nodes": [
     {
       "id": "agent_k",

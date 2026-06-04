@@ -11,6 +11,8 @@
     provides:
         - agent_k.adapters.kaggle:KaggleAdapter
         - agent_k.adapters.kaggle:KaggleSettings
+        - agent_k.adapters.kaggle:_parse_evaluation_metric
+        - agent_k.adapters.kaggle:_parse_deadline
     pattern: adapter
 
 @similar:
@@ -40,7 +42,7 @@ import io
 import re
 import zipfile
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
 from urllib.parse import quote
@@ -68,6 +70,93 @@ __all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
+_DEFAULT_DEADLINE: Final[datetime] = datetime(2099, 12, 31, 23, 59, 59, tzinfo=UTC)
+_METRIC_DIRECTION_MAP: Final[dict[EvaluationMetric, str]] = {
+    EvaluationMetric.ACCURACY: "maximize",
+    EvaluationMetric.AUC: "maximize",
+    EvaluationMetric.F1: "maximize",
+    EvaluationMetric.LOG_LOSS: "minimize",
+    EvaluationMetric.RMSE: "minimize",
+    EvaluationMetric.MAE: "minimize",
+    EvaluationMetric.RMSLE: "minimize",
+    EvaluationMetric.MAP: "maximize",
+    EvaluationMetric.NDCG: "maximize",
+}
+
+
+def _parse_evaluation_metric(raw: Any) -> EvaluationMetric:
+    """Map a free-form Kaggle metric name to an EvaluationMetric enum.
+
+    Kaggle's `evaluationMetric` field comes back in many naming conventions
+    (e.g. `RMSE`, `MeanColumnwiseRootMeanSquaredError`, `NDCG@5`, `MAP@K`,
+    `MeanFScore`, `MulticlassLoss`). Recognize common aliases and only fall
+    back to ACCURACY when no rule matches.
+    """
+    if raw is None:
+        return EvaluationMetric.ACCURACY
+    text = str(raw).strip().lower()
+    if not text:
+        return EvaluationMetric.ACCURACY
+    base = text.split("@", 1)[0]
+    normalized = re.sub(r"[^a-z0-9]", "", base)
+    if not normalized:
+        return EvaluationMetric.ACCURACY
+
+    # Order matters: more specific patterns first so RMSLE is matched before RMSE,
+    # MeanAveragePrecision is matched before generic "map", etc.
+    if "rmsle" in normalized or "rootmeansquaredlogarithmic" in normalized or "logarithmicerror" in normalized:
+        return EvaluationMetric.RMSLE
+    if "rmse" in normalized or "rootmeansquared" in normalized:
+        return EvaluationMetric.RMSE
+    if (
+        normalized == "mae"
+        or normalized.endswith("mae")
+        or "meanabsolute" in normalized
+        or "absoluteerror" in normalized
+    ):
+        return EvaluationMetric.MAE
+    log_loss_markers = (
+        "logloss",
+        "binarylogloss",
+        "multiclasslogloss",
+        "multiclassloss",
+        "categoricalcrossentropy",
+        "binarycrossentropy",
+        "crossentropy",
+    )
+    if any(marker in normalized for marker in log_loss_markers):
+        return EvaluationMetric.LOG_LOSS
+    if "ndcg" in normalized or "discountedcumulativegain" in normalized:
+        return EvaluationMetric.NDCG
+    if (
+        normalized == "map"
+        or normalized.startswith("mapat")
+        or "meanaverageprecision" in normalized
+        or "averageprecision" in normalized
+    ):
+        return EvaluationMetric.MAP
+    if "auc" in normalized or "areaunderroc" in normalized or "areaunderthecurve" in normalized or normalized == "roc":
+        return EvaluationMetric.AUC
+    if "f1" in normalized or "fscore" in normalized or "fbeta" in normalized or "fmeasure" in normalized:
+        return EvaluationMetric.F1
+    return EvaluationMetric.ACCURACY
+
+
+def _parse_deadline(value: Any) -> datetime:
+    """Parse a Kaggle deadline value into a timezone-aware datetime.
+
+    Falls back to a sentinel far-future datetime if the value is missing,
+    null, or not parseable.
+    """
+    if not isinstance(value, str):
+        return _DEFAULT_DEADLINE
+    stripped = value.strip()
+    if not stripped:
+        return _DEFAULT_DEADLINE
+    try:
+        return datetime.fromisoformat(stripped.replace("Z", "+00:00"))
+    except ValueError:
+        return _DEFAULT_DEADLINE
 
 
 class KaggleSettings(BaseSettings):
@@ -470,43 +559,8 @@ class KaggleAdapter(PlatformAdapter):
             "Community": CompetitionType.COMMUNITY,
         }
 
-        # Map Kaggle metric to our enum
-        metric_map = {
-            "accuracy": EvaluationMetric.ACCURACY,
-            "auc": EvaluationMetric.AUC,
-            "logloss": EvaluationMetric.LOG_LOSS,
-            "rmse": EvaluationMetric.RMSE,
-            "mae": EvaluationMetric.MAE,
-            "rmsle": EvaluationMetric.RMSLE,
-        }
-        metric_raw = str(data.get("evaluationMetric", "accuracy")).strip()
-        metric_key = metric_raw.lower()
-        metric = metric_map.get(metric_key)
-        if metric is None:
-            if "logarithmic" in metric_key or "rmsle" in metric_key:
-                metric = EvaluationMetric.RMSLE
-            elif "mean squared" in metric_key or "rmse" in metric_key:
-                metric = EvaluationMetric.RMSE
-            elif "mean absolute" in metric_key or "mae" in metric_key:
-                metric = EvaluationMetric.MAE
-            elif "log loss" in metric_key or "logloss" in metric_key:
-                metric = EvaluationMetric.LOG_LOSS
-            elif "auc" in metric_key:
-                metric = EvaluationMetric.AUC
-            else:
-                metric = EvaluationMetric.ACCURACY
-        metric_direction_map = {
-            EvaluationMetric.ACCURACY: "maximize",
-            EvaluationMetric.AUC: "maximize",
-            EvaluationMetric.F1: "maximize",
-            EvaluationMetric.LOG_LOSS: "minimize",
-            EvaluationMetric.RMSE: "minimize",
-            EvaluationMetric.MAE: "minimize",
-            EvaluationMetric.RMSLE: "minimize",
-            EvaluationMetric.MAP: "maximize",
-            EvaluationMetric.NDCG: "maximize",
-        }
-        metric_direction = metric_direction_map.get(metric, "maximize")
+        metric = _parse_evaluation_metric(data.get("evaluationMetric"))
+        metric_direction = _METRIC_DIRECTION_MAP.get(metric, "maximize")
 
         # Parse tags - they may be strings or dicts with 'name' key
         raw_tags = data.get("tags", [])
@@ -549,7 +603,7 @@ class KaggleAdapter(PlatformAdapter):
             competition_type=category_map.get(data.get("category", ""), CompetitionType.COMMUNITY),
             metric=metric,
             metric_direction=metric_direction,
-            deadline=datetime.fromisoformat(data.get("deadline", "2099-12-31T23:59:59+00:00").replace("Z", "+00:00")),
+            deadline=_parse_deadline(data.get("deadline")),
             prize_pool=prize_pool,
             max_team_size=data.get("maxTeamSize", 1),
             max_daily_submissions=data.get("maxDailySubmissions", 5),

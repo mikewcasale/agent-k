@@ -30,15 +30,28 @@ Licensed under the MIT License.
 from __future__ import annotations as _annotations
 
 import random
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from agent_k.evolution.framework import FitnessFn, Individual, Population
+
+if TYPE_CHECKING:
+    import numpy as np
 
 type LossObjective = str
 """LightGBM objective identifiers."""
 
-__all__ = ("LossFunctionEvolver", "LossGenome", "build_lightgbm_objective_params")
+CustomObjectiveFn = Callable[["np.ndarray", Any], tuple["np.ndarray", "np.ndarray"]]
+"""Signature for LightGBM custom objective callables: (y_pred, dataset) -> (grad, hess)."""
+
+__all__ = (
+    "CustomObjectiveFn",
+    "LossFunctionEvolver",
+    "LossGenome",
+    "build_custom_objective_callable",
+    "build_lightgbm_objective_params",
+)
 
 
 @dataclass(slots=True)
@@ -139,21 +152,66 @@ def build_lightgbm_objective_params(genome: LossGenome) -> dict[str, Any]:
     """Create LightGBM objective params from a LossGenome.
 
     @notice: |
-        Create LightGBM objective params from a LossGenome.
+        Maps a genome to keyword arguments accepted by ``lightgbm.train``.
 
     @dev: |
-        See module for behavior details and invariants.
+        Only emits keys LightGBM actually recognises. The ``asymmetric_weight``
+        and ``mae_rmse_blend`` knobs are surfaced via
+        ``build_custom_objective_callable`` because LightGBM silently ignores
+        unknown params instead of erroring.
     """
-    params: dict[str, Any] = {
-        "objective": genome.objective,
-        "asymmetric_weight": genome.asymmetric_weight,
-        "mae_rmse_blend": genome.mae_rmse_blend,
-    }
+    params: dict[str, Any] = {"objective": genome.objective}
     if genome.objective == "quantile":
         params["alpha"] = genome.quantile_alpha
-    if genome.objective == "huber":
-        params["huber_delta"] = genome.huber_delta
+    elif genome.objective == "huber":
+        # LightGBM uses ``alpha`` for the Huber transition; ``huber_delta`` is
+        # silently ignored otherwise.
+        params["alpha"] = genome.huber_delta
     return params
+
+
+def build_custom_objective_callable(genome: LossGenome) -> CustomObjectiveFn:
+    """Compile a LightGBM-compatible custom objective from the genome.
+
+    @notice: |
+        Returns a ``(y_pred, dataset) -> (grad, hess)`` callable that blends
+        MAE/RMSE gradients and applies an asymmetric residual weight.
+
+    @dev: |
+        Pass the returned callable directly via ``params["objective"]`` for
+        ``lightgbm.train`` (the legacy ``fobj=`` keyword was removed in
+        LightGBM 4.0). The blend follows ``mae_rmse_blend`` (0 = MAE,
+        1 = RMSE) and over-/under-predictions are weighted by
+        ``asymmetric_weight`` so positive residuals (over-prediction) can be
+        penalised more heavily than negative residuals.
+    """
+    import numpy as np
+
+    blend = float(_clip(genome.mae_rmse_blend, 0.0, 1.0))
+    asym = float(max(genome.asymmetric_weight, 0.0))
+    mae_hess_floor = 1e-3
+
+    def custom_objective(y_pred: np.ndarray, dataset: Any) -> tuple[np.ndarray, np.ndarray]:
+        y_true = np.asarray(dataset.get_label(), dtype=np.float64)
+        preds = np.asarray(y_pred, dtype=np.float64)
+        residual = preds - y_true
+
+        l2_grad = residual
+        l2_hess = np.ones_like(residual)
+        l1_grad = np.sign(residual)
+        l1_hess = np.full_like(residual, mae_hess_floor)
+
+        grad = blend * l2_grad + (1.0 - blend) * l1_grad
+        hess = blend * l2_hess + (1.0 - blend) * l1_hess
+
+        if asym != 1.0:
+            weights = np.where(residual > 0.0, asym, 1.0)
+            grad = grad * weights
+            hess = hess * weights
+
+        return grad, hess
+
+    return custom_objective
 
 
 def _clip(value: float, lower: float, upper: float) -> float:

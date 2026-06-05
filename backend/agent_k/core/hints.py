@@ -1604,14 +1604,16 @@ def _generate_model_selection_hints(profile: DatasetProfile) -> list[Preprocessi
                     "    return grad, hess\n"
                     "train_data = lgb.Dataset(X_train, label=y_train)\n"
                     "params = {\n"
-                    '    "objective": "regression",\n'
+                    '    "objective": rmsle_objective,\n'
                     '    "learning_rate": 0.01,\n'
                     '    "num_leaves": 31,\n'
                     '    "feature_fraction": 0.8,\n'
                     '    "bagging_fraction": 0.8,\n'
                     '    "bagging_freq": 5,\n'
+                    '    "verbose": -1,\n'
                     "}\n"
-                    "model = lgb.train(params, train_data, num_boost_round=2000, fobj=rmsle_objective)"
+                    "model = lgb.train(params, train_data, num_boost_round=2000)\n"
+                    "predictions = np.maximum(model.predict(X_test), 0)"
                 ),
                 success_rate=0.0,
                 last_attempted=None,

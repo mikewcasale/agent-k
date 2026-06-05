@@ -79,6 +79,130 @@ def test_locate_data_files_from_zip(tmp_path: Path) -> None:
     assert located_sample.name == "sample_submission.csv"
 
 
+def test_locate_data_files_rejects_substring_lookalikes(tmp_path: Path) -> None:
+    """``pretrained_features.csv`` must not be misidentified as the train file."""
+    pretrained = tmp_path / "pretrained_features.csv"
+    test_metadata = tmp_path / "test_metadata.csv"
+    train_file = tmp_path / "train.csv"
+    real_test_file = tmp_path / "test.csv"
+    sample_file = tmp_path / "sample_submission.csv"
+
+    for path in (pretrained, test_metadata, train_file, real_test_file, sample_file):
+        _write_csv(path, ["id", "target"], [["1", "0"]])
+
+    located_train, located_test, located_sample = locate_data_files(
+        [pretrained, test_metadata, train_file, real_test_file, sample_file]
+    )
+
+    assert located_train == train_file
+    assert located_test == real_test_file
+    assert located_sample == sample_file
+
+
+def test_locate_data_files_prefers_exact_stem_over_decorated(tmp_path: Path) -> None:
+    """``train.csv`` wins over ``train_metadata.csv`` even when the latter appears first."""
+    train_decorated = tmp_path / "train_metadata.csv"
+    train_canonical = tmp_path / "train.csv"
+    test_decorated = tmp_path / "test_features.csv"
+    test_canonical = tmp_path / "test.csv"
+    sample_file = tmp_path / "sample_submission.csv"
+
+    for path in (train_decorated, train_canonical, test_decorated, test_canonical, sample_file):
+        _write_csv(path, ["id", "target"], [["1", "0"]])
+
+    located_train, located_test, located_sample = locate_data_files(
+        [train_decorated, test_decorated, train_canonical, test_canonical, sample_file]
+    )
+
+    assert located_train == train_canonical
+    assert located_test == test_canonical
+    assert located_sample == sample_file
+
+
+def test_locate_data_files_does_not_double_assign(tmp_path: Path) -> None:
+    """No file may be returned for two different roles."""
+    train_file = tmp_path / "train.csv"
+    test_file = tmp_path / "test.csv"
+    sample_file = tmp_path / "submission.csv"
+
+    for path in (train_file, test_file, sample_file):
+        _write_csv(path, ["id", "target"], [["1", "0"]])
+
+    located_train, located_test, located_sample = locate_data_files([train_file, test_file, sample_file])
+
+    assert {located_train, located_test, located_sample} == {train_file, test_file, sample_file}
+
+
+def test_locate_data_files_handles_word_boundary_train_suffix(tmp_path: Path) -> None:
+    """``features_train.csv`` is matched as the train file when no canonical name exists."""
+    train_file = tmp_path / "features_train.csv"
+    test_file = tmp_path / "features_test.csv"
+    sample_file = tmp_path / "sample_submission.csv"
+
+    for path in (train_file, test_file, sample_file):
+        _write_csv(path, ["id", "target"], [["1", "0"]])
+
+    located_train, located_test, located_sample = locate_data_files([train_file, test_file, sample_file])
+
+    assert located_train == train_file
+    assert located_test == test_file
+    assert located_sample == sample_file
+
+
+def test_locate_data_files_falls_back_to_bare_submission(tmp_path: Path) -> None:
+    """When no ``sample_submission`` file exists, plain ``submission.csv`` is used."""
+    train_file = tmp_path / "train.csv"
+    test_file = tmp_path / "test.csv"
+    sample_file = tmp_path / "submission.csv"
+
+    for path in (train_file, test_file, sample_file):
+        _write_csv(path, ["id", "target"], [["1", "0"]])
+
+    _, _, located_sample = locate_data_files([train_file, test_file, sample_file])
+
+    assert located_sample == sample_file
+
+
+def test_locate_data_files_ignores_non_data_extensions(tmp_path: Path) -> None:
+    """Scripts and other non-data extensions containing role tokens must not be returned."""
+    script = tmp_path / "train_model.py"
+    script.write_text("# script", encoding="utf-8")
+    notes = tmp_path / "test_notes.md"
+    notes.write_text("# notes", encoding="utf-8")
+    train_file = tmp_path / "train.csv"
+    test_file = tmp_path / "test.csv"
+    sample_file = tmp_path / "sample_submission.csv"
+
+    for path in (train_file, test_file, sample_file):
+        _write_csv(path, ["id", "target"], [["1", "0"]])
+
+    located_train, located_test, located_sample = locate_data_files(
+        [script, notes, train_file, test_file, sample_file]
+    )
+
+    assert located_train == train_file
+    assert located_test == test_file
+    assert located_sample == sample_file
+
+
+def test_locate_data_files_deterministic_across_input_order(tmp_path: Path) -> None:
+    """Selection is independent of input order."""
+    train_file = tmp_path / "train.csv"
+    test_file = tmp_path / "test.csv"
+    sample_file = tmp_path / "sample_submission.csv"
+    train_extra = tmp_path / "train_v2.csv"
+    test_extra = tmp_path / "test_v2.csv"
+
+    for path in (train_file, test_file, sample_file, train_extra, test_extra):
+        _write_csv(path, ["id", "target"], [["1", "0"]])
+
+    forward = locate_data_files([train_extra, test_extra, train_file, test_file, sample_file])
+    reverse = locate_data_files([sample_file, test_file, train_file, test_extra, train_extra])
+
+    assert forward == reverse
+    assert forward == (train_file, test_file, sample_file)
+
+
 def test_stage_competition_data(tmp_path: Path) -> None:
     source_dir = tmp_path / "source"
     source_dir.mkdir()

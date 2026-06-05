@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-06-05T23:16:12.858552+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -1199,7 +1199,7 @@
     "schema-model": [
       {
         "component": "agent_k.core.data:CompetitionSchema",
-        "line": 48,
+        "line": 57,
         "rationale": "Captures inferred column layout for downstream steps.",
         "source": "agent_k/core/data.py",
         "violations": [

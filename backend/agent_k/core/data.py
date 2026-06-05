@@ -31,16 +31,25 @@ from __future__ import annotations as _annotations
 
 import csv
 import os
+import re
 import shutil
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Sequence
 
 __all__ = ("CompetitionSchema", "infer_competition_schema", "locate_data_files", "stage_competition_data")
+
+_DATA_FILE_EXTENSIONS: Final[frozenset[str]] = frozenset(
+    {".csv", ".tsv", ".parquet", ".feather", ".json", ".jsonl", ".txt"}
+)
+"""File extensions treated as candidate competition data files when matching roles."""
+
+_STEM_WORD_SPLIT: Final[re.Pattern[str]] = re.compile(r"[_\-.\s]+")
+"""Regex that splits a file stem into lowercase words on common separators."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -100,26 +109,33 @@ def locate_data_files(paths: Iterable[str | Path]) -> tuple[Path, Path, Path]:
         Finds train, test, and sample submission files from a list of paths.
 
     @dev: |
-        Automatically extracts ZIP files and searches for files by name pattern.
+        Automatically extracts ZIP files and matches role tokens on file-stem word
+        boundaries. Exact stem matches win over word-boundary matches, which in
+        turn win over substring matches; competing role tokens disqualify a
+        candidate (e.g. ``pretrained_features.csv`` is no longer mistaken for
+        ``train.csv``). The same file is never selected for two roles.
         Raises FileNotFoundError if required files are not found.
     """
-    files: list[Path] = []
+    files = _gather_candidate_files(paths)
 
-    for path_value in paths:
-        path = Path(path_value)
-        files.append(path)
-        if path.suffix.lower() == ".zip" and path.exists():
-            files.extend(_safe_extract_zip(path, path.parent))
-
-    def pick(token: str) -> Path | None:
-        for path in files:
-            if token in path.name.lower():
-                return path
-        return None
-
-    train_path = pick("train")
-    test_path = pick("test")
-    sample_path = pick("sample_submission") or pick("submission")
+    train_path = _pick_role(files, primary_tokens=("train",), competing_tokens=("test", "sample", "submission"))
+    test_path = _pick_role(
+        files,
+        primary_tokens=("test",),
+        competing_tokens=("train", "sample", "submission"),
+        exclude=_exclude_set(train_path),
+    )
+    sample_path = _pick_role(
+        files,
+        primary_tokens=("sample_submission", "samplesubmission"),
+        competing_tokens=("train", "test"),
+        exclude=_exclude_set(train_path, test_path),
+    ) or _pick_role(
+        files,
+        primary_tokens=("submission",),
+        competing_tokens=("train", "test"),
+        exclude=_exclude_set(train_path, test_path),
+    )
 
     if not train_path or not test_path or not sample_path:
         raise FileNotFoundError("Required competition data files not found")
@@ -159,6 +175,83 @@ def stage_competition_data(
         _link_or_copy(staged["sample"], competition_dir / staged["sample"].name)
 
     return staged
+
+
+def _gather_candidate_files(paths: Iterable[str | Path]) -> list[Path]:
+    """Collect data files from the input list, extracting ZIPs once and deduplicating."""
+    seen: set[Path] = set()
+    files: list[Path] = []
+
+    def _append(path: Path) -> None:
+        try:
+            key = path.resolve()
+        except OSError:
+            key = path
+        if key in seen:
+            return
+        seen.add(key)
+        files.append(path)
+
+    for path_value in paths:
+        path = Path(path_value)
+        _append(path)
+        if path.suffix.lower() == ".zip" and path.exists():
+            for extracted in _safe_extract_zip(path, path.parent):
+                _append(extracted)
+
+    return files
+
+
+def _exclude_set(*paths: Path | None) -> frozenset[Path]:
+    """Build a frozen exclusion set from optional paths."""
+    return frozenset(path for path in paths if path is not None)
+
+
+def _stem_words(stem: str) -> list[str]:
+    """Split a file stem into lowercase tokens on ``_``, ``-``, ``.``, or whitespace."""
+    return [piece for piece in _STEM_WORD_SPLIT.split(stem.lower()) if piece]
+
+
+def _pick_role(
+    files: Sequence[Path],
+    *,
+    primary_tokens: Sequence[str],
+    competing_tokens: Sequence[str] = (),
+    exclude: frozenset[Path] = frozenset(),
+) -> Path | None:
+    """Select the file that best fits a competition data role.
+
+    Selection priority (highest first):
+        1. The stem (case-folded) exactly equals one of ``primary_tokens``.
+        2. A primary token appears as a stem word AND no competing token does.
+        3. A primary token appears anywhere in the stem AND no competing token
+           appears as a stem word.
+    Ties are broken by shorter file name, then case-folded lexicographic order
+    so selection is deterministic across filesystems.
+    """
+    candidates = sorted(
+        (file for file in files if file not in exclude and file.suffix.lower() in _DATA_FILE_EXTENSIONS),
+        key=lambda path: (len(path.name), path.name.lower()),
+    )
+    primary_set = {token.lower() for token in primary_tokens}
+    competing_set = {token.lower() for token in competing_tokens}
+
+    for file in candidates:
+        if file.stem.lower() in primary_set:
+            return file
+
+    for file in candidates:
+        words = set(_stem_words(file.stem))
+        if words & primary_set and not (words & competing_set):
+            return file
+
+    for file in candidates:
+        stem = file.stem.lower()
+        words = set(_stem_words(file.stem))
+        if any(token in stem for token in primary_set) and not (words & competing_set):
+            return file
+
+    return None
 
 
 def _read_header(path: Path) -> list[str]:

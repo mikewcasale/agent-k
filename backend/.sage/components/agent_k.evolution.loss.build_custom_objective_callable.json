@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Pass the returned callable directly via ``params[\"objective\"]`` for\n``lightgbm.train`` (the legacy ``fobj=`` keyword was removed in\nLightGBM 4.0). The blend follows ``mae_rmse_blend`` (0 = MAE,\n1 = RMSE) and over-/under-predictions are weighted by\n``asymmetric_weight`` so positive residuals (over-prediction) can be\npenalised more heavily than negative residuals.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:build_custom_objective_callable",
+  "line": 174,
+  "notice": "Returns a ``(y_pred, dataset) -> (grad, hess)`` callable that blends\nMAE/RMSE gradients and applies an asymmetric residual weight.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Compile a LightGBM-compatible custom objective from the genome.",
+  "type": "function"
+}

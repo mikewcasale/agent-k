@@ -212,20 +212,24 @@ class FeatureEvolver:
             rationale: "Coordinates evolutionary search over feature genomes."
     """
 
-    _default_domains: tuple[DomainFeatureGene, ...] = (
-        DomainFeatureGene("TotalSF", ("TotalBsmtSF", "1stFlrSF", "2ndFlrSF")),
-        DomainFeatureGene("TotalBath", ("FullBath", "HalfBath", "BsmtFullBath", "BsmtHalfBath")),
-        DomainFeatureGene("Age", ("YearBuilt", "YrSold")),
-        DomainFeatureGene("Remod_Age", ("YearRemodAdd", "YrSold")),
-        DomainFeatureGene("QualityScore", ("OverallQual", "OverallCond")),
-    )
-
     def __init__(
-        self, feature_names: list[str], *, rng: random.Random | None = None, population_size: int = 12
+        self,
+        feature_names: list[str],
+        *,
+        rng: random.Random | None = None,
+        population_size: int = 12,
+        domain_templates: tuple[DomainFeatureGene, ...] | None = None,
     ) -> None:
         self._feature_names = feature_names
         self._rng = rng or random.Random()
         self._population_size = population_size
+        feature_set = set(feature_names)
+        # Only retain domain templates whose required inputs are present in the
+        # dataset's features. This keeps domain seeding generic across
+        # competitions - templates that don't apply are silently dropped.
+        self._domain_templates: tuple[DomainFeatureGene, ...] = tuple(
+            template for template in (domain_templates or ()) if all(field in feature_set for field in template.inputs)
+        )
         self._population = self._initialize_population()
 
     def evolve(self, *, generations: int = 4, fitness_fn: FitnessFn[FeatureGenome] | None = None) -> dict[str, Any]:
@@ -254,7 +258,7 @@ class FeatureEvolver:
             interactions=[InteractionGene(selected[0], selected[-1])] if len(selected) > 2 else [],
             ratios=ratios,
             binnings=[BinningGene(selected[0], "equal_frequency", bins=10)] if selected else [],
-            domain_features=list(self._default_domains)[:2],
+            domain_features=list(self._domain_templates[:2]),
             selected_features=selected,
         )
 

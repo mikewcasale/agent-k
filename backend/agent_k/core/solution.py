@@ -49,9 +49,10 @@ from agent_k.infra.providers import get_model
 if TYPE_CHECKING:
     from pathlib import Path
 
-__all__ = ("BASELINE_SCORE_PATTERN", "ExecutionResult", "execute_solution", "parse_baseline_score")
+__all__ = ("BASELINE_SCORE_PATTERN", "ExecutionResult", "execute_solution", "parse_baseline_score", "truncate_output")
 
 BASELINE_SCORE_PATTERN: Final[re.Pattern[str]] = re.compile(r"Baseline .*? score:\s*(-?[0-9.]+)", re.IGNORECASE)
+_TRUNCATION_MARKER_TEMPLATE: Final[str] = "\n... [{count} chars truncated] ...\n"
 _CODE_EXECUTION_SYSTEM_PROMPT: Final[str] = (
     "You are a code execution runner. Always call the code_execution tool with the exact "
     "Python code provided by the user message, without modification. After the tool "
@@ -145,6 +146,42 @@ def parse_baseline_score(output: str) -> float | None:
         except ValueError:
             pass
     return None
+
+
+def truncate_output(text: str, max_length: int, *, tail_fraction: float = 0.75) -> str:
+    """Truncate execution output while preserving the most informative tail.
+
+    @notice: |
+        Returns ``text`` unchanged when within the limit; otherwise keeps a
+        small head and a larger tail with a chars-dropped marker in between.
+
+    @dev: |
+        Execution stdout/stderr is most informative at the end (final scores,
+        error messages, tracebacks). A plain ``text[:max_length]`` truncation
+        keeps the warmup logs and discards the diagnosis. ``tail_fraction``
+        controls the share of the budget that goes to the tail and must be in
+        ``[0.0, 1.0]``. Returns ``""`` when ``max_length`` is non-positive.
+    """
+    if max_length <= 0:
+        return ""
+    if len(text) <= max_length:
+        return text
+    if not 0.0 <= tail_fraction <= 1.0:
+        raise ValueError(f"tail_fraction must be in [0.0, 1.0], got {tail_fraction}")
+
+    marker_max = len(_TRUNCATION_MARKER_TEMPLATE.format(count=len(text)))
+    if marker_max >= max_length:
+        return text[-max_length:]
+
+    budget = max_length - marker_max
+    tail_chars = int(round(budget * tail_fraction))
+    tail_chars = max(0, min(tail_chars, budget))
+    head_chars = budget - tail_chars
+    head = text[:head_chars]
+    tail = text[-tail_chars:] if tail_chars else ""
+    dropped = len(text) - head_chars - tail_chars
+    marker = _TRUNCATION_MARKER_TEMPLATE.format(count=dropped)
+    return f"{head}{marker}{tail}"
 
 
 def _normalize_kaggle_paths(code: str) -> str:

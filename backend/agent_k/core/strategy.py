@@ -55,8 +55,13 @@ __all__ = (
     "build_technique_policy",
 )
 
-_CLASSIFICATION_METRICS: Final[frozenset[EvaluationMetric]] = frozenset(
-    {EvaluationMetric.ACCURACY, EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS, EvaluationMetric.F1}
+_RANKING_METRICS: Final[frozenset[EvaluationMetric]] = frozenset({EvaluationMetric.MAP, EvaluationMetric.NDCG})
+_CLASSIFICATION_METRICS: Final[frozenset[EvaluationMetric]] = (
+    frozenset({EvaluationMetric.ACCURACY, EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS, EvaluationMetric.F1})
+    | _RANKING_METRICS
+)
+_PROBA_METRICS: Final[frozenset[EvaluationMetric]] = (
+    frozenset({EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}) | _RANKING_METRICS
 )
 _VISION_TAGS: Final[frozenset[str]] = frozenset({"vision", "computer vision", "image", "images"})
 _TEXT_TAGS: Final[frozenset[str]] = frozenset({"nlp", "text", "language"})
@@ -200,7 +205,7 @@ def build_problem_profile(competition: Competition, schema: CompetitionSchema) -
     """
     metric = competition.metric
     is_classification = metric in _CLASSIFICATION_METRICS
-    uses_proba = metric in {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
+    uses_proba = metric in _PROBA_METRICS
 
     tags = {tag.lower() for tag in competition.tags}
     if tags & _VISION_TAGS:

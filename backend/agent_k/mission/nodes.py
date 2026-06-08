@@ -84,7 +84,7 @@ from ..core.models import (
     MissionCriteria,
     ResearchFindings,
 )
-from ..core.solution import execute_solution, parse_baseline_score
+from ..core.solution import execute_solution, parse_baseline_score, truncate_output
 from ..core.strategy import apply_solution_policy, build_fitness_policy, build_problem_profile, build_technique_policy
 from ..core.tracking import (
     ExperimentRecord,
@@ -525,8 +525,8 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                             returncode=execution.returncode,
                             timed_out=execution.timed_out,
                             submission_exists=submission_path.exists(),
-                            stderr=execution.stderr[:1000] if execution.stderr else "",
-                            stdout=execution.stdout[:500] if execution.stdout else "",
+                            stderr=truncate_output(execution.stderr, 1000) if execution.stderr else "",
+                            stdout=truncate_output(execution.stdout, 500) if execution.stdout else "",
                             runtime_ms=execution.runtime_ms,
                         )
                         fallback_code = _generate_fallback_prototype(

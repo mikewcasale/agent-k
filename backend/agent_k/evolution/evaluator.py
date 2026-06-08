@@ -44,6 +44,8 @@ from typing import TYPE_CHECKING, Any, Final
 import logfire
 from openevolve.evaluation_result import EvaluationResult
 
+from agent_k.core.solution import truncate_output
+
 if TYPE_CHECKING:
     from agent_k.core.hints import PreprocessingHint
 
@@ -127,7 +129,7 @@ def _failure_metrics() -> dict[str, float]:
 
 def _error_artifacts(exc: Exception) -> dict[str, str]:
     """Return artifacts for an error."""
-    return {"error": str(exc), "traceback": _truncate(traceback.format_exc(), 1000), "execution_status": "error"}
+    return {"error": str(exc), "traceback": truncate_output(traceback.format_exc(), 1000), "execution_status": "error"}
 
 
 def _extract_warnings(stderr: str) -> list[str]:
@@ -263,13 +265,6 @@ def _extract_error_feedback(stderr: str, stdout: str, code: str = "") -> str:
     return "=== ARTIFACT FEEDBACK ===\nNo errors detected. Focus on optimization."
 
 
-def _truncate(text: str, max_length: int) -> str:
-    """Truncate text to maximum length."""
-    if len(text) <= max_length:
-        return text
-    return text[:max_length] + "... [truncated]"
-
-
 def _compute_cv_variance(stdout: str) -> float:
     """Extract CV variance from output for stability tracking.
 
@@ -373,8 +368,8 @@ def evaluate(program_path: str) -> EvaluationResult:
         error_feedback = _extract_error_feedback(result.stderr, result.stdout)
 
     artifacts = {
-        "stdout": _truncate(result.stdout, 2000),
-        "stderr": _truncate(result.stderr, 1000),
+        "stdout": truncate_output(result.stdout, 2000),
+        "stderr": truncate_output(result.stderr, 1000),
         "warnings": "\n".join(_extract_warnings(result.stderr)),
         "applied_hints": json.dumps(sorted(applied_hints)),
         "hint_count": str(len(applied_hints)),
@@ -542,7 +537,7 @@ def evaluate_stage2(program_path: str) -> EvaluationResult:
                 artifacts={
                     "error": "Execution failed on subset",
                     "stage": "stage2",
-                    "stderr": _truncate(result.stderr, 500),
+                    "stderr": truncate_output(result.stderr, 500),
                     "feedback": error_feedback,
                 },
             )
@@ -569,7 +564,7 @@ def evaluate_stage2(program_path: str) -> EvaluationResult:
         logfire.error("stage2_exception", error=str(exc))
         return EvaluationResult(
             metrics={"combined_score": 0.0, "fitness": 0.0, "valid": 0.0},
-            artifacts={"error": str(exc), "stage": "stage2", "traceback": _truncate(traceback.format_exc(), 800)},
+            artifacts={"error": str(exc), "stage": "stage2", "traceback": truncate_output(traceback.format_exc(), 800)},
         )
     finally:
         # Clean up subset directory

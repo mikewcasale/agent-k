@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Execution stdout/stderr is most informative at the end (final scores,\nerror messages, tracebacks). A plain ``text[:max_length]`` truncation\nkeeps the warmup logs and discards the diagnosis. ``tail_fraction``\ncontrols the share of the budget that goes to the tail and must be in\n``[0.0, 1.0]``. Returns ``\"\"`` when ``max_length`` is non-positive.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.solution:truncate_output",
+  "line": 152,
+  "notice": "Returns ``text`` unchanged when within the limit; otherwise keeps a\nsmall head and a larger tail with a chars-dropped marker in between.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/solution.py",
+  "summary": "Truncate execution output while preserving the most informative tail.",
+  "type": "function"
+}

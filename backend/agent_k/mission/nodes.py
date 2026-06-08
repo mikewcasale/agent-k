@@ -635,8 +635,15 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
             EvaluationMetric.AUC,
             EvaluationMetric.LOG_LOSS,
             EvaluationMetric.F1,
+            EvaluationMetric.MAP,
+            EvaluationMetric.NDCG,
         }
-        uses_proba = metric_key in {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
+        uses_proba = metric_key in {
+            EvaluationMetric.AUC,
+            EvaluationMetric.LOG_LOSS,
+            EvaluationMetric.MAP,
+            EvaluationMetric.NDCG,
+        }
 
         if "lightgbm" in strategy_lower or "lgbm" in strategy_lower:
             model_class = "LGBMClassifier" if is_classification else "LGBMRegressor"
@@ -690,11 +697,13 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         from sklearn.multioutput import MultiOutputClassifier, MultiOutputRegressor
         from sklearn.metrics import (
             accuracy_score,
+            average_precision_score,
             f1_score,
             log_loss,
             mean_absolute_error,
             mean_squared_error,
             mean_squared_log_error,
+            ndcg_score,
             roc_auc_score,
         )
         {model_import}
@@ -785,6 +794,22 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 if len(classes) < 2:
                     return 0.0
                 return log_loss(y_true, probas, labels=classes)
+            if METRIC_KEY == "map":
+                if len(classes) < 2 or probas is None:
+                    return 0.0
+                if len(classes) == 2:
+                    pos_label = classes[1]
+                    y_binary = (y_true == pos_label).astype(int)
+                    return average_precision_score(y_binary, probas[:, 1])
+                y_encoded = _encode_labels(y_true, classes)
+                return average_precision_score(y_encoded, probas, average="macro")
+            if METRIC_KEY == "ndcg":
+                if probas is None or probas.ndim < 2 or probas.shape[1] < 2:
+                    return 0.0
+                pos_label = classes[1] if len(classes) >= 2 else classes[0]
+                y_relevance = (np.asarray(y_true) == pos_label).astype(float).reshape(1, -1)
+                y_score = probas[:, 1].reshape(1, -1)
+                return ndcg_score(y_relevance, y_score)
             return accuracy_score(y_true, preds)
         
         def _score_classification(y_true, preds, probas, model_step):
@@ -2173,12 +2198,14 @@ def _prediction_value(
         return 0.0, 0.0
 
     mean_value = sum(numeric_values) / len(numeric_values)
-    proba_metrics = {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
+    proba_metrics = {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS, EvaluationMetric.MAP, EvaluationMetric.NDCG}
     classification_metrics = {
         EvaluationMetric.ACCURACY,
         EvaluationMetric.AUC,
         EvaluationMetric.LOG_LOSS,
         EvaluationMetric.F1,
+        EvaluationMetric.MAP,
+        EvaluationMetric.NDCG,
     }
 
     if metric in proba_metrics:
@@ -2241,6 +2268,10 @@ def _evaluate_metric(metric: EvaluationMetric, values: list[float], prediction: 
 
     if metric == EvaluationMetric.AUC:
         return 0.5
+
+    if metric in {EvaluationMetric.MAP, EvaluationMetric.NDCG}:
+        positives = values.count(1)
+        return positives / len(values)
 
     if metric == EvaluationMetric.LOG_LOSS:
         prob = min(max(prediction, 1e-6), 1 - 1e-6)

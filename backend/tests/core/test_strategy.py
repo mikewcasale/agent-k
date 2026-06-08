@@ -58,6 +58,28 @@ def test_build_problem_profile_classification() -> None:
     assert profile.is_classification is True
 
 
+def test_build_problem_profile_map_uses_proba() -> None:
+    """Mean-Average-Precision competitions should profile as classification with proba outputs."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.MAP),
+        CompetitionSchema(id_column="id", target_columns=["target"], train_target_columns=["target"]),
+    )
+    assert profile.problem_type == ProblemType.TABULAR_CLASSIFICATION
+    assert profile.is_classification is True
+    assert profile.uses_proba is True
+
+
+def test_build_problem_profile_ndcg_uses_proba() -> None:
+    """NDCG competitions should profile as classification with proba outputs."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.NDCG),
+        CompetitionSchema(id_column="id", target_columns=["target"], train_target_columns=["target"]),
+    )
+    assert profile.problem_type == ProblemType.TABULAR_CLASSIFICATION
+    assert profile.is_classification is True
+    assert profile.uses_proba is True
+
+
 def test_fitness_factory_penalizes_runtime_and_complexity() -> None:
     """Penalize fitness when runtime or complexity exceeds thresholds."""
     profile = build_problem_profile(

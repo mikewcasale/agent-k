@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Accepts signed integers/decimals and scientific notation\n(e.g. ``-0.5``, ``1.2e-3``, ``+1E5``). Tab- or colon-separated\nscore formats both match. Returns the empty list when nothing\nmatches.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.evaluator:_parse_fold_scores",
+  "line": 277,
+  "notice": "Parses lines like ``Fold 1: 0.85`` from execution output.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/evaluator.py",
+  "summary": "Extract per-fold CV scores from solution stdout.",
+  "type": "function"
+}

@@ -32,6 +32,7 @@ from __future__ import annotations as _annotations
 import ast
 import asyncio
 import json
+import math
 import os
 import re
 import shutil
@@ -60,6 +61,7 @@ _DEFAULT_VALIDATION_SPLIT: Final[float] = 0.2
 _STAGE1_TIMEOUT: Final[int] = 5
 _STAGE2_TIMEOUT: Final[int] = 30
 _STAGE2_DATA_ROWS: Final[int] = 1000
+_FOLD_SCORE_PATTERN: Final[re.Pattern[str]] = re.compile(r"Fold\s+\d+[:\s]+([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)")
 _MODEL_FAMILY_PATTERNS: Final[tuple[tuple[float, re.Pattern[str]], ...]] = (
     (3.0, re.compile(r"\b(Stacking|Voting|Bagging|AdaBoost)(?:Regressor|Classifier)?\b")),
     (2.0, re.compile(r"\bKNeighbors(?:Regressor|Classifier)\b")),
@@ -117,6 +119,7 @@ def _failure_metrics() -> dict[str, float]:
         "fitness": 0.0,
         "cv_score": 0.0,
         "cv_variance": 0.0,
+        "cv_stddev": 0.0,
         "valid": 0.0,
         "returncode": 1.0,
         "runtime_ms": 0.0,
@@ -270,30 +273,51 @@ def _truncate(text: str, max_length: int) -> str:
     return text[:max_length] + "... [truncated]"
 
 
-def _compute_cv_variance(stdout: str) -> float:
-    """Extract CV variance from output for stability tracking.
+def _parse_fold_scores(stdout: str) -> list[float]:
+    """Extract per-fold CV scores from solution stdout.
 
-    Parses stdout for CV fold scores and computes their variance.
-    Lower variance indicates more stable/robust solutions.
+    @notice: |
+        Parses lines like ``Fold 1: 0.85`` from execution output.
 
-    Args:
-        stdout: Standard output from solution execution.
-
-    Returns:
-        Variance of CV fold scores, or 0.0 if not found.
+    @dev: |
+        Accepts signed integers/decimals and scientific notation
+        (e.g. ``-0.5``, ``1.2e-3``, ``+1E5``). Tab- or colon-separated
+        score formats both match. Returns the empty list when nothing
+        matches.
     """
-    # Look for patterns like "Fold 1: 0.85", "Fold 2: 0.83", etc.
-    fold_pattern = re.compile(r"Fold\s+\d+[:\s]+([0-9.]+)")
-    fold_scores = [float(match) for match in fold_pattern.findall(stdout)]
+    fold_scores: list[float] = []
+    for match in _FOLD_SCORE_PATTERN.findall(stdout):
+        try:
+            fold_scores.append(float(match))
+        except ValueError:
+            continue
+    return fold_scores
+
+
+def _compute_cv_stats(stdout: str) -> tuple[float, float]:
+    """Extract CV variance and stddev from output for stability tracking.
+
+    @notice: |
+        Parses stdout for CV fold scores and computes (variance, stddev).
+        Lower stddev indicates more stable/robust solutions.
+
+    @dev: |
+        Returns ``(0.0, 0.0)`` when fewer than two fold scores are detected.
+        Uses population variance (divide by ``N``) to preserve the existing
+        ``cv_variance`` metric semantics for downstream consumers.
+    """
+    fold_scores = _parse_fold_scores(stdout)
 
     if len(fold_scores) < 2:
-        # Not enough fold scores to compute variance
-        return 0.0
+        logfire.debug("cv_stats_insufficient_folds", fold_count=len(fold_scores))
+        return 0.0, 0.0
 
-    # Compute variance
-    mean_score = sum(fold_scores) / len(fold_scores)
-    variance = sum((score - mean_score) ** 2 for score in fold_scores) / len(fold_scores)
-    return float(variance)
+    n = len(fold_scores)
+    mean_score = sum(fold_scores) / n
+    variance = sum((score - mean_score) ** 2 for score in fold_scores) / n
+    stddev = math.sqrt(variance)
+    logfire.debug("cv_stats_computed", fold_count=n, variance=variance, stddev=stddev)
+    return float(variance), float(stddev)
 
 
 def _model_family_score(code: str) -> float:
@@ -354,12 +378,13 @@ def evaluate(program_path: str) -> EvaluationResult:
     valid = result.returncode == 0 and cv_score is not None and submission_path.exists()
 
     fitness = _fitness_from_score(cv_score, metric_direction)
-    cv_variance = _compute_cv_variance(result.stdout)
+    cv_variance, cv_stddev = _compute_cv_stats(result.stdout)
     metrics = {
         "combined_score": fitness,
         "fitness": fitness,
         "cv_score": float(cv_score) if cv_score is not None else 0.0,
         "cv_variance": cv_variance,
+        "cv_stddev": cv_stddev,
         "valid": 1.0 if valid else 0.0,
         "returncode": float(result.returncode),
         "runtime_ms": float(result.runtime_ms),

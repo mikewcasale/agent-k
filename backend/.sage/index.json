@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-06-10T00:13:46.916479+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1094,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -5253,38 +5253,62 @@
         "value": "{\"last_verified\": \"2026-01-26\", \"owners\": [\"agent-k-core\"]}"
       },
       {
+        "component": "agent_k.evolution.evaluator:_parse_fold_scores",
+        "line": 279,
+        "name": "notice",
+        "value": "Parses lines like ``Fold 1: 0.85`` from execution output."
+      },
+      {
+        "component": "agent_k.evolution.evaluator:_parse_fold_scores",
+        "line": 282,
+        "name": "dev",
+        "value": "Accepts signed integers/decimals and scientific notation\n(e.g. ``-0.5``, ``1.2e-3``, ``+1E5``). Tab- or colon-separated\nscore formats both match. Returns the empty list when nothing\nmatches."
+      },
+      {
+        "component": "agent_k.evolution.evaluator:_compute_cv_stats",
+        "line": 300,
+        "name": "notice",
+        "value": "Parses stdout for CV fold scores and computes (variance, stddev).\nLower stddev indicates more stable/robust solutions."
+      },
+      {
+        "component": "agent_k.evolution.evaluator:_compute_cv_stats",
+        "line": 304,
+        "name": "dev",
+        "value": "Returns ``(0.0, 0.0)`` when fewer than two fold scores are detected.\nUses population variance (divide by ``N``) to preserve the existing\n``cv_variance`` metric semantics for downstream consumers."
+      },
+      {
         "component": "agent_k.evolution.evaluator:evaluate",
-        "line": 321,
+        "line": 345,
         "name": "notice",
         "value": "Evaluate a program and return metrics and artifacts for OpenEvolve."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate",
-        "line": 324,
+        "line": 348,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage1",
-        "line": 403,
+        "line": 428,
         "name": "notice",
         "value": "Stage 1: Quick syntax and import validation."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage1",
-        "line": 406,
+        "line": 431,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage2",
-        "line": 501,
+        "line": 526,
         "name": "notice",
         "value": "Stage 2: Medium evaluation on subset of data."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage2",
-        "line": 504,
+        "line": 529,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       }

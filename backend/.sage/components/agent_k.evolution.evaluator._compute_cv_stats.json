@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Returns ``(0.0, 0.0)`` when fewer than two fold scores are detected.\nUses population variance (divide by ``N``) to preserve the existing\n``cv_variance`` metric semantics for downstream consumers.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.evaluator:_compute_cv_stats",
+  "line": 298,
+  "notice": "Parses stdout for CV fold scores and computes (variance, stddev).\nLower stddev indicates more stable/robust solutions.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/evaluator.py",
+  "summary": "Extract CV variance and stddev from output for stability tracking.",
+  "type": "function"
+}

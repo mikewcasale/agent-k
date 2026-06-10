@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.evolution.evaluator:evaluate_stage1",
-  "line": 390,
+  "line": 415,
   "notice": "Stage 1: Quick syntax and import validation.",
   "pattern": null,
   "similar": null,

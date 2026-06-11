@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.adapters.kaggle:KaggleAdapter._parse_competition",
-  "line": 479,
+  "id": "agent_k.adapters.kaggle:KaggleAdapter._raise_rules_not_accepted",
+  "line": 456,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Parse Kaggle API response into Competition model.",
+  "summary": "Raise CompetitionRulesNotAcceptedError when a 403 body looks like a rules prompt.",
   "type": "method"
 }

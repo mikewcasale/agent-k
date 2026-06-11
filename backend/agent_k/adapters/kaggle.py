@@ -271,7 +271,7 @@ class KaggleAdapter(PlatformAdapter):
         """Get competition leaderboard."""
         with logfire.span("kaggle.get_leaderboard", competition_id=competition_id):
             response = await self._request("GET", f"/competitions/{competition_id}/leaderboard/download")
-            self._raise_rules_not_accepted(response, competition_id)
+            await self._raise_rules_not_accepted(response, competition_id)
             response.raise_for_status()
 
             entries: list[LeaderboardEntry] = []
@@ -400,7 +400,7 @@ class KaggleAdapter(PlatformAdapter):
 
             # List available files
             response = await self._request("GET", f"/competitions/data/list/{competition_id}")
-            self._raise_rules_not_accepted(response, competition_id)
+            await self._raise_rules_not_accepted(response, competition_id)
             response.raise_for_status()
 
             payload = response.json()
@@ -423,7 +423,7 @@ class KaggleAdapter(PlatformAdapter):
 
                 file_path = dest_path / file_name
                 async with self._client.stream("GET", file_url, follow_redirects=True) as file_response:
-                    self._raise_rules_not_accepted(file_response, competition_id)
+                    await self._raise_rules_not_accepted(file_response, competition_id)
                     file_response.raise_for_status()
                     with file_path.open("wb") as handle:
                         async for chunk in file_response.aiter_bytes():
@@ -452,11 +452,27 @@ class KaggleAdapter(PlatformAdapter):
 
             raise PlatformConnectionError("kaggle", "Max retries exceeded")
 
-    def _raise_rules_not_accepted(self, response: httpx.Response, competition_id: str) -> None:
+    async def _raise_rules_not_accepted(self, response: httpx.Response, competition_id: str) -> None:
+        """Raise CompetitionRulesNotAcceptedError when a 403 body looks like a rules prompt.
+
+        Works for both buffered and streamed responses: when the body hasn't been
+        read yet (e.g. inside ``client.stream``), it is buffered with ``aread()``
+        so the keyword check can run. If the body cannot be read at all, the 403
+        is treated as a rules prompt rather than masking it with httpx errors.
+        """
         if response.status_code != 403:
             return
-        text = response.text.lower()
-        if "accept" in text and "rules" in text:
+        try:
+            text = response.text
+        except httpx.ResponseNotRead:
+            try:
+                await response.aread()
+            except httpx.HTTPError as exc:
+                logfire.warning("kaggle_rules_body_read_failed", competition_id=competition_id, error=str(exc))
+                raise CompetitionRulesNotAcceptedError(competition_id) from exc
+            text = response.text
+        body = text.lower()
+        if "accept" in body and "rules" in body:
             raise CompetitionRulesNotAcceptedError(competition_id)
 
     def _parse_competition(self, data: dict[str, Any]) -> Competition:

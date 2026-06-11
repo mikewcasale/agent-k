@@ -12,10 +12,29 @@ import httpx
 import pytest
 
 from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
+from agent_k.core.exceptions import CompetitionRulesNotAcceptedError
 
 __all__ = ()
 
 pytestmark = pytest.mark.anyio
+
+
+class _ChunkedAsyncStream(httpx.AsyncByteStream):
+    """AsyncByteStream that yields fixed chunks once and refuses re-iteration."""
+
+    def __init__(self, chunks: list[bytes]) -> None:
+        self._chunks = chunks
+        self._consumed = False
+
+    async def __aiter__(self) -> Any:
+        if self._consumed:
+            raise httpx.StreamConsumed()
+        self._consumed = True
+        for chunk in self._chunks:
+            yield chunk
+
+    async def aclose(self) -> None:
+        return None
 
 
 class TestKaggleSettings:
@@ -76,6 +95,80 @@ class TestKaggleAdapter:
         adapter = KaggleAdapter(config)
 
         assert adapter is not None
+
+
+class TestRaiseRulesNotAccepted:
+    """Tests for the streaming-aware rules-not-accepted detector."""
+
+    async def test_non_403_status_returns_none(self) -> None:
+        """Non-403 responses must not trigger the rules error."""
+        config = KaggleSettings(username="user", api_key="key")
+        adapter = KaggleAdapter(config)
+        response = httpx.Response(404, text="not found")
+
+        await adapter._raise_rules_not_accepted(response, "titanic")  # does not raise
+
+    async def test_buffered_403_with_rules_text_raises(self) -> None:
+        """Already-buffered 403 bodies are inspected without aread."""
+        config = KaggleSettings(username="user", api_key="key")
+        adapter = KaggleAdapter(config)
+        response = httpx.Response(403, text="You must accept the competition rules to download data.")
+
+        with pytest.raises(CompetitionRulesNotAcceptedError) as exc_info:
+            await adapter._raise_rules_not_accepted(response, "titanic")
+        assert exc_info.value.context.get("competition_id") == "titanic"
+
+    async def test_buffered_403_without_rules_text_returns_none(self) -> None:
+        """A 403 body without the keyword pair is left to raise_for_status."""
+        config = KaggleSettings(username="user", api_key="key")
+        adapter = KaggleAdapter(config)
+        response = httpx.Response(403, text="forbidden")
+
+        await adapter._raise_rules_not_accepted(response, "titanic")  # does not raise
+
+    async def test_streamed_403_reads_body_and_raises(self) -> None:
+        """A streamed 403 (body not yet read) must still trigger the rules error.
+
+        Regression test: previously this raised httpx.ResponseNotRead because
+        ``response.text`` was accessed before ``aread()``, masking the helpful
+        CompetitionRulesNotAcceptedError with an opaque httpx exception.
+        """
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(
+                403,
+                stream=_ChunkedAsyncStream([b"Please accept ", b"the competition rules."]),
+                headers={"content-type": "text/html"},
+            )
+
+        config = KaggleSettings(username="user", api_key="key")
+        adapter = KaggleAdapter(config)
+        adapter._client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+        try:
+            async with adapter._client.stream("GET", "http://example.com/data") as response:
+                # Sanity: body is not yet read, so .text would raise ResponseNotRead.
+                with pytest.raises(httpx.ResponseNotRead):
+                    _ = response.text
+                with pytest.raises(CompetitionRulesNotAcceptedError) as exc_info:
+                    await adapter._raise_rules_not_accepted(response, "titanic")
+                assert exc_info.value.context.get("competition_id") == "titanic"
+        finally:
+            await adapter._client.aclose()
+
+    async def test_streamed_403_without_keywords_returns_none(self) -> None:
+        """A streamed 403 with no rules keywords lets raise_for_status take over."""
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(403, stream=_ChunkedAsyncStream([b"forbidden"]))
+
+        config = KaggleSettings(username="user", api_key="key")
+        adapter = KaggleAdapter(config)
+        adapter._client = httpx.AsyncClient(transport=httpx.MockTransport(handler))
+        try:
+            async with adapter._client.stream("GET", "http://example.com/data") as response:
+                await adapter._raise_rules_not_accepted(response, "titanic")  # does not raise
+        finally:
+            await adapter._client.aclose()
 
 
 class TestKaggleAdapterFromEnv:

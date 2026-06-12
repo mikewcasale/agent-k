@@ -37,10 +37,12 @@ from __future__ import annotations as _annotations
 import asyncio
 import csv
 import io
+import random
 import re
 import zipfile
 from dataclasses import dataclass, field
 from datetime import datetime
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
 from urllib.parse import quote
@@ -68,6 +70,8 @@ __all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
+_MAX_BACKOFF_SECONDS: Final[float] = 60.0
+_BACKOFF_JITTER_FRACTION: Final[float] = 0.1
 
 
 class KaggleSettings(BaseSettings):
@@ -433,24 +437,81 @@ class KaggleAdapter(PlatformAdapter):
             return downloaded
 
     async def _request(self, method: str, path: str, **kwargs: Any) -> httpx.Response:
-        """Make rate-limited request to Kaggle API."""
+        """Make rate-limited request to Kaggle API.
+
+        Retries transient failures with exponential backoff and jitter:
+        - Network errors (httpx.HTTPError) are retried up to ``max_retries``.
+        - 5xx server responses are retried, honoring ``Retry-After`` when larger
+          than the computed backoff.
+        - 429 responses surface a :class:`RateLimitError` to the caller so the
+          mission layer can pause submissions rather than hammering Kaggle.
+        """
         async with self._rate_limit_semaphore:
-            for attempt in range(self.config.max_retries):
+            max_attempts = max(1, self.config.max_retries)
+            last_response: httpx.Response | None = None
+            for attempt in range(max_attempts):
                 try:
                     response = await self._client.request(method, path, **kwargs)
-
-                    if response.status_code == 429:
-                        retry_after = int(response.headers.get("Retry-After", 60))
-                        raise RateLimitError("kaggle", "Rate limit exceeded", retry_after=retry_after)
-
-                    return response
-
                 except httpx.HTTPError as exc:
-                    if attempt == self.config.max_retries - 1:
+                    if attempt >= max_attempts - 1:
                         raise PlatformConnectionError("kaggle", f"Kaggle API error: {exc}") from exc
-                    await asyncio.sleep(self.config.rate_limit_delay * (attempt + 1))
+                    delay = self._compute_backoff(attempt, retry_after=None)
+                    logfire.warning(
+                        "kaggle_request_retry_after_error",
+                        method=method,
+                        path=path,
+                        attempt=attempt + 1,
+                        max_attempts=max_attempts,
+                        delay_seconds=round(delay, 3),
+                        error=str(exc),
+                    )
+                    await asyncio.sleep(delay)
+                    continue
 
+                if response.status_code == 429:
+                    retry_after = _parse_retry_after(response.headers.get("Retry-After"))
+                    raise RateLimitError(
+                        "kaggle", "Rate limit exceeded", retry_after=int(retry_after) if retry_after is not None else 60
+                    )
+
+                if response.status_code >= 500 and attempt < max_attempts - 1:
+                    last_response = response
+                    delay = self._compute_backoff(
+                        attempt, retry_after=_parse_retry_after(response.headers.get("Retry-After"))
+                    )
+                    logfire.warning(
+                        "kaggle_request_retry_after_5xx",
+                        method=method,
+                        path=path,
+                        status_code=response.status_code,
+                        attempt=attempt + 1,
+                        max_attempts=max_attempts,
+                        delay_seconds=round(delay, 3),
+                    )
+                    await response.aclose()
+                    await asyncio.sleep(delay)
+                    continue
+
+                return response
+
+            if last_response is not None:
+                return last_response
             raise PlatformConnectionError("kaggle", "Max retries exceeded")
+
+    def _compute_backoff(self, attempt: int, *, retry_after: float | None) -> float:
+        """Compute exponential backoff delay with jitter.
+
+        Doubles the configured base delay on each attempt up to
+        ``_MAX_BACKOFF_SECONDS``. If the server returned a ``Retry-After``
+        hint larger than the computed delay, that hint wins. Adds up to
+        ``_BACKOFF_JITTER_FRACTION`` of the base delay as jitter to avoid
+        synchronised retries from multiple workers.
+        """
+        base_delay = self.config.rate_limit_delay * (2**attempt)
+        delay = max(base_delay, retry_after or 0.0)
+        delay = min(delay, _MAX_BACKOFF_SECONDS)
+        jitter: float = random.uniform(0.0, delay * _BACKOFF_JITTER_FRACTION)
+        return float(delay + jitter)
 
     def _raise_rules_not_accepted(self, response: httpx.Response, competition_id: str) -> None:
         if response.status_code != 403:
@@ -556,3 +617,32 @@ class KaggleAdapter(PlatformAdapter):
             tags=tags,
             url=data.get("url"),
         )
+
+
+def _parse_retry_after(value: str | None) -> float | None:
+    """Parse an HTTP ``Retry-After`` header value into seconds.
+
+    Accepts both delta-seconds (the common form from Kaggle) and RFC 7231
+    HTTP-date timestamps. Returns ``None`` for missing/unparseable values
+    so callers can fall back to a computed backoff.
+    """
+    if value is None:
+        return None
+    text = value.strip()
+    if not text:
+        return None
+    try:
+        seconds = float(text)
+    except ValueError:
+        pass
+    else:
+        return max(seconds, 0.0)
+    try:
+        target = parsedate_to_datetime(text)
+    except (TypeError, ValueError):
+        return None
+    if target is None:
+        return None
+    now = datetime.now(target.tzinfo) if target.tzinfo else datetime.now()
+    delta = (target - now).total_seconds()
+    return max(delta, 0.0)

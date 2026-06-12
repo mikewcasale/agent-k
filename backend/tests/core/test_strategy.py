@@ -18,10 +18,11 @@ from agent_k.core.strategy import (
     build_fitness_function,
     build_fitness_policy,
     build_problem_profile,
+    build_technique_policy,
 )
 
 
-def _competition(metric: EvaluationMetric) -> Competition:
+def _competition(metric: EvaluationMetric, *, tags: frozenset[str] = frozenset({"tabular"})) -> Competition:
     return Competition(
         id="sample-competition",
         title="Sample Competition",
@@ -33,9 +34,13 @@ def _competition(metric: EvaluationMetric) -> Competition:
         prize_pool=None,
         max_team_size=1,
         max_daily_submissions=5,
-        tags=frozenset({"tabular"}),
+        tags=tags,
         url=None,
     )
+
+
+def _schema() -> CompetitionSchema:
+    return CompetitionSchema(id_column="id", target_columns=["target"], train_target_columns=["target"])
 
 
 def test_build_problem_profile_regression() -> None:
@@ -90,3 +95,67 @@ def test_apply_solution_policy_is_noop() -> None:
     updated_again, notes_again = apply_solution_policy(updated, policy)
     assert updated_again == updated
     assert not notes_again
+
+
+def test_build_problem_profile_time_series_regression() -> None:
+    """Time-series tags should map to time-series regression for regression metrics."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.RMSE, tags=frozenset({"time series", "forecasting"})), _schema()
+    )
+    assert profile.problem_type == ProblemType.TIME_SERIES_REGRESSION
+    assert profile.is_classification is False
+
+
+def test_build_problem_profile_time_series_classification() -> None:
+    """Time-series tags should map to time-series classification for classification metrics."""
+    profile = build_problem_profile(_competition(EvaluationMetric.AUC, tags=frozenset({"timeseries"})), _schema())
+    assert profile.problem_type == ProblemType.TIME_SERIES_CLASSIFICATION
+    assert profile.is_classification is True
+
+
+def test_build_problem_profile_time_series_alternative_tags() -> None:
+    """All time-series synonyms in the tag set should be detected."""
+    for tag in ("time series", "timeseries", "time-series", "forecasting", "temporal", "seasonal"):
+        profile = build_problem_profile(_competition(EvaluationMetric.RMSE, tags=frozenset({tag})), _schema())
+        assert profile.problem_type == ProblemType.TIME_SERIES_REGRESSION, (
+            f"tag {tag!r} did not map to time-series regression"
+        )
+
+
+def test_build_problem_profile_vision_outranks_time_series() -> None:
+    """Vision tags take precedence over time-series tags when both appear."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.AUC, tags=frozenset({"vision", "time series"})), _schema()
+    )
+    assert profile.problem_type == ProblemType.VISION_CLASSIFICATION
+
+
+def test_build_problem_profile_text_outranks_time_series() -> None:
+    """Text tags take precedence over time-series tags when both appear."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.ACCURACY, tags=frozenset({"nlp", "forecasting"})), _schema()
+    )
+    assert profile.problem_type == ProblemType.TEXT_CLASSIFICATION
+
+
+def test_build_technique_policy_time_series_disables_tabular_transforms() -> None:
+    """Time-series profiles must not enable tabular outlier clipping or target transform.
+
+    Time-series targets often contain legitimate spikes that quantile clipping would erase,
+    and log1p target transforms make poor defaults outside i.i.d. tabular regression.
+    """
+    profile = build_problem_profile(_competition(EvaluationMetric.RMSE, tags=frozenset({"time series"})), _schema())
+    policy = build_technique_policy(profile)
+    assert policy.problem_type == ProblemType.TIME_SERIES_REGRESSION
+    assert policy.enable_target_transform is False
+    assert policy.enable_outlier_clipping is False
+
+
+def test_build_fitness_policy_time_series_uses_modality_complexity_budget() -> None:
+    """Time-series profiles share the non-tabular (lower) complexity threshold."""
+    ts_profile = build_problem_profile(_competition(EvaluationMetric.AUC, tags=frozenset({"time series"})), _schema())
+    tabular_profile = build_problem_profile(_competition(EvaluationMetric.AUC, tags=frozenset({"tabular"})), _schema())
+    ts_policy = build_fitness_policy(ts_profile, None, max_runtime_ms=None)
+    tabular_policy = build_fitness_policy(tabular_profile, None, max_runtime_ms=None)
+    assert ts_policy.complexity_threshold == 600
+    assert tabular_policy.complexity_threshold == 800

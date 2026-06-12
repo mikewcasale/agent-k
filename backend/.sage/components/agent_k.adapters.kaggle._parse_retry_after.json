@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.adapters.kaggle:KaggleAdapter.search_competitions",
-  "line": 204,
+  "id": "agent_k.adapters.kaggle:_parse_retry_after",
+  "line": 623,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Search Kaggle competitions.",
-  "type": "method"
+  "summary": "Parse an HTTP ``Retry-After`` header value into seconds.",
+  "type": "function"
 }

@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-06-12T23:08:51.729696+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -306,7 +306,7 @@
       },
       {
         "component": "agent_k.core.strategy:ProblemType",
-        "line": 68,
+        "line": 71,
         "rationale": "StrEnum for ML problem taxonomy.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -574,7 +574,7 @@
     "fitness-input": [
       {
         "component": "agent_k.core.strategy:FitnessInput",
-        "line": 146,
+        "line": 151,
         "rationale": "Captures evaluation signals for scoring.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -1055,7 +1055,7 @@
     "policy-model": [
       {
         "component": "agent_k.core.strategy:TechniquePolicy",
-        "line": 119,
+        "line": 124,
         "rationale": "Encodes technique constraints for evolution.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -1064,7 +1064,7 @@
       },
       {
         "component": "agent_k.core.strategy:FitnessPolicy",
-        "line": 170,
+        "line": 175,
         "rationale": "Encodes penalty tuning for fitness scoring.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -1084,7 +1084,7 @@
     "profile-model": [
       {
         "component": "agent_k.core.strategy:ProblemProfile",
-        "line": 93,
+        "line": 98,
         "rationale": "Bundles task metadata for downstream policies.",
         "source": "agent_k/core/strategy.py",
         "violations": [

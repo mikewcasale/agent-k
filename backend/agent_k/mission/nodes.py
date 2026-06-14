@@ -1791,6 +1791,14 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     if status.public_score is not None:
                         state.final_score = status.public_score
                         break
+                    if status.status == "error":
+                        logfire.warning(
+                            "submission_failed",
+                            competition_id=competition_id,
+                            submission_id=submission.id,
+                            error=status.error_message,
+                        )
+                        break
 
                 if state.final_score is None:
                     best_fitness = None

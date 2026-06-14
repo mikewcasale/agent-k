@@ -70,6 +70,17 @@ SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
 
 
+def _coerce_score(value: Any) -> float | None:
+    """Coerce a Kaggle score field to ``float`` or ``None`` when missing/non-numeric."""
+    if value is None or value == "":
+        return None
+    try:
+        score = float(value)
+    except (TypeError, ValueError):
+        return None
+    return score if score == score and score not in (float("inf"), float("-inf")) else None
+
+
 class KaggleSettings(BaseSettings):
     """Settings for Kaggle adapter.
 
@@ -380,13 +391,7 @@ class KaggleAdapter(PlatformAdapter):
 
             for item in response.json():
                 if item.get("ref") == submission_id:
-                    return Submission(
-                        id=submission_id,
-                        competition_id=competition_id,
-                        file_name=item.get("fileName", ""),
-                        status="complete" if item.get("hasPublicScore") else "pending",
-                        public_score=item.get("publicScore"),
-                    )
+                    return self._parse_submission(competition_id, submission_id, item)
 
             return Submission(
                 id=submission_id, competition_id=competition_id, file_name="", status="pending", public_score=None
@@ -458,6 +463,38 @@ class KaggleAdapter(PlatformAdapter):
         text = response.text.lower()
         if "accept" in text and "rules" in text:
             raise CompetitionRulesNotAcceptedError(competition_id)
+
+    def _parse_submission(self, competition_id: str, submission_id: str, item: dict[str, Any]) -> Submission:
+        """Parse a Kaggle submission record into a Submission model.
+
+        Kaggle reports submission state via ``status`` (e.g. ``complete``, ``pending``,
+        ``error``) and surfaces failures via ``errorDescription``. Mapping these
+        explicitly lets the mission detect failed submissions instead of polling a
+        ``pending`` placeholder until the timeout elapses.
+        """
+        raw_status = str(item.get("status", "")).strip().lower()
+        error_description = item.get("errorDescription") or item.get("errorDescriptionNullable")
+        error_message = str(error_description).strip() if error_description else None
+        has_public_score = bool(item.get("hasPublicScore"))
+        public_score = _coerce_score(item.get("publicScore"))
+        private_score = _coerce_score(item.get("privateScore"))
+
+        if raw_status in {"error", "failed", "failure", "invalid"} or error_message:
+            status = "error"
+        elif raw_status == "complete" or public_score is not None or has_public_score:
+            status = "complete"
+        else:
+            status = "pending"
+
+        return Submission(
+            id=submission_id,
+            competition_id=competition_id,
+            file_name=item.get("fileName", ""),
+            status=status,
+            public_score=public_score,
+            private_score=private_score,
+            error_message=error_message,
+        )
 
     def _parse_competition(self, data: dict[str, Any]) -> Competition:
         """Parse Kaggle API response into Competition model."""

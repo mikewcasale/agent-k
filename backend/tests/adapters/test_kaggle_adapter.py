@@ -88,3 +88,84 @@ class TestKaggleAdapterFromEnv:
 
         # The from_env method should handle missing credentials
         # Test depends on implementation
+
+
+class TestParseSubmission:
+    """Tests for parsing Kaggle submission records into Submission models."""
+
+    def _adapter(self) -> KaggleAdapter:
+        return KaggleAdapter(KaggleSettings(username="u", api_key="k"))
+
+    def test_complete_submission_parses_scores(self) -> None:
+        """A completed submission exposes status, public, and private scores."""
+        adapter = self._adapter()
+        item = {
+            "ref": "sub-1",
+            "fileName": "submission.csv",
+            "status": "complete",
+            "hasPublicScore": True,
+            "publicScore": "0.873",
+            "privateScore": "0.881",
+            "errorDescription": None,
+        }
+        result = adapter._parse_submission("comp-1", "sub-1", item)
+        assert result.status == "complete"
+        assert result.public_score == pytest.approx(0.873)
+        assert result.private_score == pytest.approx(0.881)
+        assert result.error_message is None
+        assert result.file_name == "submission.csv"
+
+    def test_error_submission_sets_error_status_and_message(self) -> None:
+        """An errored submission propagates the Kaggle errorDescription."""
+        adapter = self._adapter()
+        item = {
+            "ref": "sub-2",
+            "fileName": "submission.csv",
+            "status": "error",
+            "hasPublicScore": False,
+            "publicScore": None,
+            "errorDescription": "Submission column mismatch",
+        }
+        result = adapter._parse_submission("comp-1", "sub-2", item)
+        assert result.status == "error"
+        assert result.public_score is None
+        assert result.error_message == "Submission column mismatch"
+
+    def test_error_inferred_from_description_when_status_missing(self) -> None:
+        """An ``errorDescription`` alone is sufficient to mark the submission failed."""
+        adapter = self._adapter()
+        item = {"ref": "sub-3", "fileName": "submission.csv", "status": "", "errorDescription": "Invalid format"}
+        result = adapter._parse_submission("comp-1", "sub-3", item)
+        assert result.status == "error"
+        assert result.error_message == "Invalid format"
+
+    def test_pending_submission_remains_pending(self) -> None:
+        """Submissions still queued by Kaggle stay ``pending`` with no score."""
+        adapter = self._adapter()
+        item = {
+            "ref": "sub-4",
+            "fileName": "submission.csv",
+            "status": "pending",
+            "hasPublicScore": False,
+            "publicScore": None,
+        }
+        result = adapter._parse_submission("comp-1", "sub-4", item)
+        assert result.status == "pending"
+        assert result.public_score is None
+        assert result.error_message is None
+
+    def test_complete_inferred_from_public_score_when_status_blank(self) -> None:
+        """A numeric ``publicScore`` implies completion even if Kaggle omits status."""
+        adapter = self._adapter()
+        item = {"ref": "sub-5", "fileName": "submission.csv", "status": "", "hasPublicScore": True, "publicScore": 0.42}
+        result = adapter._parse_submission("comp-1", "sub-5", item)
+        assert result.status == "complete"
+        assert result.public_score == pytest.approx(0.42)
+
+    def test_nonnumeric_public_score_is_coerced_to_none(self) -> None:
+        """Non-numeric score values do not raise and surface as ``None``."""
+        adapter = self._adapter()
+        item = {"ref": "sub-6", "fileName": "submission.csv", "status": "pending", "publicScore": "n/a"}
+        result = adapter._parse_submission("comp-1", "sub-6", item)
+        assert result.public_score is None
+        assert result.status == "pending"

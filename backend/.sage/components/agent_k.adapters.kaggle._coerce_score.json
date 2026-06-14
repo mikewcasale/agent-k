@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.adapters.kaggle:KaggleAdapter.search_competitions",
-  "line": 211,
+  "id": "agent_k.adapters.kaggle:_coerce_score",
+  "line": 74,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Search Kaggle competitions.",
-  "type": "method"
+  "summary": "Coerce a Kaggle score field to ``float`` or ``None`` when missing/non-numeric.",
+  "type": "function"
 }

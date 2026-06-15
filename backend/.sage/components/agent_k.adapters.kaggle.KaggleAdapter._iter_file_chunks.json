@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Each chunk read is offloaded to a worker thread so the event loop is not\nblocked on disk I/O during multi-hundred-MB uploads.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.adapters.kaggle:KaggleAdapter._iter_file_chunks",
+  "line": 445,
+  "notice": "Streams the file from disk so large submissions do not load entirely into memory.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/adapters/kaggle.py",
+  "summary": "Yield file content in fixed-size chunks for streaming uploads.",
+  "type": "method"
+}

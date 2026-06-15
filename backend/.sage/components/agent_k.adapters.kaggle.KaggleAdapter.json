@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.adapters.kaggle:KaggleAdapter",
-  "line": 114,
+  "line": 120,
   "notice": "Async adapter for Kaggle competition APIs.",
   "pattern": {
     "name": "adapter",

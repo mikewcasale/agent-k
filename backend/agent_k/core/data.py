@@ -169,19 +169,30 @@ def _read_header(path: Path) -> list[str]:
 
 def _safe_extract_zip(archive_path: Path, destination: Path) -> list[Path]:
     extracted: list[Path] = []
+    destination.mkdir(parents=True, exist_ok=True)
     destination_resolved = destination.resolve()
 
     with zipfile.ZipFile(archive_path) as archive:
         for member in archive.infolist():
             if member.is_dir() or member.filename.endswith("/"):
                 continue
+            if _is_symlink_member(member):
+                raise ValueError(f"Zip entry is a symlink: {member.filename}")
+            if os.path.isabs(member.filename) or member.filename.startswith(("/", "\\")):
+                raise ValueError(f"Zip entry has absolute path: {member.filename}")
             target_path = (destination / member.filename).resolve()
-            if not str(target_path).startswith(str(destination_resolved)):
+            if not target_path.is_relative_to(destination_resolved):
                 raise ValueError(f"Zip entry escapes destination: {member.filename}")
-            archive.extract(member, destination)
+            target_path.parent.mkdir(parents=True, exist_ok=True)
+            with archive.open(member) as source, target_path.open("wb") as handle:
+                shutil.copyfileobj(source, handle)
             extracted.append(target_path)
 
     return extracted
+
+
+def _is_symlink_member(member: zipfile.ZipInfo) -> bool:
+    return (member.external_attr >> 16) & 0o170000 == 0o120000
 
 
 def _link_or_copy(source: Path, destination: Path) -> None:

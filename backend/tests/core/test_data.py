@@ -7,8 +7,11 @@ Licensed under the MIT License.
 from __future__ import annotations as _annotations
 
 import csv
+import stat
 import zipfile
 from typing import TYPE_CHECKING
+
+import pytest
 
 from agent_k.core.data import infer_competition_schema, locate_data_files, stage_competition_data
 
@@ -100,3 +103,47 @@ def test_stage_competition_data(tmp_path: Path) -> None:
     assert staged["train"].exists()
     assert staged["test"].exists()
     assert staged["sample"].exists()
+
+
+def test_locate_data_files_rejects_zip_sibling_prefix_traversal(tmp_path: Path) -> None:
+    """Reject zip entries that resolve to a sibling sharing the destination prefix."""
+    zip_path = tmp_path / "data.zip"
+    sibling_name = f"{tmp_path.name}SIBLING"
+    with zipfile.ZipFile(zip_path, "w") as archive:
+        archive.writestr(f"../{sibling_name}/evil.csv", "id,target\n1,0\n")
+
+    sibling_target = tmp_path.parent / sibling_name / "evil.csv"
+    with pytest.raises(ValueError, match="escapes destination"):
+        locate_data_files([zip_path])
+    assert not sibling_target.exists()
+
+
+def test_locate_data_files_rejects_zip_symlink_member(tmp_path: Path) -> None:
+    """Reject zip members marked as symlinks to prevent escape via link following."""
+    zip_path = tmp_path / "data.zip"
+    outside = tmp_path.parent / "outside-secret.txt"
+    outside.write_text("secret")
+
+    with zipfile.ZipFile(zip_path, "w") as archive:
+        info = zipfile.ZipInfo("mylink")
+        info.create_system = 3
+        info.external_attr = (stat.S_IFLNK | 0o755) << 16
+        archive.writestr(info, str(outside))
+
+    try:
+        with pytest.raises(ValueError, match="symlink"):
+            locate_data_files([zip_path])
+        assert not (tmp_path / "mylink").is_symlink()
+    finally:
+        outside.unlink(missing_ok=True)
+
+
+def test_locate_data_files_rejects_zip_absolute_member(tmp_path: Path) -> None:
+    """Reject zip entries with absolute filenames."""
+    zip_path = tmp_path / "data.zip"
+    with zipfile.ZipFile(zip_path, "w") as archive:
+        info = zipfile.ZipInfo("/etc/evil.csv")
+        archive.writestr(info, "id,target\n1,0\n")
+
+    with pytest.raises(ValueError, match="absolute path"):
+        locate_data_files([zip_path])

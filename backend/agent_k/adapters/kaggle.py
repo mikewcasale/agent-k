@@ -68,6 +68,7 @@ __all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
+_UPLOAD_CHUNK_SIZE: Final[int] = 1024 * 1024
 
 
 class KaggleSettings(BaseSettings):
@@ -104,6 +105,11 @@ class KaggleSettings(BaseSettings):
     """
     base_url: str = Field(default="https://www.kaggle.com/api/v1", description="Base URL for Kaggle API")
     timeout: int = Field(default=30, ge=1, description="HTTP timeout in seconds")
+    submit_timeout: int = Field(
+        default=300,
+        ge=1,
+        description="HTTP timeout in seconds for submission uploads (defaults to 5 minutes for large CSVs)",
+    )
     max_retries: int = Field(default=3, ge=0, description="Maximum retry attempts for failed requests")
     rate_limit_delay: float = Field(default=1.0, ge=0.0, description="Delay between rate-limited requests (seconds)")
     dry_run: bool = Field(default=False, description="Skip Kaggle submissions when enabled")
@@ -339,9 +345,11 @@ class KaggleAdapter(PlatformAdapter):
             if not token or not create_url:
                 raise SubmissionError(competition_id, f"Invalid submission upload response: {start_payload}")
 
-            payload = path.read_bytes()
-            async with httpx.AsyncClient(timeout=self.config.timeout) as upload_client:
-                upload_response = await upload_client.put(create_url, content=payload)
+            upload_timeout = httpx.Timeout(self.config.submit_timeout)
+            async with httpx.AsyncClient(timeout=upload_timeout) as upload_client:
+                upload_response = await upload_client.put(
+                    create_url, content=self._iter_file_chunks(path), headers={"Content-Length": str(content_length)}
+                )
             if upload_response.status_code not in {200, 201}:
                 raise SubmissionError(competition_id, f"Upload failed: {upload_response.text}")
 
@@ -431,6 +439,21 @@ class KaggleAdapter(PlatformAdapter):
                 downloaded.append(str(file_path))
 
             return downloaded
+
+    @staticmethod
+    async def _iter_file_chunks(path: Path, chunk_size: int = _UPLOAD_CHUNK_SIZE) -> AsyncIterator[bytes]:
+        """Yield file content in fixed-size chunks for streaming uploads.
+
+        @notice: |
+            Streams the file from disk so large submissions do not load entirely into memory.
+
+        @dev: |
+            Each chunk read is offloaded to a worker thread so the event loop is not
+            blocked on disk I/O during multi-hundred-MB uploads.
+        """
+        with path.open("rb") as handle:
+            while chunk := await asyncio.to_thread(handle.read, chunk_size):
+                yield chunk
 
     async def _request(self, method: str, path: str, **kwargs: Any) -> httpx.Response:
         """Make rate-limited request to Kaggle API."""

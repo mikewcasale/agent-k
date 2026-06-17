@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-06-17T00:14:12.913929+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -4270,45 +4270,45 @@
       },
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 84,
+        "line": 91,
         "name": "notice",
         "value": "Result of executing a solution script."
       },
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 87,
+        "line": 94,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 90,
+        "line": 97,
         "name": "pattern",
         "value": "{\"name\": \"execution-result\", \"rationale\": \"Standardizes subprocess outputs for solution runs.\", \"violations\": \"Tuple returns drop context for debugging.\"}"
       },
       {
         "component": "agent_k.core.solution:execute_solution",
-        "line": 115,
+        "line": 122,
         "name": "notice",
         "value": "Runs Python code in an isolated subprocess with timeout support."
       },
       {
         "component": "agent_k.core.solution:execute_solution",
-        "line": 118,
+        "line": 125,
         "name": "dev",
         "value": "Normalizes Kaggle paths, sanitizes environment, and captures output.\nSupports builtin code execution tool or local subprocess execution."
       },
       {
         "component": "agent_k.core.solution:parse_baseline_score",
-        "line": 136,
+        "line": 143,
         "name": "notice",
         "value": "Extracts numeric score from \"Baseline ... score: X.XX\" pattern."
       },
       {
         "component": "agent_k.core.solution:parse_baseline_score",
-        "line": 139,
+        "line": 146,
         "name": "dev",
-        "value": "Returns None if pattern not found or value cannot be parsed."
+        "value": "Accepts signed decimals and scientific notation (e.g. ``-0.5``,\n``.5``, ``1.2e-5``, ``+1E3``). Returns ``None`` when no match is\nfound, when ``float()`` cannot parse the captured value, or when\nthe pa"
       }
     ],
     "agent_k/core/strategy.py": [

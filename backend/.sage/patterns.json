@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-06-17T00:14:12.914920+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -563,7 +563,7 @@
     "execution-result": [
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 82,
+        "line": 89,
         "rationale": "Standardizes subprocess outputs for solution runs.",
         "source": "agent_k/core/solution.py",
         "violations": [

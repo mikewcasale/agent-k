@@ -33,6 +33,17 @@ class TestParseBaselineScore:
             ("some text\nBaseline logLoss score: 1.2345\n", 1.2345),
             ("no score here", None),
             ("Baseline score: not-a-number", None),
+            ("Baseline logLoss score: 1.2e-5", 1.2e-5),
+            ("Baseline AUC score: 2.5E-2", 0.025),
+            ("Baseline LogLoss score: -1.5e3", -1500.0),
+            ("Baseline RMSE score: +0.42", 0.42),
+            ("Baseline RMSE score: .5", 0.5),
+            ("Baseline RMSE score: 1.2.3", None),
+            ("Baseline RMSE score: nan", None),
+            ("Baseline RMSE score: NaN", None),
+            ("Baseline RMSE score: inf", None),
+            ("Baseline RMSE score: -inf", None),
+            ("Baseline RMSE score: Infinity", None),
         ],
     )
     def test_parse_baseline_score(self, output: str, expected: float | None) -> None:
@@ -42,6 +53,11 @@ class TestParseBaselineScore:
             assert result is None
         else:
             assert result == pytest.approx(expected)
+
+    def test_parse_baseline_score_returns_first_match(self) -> None:
+        """When multiple baselines appear, the first should be returned."""
+        output = "Baseline RMSE score: 0.42\nBaseline RMSE score: 0.39\n"
+        assert parse_baseline_score(output) == pytest.approx(0.42)
 
 
 class TestEnvSanitization:

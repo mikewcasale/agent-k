@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-06-18T02:07:32.764446+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -4270,43 +4270,43 @@
       },
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 84,
+        "line": 87,
         "name": "notice",
         "value": "Result of executing a solution script."
       },
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 87,
+        "line": 90,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 90,
+        "line": 93,
         "name": "pattern",
         "value": "{\"name\": \"execution-result\", \"rationale\": \"Standardizes subprocess outputs for solution runs.\", \"violations\": \"Tuple returns drop context for debugging.\"}"
       },
       {
         "component": "agent_k.core.solution:execute_solution",
-        "line": 115,
+        "line": 118,
         "name": "notice",
         "value": "Runs Python code in an isolated subprocess with timeout support."
       },
       {
         "component": "agent_k.core.solution:execute_solution",
-        "line": 118,
+        "line": 121,
         "name": "dev",
         "value": "Normalizes Kaggle paths, sanitizes environment, and captures output.\nSupports builtin code execution tool or local subprocess execution."
       },
       {
         "component": "agent_k.core.solution:parse_baseline_score",
-        "line": 136,
+        "line": 139,
         "name": "notice",
         "value": "Extracts numeric score from \"Baseline ... score: X.XX\" pattern."
       },
       {
         "component": "agent_k.core.solution:parse_baseline_score",
-        "line": 139,
+        "line": 142,
         "name": "dev",
         "value": "Returns None if pattern not found or value cannot be parsed."
       }

@@ -10,7 +10,13 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from agent_k.core.solution import _is_sensitive_env_key, _sanitize_env, execute_solution, parse_baseline_score
+from agent_k.core.solution import (
+    _is_sensitive_env_key,
+    _normalize_kaggle_paths,
+    _sanitize_env,
+    execute_solution,
+    parse_baseline_score,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -68,6 +74,37 @@ class TestEnvSanitization:
         assert sanitized["HOME"] == str(tmp_path)
         assert sanitized["PYTHONNOUSERSITE"] == "1"
         assert sanitized["PYTHONDONTWRITEBYTECODE"] == "1"
+
+
+class TestNormalizeKagglePaths:
+    """Tests for the `/kaggle/input/<slug>` rewrite that targets the work directory."""
+
+    @pytest.mark.parametrize(
+        ("code", "expected"),
+        [
+            ('df = pd.read_csv("/kaggle/input/house-prices/train.csv")', 'df = pd.read_csv("./train.csv")'),
+            (
+                'pd.read_csv("/kaggle/input/spaceship-titanic/sample_submission.csv")',
+                'pd.read_csv("./sample_submission.csv")',
+            ),
+            ('open("/kaggle/input/comp-foo/sub/nested.json")', 'open("./sub/nested.json")'),
+            ('Path("/kaggle/input/comp-foo")', 'Path(".")'),
+            ('Path("/kaggle/input")', 'Path(".")'),
+            ('Path("/kaggle/input/")', 'Path("./")'),
+            ("print('hello world')", "print('hello world')"),
+        ],
+    )
+    def test_strips_slug_segment(self, code: str, expected: str) -> None:
+        """Rewriting should drop the dataset/competition slug, not just the prefix."""
+        assert _normalize_kaggle_paths(code) == expected
+
+    def test_handles_multiple_occurrences(self) -> None:
+        """All Kaggle path occurrences in a snippet should be rewritten."""
+        code = (
+            'train = pd.read_csv("/kaggle/input/comp/train.csv")\ntest = pd.read_csv("/kaggle/input/comp/test.csv")\n'
+        )
+        expected = 'train = pd.read_csv("./train.csv")\ntest = pd.read_csv("./test.csv")\n'
+        assert _normalize_kaggle_paths(code) == expected
 
 
 class TestExecuteSolution:

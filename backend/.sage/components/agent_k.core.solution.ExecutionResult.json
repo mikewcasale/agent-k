@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.solution:ExecutionResult",
-  "line": 82,
+  "line": 84,
   "notice": "Result of executing a solution script.",
   "pattern": {
     "name": "execution-result",

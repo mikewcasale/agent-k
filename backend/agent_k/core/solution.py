@@ -60,6 +60,8 @@ _CODE_EXECUTION_SYSTEM_PROMPT: Final[str] = (
 _DEFAULT_MAX_INLINE_DATA_BYTES: Final[int] = 100_000
 _EXECUTION_DATA_FILES: Final[tuple[str, ...]] = ("train.csv", "test.csv", "sample_submission.csv")
 _KAGGLE_INPUT_PREFIX: Final[str] = "/kaggle/input"
+_KAGGLE_WORKING_PREFIX: Final[str] = "/kaggle/working"
+_KAGGLE_WORKING_PATTERN: Final[re.Pattern[str]] = re.compile(r"/kaggle/working(?=/|$|[\"'\s)\],])")
 _SENSITIVE_ENV_TOKENS: Final[tuple[str, ...]] = (
     "KEY",
     "TOKEN",
@@ -148,9 +150,11 @@ def parse_baseline_score(output: str) -> float | None:
 
 
 def _normalize_kaggle_paths(code: str) -> str:
-    if _KAGGLE_INPUT_PREFIX not in code:
-        return code
-    return code.replace(_KAGGLE_INPUT_PREFIX, ".")
+    if _KAGGLE_INPUT_PREFIX in code:
+        code = code.replace(_KAGGLE_INPUT_PREFIX, ".")
+    if _KAGGLE_WORKING_PREFIX in code:
+        code = _KAGGLE_WORKING_PATTERN.sub(".", code)
+    return code
 
 
 async def _execute_solution_local(

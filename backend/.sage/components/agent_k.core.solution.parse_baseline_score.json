@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.solution:parse_baseline_score",
-  "line": 134,
+  "line": 136,
   "notice": "Extracts numeric score from \"Baseline ... score: X.XX\" pattern.",
   "pattern": null,
   "similar": null,

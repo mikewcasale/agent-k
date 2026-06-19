@@ -10,7 +10,13 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from agent_k.core.solution import _is_sensitive_env_key, _sanitize_env, execute_solution, parse_baseline_score
+from agent_k.core.solution import (
+    _is_sensitive_env_key,
+    _normalize_kaggle_paths,
+    _sanitize_env,
+    execute_solution,
+    parse_baseline_score,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -68,6 +74,36 @@ class TestEnvSanitization:
         assert sanitized["HOME"] == str(tmp_path)
         assert sanitized["PYTHONNOUSERSITE"] == "1"
         assert sanitized["PYTHONDONTWRITEBYTECODE"] == "1"
+
+
+class TestNormalizeKaggleWorkingPaths:
+    """Tests for normalizing the Kaggle working-directory prefix."""
+
+    @pytest.mark.parametrize(
+        ("code", "expected"),
+        [
+            (
+                'submission.to_csv("/kaggle/working/submission.csv", index=False)',
+                'submission.to_csv("./submission.csv", index=False)',
+            ),
+            ('Path("/kaggle/working").mkdir(exist_ok=True)', 'Path(".").mkdir(exist_ok=True)'),
+            ('open("/kaggle/working/out/model.pkl", "wb")', 'open("./out/model.pkl", "wb")'),
+            ("no kaggle paths here", "no kaggle paths here"),
+            ('pd.read_csv("/kaggle/input/train.csv")', 'pd.read_csv("./train.csv")'),
+            (
+                'shutil.copy("/kaggle/input/data/file.csv", "/kaggle/working/file.csv")',
+                'shutil.copy("./data/file.csv", "./file.csv")',
+            ),
+        ],
+    )
+    def test_normalize_paths(self, code: str, expected: str) -> None:
+        """Both /kaggle/input and /kaggle/working prefixes should be rewritten."""
+        assert _normalize_kaggle_paths(code) == expected
+
+    def test_does_not_match_overlapping_token(self) -> None:
+        """The working-prefix regex should not match a longer identifier."""
+        code = '"/kaggle/workings/file.csv"'
+        assert _normalize_kaggle_paths(code) == code
 
 
 class TestExecuteSolution:

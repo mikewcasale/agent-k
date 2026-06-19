@@ -40,7 +40,7 @@ import io
 import re
 import zipfile
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
 from urllib.parse import quote
@@ -68,6 +68,20 @@ __all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
+_DEFAULT_DEADLINE_ISO: Final[str] = "2099-12-31T23:59:59+00:00"
+
+
+def _model_max_length(model: type[Competition], field_name: str) -> int | None:
+    """Return the ``max_length`` metadata for a Competition field, if declared."""
+    for entry in model.model_fields[field_name].metadata:
+        max_length = getattr(entry, "max_length", None)
+        if isinstance(max_length, int):
+            return max_length
+    return None
+
+
+_COMPETITION_TITLE_MAX_LENGTH: Final[int | None] = _model_max_length(Competition, "title")
+_COMPETITION_DESCRIPTION_MAX_LENGTH: Final[int | None] = _model_max_length(Competition, "description")
 
 
 class KaggleSettings(BaseSettings):
@@ -544,15 +558,55 @@ class KaggleAdapter(PlatformAdapter):
 
         return Competition(
             id=comp_id,
-            title=data.get("title", ""),
-            description=data.get("description"),
+            title=_clip_text(data.get("title", ""), _COMPETITION_TITLE_MAX_LENGTH) or "",
+            description=_clip_text(data.get("description"), _COMPETITION_DESCRIPTION_MAX_LENGTH),
             competition_type=category_map.get(data.get("category", ""), CompetitionType.COMMUNITY),
             metric=metric,
             metric_direction=metric_direction,
-            deadline=datetime.fromisoformat(data.get("deadline", "2099-12-31T23:59:59+00:00").replace("Z", "+00:00")),
+            deadline=_parse_deadline(data.get("deadline")),
             prize_pool=prize_pool,
             max_team_size=data.get("maxTeamSize", 1),
             max_daily_submissions=data.get("maxDailySubmissions", 5),
             tags=tags,
             url=data.get("url"),
         )
+
+
+def _clip_text(value: Any, max_length: int | None) -> str | None:
+    """Coerce ``value`` to ``str`` and truncate to ``max_length`` when needed.
+
+    Returns ``None`` for missing/empty inputs so callers preserve the
+    "no description" semantics in the Competition model. Values exceeding
+    the configured cap are truncated rather than dropped, which keeps
+    otherwise-valid competitions out of the parse-error path.
+    """
+    if value is None:
+        return None
+    text = value if isinstance(value, str) else str(value)
+    if not text:
+        return None
+    if max_length is not None and len(text) > max_length:
+        logfire.warning("kaggle_field_truncated", original_length=len(text), max_length=max_length)
+        return text[:max_length]
+    return text
+
+
+def _parse_deadline(value: Any) -> datetime:
+    """Parse a Kaggle ``deadline`` value, falling back to a far-future sentinel.
+
+    Kaggle returns ``null`` (or omits the field entirely) for archived and
+    unscheduled competitions. The Competition model requires a timezone-aware
+    datetime, so we substitute a far-future sentinel to keep those records
+    parseable while still flagging them as effectively non-active in callers.
+    """
+    if not isinstance(value, str) or not value.strip():
+        return datetime.fromisoformat(_DEFAULT_DEADLINE_ISO)
+    text = value.strip().replace("Z", "+00:00")
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError:
+        logfire.warning("kaggle_deadline_unparseable", value=text[:64])
+        return datetime.fromisoformat(_DEFAULT_DEADLINE_ISO)
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed

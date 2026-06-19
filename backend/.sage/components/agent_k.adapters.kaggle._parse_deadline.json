@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.adapters.kaggle:KaggleAdapter.submit",
-  "line": 323,
+  "id": "agent_k.adapters.kaggle:_parse_deadline",
+  "line": 595,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Submit solution to Kaggle competition.",
-  "type": "method"
+  "summary": "Parse a Kaggle ``deadline`` value, falling back to a far-future sentinel.",
+  "type": "function"
 }

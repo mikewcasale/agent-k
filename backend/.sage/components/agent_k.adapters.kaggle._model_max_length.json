@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.adapters.kaggle:KaggleAdapter.submit",
-  "line": 323,
+  "id": "agent_k.adapters.kaggle:_model_max_length",
+  "line": 75,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Submit solution to Kaggle competition.",
-  "type": "method"
+  "summary": "Return the ``max_length`` metadata for a Competition field, if declared.",
+  "type": "function"
 }

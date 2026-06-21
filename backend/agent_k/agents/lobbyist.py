@@ -235,14 +235,24 @@ class LobbyistAgent(MemoryMixin):
         categories: Annotated[list[str], Doc("Competition categories to search.")],
         keywords: Annotated[list[str] | None, Doc("Optional keyword filters.")] = None,
         min_prize: Annotated[int | None, Doc("Minimum prize pool in USD."), Range(0, 1_000_000_000)] = None,
+        max_results: Annotated[
+            int | None,
+            Doc("Maximum competitions to return. Defaults to settings.max_results when omitted."),
+            Range(1, 500),
+        ] = None,
     ) -> list[dict[str, Any]]:
         """Search Kaggle for competitions matching criteria.
 
         @notice: |
-            Queries the platform adapter for competition listings.
+            Queries the platform adapter for competition listings, capped at
+            ``max_results`` to prevent unbounded pagination on broad criteria.
 
         @dev: |
-            Emits telemetry events before and after the search.
+            The Kaggle adapter's ``search_competitions`` is an async iterator
+            that pages indefinitely. Without an upper bound, broad searches
+            (e.g. category="Featured" with no keywords) burn Kaggle API quota
+            and inflate agent-turn latency. The limit defaults to
+            ``self._settings.max_results`` and can be overridden per call.
 
         @effects:
             io:
@@ -250,7 +260,8 @@ class LobbyistAgent(MemoryMixin):
             state:
                 - ctx.deps.search_cache
         """
-        with logfire.span("lobbyist.search_kaggle", categories=categories, keywords=keywords):
+        limit = max_results if max_results is not None else self._settings.max_results
+        with logfire.span("lobbyist.search_kaggle", categories=categories, keywords=keywords, limit=limit):
             await ctx.deps.event_emitter.emit_tool_start(
                 task_id="discovery_search",
                 tool_call_id=f"kaggle_search_{id(ctx)}",
@@ -266,6 +277,8 @@ class LobbyistAgent(MemoryMixin):
             ):
                 competitions.append(comp.model_dump())
                 ctx.deps.search_cache[comp.id] = comp
+                if len(competitions) >= limit:
+                    break
 
             await ctx.deps.event_emitter.emit_tool_result(
                 task_id="discovery_search",

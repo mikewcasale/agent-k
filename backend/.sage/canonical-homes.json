@@ -11,7 +11,7 @@
     "for": [
       "lobbyist agent construction"
     ],
-    "line": 345,
+    "line": 358,
     "notes": "Use LobbyistAgent() or module singleton.",
     "source": "agent_k/agents/lobbyist.py"
   },

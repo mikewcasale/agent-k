@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-06-21T01:13:53.717562+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -1918,67 +1918,67 @@
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.search_kaggle_competitions",
-        "line": 241,
+        "line": 246,
         "name": "notice",
-        "value": "Queries the platform adapter for competition listings."
+        "value": "Queries the platform adapter for competition listings, capped at\n``max_results`` to prevent unbounded pagination on broad criteria."
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.search_kaggle_competitions",
-        "line": 244,
+        "line": 250,
         "name": "dev",
-        "value": "Emits telemetry events before and after the search."
+        "value": "The Kaggle adapter's ``search_competitions`` is an async iterator\nthat pages indefinitely. Without an upper bound, broad searches\n(e.g. category=\"Featured\" with no keywords) burn Kaggle API quota\nand "
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.search_kaggle_competitions",
-        "line": 247,
+        "line": 257,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API requests\"], \"state\": [\"ctx.deps.search_cache\"]}"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.get_competition_details",
-        "line": 284,
+        "line": 297,
         "name": "notice",
         "value": "Fetches the competition details via the platform adapter."
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.get_competition_details",
-        "line": 287,
+        "line": 300,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.score_competition_fit",
-        "line": 306,
+        "line": 319,
         "name": "notice",
         "value": "Computes a heuristic fit score from cached competition metadata."
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.score_competition_fit",
-        "line": 309,
+        "line": 322,
         "name": "dev",
         "value": "Returns a structured dict with score and reasoning."
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.score_competition_fit",
-        "line": 312,
+        "line": 325,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent._create_agent",
-        "line": 347,
+        "line": 360,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.agents.lobbyist:LobbyistAgent\", \"rationale\": \"Centralizes agent wiring and toolset preparation.\", \"singleton\": true, \"cache_key\": \"module\"}"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent._create_agent",
-        "line": 353,
+        "line": 366,
         "name": "canonical_home",
         "value": "{\"for\": [\"lobbyist agent construction\"], \"notes\": \"Use LobbyistAgent() or module singleton.\"}"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent._register_tools",
-        "line": 386,
+        "line": 399,
         "name": "effects",
         "value": "{\"state\": [\"self._toolset\"]}"
       }

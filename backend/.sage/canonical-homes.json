@@ -35,7 +35,7 @@
     "for": [
       "devstral model creation"
     ],
-    "line": 80,
+    "line": 83,
     "notes": "Use create_devstral_model for local Devstral endpoints.",
     "source": "agent_k/infra/providers.py"
   },
@@ -43,7 +43,7 @@
     "for": [
       "openrouter model creation"
     ],
-    "line": 114,
+    "line": 117,
     "notes": "Use create_openrouter_model for OpenRouter endpoints.",
     "source": "agent_k/infra/providers.py"
   },
@@ -51,7 +51,7 @@
     "for": [
       "model resolution"
     ],
-    "line": 140,
+    "line": 143,
     "notes": "Use get_model to normalize model specs.",
     "source": "agent_k/infra/providers.py"
   },

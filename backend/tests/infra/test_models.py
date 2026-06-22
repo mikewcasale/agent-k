@@ -14,6 +14,7 @@ from pydantic_ai.models.openai import OpenAIChatModel
 from agent_k.infra.providers import (
     DEVSTRAL_BASE_URL,
     DEVSTRAL_MODEL_ID,
+    OPENROUTER_FREE_MODELS,
     create_devstral_model,
     create_openrouter_model,
     get_model,
@@ -111,6 +112,29 @@ class TestGetModel:
         result = get_model("openrouter:mistralai/devstral-small-2505")
 
         assert isinstance(result, OpenAIChatModel)
+
+
+class TestOpenRouterFreeModels:
+    """Regression tests for the OPENROUTER_FREE_MODELS catalog."""
+
+    def test_catalog_not_empty(self) -> None:
+        """At least one free OpenRouter model must be advertised."""
+        assert OPENROUTER_FREE_MODELS, "OPENROUTER_FREE_MODELS must not be empty"
+
+    def test_entries_use_openrouter_free_format(self) -> None:
+        """Every entry must be an openrouter: spec with a :free tier suffix."""
+        for key, spec in OPENROUTER_FREE_MODELS.items():
+            assert spec.startswith("openrouter:"), (
+                f"OPENROUTER_FREE_MODELS[{key!r}] must use openrouter: prefix, got {spec!r}"
+            )
+            assert spec.endswith(":free"), f"OPENROUTER_FREE_MODELS[{key!r}] must target a :free tier, got {spec!r}"
+
+    def test_excludes_known_dead_slugs(self) -> None:
+        """Slugs verified dead in prior live tests must not return to the catalog."""
+        dead_slugs = ("mistralai/devstral-2512:free", "kwaipilot/kat-coder-pro:free", "qwen/qwen3-coder:free")
+        for spec in OPENROUTER_FREE_MODELS.values():
+            for slug in dead_slugs:
+                assert slug not in spec, f"Dead OpenRouter slug {slug!r} reappeared in {spec!r}"
 
 
 class TestIsDevstralModel:

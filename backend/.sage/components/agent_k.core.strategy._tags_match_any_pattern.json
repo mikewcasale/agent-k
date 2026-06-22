@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.strategy:_tags_match_any_pattern",
+  "line": 372,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/strategy.py",
+  "summary": "Return ``True`` when any tag contains a domain pattern as whole words.",
+  "type": "function"
+}

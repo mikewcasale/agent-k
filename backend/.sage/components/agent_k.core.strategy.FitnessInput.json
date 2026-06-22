@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.strategy:FitnessInput",
-  "line": 146,
+  "line": 176,
   "notice": "Input payload for fitness scoring.",
   "pattern": {
     "name": "fitness-input",

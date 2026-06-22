@@ -29,7 +29,8 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
-from collections.abc import Callable
+import re
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import TYPE_CHECKING, Final
@@ -58,8 +59,37 @@ __all__ = (
 _CLASSIFICATION_METRICS: Final[frozenset[EvaluationMetric]] = frozenset(
     {EvaluationMetric.ACCURACY, EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS, EvaluationMetric.F1}
 )
-_VISION_TAGS: Final[frozenset[str]] = frozenset({"vision", "computer vision", "image", "images"})
-_TEXT_TAGS: Final[frozenset[str]] = frozenset({"nlp", "text", "language"})
+_TAG_SEPARATOR_PATTERN: Final[re.Pattern[str]] = re.compile(r"[-_/]+")
+_VISION_PATTERNS: Final[tuple[str, ...]] = (
+    "vision",
+    "image",
+    "images",
+    "imaging",
+    "imagery",
+    "ocr",
+    "object detection",
+    "image classification",
+    "image segmentation",
+    "image recognition",
+    "instance segmentation",
+    "semantic segmentation",
+    "satellite imagery",
+    "medical imaging",
+)
+_TEXT_PATTERNS: Final[tuple[str, ...]] = (
+    "nlp",
+    "text",
+    "language",
+    "languages",
+    "sentiment",
+    "translation",
+    "summarization",
+    "question answering",
+    "named entity",
+    "text classification",
+    "text generation",
+    "natural language",
+)
 
 type FitnessFunction = Callable[["FitnessInput"], float]
 
@@ -202,10 +232,10 @@ def build_problem_profile(competition: Competition, schema: CompetitionSchema) -
     is_classification = metric in _CLASSIFICATION_METRICS
     uses_proba = metric in {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
 
-    tags = {tag.lower() for tag in competition.tags}
-    if tags & _VISION_TAGS:
+    tags = competition.tags
+    if _tags_match_any_pattern(tags, _VISION_PATTERNS):
         problem_type = ProblemType.VISION_CLASSIFICATION if is_classification else ProblemType.VISION_REGRESSION
-    elif tags & _TEXT_TAGS:
+    elif _tags_match_any_pattern(tags, _TEXT_PATTERNS):
         problem_type = ProblemType.TEXT_CLASSIFICATION if is_classification else ProblemType.TEXT_REGRESSION
     else:
         problem_type = ProblemType.TABULAR_CLASSIFICATION if is_classification else ProblemType.TABULAR_REGRESSION
@@ -336,3 +366,22 @@ def _score_to_fitness(score: float, direction: MetricDirection) -> float:
     if direction == "minimize":
         return 1.0 / (1.0 + max(score, 0.0))
     return max(score, 0.0)
+
+
+def _tags_match_any_pattern(tags: Iterable[str], patterns: tuple[str, ...]) -> bool:
+    """Return ``True`` when any tag contains a domain pattern as whole words.
+
+    Kaggle tags arrive in mixed conventions ("computer-vision",
+    "object_detection", "Image Classification"). Normalizing tag punctuation
+    to spaces and padding both sides lets a single pattern catch each
+    variant without relying on exact-string set membership.
+    """
+    for tag in tags:
+        normalized = _TAG_SEPARATOR_PATTERN.sub(" ", tag.lower()).strip()
+        if not normalized:
+            continue
+        padded = f" {normalized} "
+        for pattern in patterns:
+            if f" {pattern} " in padded:
+                return True
+    return False

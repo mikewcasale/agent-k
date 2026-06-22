@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.strategy:build_problem_profile",
-  "line": 192,
+  "line": 222,
   "notice": "Creates a ProblemProfile from competition metadata and data schema.",
   "pattern": null,
   "similar": null,

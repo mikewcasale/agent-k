@@ -191,7 +191,13 @@ class SubmissionOrchestrator:
         self._update_mutation_weights(candidate.mutations, improved)
         self._iteration += 1
 
-        if improved:
+        # First scored submission establishes the baseline; missing scores carry no
+        # signal. Only ratchet stagnation on a real regression vs. a known baseline.
+        if score is None:
+            pass
+        elif self._last_score is None:
+            self._last_score = score
+        elif improved:
             self._last_score = score
             self._stagnant_generations = 0
         else:

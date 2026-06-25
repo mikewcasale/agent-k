@@ -6,7 +6,10 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
+import math
 from datetime import UTC, datetime
+
+import pytest
 
 from agent_k.core.data import CompetitionSchema
 from agent_k.core.models import Competition, CompetitionType, EvaluationMetric
@@ -90,3 +93,23 @@ def test_apply_solution_policy_is_noop() -> None:
     updated_again, notes_again = apply_solution_policy(updated, policy)
     assert updated_again == updated
     assert not notes_again
+
+
+@pytest.mark.parametrize("bad_score", [float("nan"), float("inf"), float("-inf")])
+def test_fitness_factory_rejects_non_finite_cv_score(bad_score: float) -> None:
+    """Non-finite cv_score must collapse to 0.0 rather than poison comparisons."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.RMSE),
+        CompetitionSchema(id_column="id", target_columns=["target"], train_target_columns=["target"]),
+    )
+    policy = build_fitness_policy(profile, None, max_runtime_ms=1000)
+    fitness_fn = build_fitness_function(policy)
+
+    finite_input = FitnessInput(cv_score=0.5, runtime_ms=10, complexity=5, valid=True, stage=None, code="x = 1")
+    bad_input = FitnessInput(cv_score=bad_score, runtime_ms=10, complexity=5, valid=True, stage=None, code="x = 1")
+
+    finite_value = fitness_fn(finite_input)
+    bad_value = fitness_fn(bad_input)
+
+    assert math.isfinite(finite_value)
+    assert bad_value == 0.0

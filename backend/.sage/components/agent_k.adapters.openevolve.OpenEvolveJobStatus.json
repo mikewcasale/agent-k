@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.adapters.openevolve:OpenEvolveJobStatus",
-  "line": 165,
+  "line": 166,
   "notice": "Status snapshot for an OpenEvolve evolution job.",
   "pattern": {
     "name": "output-model",

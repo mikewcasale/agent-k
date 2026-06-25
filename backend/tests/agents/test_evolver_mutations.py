@@ -33,6 +33,12 @@ class TestFitnessFromScore:
         """Fitness should reflect metric direction."""
         assert _evolver._fitness_from_score(score, direction) == pytest.approx(expected)
 
+    @pytest.mark.parametrize("direction", ["maximize", "minimize"])
+    @pytest.mark.parametrize("bad_score", [float("nan"), float("inf"), float("-inf")])
+    def test_fitness_from_score_clamps_non_finite(self, bad_score: float, direction: str) -> None:
+        """Non-finite cv scores collapse to 0.0 to avoid poisoning best-fitness comparisons."""
+        assert _evolver._fitness_from_score(bad_score, direction) == 0.0
+
 
 class TestSeededRng:
     """Tests for deterministic RNG seeding."""

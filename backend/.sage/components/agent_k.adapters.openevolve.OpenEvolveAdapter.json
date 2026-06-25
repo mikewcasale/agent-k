@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-  "line": 435,
+  "line": 436,
   "notice": "Provides a PlatformAdapter facade for OpenEvolve runs.",
   "pattern": {
     "name": "adapter",

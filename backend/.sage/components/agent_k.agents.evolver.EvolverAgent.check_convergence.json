@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.evolver:EvolverAgent.check_convergence",
-  "line": 918,
+  "line": 923,
   "notice": "Determines whether fitness has plateaued or target score reached.",
   "pattern": null,
   "similar": null,

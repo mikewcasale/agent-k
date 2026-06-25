@@ -32,6 +32,7 @@ from __future__ import annotations as _annotations
 import ast
 import asyncio
 import json
+import math
 import os
 import re
 import shutil
@@ -308,11 +309,13 @@ def _fitness_from_score(cv_score: float | None, metric_direction: str) -> float:
     """Convert CV score to fitness (higher is better)."""
     if cv_score is None:
         return 0.0
+    score = float(cv_score)
+    if not math.isfinite(score):
+        return 0.0
 
     if metric_direction == "maximize":
-        return float(cv_score)
-    else:
-        return -float(cv_score)
+        return score
+    return -score
 
 
 def evaluate(program_path: str) -> EvaluationResult:

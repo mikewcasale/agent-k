@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.adapters.openevolve:OpenEvolveSolution",
-  "line": 192,
+  "line": 193,
   "notice": "Best solution produced by an OpenEvolve job.",
   "pattern": {
     "name": "output-model",

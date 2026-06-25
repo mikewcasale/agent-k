@@ -40,6 +40,7 @@ import csv
 import hashlib
 import inspect
 import json
+import math
 import os
 import tempfile
 import uuid
@@ -774,8 +775,13 @@ def _parse_applied_hints(raw: Any) -> list[str]:
 def _extract_fitness(metrics: dict[str, Any]) -> float:
     for key in ("fitness", "combined_score"):
         value = metrics.get(key)
-        if isinstance(value, (int, float)):
-            return float(value)
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            continue
+        numeric = float(value)
+        if not math.isfinite(numeric):
+            logfire.warning("openevolve_non_finite_fitness", key=key, value=numeric)
+            continue
+        return numeric
     return 0.0
 
 
@@ -876,9 +882,12 @@ async def _evaluate_fitness(
     result = fitness_function(prototype)
     if inspect.isawaitable(result):
         result = await result
-    if not isinstance(result, (int, float)):
+    if isinstance(result, bool) or not isinstance(result, (int, float)):
         raise ValueError("Fitness function must return a numeric score")
-    return float(result)
+    numeric = float(result)
+    if not math.isfinite(numeric):
+        raise ValueError("Fitness function returned a non-finite score (NaN/Inf)")
+    return numeric
 
 
 def _refresh_job(job: _OpenEvolveJob, now: datetime) -> None:

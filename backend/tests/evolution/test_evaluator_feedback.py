@@ -6,7 +6,9 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
-from agent_k.evolution.evaluator import _extract_error_feedback
+import pytest
+
+from agent_k.evolution.evaluator import _extract_error_feedback, _fitness_from_score
 
 __all__ = ()
 
@@ -39,3 +41,15 @@ def test_extract_error_feedback_missing_baseline() -> None:
     assert "MUTATION HINT [MissingBaseline]" in feedback
     assert "Add baseline logging" in feedback
     assert "MUTATION HINT [NameError]" in feedback
+
+
+@pytest.mark.parametrize("direction", ["maximize", "minimize"])
+@pytest.mark.parametrize("bad_score", [float("nan"), float("inf"), float("-inf")])
+def test_fitness_from_score_clamps_non_finite_to_zero(bad_score: float, direction: str) -> None:
+    """Non-finite cv scores must collapse to the 'no info' baseline fitness."""
+    assert _fitness_from_score(bad_score, direction) == 0.0
+
+
+def test_fitness_from_score_returns_zero_on_none() -> None:
+    """None cv_score (parse miss) still maps to 0.0."""
+    assert _fitness_from_score(None, "maximize") == 0.0

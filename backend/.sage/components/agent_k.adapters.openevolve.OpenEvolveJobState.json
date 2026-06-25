@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.adapters.openevolve:OpenEvolveJobState",
-  "line": 120,
+  "line": 121,
   "notice": "Lifecycle state for an OpenEvolve job.",
   "pattern": {
     "name": "enumeration",

@@ -50,6 +50,7 @@ import ast
 import csv
 import hashlib
 import json
+import math
 import random
 import re
 import tempfile
@@ -680,7 +681,11 @@ class EvolverAgent(MemoryMixin):
                 )
 
             best_solution = result.get("best_solution") or initial_program
-            best_fitness = float(result.get("best_fitness") or 0.0)
+            raw_fitness = result.get("best_fitness")
+            best_fitness = float(raw_fitness) if isinstance(raw_fitness, (int, float)) else 0.0
+            if not math.isfinite(best_fitness):
+                logfire.warning("openevolve_non_finite_best_fitness", value=best_fitness)
+                best_fitness = 0.0
             programs = result.get("programs") or []
 
             deps.best_solution = best_solution
@@ -1542,6 +1547,8 @@ class EvolverAgent(MemoryMixin):
         return {"AGENT_K_VALIDATION_SPLIT": f"{validation_split:.6f}"}
 
     def _fitness_from_score(self, score: float, direction: str) -> float:
+        if not math.isfinite(score):
+            return 0.0
         return 1.0 / (1.0 + max(score, 0.0)) if direction == "minimize" else max(score, 0.0)
 
     def _score_from_fitness(self, fitness: float | None, direction: str) -> float | None:

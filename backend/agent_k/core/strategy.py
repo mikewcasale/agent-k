@@ -29,6 +29,7 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
+import math
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
@@ -306,6 +307,8 @@ def build_fitness_function(policy: FitnessPolicy) -> FitnessFunction:
     def fitness(input_data: FitnessInput) -> float:
         if not input_data.valid:
             return 0.0
+        if not math.isfinite(input_data.cv_score):
+            return 0.0
 
         base = _score_to_fitness(input_data.cv_score, policy.metric_direction)
         if policy.runtime_ms_threshold and input_data.runtime_ms > policy.runtime_ms_threshold:
@@ -314,6 +317,8 @@ def build_fitness_function(policy: FitnessPolicy) -> FitnessFunction:
             base *= max(0.0, 1.0 - policy.penalty_weight)
         if input_data.stage and input_data.stage in policy.stage_weights:
             base *= policy.stage_weights[input_data.stage]
+        if not math.isfinite(base):
+            return 0.0
         return max(0.0, base)
 
     return fitness
@@ -333,6 +338,8 @@ def apply_solution_policy(code: str, policy: TechniquePolicy) -> tuple[str, list
 
 
 def _score_to_fitness(score: float, direction: MetricDirection) -> float:
+    if not math.isfinite(score):
+        return 0.0
     if direction == "minimize":
         return 1.0 / (1.0 + max(score, 0.0))
     return max(score, 0.0)

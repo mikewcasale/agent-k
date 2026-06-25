@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-06-25T02:10:37.495053+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -14,7 +14,7 @@
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 435,
+        "line": 436,
         "rationale": "Encapsulates OpenEvolve-specific behaviors.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [
@@ -25,7 +25,7 @@
     "adapter-runner": [
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveRunner",
-        "line": 223,
+        "line": 224,
         "rationale": "Encapsulates OpenEvolve execution behavior.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [
@@ -47,7 +47,7 @@
     "agent-singleton": [
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 556,
+        "line": 557,
         "rationale": "Single instance keeps memory/tool registration consistent.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -76,7 +76,7 @@
     "archive-entry": [
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry",
-        "line": 317,
+        "line": 318,
         "rationale": "Encapsulates elite metadata for sampling.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -105,7 +105,7 @@
     "config-model": [
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveEvolutionConfig",
-        "line": 141,
+        "line": 142,
         "rationale": "Captures evolution hyperparameters in a schema.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [
@@ -134,7 +134,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 436,
+        "line": 437,
         "rationale": "Groups runtime services and evolution state.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -248,7 +248,7 @@
     "enumeration": [
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveJobState",
-        "line": 120,
+        "line": 121,
         "rationale": "StrEnum for OpenEvolve job lifecycle states.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [
@@ -306,7 +306,7 @@
       },
       {
         "component": "agent_k.core.strategy:ProblemType",
-        "line": 68,
+        "line": 69,
         "rationale": "StrEnum for ML problem taxonomy.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -574,7 +574,7 @@
     "fitness-input": [
       {
         "component": "agent_k.core.strategy:FitnessInput",
-        "line": 146,
+        "line": 147,
         "rationale": "Captures evaluation signals for scoring.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -847,7 +847,7 @@
     "job-tracker": [
       {
         "component": "agent_k.adapters.openevolve:_OpenEvolveJob",
-        "line": 413,
+        "line": 414,
         "rationale": "Captures in-memory job state for adapter polling.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [
@@ -929,7 +929,7 @@
     "output-model": [
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveJobStatus",
-        "line": 165,
+        "line": 166,
         "rationale": "Stable status payload for job monitoring.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [
@@ -938,7 +938,7 @@
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveSolution",
-        "line": 192,
+        "line": 193,
         "rationale": "Stable schema for OpenEvolve solutions.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [
@@ -947,7 +947,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 501,
+        "line": 502,
         "rationale": "Stable schema for successful evolution outputs.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -956,7 +956,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 526,
+        "line": 527,
         "rationale": "Stable schema for failed evolution outputs.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -1055,7 +1055,7 @@
     "policy-model": [
       {
         "component": "agent_k.core.strategy:TechniquePolicy",
-        "line": 119,
+        "line": 120,
         "rationale": "Encodes technique constraints for evolution.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -1064,7 +1064,7 @@
       },
       {
         "component": "agent_k.core.strategy:FitnessPolicy",
-        "line": 170,
+        "line": 171,
         "rationale": "Encodes penalty tuning for fitness scoring.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -1084,7 +1084,7 @@
     "profile-model": [
       {
         "component": "agent_k.core.strategy:ProblemProfile",
-        "line": 93,
+        "line": 94,
         "rationale": "Bundles task metadata for downstream policies.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -1237,7 +1237,7 @@
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveSettings",
-        "line": 92,
+        "line": 93,
         "rationale": "Centralizes OpenEvolve adapter configuration.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [
@@ -1246,7 +1246,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 363,
+        "line": 364,
         "rationale": "Centralizes evolutionary optimization configuration.",
         "source": "agent_k/agents/evolver.py",
         "violations": [

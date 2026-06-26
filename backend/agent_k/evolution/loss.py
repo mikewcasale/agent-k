@@ -19,7 +19,7 @@
         - "Create parallel modules without updating @similar or @graph."
 
 @human-review:
-    last-verified: 2026-01-26
+    last-verified: 2026-06-26
     owners:
         - agent-k-core
 
@@ -30,15 +30,39 @@ Licensed under the MIT License.
 from __future__ import annotations as _annotations
 
 import random
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from agent_k.evolution.framework import FitnessFn, Individual, Population
+
+if TYPE_CHECKING:
+    import numpy as np
 
 type LossObjective = str
 """LightGBM objective identifiers."""
 
-__all__ = ("LossFunctionEvolver", "LossGenome", "build_lightgbm_objective_params")
+type LightGBMCustomObjective = Callable[[Any, Any], tuple[Any, Any]]
+"""Callable signature for LightGBM custom objectives returning (grad, hess) arrays."""
+
+__all__ = (
+    "BUILTIN_OBJECTIVES",
+    "CUSTOM_OBJECTIVES",
+    "LightGBMCustomObjective",
+    "LossFunctionEvolver",
+    "LossGenome",
+    "build_lightgbm_custom_objective",
+    "build_lightgbm_objective_params",
+)
+
+BUILTIN_OBJECTIVES: tuple[str, ...] = ("regression", "regression_l1", "huber", "quantile")
+"""LightGBM built-in regression objectives passed through `params['objective']`."""
+
+CUSTOM_OBJECTIVES: tuple[str, ...] = ("asymmetric", "mae_rmse_blend")
+"""Custom objectives implemented as Python callables for `params['objective']`."""
+
+_EPS: float = 1e-6
+_HUBER_HESS_FLOOR: float = 1e-3
 
 
 @dataclass(slots=True)
@@ -78,7 +102,7 @@ class LossFunctionEvolver:
             rationale: "Coordinates evolutionary search over loss function genomes."
     """
 
-    _objectives: tuple[str, ...] = ("regression", "regression_l1", "huber", "quantile")
+    _objectives: tuple[str, ...] = BUILTIN_OBJECTIVES + CUSTOM_OBJECTIVES
 
     def __init__(
         self, fitness_fn: FitnessFn[LossGenome], *, population_size: int = 16, rng: random.Random | None = None
@@ -136,24 +160,118 @@ class LossFunctionEvolver:
 
 
 def build_lightgbm_objective_params(genome: LossGenome) -> dict[str, Any]:
-    """Create LightGBM objective params from a LossGenome.
+    """Create LightGBM-valid objective params from a LossGenome.
 
     @notice: |
-        Create LightGBM objective params from a LossGenome.
+        Emit only parameters that LightGBM recognizes for the chosen objective.
 
     @dev: |
-        See module for behavior details and invariants.
+        Custom objectives (asymmetric, mae_rmse_blend) are exposed via
+        `build_lightgbm_custom_objective`; callers should attach the returned
+        callable to `params['objective']` (LightGBM 4.x) or `lgb.train(..., fobj=)`.
+        The returned dict for custom objectives carries a baseline metric so
+        LightGBM logs remain meaningful.
     """
-    params: dict[str, Any] = {
-        "objective": genome.objective,
-        "asymmetric_weight": genome.asymmetric_weight,
-        "mae_rmse_blend": genome.mae_rmse_blend,
-    }
-    if genome.objective == "quantile":
-        params["alpha"] = genome.quantile_alpha
-    if genome.objective == "huber":
-        params["huber_delta"] = genome.huber_delta
-    return params
+    objective = genome.objective
+
+    if objective == "quantile":
+        return {"objective": "quantile", "alpha": _clip(genome.quantile_alpha, _EPS, 1.0 - _EPS)}
+    if objective == "huber":
+        return {"objective": "huber", "alpha": max(genome.huber_delta, _EPS)}
+    if objective in CUSTOM_OBJECTIVES:
+        metric = "mae" if objective == "asymmetric" or genome.mae_rmse_blend >= 0.5 else "rmse"
+        return {"metric": metric}
+    return {"objective": objective}
+
+
+def build_lightgbm_custom_objective(genome: LossGenome) -> LightGBMCustomObjective | None:
+    """Build a LightGBM custom objective callable from a LossGenome.
+
+    @notice: |
+        Returns a (grad, hess) callable for `params['objective']` / `fobj`,
+        or ``None`` when the genome targets a LightGBM built-in objective.
+
+    @dev: |
+        Implements four custom objectives:
+
+        * ``huber`` — smooth L1/L2 transition at ``huber_delta``.
+        * ``quantile`` — pinball loss at ``quantile_alpha``.
+        * ``asymmetric`` — asymmetric MSE penalising positive residuals by
+          ``asymmetric_weight`` (over-prediction) vs. negative residuals.
+        * ``mae_rmse_blend`` — convex combination of MAE and RMSE gradients
+          with a numerically stable Hessian floor.
+
+        Custom variants exist for ``huber``/``quantile`` so the evolver can
+        compare LightGBM's native implementation against a controllable
+        gradient form (e.g. for asymmetric penalties on the same family).
+    """
+    import numpy as np
+
+    objective = genome.objective
+
+    if objective == "huber":
+        delta = max(genome.huber_delta, _EPS)
+
+        def huber_fobj(y_pred: np.ndarray, train_data: Any) -> tuple[np.ndarray, np.ndarray]:
+            y_true = _coerce_label(train_data)
+            residual = y_pred - y_true
+            abs_r = np.abs(residual)
+            grad = np.where(abs_r <= delta, residual, delta * np.sign(residual))
+            hess = np.where(abs_r <= delta, 1.0, _HUBER_HESS_FLOOR)
+            return grad, hess
+
+        return huber_fobj
+
+    if objective == "quantile":
+        alpha = _clip(genome.quantile_alpha, _EPS, 1.0 - _EPS)
+
+        def quantile_fobj(y_pred: np.ndarray, train_data: Any) -> tuple[np.ndarray, np.ndarray]:
+            y_true = _coerce_label(train_data)
+            residual = y_true - y_pred
+            grad = np.where(residual >= 0, -alpha, 1.0 - alpha)
+            hess = np.ones_like(residual)
+            return grad, hess
+
+        return quantile_fobj
+
+    if objective == "asymmetric":
+        weight = max(genome.asymmetric_weight, _EPS)
+
+        def asymmetric_fobj(y_pred: np.ndarray, train_data: Any) -> tuple[np.ndarray, np.ndarray]:
+            y_true = _coerce_label(train_data)
+            residual = y_pred - y_true
+            grad = np.where(residual >= 0, weight * residual, residual)
+            hess = np.where(residual >= 0, weight, 1.0)
+            return grad, hess
+
+        return asymmetric_fobj
+
+    if objective == "mae_rmse_blend":
+        blend = _clip(genome.mae_rmse_blend, 0.0, 1.0)
+        hess_value = max(1.0 - blend, _HUBER_HESS_FLOOR)
+
+        def blend_fobj(y_pred: np.ndarray, train_data: Any) -> tuple[np.ndarray, np.ndarray]:
+            y_true = _coerce_label(train_data)
+            residual = y_pred - y_true
+            mae_grad = np.sign(residual)
+            mse_grad = residual
+            grad = blend * mae_grad + (1.0 - blend) * mse_grad
+            hess = np.full_like(residual, hess_value)
+            return grad, hess
+
+        return blend_fobj
+
+    return None
+
+
+def _coerce_label(train_data: Any) -> np.ndarray:
+    """Extract the label array from a LightGBM Dataset or numpy-like input."""
+    import numpy as np
+
+    label_getter = getattr(train_data, "get_label", None)
+    if callable(label_getter):
+        return np.asarray(label_getter(), dtype=float)
+    return np.asarray(train_data, dtype=float)
 
 
 def _clip(value: float, lower: float, upper: float) -> float:

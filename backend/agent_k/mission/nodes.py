@@ -49,6 +49,7 @@ import importlib.util
 import json
 import math
 import os
+import re
 import shutil
 import tempfile
 import traceback
@@ -2069,6 +2070,72 @@ def _cleanup_session_data(mission_id: str) -> None:
         logfire.warning("session_cleanup_failed", error=str(exc))
 
 
+_RATE_LIMIT_PHRASES: Final[tuple[str, ...]] = (
+    "rate limit",
+    "rate_limit",
+    "rate-limit",
+    "ratelimit",
+    "request_limit",
+    "too many requests",
+    "quota exceeded",
+    "quota reached",
+    "out of quota",
+    "limit reached",
+    "throttled",
+    "throttling",
+    "tokens per minute",
+    "tokens per day",
+    "tokens per hour",
+    "requests per minute",
+    "requests per day",
+    "insufficient credits",
+    "insufficient_credits",
+    "credit limit",
+    "out of credits",
+    "no credits remaining",
+    "credit_balance",
+    "billing limit",
+    "monthly limit",
+    "daily limit",
+    "internal server error",
+    "service unavailable",
+    "bad gateway",
+    "gateway timeout",
+)
+_NON_RATE_LIMIT_PHRASES: Final[tuple[str, ...]] = (
+    "context_length_exceeded",
+    "context length exceeded",
+    "max_tokens exceeded",
+    "max tokens exceeded",
+    "maximum tokens exceeded",
+    "max length exceeded",
+    "maximum context length",
+    "string too long",
+    "input is too long",
+    "prompt too long",
+    "message too long",
+    "token limit exceeded",
+    "tool call exceeded",
+    "retry budget",
+    "iteration count exceeded",
+)
+_RATE_LIMIT_ERROR_CODES: Final[frozenset[str]] = frozenset(
+    {
+        "rate_limited",
+        "rate-limited",
+        "throttled",
+        "insufficient_quota",
+        "overloaded_error",
+        "billing_hard_limit_reached",
+        "credit_limit_exceeded",
+    }
+)
+_HTTP_429_RE: Final[re.Pattern[str]] = re.compile(r"(?<!\d)429(?!\d)")
+_HTTP_5XX_RE: Final[re.Pattern[str]] = re.compile(
+    r"(?:http[/\s]+|status[\s:=]+(?:code[\s:=]+)?|error[\s:=]+|code[\s:=]+)5\d{2}(?!\d)"
+)
+
+
 def _is_rate_limit_error(error: Exception | str | None) -> bool:
     if not error:
         return False
@@ -2082,26 +2149,20 @@ def _is_rate_limit_error(error: Exception | str | None) -> bool:
         if isinstance(response_status, int) and response_status >= 500:
             return True
         error_code = getattr(error, "code", None) or getattr(error, "error_code", None)
-        if isinstance(error_code, str) and "rate" in error_code.lower():
-            return True
+        if isinstance(error_code, str):
+            normalized_code = error_code.lower().strip()
+            if "rate" in normalized_code and "limit" in normalized_code:
+                return True
+            if normalized_code in _RATE_LIMIT_ERROR_CODES:
+                return True
     message = str(error).lower()
-    triggers = (
-        "rate limit",
-        "rate_limit",
-        "request_limit",
-        "quota",
-        "too many requests",
-        "limit reached",
-        "exceeded",
-        "429",
-        "insufficient credits",
-        "credit limit",
-        "credits",
-        "internal server error",
-        "server error",
-        "500",
-    )
-    return any(trigger in message for trigger in triggers)
+    if any(neg in message for neg in _NON_RATE_LIMIT_PHRASES):
+        return False
+    if any(phrase in message for phrase in _RATE_LIMIT_PHRASES):
+        return True
+    if _HTTP_429_RE.search(message) and ("http" in message or "status" in message or "code" in message):
+        return True
+    return bool(_HTTP_5XX_RE.search(message))
 
 
 def _filter_disallowed_recommendations(recommendations: list[str]) -> list[str]:

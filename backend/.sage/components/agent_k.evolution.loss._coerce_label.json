@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.evolution.loss:LossFunctionEvolver.evolve",
-  "line": 116,
+  "id": "agent_k.evolution.loss:_coerce_label",
+  "line": 268,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/evolution/loss.py",
-  "summary": "Run evolution for a fixed number of generations.",
-  "type": "method"
+  "summary": "Extract the label array from a LightGBM Dataset or numpy-like input.",
+  "type": "function"
 }

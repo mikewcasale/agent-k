@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Implements four custom objectives:\n\n* ``huber`` \u2014 smooth L1/L2 transition at ``huber_delta``.\n* ``quantile`` \u2014 pinball loss at ``quantile_alpha``.\n* ``asymmetric`` \u2014 asymmetric MSE penalising positive residuals by\n  ``asymmetric_weight`` (over-prediction) vs. negative residuals.\n* ``mae_rmse_blend`` \u2014 convex combination of MAE and RMSE gradients\n  with a numerically stable Hessian floor.\n\nCustom variants exist for ``huber``/``quantile`` so the evolver can\ncompare LightGBM's native implementation against a controllable\ngradient form (e.g. for asymmetric penalties on the same family).",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:build_lightgbm_custom_objective",
+  "line": 188,
+  "notice": "Returns a (grad, hess) callable for `params['objective']` / `fobj`,\nor ``None`` when the genome targets a LightGBM built-in objective.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Build a LightGBM custom objective callable from a LossGenome.",
+  "type": "function"
+}

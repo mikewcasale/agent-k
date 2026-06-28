@@ -72,6 +72,21 @@ _MODEL_FAMILY_PATTERNS: Final[tuple[tuple[float, re.Pattern[str]], ...]] = (
         ),
     ),
 )
+_WARNING_FILE_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"^\s*(?P<path>[^\s:]+\.[Pp][Yy]):(?P<lineno>\d+):\s*(?P<category>\w*Warning):\s*(?P<message>.+?)\s*$"
+)
+_WARNING_BRACKET_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"^\s*\[(?P<library>[A-Za-z][\w-]*)\]\s+\[\s*(?:Warning|WARNING)\s*\][:\s]\s*(?P<message>.+?)\s*$"
+)
+_WARNING_INLINE_PATTERN: Final[re.Pattern[str]] = re.compile(r"^\s*(?P<category>\w+Warning):\s*(?P<message>.+?)\s*$")
+_WARNING_GENERIC_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"^\s*(?:\[(?P<library>[A-Za-z][\w-]*)\]\s+)?(?:\[[^\]]+\]\s+)*(?:WARNING|Warning)\b[:\s]\s*(?P<message>.+?)\s*$"
+)
+_WARNING_NORMALIZE_DIGITS: Final[re.Pattern[str]] = re.compile(r"-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?")
+_WARNING_NORMALIZE_HEX_ADDR: Final[re.Pattern[str]] = re.compile(r"0x[0-9a-fA-F]+")
+_WARNING_NORMALIZE_WHITESPACE: Final[re.Pattern[str]] = re.compile(r"\s+")
+_WARNING_MESSAGE_MAX_LENGTH: Final[int] = 240
+_DEFAULT_WARNING_LIMIT: Final[int] = 10
 
 
 def _load_context() -> dict[str, Any]:
@@ -130,13 +145,56 @@ def _error_artifacts(exc: Exception) -> dict[str, str]:
     return {"error": str(exc), "traceback": _truncate(traceback.format_exc(), 1000), "execution_status": "error"}
 
 
-def _extract_warnings(stderr: str) -> list[str]:
-    """Extract warning messages from stderr."""
-    warnings: list[str] = []
-    for line in stderr.splitlines():
-        if "warning" in line.lower() or "deprecated" in line.lower():
-            warnings.append(line.strip())
-    return warnings[:10]
+def _extract_warnings(stderr: str, *, limit: int = _DEFAULT_WARNING_LIMIT) -> list[str]:
+    """Extract distinct warning messages from stderr.
+
+    Matches Python ``warnings`` module output, library-prefixed warnings
+    (e.g. ``[LightGBM] [Warning] ...``), and generic ``WARNING:`` lines.
+    Repeated warnings (per-fold or per-iteration emissions) collapse to a
+    single representative entry so the evolver receives high-signal feedback.
+    """
+    seen: set[tuple[str, str]] = set()
+    extracted: list[str] = []
+    for raw_line in stderr.splitlines():
+        line = raw_line.rstrip()
+        if not line:
+            continue
+        parsed = _parse_warning_line(line)
+        if parsed is None:
+            continue
+        category, message = parsed
+        message = _truncate(message, _WARNING_MESSAGE_MAX_LENGTH)
+        key = (category, _normalize_warning_message(message))
+        if key in seen:
+            continue
+        seen.add(key)
+        extracted.append(f"{category}: {message}")
+        if len(extracted) >= limit:
+            break
+    return extracted
+
+
+def _parse_warning_line(line: str) -> tuple[str, str] | None:
+    """Identify a warning line and return ``(category, message)`` if present."""
+    if match := _WARNING_FILE_PATTERN.match(line):
+        return match.group("category"), match.group("message").strip()
+    if match := _WARNING_BRACKET_PATTERN.match(line):
+        return f"{match.group('library')}Warning", match.group("message").strip()
+    if match := _WARNING_INLINE_PATTERN.match(line):
+        return match.group("category"), match.group("message").strip()
+    if match := _WARNING_GENERIC_PATTERN.match(line):
+        library = match.group("library")
+        category = f"{library}Warning" if library else "Warning"
+        return category, match.group("message").strip()
+    return None
+
+
+def _normalize_warning_message(message: str) -> str:
+    """Collapse numeric/whitespace differences so per-iteration warnings dedupe."""
+    collapsed = _WARNING_NORMALIZE_HEX_ADDR.sub("0xN", message)
+    collapsed = _WARNING_NORMALIZE_DIGITS.sub("N", collapsed)
+    collapsed = _WARNING_NORMALIZE_WHITESPACE.sub(" ", collapsed)
+    return collapsed.strip().lower()
 
 
 def _extract_error_feedback(stderr: str, stdout: str, code: str = "") -> str:

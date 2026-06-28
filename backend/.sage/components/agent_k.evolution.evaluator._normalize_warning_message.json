@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.evolution.evaluator:_failure_metrics",
-  "line": 129,
+  "id": "agent_k.evolution.evaluator:_normalize_warning_message",
+  "line": 193,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/evolution/evaluator.py",
-  "summary": "Return metrics for a failed evaluation.",
+  "summary": "Collapse numeric/whitespace differences so per-iteration warnings dedupe.",
   "type": "function"
 }

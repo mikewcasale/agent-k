@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-06-29T03:11:05.708691+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1094,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -1011,6 +1011,30 @@
         "line": 154,
         "name": "invariants",
         "value": "[\"self._client is initialized after __post_init__.\"]"
+      },
+      {
+        "component": "agent_k.adapters.kaggle:KaggleAdapter.list_competition_files",
+        "line": 398,
+        "name": "notice",
+        "value": "Returns one dict per file with ``name``/``size``/``description``/``url`` keys."
+      },
+      {
+        "component": "agent_k.adapters.kaggle:KaggleAdapter.list_competition_files",
+        "line": 401,
+        "name": "dev",
+        "value": "Tolerates both bare-list and ``{\"files\": [...]}`` response payloads, and\nboth string and dict file entries returned by the Kaggle data-list endpoint."
+      },
+      {
+        "component": "agent_k.adapters.kaggle:normalize_competition_files",
+        "line": 564,
+        "name": "notice",
+        "value": "Accepts the raw decoded JSON returned by ``/competitions/data/list/{id}``."
+      },
+      {
+        "component": "agent_k.adapters.kaggle:normalize_competition_files",
+        "line": 567,
+        "name": "dev",
+        "value": "The endpoint may yield a bare list, ``{\"files\": [...]}``, or ``{\"datasetFiles\": [...]}``,\nand each entry may be a bare filename string or a dict with ``name``/``nameNullable``\nplus optional ``totalByt"
       }
     ],
     "agent_k/adapters/openevolve.py": [

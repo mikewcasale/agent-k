@@ -64,7 +64,7 @@ from agent_k.core.protocols import PlatformAdapter
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
 
-__all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
+__all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION", "normalize_competition_files")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
@@ -392,34 +392,34 @@ class KaggleAdapter(PlatformAdapter):
                 id=submission_id, competition_id=competition_id, file_name="", status="pending", public_score=None
             )
 
+    async def list_competition_files(self, competition_id: str) -> list[dict[str, Any]]:
+        """List competition data files with a normalized shape.
+
+        @notice: |
+            Returns one dict per file with ``name``/``size``/``description``/``url`` keys.
+
+        @dev: |
+            Tolerates both bare-list and ``{"files": [...]}`` response payloads, and
+            both string and dict file entries returned by the Kaggle data-list endpoint.
+        """
+        with logfire.span("kaggle.list_competition_files", competition_id=competition_id):
+            response = await self._request("GET", f"/competitions/data/list/{competition_id}")
+            self._raise_rules_not_accepted(response, competition_id)
+            response.raise_for_status()
+            return normalize_competition_files(response.json())
+
     async def download_data(self, competition_id: str, destination: str) -> list[str]:
         """Download competition data files."""
         with logfire.span("kaggle.download_data", competition_id=competition_id):
             dest_path = Path(destination)
             dest_path.mkdir(parents=True, exist_ok=True)
 
-            # List available files
-            response = await self._request("GET", f"/competitions/data/list/{competition_id}")
-            self._raise_rules_not_accepted(response, competition_id)
-            response.raise_for_status()
-
-            payload = response.json()
-            files = payload.get("files", []) if isinstance(payload, dict) else payload
+            files = await self.list_competition_files(competition_id)
 
             downloaded: list[str] = []
             for file_info in files:
-                if isinstance(file_info, str):
-                    file_name = file_info
-                    file_url = ""
-                else:
-                    file_name = file_info.get("name") or file_info.get("nameNullable") or ""
-                    file_url = file_info.get("url", "")
-
-                if not file_name:
-                    continue
-
-                if not file_url:
-                    file_url = f"/competitions/data/download/{competition_id}/{quote(file_name)}"
+                file_name = file_info["name"]
+                file_url = file_info.get("url") or f"/competitions/data/download/{competition_id}/{quote(file_name)}"
 
                 file_path = dest_path / file_name
                 async with self._client.stream("GET", file_url, follow_redirects=True) as file_response:
@@ -556,3 +556,50 @@ class KaggleAdapter(PlatformAdapter):
             tags=tags,
             url=data.get("url"),
         )
+
+
+def normalize_competition_files(payload: Any) -> list[dict[str, Any]]:
+    """Normalize a Kaggle competition data-file listing into a stable shape.
+
+    @notice: |
+        Accepts the raw decoded JSON returned by ``/competitions/data/list/{id}``.
+
+    @dev: |
+        The endpoint may yield a bare list, ``{"files": [...]}``, or ``{"datasetFiles": [...]}``,
+        and each entry may be a bare filename string or a dict with ``name``/``nameNullable``
+        plus optional ``totalBytes``/``description``/``url``. Empty or unparseable entries
+        are skipped so callers iterate a single, predictable schema.
+    """
+    if isinstance(payload, dict):
+        raw_files: Any = payload.get("files")
+        if raw_files is None:
+            raw_files = payload.get("datasetFiles", [])
+    elif isinstance(payload, list):
+        raw_files = payload
+    else:
+        return []
+
+    if not isinstance(raw_files, list):
+        return []
+
+    normalized: list[dict[str, Any]] = []
+    for entry in raw_files:
+        if isinstance(entry, str):
+            name = entry.strip()
+            if not name:
+                continue
+            normalized.append({"name": name, "size": None, "description": None, "url": ""})
+            continue
+        if not isinstance(entry, dict):
+            continue
+        raw_name = entry.get("name") or entry.get("nameNullable") or ""
+        name = str(raw_name).strip()
+        if not name:
+            continue
+        size = entry.get("totalBytes")
+        if size is None:
+            size = entry.get("size")
+        normalized.append(
+            {"name": name, "size": size, "description": entry.get("description"), "url": entry.get("url", "")}
+        )
+    return normalized

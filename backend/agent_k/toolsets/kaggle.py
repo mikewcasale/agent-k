@@ -304,20 +304,14 @@ async def kaggle_list_datasets(
     """
     with logfire.span("kaggle_list_datasets", competition_id=competition_id):
         adapter = _require_adapter(ctx)
-        request = getattr(adapter, "_request", None)
-        if request is None:
+        list_files = getattr(adapter, "list_competition_files", None)
+        if list_files is None:
             raise RuntimeError("Adapter does not support listing datasets")
 
-        response = await request("GET", f"/competitions/data/list/{competition_id}")
-        if response.status_code != 200:
-            raise RuntimeError(f"Failed to list datasets: {response.status_code}")
-
-        files = response.json()
+        files = await list_files(competition_id)
         return {
             "competition_id": competition_id,
-            "files": [
-                {"name": f.get("name"), "size": f.get("totalBytes"), "description": f.get("description")} for f in files
-            ],
+            "files": [{"name": f["name"], "size": f.get("size"), "description": f.get("description")} for f in files],
         }
 
 

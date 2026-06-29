@@ -6,12 +6,15 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import httpx
 import pytest
 
-from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
+from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings, normalize_competition_files
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 __all__ = ()
 
@@ -76,6 +79,115 @@ class TestKaggleAdapter:
         adapter = KaggleAdapter(config)
 
         assert adapter is not None
+
+
+class TestNormalizeCompetitionFiles:
+    """Tests for normalize_competition_files response-shape handling."""
+
+    def test_bare_list_of_dicts(self) -> None:
+        """A bare list of dict entries should map to normalized records."""
+        payload = [
+            {"name": "train.csv", "totalBytes": 100, "description": "Training data", "url": "/dl/train"},
+            {"name": "test.csv", "totalBytes": 50, "description": None},
+        ]
+
+        files = normalize_competition_files(payload)
+
+        assert files == [
+            {"name": "train.csv", "size": 100, "description": "Training data", "url": "/dl/train"},
+            {"name": "test.csv", "size": 50, "description": None, "url": ""},
+        ]
+
+    def test_dict_wrapped_files_key(self) -> None:
+        """A dict payload with a ``files`` key should be unwrapped."""
+        payload = {"files": [{"name": "train.csv", "totalBytes": 1}]}
+
+        files = normalize_competition_files(payload)
+
+        assert files == [{"name": "train.csv", "size": 1, "description": None, "url": ""}]
+
+    def test_dict_wrapped_datasetfiles_key(self) -> None:
+        """A dict payload with a ``datasetFiles`` key should be unwrapped."""
+        payload = {"datasetFiles": [{"name": "submission.csv"}]}
+
+        files = normalize_competition_files(payload)
+
+        assert files == [{"name": "submission.csv", "size": None, "description": None, "url": ""}]
+
+    def test_string_entries(self) -> None:
+        """String entries should be promoted to dicts using the string as name."""
+        files = normalize_competition_files(["train.csv", "  test.csv  ", ""])
+
+        assert files == [
+            {"name": "train.csv", "size": None, "description": None, "url": ""},
+            {"name": "test.csv", "size": None, "description": None, "url": ""},
+        ]
+
+    def test_mixed_entries_and_name_nullable_fallback(self) -> None:
+        """Mixed dict/string entries and ``nameNullable`` fallback should work."""
+        payload = [
+            "raw_string.csv",
+            {"nameNullable": "fallback.csv", "totalBytes": 10},
+            {"name": "", "nameNullable": "second.csv"},
+            {"name": "skipped_none", "totalBytes": None, "size": 99},
+        ]
+
+        files = normalize_competition_files(payload)
+
+        assert files == [
+            {"name": "raw_string.csv", "size": None, "description": None, "url": ""},
+            {"name": "fallback.csv", "size": 10, "description": None, "url": ""},
+            {"name": "second.csv", "size": None, "description": None, "url": ""},
+            {"name": "skipped_none", "size": 99, "description": None, "url": ""},
+        ]
+
+    def test_invalid_or_empty_payload_returns_empty(self) -> None:
+        """Non-list/non-dict payloads and empty containers should return ``[]``."""
+        assert normalize_competition_files(None) == []
+        assert normalize_competition_files(42) == []
+        assert normalize_competition_files({"files": "not-a-list"}) == []
+        assert normalize_competition_files({}) == []
+        assert normalize_competition_files([]) == []
+        assert normalize_competition_files([{"description": "no name"}, 42]) == []
+
+
+class TestListCompetitionFiles:
+    """Tests for KaggleAdapter.list_competition_files."""
+
+    @pytest.fixture
+    def adapter_with_transport(self) -> Callable[[httpx.MockTransport], KaggleAdapter]:
+        """Build a KaggleAdapter whose HTTP client uses the supplied mock transport."""
+
+        def factory(transport: httpx.MockTransport) -> KaggleAdapter:
+            adapter = KaggleAdapter(KaggleSettings(username="user", api_key="key"))
+            adapter._client = httpx.AsyncClient(
+                base_url=adapter.config.base_url, timeout=adapter.config.timeout, transport=transport
+            )
+            return adapter
+
+        return factory
+
+    async def test_lists_files_from_dict_payload(
+        self, adapter_with_transport: Callable[[httpx.MockTransport], KaggleAdapter]
+    ) -> None:
+        """list_competition_files should tolerate dict-wrapped payloads."""
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            assert request.url.path == "/api/v1/competitions/data/list/titanic"
+            return httpx.Response(
+                200, json={"files": [{"name": "train.csv", "totalBytes": 5, "description": "rows"}, "test.csv"]}
+            )
+
+        adapter = adapter_with_transport(httpx.MockTransport(handler))
+        try:
+            files = await adapter.list_competition_files("titanic")
+        finally:
+            await adapter._client.aclose()
+
+        assert files == [
+            {"name": "train.csv", "size": 5, "description": "rows", "url": ""},
+            {"name": "test.csv", "size": None, "description": None, "url": ""},
+        ]
 
 
 class TestKaggleAdapterFromEnv:

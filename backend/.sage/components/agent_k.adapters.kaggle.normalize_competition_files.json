@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The endpoint may yield a bare list, ``{\"files\": [...]}``, or ``{\"datasetFiles\": [...]}``,\nand each entry may be a bare filename string or a dict with ``name``/``nameNullable``\nplus optional ``totalBytes``/``description``/``url``. Empty or unparseable entries\nare skipped so callers iterate a single, predictable schema.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.adapters.kaggle:normalize_competition_files",
+  "line": 562,
+  "notice": "Accepts the raw decoded JSON returned by ``/competitions/data/list/{id}``.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/adapters/kaggle.py",
+  "summary": "Normalize a Kaggle competition data-file listing into a stable shape.",
+  "type": "function"
+}

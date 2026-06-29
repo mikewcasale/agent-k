@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Tolerates both bare-list and ``{\"files\": [...]}`` response payloads, and\nboth string and dict file entries returned by the Kaggle data-list endpoint.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.adapters.kaggle:KaggleAdapter.list_competition_files",
+  "line": 396,
+  "notice": "Returns one dict per file with ``name``/``size``/``description``/``url`` keys.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/adapters/kaggle.py",
+  "summary": "List competition data files with a normalized shape.",
+  "type": "method"
+}

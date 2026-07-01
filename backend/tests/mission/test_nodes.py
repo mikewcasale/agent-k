@@ -7,6 +7,7 @@ Licensed under the MIT License.
 from __future__ import annotations as _annotations
 
 import math
+from dataclasses import dataclass
 
 import pytest
 
@@ -17,8 +18,19 @@ from agent_k.mission.nodes import (
     PrototypeNode,
     ResearchNode,
     SubmissionNode,
+    _best_score,
+    _build_leaderboard_analysis,
     _evaluate_metric,
 )
+
+
+@dataclass
+class _LBEntry:
+    """Lightweight leaderboard entry stand-in for tests."""
+
+    rank: int
+    score: float
+
 
 __all__ = ()
 
@@ -77,3 +89,43 @@ class TestEvaluateMetric:
         """RMSLE should ignore negative targets in the denominator."""
         score = _evaluate_metric(EvaluationMetric.RMSLE, [1.0, -1.0], prediction=0.0)
         assert score == pytest.approx(math.log1p(1.0))
+
+
+class TestBestScore:
+    """Tests for the ``_best_score`` metric-direction helper."""
+
+    def test_maximize_returns_max(self) -> None:
+        """Maximize competitions rank highest score as best."""
+        assert _best_score([0.1, 0.9, 0.5], "maximize") == 0.9
+
+    def test_minimize_returns_min(self) -> None:
+        """Minimize competitions (RMSE, log_loss, ...) rank lowest score as best."""
+        assert _best_score([1.4, 0.2, 0.8], "minimize") == 0.2
+
+    def test_unknown_direction_defaults_to_min(self) -> None:
+        """Only the explicit ``maximize`` string flips to max; everything else is min."""
+        assert _best_score([1.4, 0.2, 0.8], "") == 0.2
+
+
+class TestBuildLeaderboardAnalysis:
+    """Tests for ``_build_leaderboard_analysis``."""
+
+    def test_empty_entries_returns_none(self) -> None:
+        """No parsable scores means no analysis."""
+        assert _build_leaderboard_analysis([], 0.1, "maximize") is None
+
+    def test_maximize_top_score_is_max(self) -> None:
+        """For maximize metrics, top_score matches the highest observed score."""
+        entries = [_LBEntry(rank=i, score=s) for i, s in enumerate([0.9, 0.8, 0.7, 0.6, 0.5], start=1)]
+        analysis = _build_leaderboard_analysis(entries, 0.4, "maximize")
+        assert analysis is not None
+        assert analysis.top_score == 0.9
+        assert analysis.target_score == 0.8
+
+    def test_minimize_top_score_is_min(self) -> None:
+        """Regression on the RMSE-style bug: top_score must be min for minimize metrics."""
+        entries = [_LBEntry(rank=i, score=s) for i, s in enumerate([0.10, 0.25, 0.40, 0.55, 0.70], start=1)]
+        analysis = _build_leaderboard_analysis(entries, 0.4, "minimize")
+        assert analysis is not None
+        assert analysis.top_score == 0.10
+        assert analysis.target_score == 0.25

@@ -2510,7 +2510,7 @@ def _build_leaderboard_analysis(
     ]
 
     return LeaderboardAnalysis(
-        top_score=max(scores),
+        top_score=_best_score(scores, metric_direction),
         median_score=sorted_scores[total // 2],
         target_score=target_score,
         target_percentile=target_percentile,
@@ -2519,6 +2519,15 @@ def _build_leaderboard_analysis(
         common_approaches=[],
         improvement_opportunities=[],
     )
+
+
+def _best_score(scores: list[float], metric_direction: str) -> float:
+    """Return the best score honoring ``metric_direction``.
+
+    "maximize" competitions (accuracy, AUC, F1, MAP, NDCG) rank highest scores first;
+    "minimize" competitions (RMSE, MAE, log_loss, RMSLE) rank lowest scores first.
+    """
+    return max(scores) if metric_direction == "maximize" else min(scores)
 
 
 def _serialize_findings(items: list[Any]) -> list[dict[str, Any]]:

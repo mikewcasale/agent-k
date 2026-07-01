@@ -408,11 +408,14 @@ class ScientistAgent(MemoryMixin):
                 return {"error": "No leaderboard data available"}
 
             scores = [e.score for e in leaderboard]
+            metric_direction = getattr(ctx.deps.competition, "metric_direction", "maximize")
+            best = max(scores) if metric_direction == "maximize" else min(scores)
             return {
                 "total_teams": len(leaderboard),
-                "top_score": max(scores),
+                "top_score": best,
                 "median_score": sorted(scores)[len(scores) // 2],
                 "score_range": max(scores) - min(scores),
+                "metric_direction": metric_direction,
                 "top_10_scores": [e.score for e in leaderboard[:10]],
                 "top_teams": [{"rank": e.rank, "team": e.team_name, "score": e.score} for e in leaderboard[:10]],
             }

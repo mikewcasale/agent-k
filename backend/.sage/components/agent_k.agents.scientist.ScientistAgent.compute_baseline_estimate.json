@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.scientist:ScientistAgent.compute_baseline_estimate",
-  "line": 637,
+  "line": 640,
   "notice": "Uses leaderboard median and a difficulty multiplier.",
   "pattern": null,
   "similar": null,

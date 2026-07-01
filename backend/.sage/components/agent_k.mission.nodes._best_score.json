@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.agents.scientist:ScientistAgent._register_tools",
-  "line": 699,
+  "id": "agent_k.mission.nodes:_best_score",
+  "line": 2525,
   "notice": null,
   "pattern": null,
   "similar": null,
-  "source": "agent_k/agents/scientist.py",
-  "summary": "Register all research tools with the toolset.",
-  "type": "method"
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Return the best score honoring ``metric_direction``.",
+  "type": "function"
 }

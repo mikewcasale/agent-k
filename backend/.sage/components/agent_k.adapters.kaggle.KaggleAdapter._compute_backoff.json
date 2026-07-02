@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.adapters.kaggle:KaggleAdapter._parse_competition",
-  "line": 517,
+  "id": "agent_k.adapters.kaggle:KaggleAdapter._compute_backoff",
+  "line": 478,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Parse Kaggle API response into Competition model.",
+  "summary": "Compute exponential backoff with jitter for a retry attempt.",
   "type": "method"
 }

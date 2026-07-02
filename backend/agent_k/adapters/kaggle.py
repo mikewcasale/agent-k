@@ -37,10 +37,12 @@ from __future__ import annotations as _annotations
 import asyncio
 import csv
 import io
+import random
 import re
 import zipfile
 from dataclasses import dataclass, field
 from datetime import datetime
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
 from urllib.parse import quote
@@ -68,6 +70,7 @@ __all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
+_RETRYABLE_STATUS_CODES: Final[frozenset[int]] = frozenset({500, 502, 503, 504})
 
 
 class KaggleSettings(BaseSettings):
@@ -105,7 +108,13 @@ class KaggleSettings(BaseSettings):
     base_url: str = Field(default="https://www.kaggle.com/api/v1", description="Base URL for Kaggle API")
     timeout: int = Field(default=30, ge=1, description="HTTP timeout in seconds")
     max_retries: int = Field(default=3, ge=0, description="Maximum retry attempts for failed requests")
-    rate_limit_delay: float = Field(default=1.0, ge=0.0, description="Delay between rate-limited requests (seconds)")
+    rate_limit_delay: float = Field(
+        default=1.0, ge=0.0, description="Base delay for exponential retry backoff (seconds)"
+    )
+    max_backoff_seconds: float = Field(default=60.0, ge=0.0, description="Cap on retry backoff delay (seconds)")
+    backoff_jitter: float = Field(
+        default=0.25, ge=0.0, le=1.0, description="Random jitter factor (0-1) applied to retry backoff"
+    )
     dry_run: bool = Field(default=False, description="Skip Kaggle submissions when enabled")
 
 
@@ -433,24 +442,69 @@ class KaggleAdapter(PlatformAdapter):
             return downloaded
 
     async def _request(self, method: str, path: str, **kwargs: Any) -> httpx.Response:
-        """Make rate-limited request to Kaggle API."""
+        """Make rate-limited request to Kaggle API with retry on 429 and 5xx."""
         async with self._rate_limit_semaphore:
             for attempt in range(self.config.max_retries):
+                is_last_attempt = attempt == self.config.max_retries - 1
                 try:
                     response = await self._client.request(method, path, **kwargs)
-
-                    if response.status_code == 429:
-                        retry_after = int(response.headers.get("Retry-After", 60))
-                        raise RateLimitError("kaggle", "Rate limit exceeded", retry_after=retry_after)
-
-                    return response
-
                 except httpx.HTTPError as exc:
-                    if attempt == self.config.max_retries - 1:
+                    if is_last_attempt:
                         raise PlatformConnectionError("kaggle", f"Kaggle API error: {exc}") from exc
-                    await asyncio.sleep(self.config.rate_limit_delay * (attempt + 1))
+                    logfire.warning("kaggle_request_retry", error_type=type(exc).__name__, attempt=attempt + 1)
+                    await asyncio.sleep(self._compute_backoff(attempt))
+                    continue
+
+                if response.status_code == 429:
+                    retry_after = self._parse_retry_after(response, default=60)
+                    if is_last_attempt:
+                        raise RateLimitError("kaggle", "Rate limit exceeded", retry_after=retry_after)
+                    logfire.warning("kaggle_rate_limited_retry", retry_after=retry_after, attempt=attempt + 1)
+                    await asyncio.sleep(self._retry_after_delay(retry_after))
+                    continue
+
+                if response.status_code in _RETRYABLE_STATUS_CODES:
+                    if is_last_attempt:
+                        return response
+                    logfire.warning("kaggle_server_error_retry", status_code=response.status_code, attempt=attempt + 1)
+                    await asyncio.sleep(self._compute_backoff(attempt))
+                    continue
+
+                return response
 
             raise PlatformConnectionError("kaggle", "Max retries exceeded")
+
+    def _compute_backoff(self, attempt: int) -> float:
+        """Compute exponential backoff with jitter for a retry attempt."""
+        base = self.config.rate_limit_delay * (2**attempt)
+        capped = min(base, self.config.max_backoff_seconds)
+        return capped + capped * self.config.backoff_jitter * random.random()
+
+    def _retry_after_delay(self, retry_after: int) -> float:
+        """Clamp Retry-After hint by max_backoff_seconds and add jitter."""
+        capped = min(float(retry_after), self.config.max_backoff_seconds)
+        return capped + capped * self.config.backoff_jitter * random.random()
+
+    @staticmethod
+    def _parse_retry_after(response: httpx.Response, *, default: int) -> int:
+        """Parse a Retry-After header (delay-seconds or HTTP-date) into seconds."""
+        header = response.headers.get("Retry-After")
+        if header is None:
+            return default
+        header = header.strip()
+        try:
+            return max(0, int(header))
+        except ValueError:
+            pass
+        try:
+            when = parsedate_to_datetime(header)
+        except (TypeError, ValueError):
+            return default
+        if when is None:
+            return default
+        now = datetime.now(tz=when.tzinfo) if when.tzinfo else datetime.now()
+        delta = (when - now).total_seconds()
+        return max(0, int(delta)) if delta > 0 else default
 
     def _raise_rules_not_accepted(self, response: httpx.Response, competition_id: str) -> None:
         if response.status_code != 403:

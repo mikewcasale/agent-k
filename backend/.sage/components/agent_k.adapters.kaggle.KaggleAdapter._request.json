@@ -7,11 +7,11 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.adapters.kaggle:KaggleAdapter._request",
-  "line": 436,
+  "line": 445,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Make rate-limited request to Kaggle API.",
+  "summary": "Make rate-limited request to Kaggle API with retry on 429 and 5xx.",
   "type": "method"
 }

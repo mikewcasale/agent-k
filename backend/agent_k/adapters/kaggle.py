@@ -37,6 +37,7 @@ from __future__ import annotations as _annotations
 import asyncio
 import csv
 import io
+import math
 import re
 import zipfile
 from dataclasses import dataclass, field
@@ -68,6 +69,89 @@ __all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
+_LEADERBOARD_HEADER_NORMALIZER: Final[re.Pattern[str]] = re.compile(r"[^a-z0-9]+")
+_LEADERBOARD_TEAM_HEADERS: Final[frozenset[str]] = frozenset({"teamname", "team", "name"})
+_LEADERBOARD_SCORE_HEADERS: Final[frozenset[str]] = frozenset(
+    {"score", "publicscore", "publicleaderboardscore", "publicscorenullable"}
+)
+_LEADERBOARD_DATE_HEADERS: Final[frozenset[str]] = frozenset(
+    {"submissiondate", "lastsubmissiondate", "date", "lastsubmission"}
+)
+
+
+def _resolve_leaderboard_columns(header: list[str]) -> tuple[int, int, int | None]:
+    """Locate team-name, score, and submission-date columns from a CSV header.
+
+    Falls back to Kaggle's canonical ``TeamId, TeamName, SubmissionDate, Score`` order
+    when a header cell is missing or unrecognized. The date column is optional.
+    """
+    normalized = [_LEADERBOARD_HEADER_NORMALIZER.sub("", cell.lower()) for cell in header]
+
+    def _find(candidates: frozenset[str]) -> int | None:
+        for idx, cell in enumerate(normalized):
+            if cell in candidates:
+                return idx
+        return None
+
+    team_idx = _find(_LEADERBOARD_TEAM_HEADERS)
+    score_idx = _find(_LEADERBOARD_SCORE_HEADERS)
+    date_idx = _find(_LEADERBOARD_DATE_HEADERS)
+
+    if team_idx is None:
+        team_idx = 1 if len(header) > 1 else 0
+    if score_idx is None:
+        score_idx = 3 if len(header) > 3 else max(len(header) - 1, 0)
+    return team_idx, score_idx, date_idx
+
+
+def _parse_leaderboard_csv(csv_text: str, *, limit: int) -> list[LeaderboardEntry]:
+    """Parse a Kaggle leaderboard CSV into ``LeaderboardEntry`` records.
+
+    Column indices are resolved by header name so shifts in Kaggle's response layout
+    (e.g., an extra column between ``TeamName`` and ``Score``) do not silently zero
+    out every score. Rows missing a team name or a finite score are skipped and logged.
+    """
+    reader = csv.reader(io.StringIO(csv_text))
+    header = next(reader, None)
+    if header is None:
+        return []
+
+    team_idx, score_idx, date_idx = _resolve_leaderboard_columns(header)
+
+    entries: list[LeaderboardEntry] = []
+    for i, row in enumerate(reader, start=1):
+        if i > limit:
+            break
+        if not row:
+            continue
+
+        team_name = row[team_idx].strip() if team_idx < len(row) else ""
+        if not team_name:
+            logfire.warning("skipping_leaderboard_row_empty_team", row_index=i)
+            continue
+
+        raw_score = row[score_idx] if score_idx < len(row) else ""
+        try:
+            score = float(raw_score)
+        except ValueError:
+            logfire.warning("skipping_leaderboard_row_bad_score", row_index=i, raw_score=raw_score)
+            continue
+        if not math.isfinite(score):
+            logfire.warning("skipping_leaderboard_row_nonfinite_score", row_index=i, raw_score=raw_score)
+            continue
+
+        last_submission: datetime | None = None
+        if date_idx is not None and date_idx < len(row):
+            raw_date = row[date_idx].strip()
+            if raw_date:
+                try:
+                    last_submission = datetime.fromisoformat(raw_date.replace("Z", "+00:00"))
+                except ValueError:
+                    last_submission = None
+
+        entries.append(LeaderboardEntry(rank=i, team_name=team_name, score=score, last_submission=last_submission))
+
+    return entries
 
 
 class KaggleSettings(BaseSettings):
@@ -274,36 +358,17 @@ class KaggleAdapter(PlatformAdapter):
             self._raise_rules_not_accepted(response, competition_id)
             response.raise_for_status()
 
-            entries: list[LeaderboardEntry] = []
             content = response.content
             if response.headers.get("content-type", "").startswith("application/zip") or content[:2] == b"PK":
                 with zipfile.ZipFile(io.BytesIO(content)) as archive:
                     csv_name = next((name for name in archive.namelist() if name.lower().endswith(".csv")), None)
                     if not csv_name:
-                        return entries
+                        return []
                     csv_text = archive.read(csv_name).decode("utf-8", errors="ignore")
             else:
                 csv_text = response.text
 
-            reader = csv.reader(io.StringIO(csv_text))
-            if next(reader, None) is None:
-                return entries
-
-            for i, row in enumerate(reader, start=1):
-                if i > limit:
-                    break
-                if not row:
-                    continue
-                team_name = row[1] if len(row) > 1 else "Unknown"
-                score = 0.0
-                if len(row) > 2:
-                    try:
-                        score = float(row[2])
-                    except ValueError:
-                        score = 0.0
-                entries.append(LeaderboardEntry(rank=i, team_name=team_name, score=score))
-
-            return entries
+            return _parse_leaderboard_csv(csv_text, limit=limit)
 
     async def submit(self, competition_id: str, file_path: str, message: str = "") -> Submission:
         """Submit solution to Kaggle competition."""

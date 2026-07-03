@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.scientist:ScientistDeps.refresh_leaderboard",
-  "line": 226,
+  "line": 229,
   "notice": "Updates the cached leaderboard in-place.",
   "pattern": null,
   "similar": null,

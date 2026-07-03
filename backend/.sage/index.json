@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-07-03T23:07:25.325751+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -2266,289 +2266,289 @@
       },
       {
         "component": "agent_k.agents.scientist:ScientistSettings",
-        "line": 166,
+        "line": 169,
         "name": "notice",
         "value": "Configuration for the Scientist agent."
       },
       {
         "component": "agent_k.agents.scientist:ScientistSettings",
-        "line": 169,
+        "line": 172,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.scientist:ScientistSettings",
-        "line": 172,
+        "line": 175,
         "name": "pattern",
         "value": "{\"name\": \"settings\", \"rationale\": \"Centralizes research agent configuration.\", \"violations\": \"Per-run overrides lead to inconsistent outputs.\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps",
-        "line": 197,
+        "line": 200,
         "name": "notice",
         "value": "Dependencies for the Scientist agent."
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps",
-        "line": 200,
+        "line": 203,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps",
-        "line": 203,
+        "line": 206,
         "name": "pattern",
         "value": "{\"name\": \"dependency-container\", \"rationale\": \"Groups runtime services for research tools.\", \"violations\": \"Hidden globals make research runs nondeterministic.\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps",
-        "line": 208,
+        "line": 211,
         "name": "collaborators",
         "value": "{\"required\": [\"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\", \"agent_k.core.models:Competition\"], \"optional\": [\"agent_k.core.models:LeaderboardEntry\"], \"injection\": \"constructor\", \"life"
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps.refresh_leaderboard",
-        "line": 228,
+        "line": 231,
         "name": "notice",
         "value": "Updates the cached leaderboard in-place."
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps.refresh_leaderboard",
-        "line": 231,
+        "line": 234,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"], \"state\": [\"self.leaderboard\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ResearchFinding",
-        "line": 243,
+        "line": 246,
         "name": "notice",
         "value": "Individual research finding."
       },
       {
         "component": "agent_k.agents.scientist:ResearchFinding",
-        "line": 246,
+        "line": 249,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.scientist:ResearchFinding",
-        "line": 249,
+        "line": 252,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Consistent schema for research findings.\", \"violations\": \"Ad-hoc dicts are hard to validate.\"}"
       },
       {
         "component": "agent_k.agents.scientist:LeaderboardAnalysis",
-        "line": 267,
+        "line": 270,
         "name": "notice",
         "value": "Analysis of competition leaderboard."
       },
       {
         "component": "agent_k.agents.scientist:LeaderboardAnalysis",
-        "line": 270,
+        "line": 273,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.scientist:LeaderboardAnalysis",
-        "line": 273,
+        "line": 276,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Stable schema for leaderboard summaries.\", \"violations\": \"Inconsistent shapes break downstream synthesis.\"}"
       },
       {
         "component": "agent_k.agents.scientist:ResearchReport",
-        "line": 291,
+        "line": 294,
         "name": "notice",
         "value": "Complete research report for a competition."
       },
       {
         "component": "agent_k.agents.scientist:ResearchReport",
-        "line": 294,
+        "line": 297,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.scientist:ResearchReport",
-        "line": 297,
+        "line": 300,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Aggregates research findings into a stable schema.\", \"violations\": \"Free-form outputs hinder automation.\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 321,
+        "line": 324,
         "name": "notice",
         "value": "Performs leaderboard, literature, and notebook analysis.\nUse the module-level scientist_agent or agent registry."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 325,
+        "line": 328,
         "name": "dev",
         "value": "Registers research tools and synthesizes outputs into ResearchReport."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 328,
+        "line": 331,
         "name": "pattern",
         "value": "{\"name\": \"agent-singleton\", \"rationale\": \"Single instance keeps memory/tool registration consistent.\", \"violations\": \"Multiple instances duplicate tool registrations.\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 333,
+        "line": 336,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.core.models:Competition\"], \"optional\": [\"httpx:AsyncClient\"], \"injection\": \"deps via RunContext\", \"lifecycle\": \"Module-level singleton "
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 342,
+        "line": 345,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates internal caches and tool registration.\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 347,
+        "line": 350,
         "name": "invariants",
         "value": "[\"self._agent is initialized after __init__ completes.\", \"self._toolset registers research tools exactly once.\"]"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.__init__",
-        "line": 357,
+        "line": 360,
         "name": "notice",
         "value": "Builds the agent singleton and registers tools."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.__init__",
-        "line": 360,
+        "line": 363,
         "name": "dev",
         "value": "Initializes memory backend, toolset, and pydantic-ai Agent."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.__init__",
-        "line": 363,
+        "line": 366,
         "name": "state_changes",
         "value": "[\"self._settings\", \"self._toolset\", \"self._agent\"]"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_leaderboard",
-        "line": 393,
+        "line": 396,
         "name": "notice",
         "value": "Computes distribution stats and common approaches from leaderboard entries."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_leaderboard",
-        "line": 396,
+        "line": 399,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request (optional)\"], \"state\": [\"ctx.deps.leaderboard\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.get_kaggle_notebooks",
-        "line": 428,
+        "line": 431,
         "name": "notice",
         "value": "Retrieves competition notebooks ordered by vote count or freshness."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.get_kaggle_notebooks",
-        "line": 431,
+        "line": 434,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_top_kernels",
-        "line": 459,
+        "line": 462,
         "name": "notice",
         "value": "Downloads and summarizes kernel code to identify techniques."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_top_kernels",
-        "line": 462,
+        "line": 465,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.extract_techniques",
-        "line": 497,
+        "line": 500,
         "name": "notice",
         "value": "Scans code for common ML techniques and feature engineering patterns."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.extract_techniques",
-        "line": 500,
+        "line": 503,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.synthesize_strategy",
-        "line": 516,
+        "line": 519,
         "name": "notice",
         "value": "Aggregates extracted techniques into prioritized action items."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.synthesize_strategy",
-        "line": 519,
+        "line": 522,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_data_characteristics",
-        "line": 575,
+        "line": 578,
         "name": "notice",
         "value": "Profiles datasets and derives preprocessing hints."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_data_characteristics",
-        "line": 578,
+        "line": 581,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\", \"local filesystem access\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.check_external_data_rules",
-        "line": 619,
+        "line": 622,
         "name": "notice",
         "value": "Fetches rules and infers external data policy."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.check_external_data_rules",
-        "line": 622,
+        "line": 625,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.compute_baseline_estimate",
-        "line": 639,
+        "line": 642,
         "name": "notice",
         "value": "Uses leaderboard median and a difficulty multiplier."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.compute_baseline_estimate",
-        "line": 642,
+        "line": 645,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent._create_agent",
-        "line": 658,
+        "line": 661,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.agents.scientist:ScientistAgent\", \"rationale\": \"Centralizes agent wiring and toolset preparation.\", \"singleton\": true, \"cache_key\": \"module\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent._create_agent",
-        "line": 664,
+        "line": 667,
         "name": "canonical_home",
         "value": "{\"for\": [\"scientist agent construction\"], \"notes\": \"Use ScientistAgent() or module singleton.\"}"
       },
       {
         "component": "agent_k.agents.scientist:get_external_data_policy",
-        "line": 889,
+        "line": 896,
         "name": "notice",
         "value": "Retrieves competition rules and infers external data allowance."
       },
       {
         "component": "agent_k.agents.scientist:get_external_data_policy",
-        "line": 892,
+        "line": 899,
         "name": "dev",
         "value": "Uses simple heuristics and caches results when provided."
       },
       {
         "component": "agent_k.agents.scientist:get_external_data_policy",
-        "line": 895,
+        "line": 902,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"], \"state\": [\"cache (optional)\"]}"
       }

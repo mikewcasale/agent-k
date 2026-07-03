@@ -49,6 +49,7 @@ from __future__ import annotations as _annotations
 
 import csv
 import re
+import sys
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -158,6 +159,8 @@ _KERNEL_TECHNIQUE_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
     "cross_validation": re.compile(r"\b(KFold|StratifiedKFold|cross_val_score|cross_validate)\b", re.IGNORECASE),
 }
 _MISSING_VALUE_TOKENS: Final[frozenset[str]] = frozenset({"", "na", "nan", "null", "none"})
+_CSV_SUMMARY_SAMPLE_ROWS: Final[int] = 100
+_CSV_SUMMARY_FIELD_LIMIT: Final[int] = 10 * 1024 * 1024
 
 
 class ScientistSettings(BaseSettings):
@@ -851,23 +854,27 @@ class ScientistAgent(MemoryMixin):
         return summary
 
     def _summarize_csv(self, path: Path) -> dict[str, Any]:
-        with path.open("r", encoding="utf-8", newline="") as handle:
+        _raise_field_size_limit(_CSV_SUMMARY_FIELD_LIMIT)
+        with path.open("r", encoding="utf-8", newline="", errors="replace") as handle:
             reader = csv.reader(handle)
-            rows = list(reader)
+            header = next(reader, None)
+            if not header:
+                return {"row_count": 0, "column_count": 0}
 
-        if not rows:
-            return {"row_count": 0, "column_count": 0}
-
-        header = rows[0]
-        sample_rows = rows[1:101]
-        missing_counts = {col: 0 for col in header}
-        for row in sample_rows:
-            for col, value in zip(header, row, strict=False):
-                if value.strip().lower() in _MISSING_VALUE_TOKENS:
-                    missing_counts[col] += 1
+            missing_counts: dict[str, int] = dict.fromkeys(header, 0)
+            row_count = 0
+            try:
+                for row in reader:
+                    row_count += 1
+                    if row_count <= _CSV_SUMMARY_SAMPLE_ROWS:
+                        for col, value in zip(header, row, strict=False):
+                            if value.strip().lower() in _MISSING_VALUE_TOKENS:
+                                missing_counts[col] += 1
+            except csv.Error as exc:
+                logfire.warning("csv_summary_row_parse_failed", path=str(path), rows_read=row_count, error=str(exc))
 
         return {
-            "row_count": len(rows) - 1,
+            "row_count": row_count,
             "column_count": len(header),
             "columns": header,
             "missing_values": {col: count for col, count in missing_counts.items() if count > 0},
@@ -931,6 +938,16 @@ def _strip_html(text: str) -> str:
     cleaned = re.sub(r"(?is)<[^>]+>", " ", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned)
     return cleaned.strip()
+
+
+def _raise_field_size_limit(target: int) -> None:
+    current = csv.field_size_limit()
+    if current >= target:
+        return
+    try:
+        csv.field_size_limit(target)
+    except OverflowError:
+        csv.field_size_limit(sys.maxsize)
 
 
 def _parse_external_data_policy(rules_text: str) -> tuple[bool | None, list[str]]:

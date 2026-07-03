@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.adapters.kaggle:KaggleAdapter.download_data",
-  "line": 461,
+  "id": "agent_k.adapters.kaggle:_resolve_leaderboard_columns",
+  "line": 83,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Download competition data files.",
-  "type": "method"
+  "summary": "Locate team-name, score, and submission-date columns from a CSV header.",
+  "type": "function"
 }

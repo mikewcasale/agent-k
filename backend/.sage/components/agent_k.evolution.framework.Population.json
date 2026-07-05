@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.evolution.framework:Population",
-  "line": 154,
+  "line": 160,
   "notice": "Population container with selection, crossover, and mutation helpers.",
   "pattern": {
     "name": "population-model",

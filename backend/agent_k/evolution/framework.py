@@ -62,6 +62,12 @@ __all__ = (
 )
 
 
+def _fitness_key(fitness: float | None) -> float:
+    # Use an explicit None check so a legitimate fitness of 0.0 is not
+    # coerced to -inf by ``fitness or -math.inf`` (0.0 is falsy in Python).
+    return fitness if fitness is not None else -math.inf
+
+
 @dataclass(slots=True)
 class Individual(Generic[GenomeT]):
     """Evolutionary individual with lineage tracking.
@@ -120,7 +126,7 @@ class MapElitesArchive(Generic[GenomeT]):
             return
         key = self._descriptor_fn(individual.genome)
         current = self._cells.get(key)
-        if current is None or (current.fitness or 0.0) < (individual.fitness or 0.0):
+        if current is None or _fitness_key(current.fitness) < _fitness_key(individual.fitness):
             self._cells[key] = individual
             if self._max_cells and len(self._cells) > self._max_cells:
                 self._trim_archive()
@@ -130,7 +136,7 @@ class MapElitesArchive(Generic[GenomeT]):
         entries = list(self._cells.values())
         if not entries:
             return []
-        sorted_entries = sorted(entries, key=lambda item: item.fitness or 0.0, reverse=True)
+        sorted_entries = sorted(entries, key=lambda item: _fitness_key(item.fitness), reverse=True)
         selected = list(sorted_entries[:top])
         used_keys = {self._descriptor_fn(item.genome) for item in selected}
         for entry in sorted_entries:
@@ -146,7 +152,7 @@ class MapElitesArchive(Generic[GenomeT]):
     def _trim_archive(self) -> None:
         if not self._max_cells:
             return
-        entries = sorted(self._cells.items(), key=lambda item: item[1].fitness or 0.0, reverse=True)
+        entries = sorted(self._cells.items(), key=lambda item: _fitness_key(item[1].fitness), reverse=True)
         self._cells = dict(entries[: self._max_cells])
 
 
@@ -188,12 +194,12 @@ class Population(Generic[GenomeT]):
         """Return the current best individual."""
         if not self.individuals:
             return None
-        return max(self.individuals, key=lambda item: item.fitness or -math.inf)
+        return max(self.individuals, key=lambda item: _fitness_key(item.fitness))
 
     def tournament(self, *, size: int = 3) -> Individual[GenomeT]:
         """Select an individual via tournament selection."""
         candidates = self.rng.sample(self.individuals, k=min(size, len(self.individuals)))
-        return max(candidates, key=lambda item: item.fitness or -math.inf)
+        return max(candidates, key=lambda item: _fitness_key(item.fitness))
 
     def evolve_generation(
         self,
@@ -208,7 +214,7 @@ class Population(Generic[GenomeT]):
     ) -> list[Individual[GenomeT]]:
         """Advance the population by one generation."""
         self.evaluate(fitness_fn)
-        ranked = sorted(self.individuals, key=lambda item: item.fitness or -math.inf, reverse=True)
+        ranked = sorted(self.individuals, key=lambda item: _fitness_key(item.fitness), reverse=True)
         next_generation: list[Individual[GenomeT]] = list(ranked[: max(0, elitism)])
 
         while len(next_generation) < len(self.individuals):

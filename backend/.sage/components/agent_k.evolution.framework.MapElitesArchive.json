@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.evolution.framework:MapElitesArchive",
-  "line": 94,
+  "line": 100,
   "notice": "MAP-Elites archive for diversity-aware preservation.",
   "pattern": {
     "name": "archive-model",

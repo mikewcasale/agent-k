@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.evolution.framework:HyperparamSpace",
-  "line": 235,
+  "line": 241,
   "notice": "Search space definition for hyperparameter evolution.",
   "pattern": {
     "name": "search-space",

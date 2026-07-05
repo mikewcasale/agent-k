@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-07-05T01:09:35.304512+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -5516,127 +5516,127 @@
       },
       {
         "component": "agent_k.evolution.framework:Individual",
-        "line": 69,
+        "line": 75,
         "name": "notice",
         "value": "Evolutionary individual with lineage tracking."
       },
       {
         "component": "agent_k.evolution.framework:Individual",
-        "line": 72,
+        "line": 78,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.framework:Individual",
-        "line": 75,
+        "line": 81,
         "name": "pattern",
         "value": "{\"name\": \"individual-model\", \"rationale\": \"Generic dataclass for evolutionary individuals with lineage.\"}"
       },
       {
         "component": "agent_k.evolution.framework:MapElitesArchive",
-        "line": 96,
+        "line": 102,
         "name": "notice",
         "value": "MAP-Elites archive for diversity-aware preservation."
       },
       {
         "component": "agent_k.evolution.framework:MapElitesArchive",
-        "line": 99,
+        "line": 105,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.framework:MapElitesArchive",
-        "line": 102,
+        "line": 108,
         "name": "pattern",
         "value": "{\"name\": \"archive-model\", \"rationale\": \"Generic archive for MAP-Elites diversity preservation.\"}"
       },
       {
         "component": "agent_k.evolution.framework:Population",
-        "line": 156,
+        "line": 162,
         "name": "notice",
         "value": "Population container with selection, crossover, and mutation helpers."
       },
       {
         "component": "agent_k.evolution.framework:Population",
-        "line": 159,
+        "line": 165,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.framework:Population",
-        "line": 162,
+        "line": 168,
         "name": "pattern",
         "value": "{\"name\": \"population-model\", \"rationale\": \"Generic container for evolutionary population management.\"}"
       },
       {
         "component": "agent_k.evolution.framework:HyperparamSpace",
-        "line": 237,
+        "line": 243,
         "name": "notice",
         "value": "Search space definition for hyperparameter evolution."
       },
       {
         "component": "agent_k.evolution.framework:HyperparamSpace",
-        "line": 240,
+        "line": 246,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.framework:HyperparamSpace",
-        "line": 243,
+        "line": 249,
         "name": "pattern",
         "value": "{\"name\": \"search-space\", \"rationale\": \"Dataclass defining continuous, integer, categorical bounds.\"}"
       },
       {
         "component": "agent_k.evolution.framework:HyperparamGenome",
-        "line": 257,
+        "line": 263,
         "name": "notice",
         "value": "Genome wrapper for hyperparameter configurations."
       },
       {
         "component": "agent_k.evolution.framework:HyperparamGenome",
-        "line": 260,
+        "line": 266,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.framework:HyperparamGenome",
-        "line": 263,
+        "line": 269,
         "name": "pattern",
         "value": "{\"name\": \"genome-model\", \"rationale\": \"Dataclass wrapping hyperparameter key-value pairs.\"}"
       },
       {
         "component": "agent_k.evolution.framework:HyperparamEvolver",
-        "line": 274,
+        "line": 280,
         "name": "notice",
         "value": "Evolutionary hyperparameter optimizer with adaptive mutation rates."
       },
       {
         "component": "agent_k.evolution.framework:HyperparamEvolver",
-        "line": 277,
+        "line": 283,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.framework:HyperparamEvolver",
-        "line": 280,
+        "line": 286,
         "name": "pattern",
         "value": "{\"name\": \"evolver\", \"rationale\": \"Coordinates hyperparameter search with adaptive mutation.\"}"
       },
       {
         "component": "agent_k.evolution.framework:EvolutionaryFramework",
-        "line": 382,
+        "line": 388,
         "name": "notice",
         "value": "Coordinator for composing evolution components into a single loop."
       },
       {
         "component": "agent_k.evolution.framework:EvolutionaryFramework",
-        "line": 385,
+        "line": 391,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.framework:EvolutionaryFramework",
-        "line": 388,
+        "line": 394,
         "name": "pattern",
         "value": "{\"name\": \"framework\", \"rationale\": \"Composes multiple evolvers into a unified evolution loop.\"}"
       }

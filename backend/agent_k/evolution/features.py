@@ -30,7 +30,7 @@ Licensed under the MIT License.
 from __future__ import annotations as _annotations
 
 import random
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
@@ -212,21 +212,30 @@ class FeatureEvolver:
             rationale: "Coordinates evolutionary search over feature genomes."
     """
 
-    _default_domains: tuple[DomainFeatureGene, ...] = (
-        DomainFeatureGene("TotalSF", ("TotalBsmtSF", "1stFlrSF", "2ndFlrSF")),
-        DomainFeatureGene("TotalBath", ("FullBath", "HalfBath", "BsmtFullBath", "BsmtHalfBath")),
-        DomainFeatureGene("Age", ("YearBuilt", "YrSold")),
-        DomainFeatureGene("Remod_Age", ("YearRemodAdd", "YrSold")),
-        DomainFeatureGene("QualityScore", ("OverallQual", "OverallCond")),
-    )
-
     def __init__(
-        self, feature_names: list[str], *, rng: random.Random | None = None, population_size: int = 12
+        self,
+        feature_names: list[str],
+        *,
+        rng: random.Random | None = None,
+        population_size: int = 12,
+        domain_features: Iterable[DomainFeatureGene] | None = None,
+        domain_seed_count: int = 2,
     ) -> None:
         self._feature_names = feature_names
+        self._feature_name_set = frozenset(feature_names)
         self._rng = rng or random.Random()
         self._population_size = population_size
+        self._domain_features: tuple[DomainFeatureGene, ...] = tuple(
+            gene for gene in (domain_features or ()) if self._domain_gene_applicable(gene)
+        )
+        self._domain_seed_count = max(0, domain_seed_count)
         self._population = self._initialize_population()
+
+    def _domain_gene_applicable(self, gene: DomainFeatureGene) -> bool:
+        """Return True when every input column of ``gene`` exists in the dataset."""
+        if not gene.inputs:
+            return False
+        return all(feat in self._feature_name_set for feat in gene.inputs)
 
     def evolve(self, *, generations: int = 4, fitness_fn: FitnessFn[FeatureGenome] | None = None) -> dict[str, Any]:
         """Run feature evolution for a fixed number of generations."""
@@ -244,6 +253,8 @@ class FeatureEvolver:
         return Population(individuals, rng=self._rng)
 
     def _random_genome(self) -> FeatureGenome:
+        if not self._feature_names:
+            return FeatureGenome(domain_features=list(self._domain_features[: self._domain_seed_count]))
         selected = self._rng.sample(self._feature_names, k=max(1, len(self._feature_names) // 3))
         transforms = [
             TransformGene(feature=feat, transform=self._rng.choice(["log", "sqrt", "square"])) for feat in selected[:2]
@@ -254,7 +265,7 @@ class FeatureEvolver:
             interactions=[InteractionGene(selected[0], selected[-1])] if len(selected) > 2 else [],
             ratios=ratios,
             binnings=[BinningGene(selected[0], "equal_frequency", bins=10)] if selected else [],
-            domain_features=list(self._default_domains)[:2],
+            domain_features=list(self._domain_features[: self._domain_seed_count]),
             selected_features=selected,
         )
 
@@ -263,7 +274,7 @@ class FeatureEvolver:
         if selected and rng.random() < 0.4:
             removed = rng.choice(selected)
             selected = [feat for feat in selected if feat != removed]
-        if rng.random() < 0.5:
+        if self._feature_names and rng.random() < 0.5:
             selected.append(rng.choice(self._feature_names))
         transforms = list(genome.transforms)
         if selected and rng.random() < 0.5:

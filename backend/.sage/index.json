@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-07-06T22:04:28.672926+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -5466,19 +5466,19 @@
       },
       {
         "component": "agent_k.evolution.features:FeatureSelector",
-        "line": 305,
+        "line": 316,
         "name": "notice",
         "value": "Maintain a Pareto front for feature selection trade-offs."
       },
       {
         "component": "agent_k.evolution.features:FeatureSelector",
-        "line": 308,
+        "line": 319,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.features:FeatureSelector",
-        "line": 311,
+        "line": 322,
         "name": "pattern",
         "value": "{\"name\": \"selector\", \"rationale\": \"Pareto-based feature selection with population evolution.\"}"
       }

@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.evolution.features:FeatureSelector.evolve",
-  "line": 337,
+  "id": "agent_k.evolution.features:FeatureEvolver._domain_gene_applicable",
+  "line": 235,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/evolution/features.py",
-  "summary": "Evolve feature selections while maintaining Pareto front.",
+  "summary": "Return True when every input column of ``gene`` exists in the dataset.",
   "type": "method"
 }

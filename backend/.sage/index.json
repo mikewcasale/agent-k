@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-07-06T03:09:27.575165+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -2514,41 +2514,41 @@
         "component": "agent_k.agents.scientist:ScientistAgent.compute_baseline_estimate",
         "line": 639,
         "name": "notice",
-        "value": "Uses leaderboard median and a difficulty multiplier."
+        "value": "Discounts the leaderboard median by a difficulty multiplier while\nhonoring the competition's metric direction so higher-is-better and\nlower-is-better metrics both yield realistic (worse than median)\nb"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.compute_baseline_estimate",
-        "line": 642,
+        "line": 645,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent._create_agent",
-        "line": 658,
+        "line": 660,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.agents.scientist:ScientistAgent\", \"rationale\": \"Centralizes agent wiring and toolset preparation.\", \"singleton\": true, \"cache_key\": \"module\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent._create_agent",
-        "line": 664,
+        "line": 666,
         "name": "canonical_home",
         "value": "{\"for\": [\"scientist agent construction\"], \"notes\": \"Use ScientistAgent() or module singleton.\"}"
       },
       {
         "component": "agent_k.agents.scientist:get_external_data_policy",
-        "line": 889,
+        "line": 918,
         "name": "notice",
         "value": "Retrieves competition rules and infers external data allowance."
       },
       {
         "component": "agent_k.agents.scientist:get_external_data_policy",
-        "line": 892,
+        "line": 921,
         "name": "dev",
         "value": "Uses simple heuristics and caches results when provided."
       },
       {
         "component": "agent_k.agents.scientist:get_external_data_policy",
-        "line": 895,
+        "line": 924,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"], \"state\": [\"cache (optional)\"]}"
       }

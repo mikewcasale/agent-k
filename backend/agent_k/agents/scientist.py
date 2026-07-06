@@ -637,20 +637,22 @@ class ScientistAgent(MemoryMixin):
         """Estimate achievable baseline score.
 
         @notice: |
-            Uses leaderboard median and a difficulty multiplier.
+            Discounts the leaderboard median by a difficulty multiplier while
+            honoring the competition's metric direction so higher-is-better and
+            lower-is-better metrics both yield realistic (worse than median)
+            baselines.
 
         @effects:
             state:
                 - none
         """
-        _ = ctx
         if not leaderboard_scores:
             return 0.0
 
-        median = sorted(leaderboard_scores)[len(leaderboard_scores) // 2]
-        difficulty_multiplier = {"easy": 0.95, "medium": 0.85, "hard": 0.70}.get(competition_difficulty, 0.80)
-
-        return median * difficulty_multiplier
+        metric_direction = getattr(ctx.deps.competition, "metric_direction", "maximize")
+        return _apply_difficulty_multiplier(
+            leaderboard_scores, competition_difficulty=competition_difficulty, metric_direction=metric_direction
+        )
 
     def _create_agent(self) -> Agent[ScientistDeps, ResearchReport]:
         """Create the underlying pydantic-ai agent.
@@ -875,6 +877,33 @@ class ScientistAgent(MemoryMixin):
 
     def _fallback_dataset_summary(self, competition: Competition) -> dict[str, Any]:
         return {"files": [], "total_size_mb": 0.0, "notes": f"Dataset summary unavailable for {competition.title}"}
+
+
+_DIFFICULTY_MULTIPLIERS: Final[dict[str, float]] = {"easy": 0.95, "medium": 0.85, "hard": 0.70}
+_DIFFICULTY_MULTIPLIER_DEFAULT: Final[float] = 0.80
+
+
+def _apply_difficulty_multiplier(
+    leaderboard_scores: list[float], *, competition_difficulty: str, metric_direction: str
+) -> float:
+    """Discount the leaderboard median by difficulty, honoring ``metric_direction``.
+
+    For maximize metrics (accuracy, AUC, F1) a realistic baseline sits *below* the
+    leaderboard median, so the multiplier (< 1) shrinks the score. For minimize
+    metrics (RMSE, log_loss, MAE, RMSLE) worse means *higher* error, so dividing by
+    the multiplier expands the score. When the median is non-positive (unusual for
+    metrics like RMSE, but possible for maximize scores that can be negative), the
+    minimize branch falls back to the maximize expansion so the sign remains stable.
+    """
+    if not leaderboard_scores:
+        return 0.0
+
+    median = sorted(leaderboard_scores)[len(leaderboard_scores) // 2]
+    multiplier = _DIFFICULTY_MULTIPLIERS.get(competition_difficulty, _DIFFICULTY_MULTIPLIER_DEFAULT)
+
+    if metric_direction == "minimize" and median > 0 and multiplier > 0:
+        return median / multiplier
+    return median * multiplier
 
 
 async def get_external_data_policy(

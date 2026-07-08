@@ -31,8 +31,15 @@ class TestParseBaselineScore:
             ("Baseline RMSE score: 0.123", 0.123),
             ("baseline accuracy score: -1.5", -1.5),
             ("some text\nBaseline logLoss score: 1.2345\n", 1.2345),
+            ("Baseline RMSE score: 1.23e-5", 1.23e-5),
+            ("Baseline MAE score: -4.5E+3", -4500.0),
+            ("Baseline logLoss score: 1e-06", 1e-06),
+            ("Baseline accuracy score: +0.9", 0.9),
+            ("Baseline RMSE score: .25", 0.25),
             ("no score here", None),
             ("Baseline score: not-a-number", None),
+            ("Baseline RMSE score: nan", None),
+            ("Baseline RMSE score: inf", None),
         ],
     )
     def test_parse_baseline_score(self, output: str, expected: float | None) -> None:

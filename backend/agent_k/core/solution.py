@@ -31,6 +31,7 @@ from __future__ import annotations as _annotations
 
 import asyncio
 import base64
+import math
 import os
 import re
 import signal
@@ -49,9 +50,18 @@ from agent_k.infra.providers import get_model
 if TYPE_CHECKING:
     from pathlib import Path
 
-__all__ = ("BASELINE_SCORE_PATTERN", "ExecutionResult", "execute_solution", "parse_baseline_score")
+__all__ = (
+    "BASELINE_SCORE_PATTERN",
+    "FLOAT_LITERAL_PATTERN",
+    "ExecutionResult",
+    "execute_solution",
+    "parse_baseline_score",
+)
 
-BASELINE_SCORE_PATTERN: Final[re.Pattern[str]] = re.compile(r"Baseline .*? score:\s*(-?[0-9.]+)", re.IGNORECASE)
+FLOAT_LITERAL_PATTERN: Final[str] = r"[+-]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][+-]?\d+)?"
+BASELINE_SCORE_PATTERN: Final[re.Pattern[str]] = re.compile(
+    rf"Baseline .*? score:\s*({FLOAT_LITERAL_PATTERN})", re.IGNORECASE
+)
 _CODE_EXECUTION_SYSTEM_PROMPT: Final[str] = (
     "You are a code execution runner. Always call the code_execution tool with the exact "
     "Python code provided by the user message, without modification. After the tool "
@@ -137,13 +147,19 @@ def parse_baseline_score(output: str) -> float | None:
         Extracts numeric score from "Baseline ... score: X.XX" pattern.
 
     @dev: |
-        Returns None if pattern not found or value cannot be parsed.
+        Accepts signed decimals, scientific notation (``1.23e-5``), and
+        integer literals. Returns None if the pattern does not match, if
+        the captured literal cannot be parsed as a finite float, or if the
+        parsed value is NaN/Inf (which downstream fitness code cannot use).
     """
     if match := BASELINE_SCORE_PATTERN.search(output):
         try:
-            return float(match.group(1))
+            value = float(match.group(1))
         except ValueError:
-            pass
+            return None
+        if not math.isfinite(value):
+            return None
+        return value
     return None
 
 

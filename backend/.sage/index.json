@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-07-08T00:07:19.137256+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -4270,45 +4270,45 @@
       },
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 84,
+        "line": 94,
         "name": "notice",
         "value": "Result of executing a solution script."
       },
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 87,
+        "line": 97,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 90,
+        "line": 100,
         "name": "pattern",
         "value": "{\"name\": \"execution-result\", \"rationale\": \"Standardizes subprocess outputs for solution runs.\", \"violations\": \"Tuple returns drop context for debugging.\"}"
       },
       {
         "component": "agent_k.core.solution:execute_solution",
-        "line": 115,
+        "line": 125,
         "name": "notice",
         "value": "Runs Python code in an isolated subprocess with timeout support."
       },
       {
         "component": "agent_k.core.solution:execute_solution",
-        "line": 118,
+        "line": 128,
         "name": "dev",
         "value": "Normalizes Kaggle paths, sanitizes environment, and captures output.\nSupports builtin code execution tool or local subprocess execution."
       },
       {
         "component": "agent_k.core.solution:parse_baseline_score",
-        "line": 136,
+        "line": 146,
         "name": "notice",
         "value": "Extracts numeric score from \"Baseline ... score: X.XX\" pattern."
       },
       {
         "component": "agent_k.core.solution:parse_baseline_score",
-        "line": 139,
+        "line": 149,
         "name": "dev",
-        "value": "Returns None if pattern not found or value cannot be parsed."
+        "value": "Accepts signed decimals, scientific notation (``1.23e-5``), and\ninteger literals. Returns None if the pattern does not match, if\nthe captured literal cannot be parsed as a finite float, or if the\npars"
       }
     ],
     "agent_k/core/strategy.py": [
@@ -5254,37 +5254,37 @@
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate",
-        "line": 321,
+        "line": 335,
         "name": "notice",
         "value": "Evaluate a program and return metrics and artifacts for OpenEvolve."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate",
-        "line": 324,
+        "line": 338,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage1",
-        "line": 403,
+        "line": 417,
         "name": "notice",
         "value": "Stage 1: Quick syntax and import validation."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage1",
-        "line": 406,
+        "line": 420,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage2",
-        "line": 501,
+        "line": 515,
         "name": "notice",
         "value": "Stage 2: Medium evaluation on subset of data."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage2",
-        "line": 504,
+        "line": 518,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       }

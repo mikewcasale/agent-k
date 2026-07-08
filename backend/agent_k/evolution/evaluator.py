@@ -32,6 +32,7 @@ from __future__ import annotations as _annotations
 import ast
 import asyncio
 import json
+import math
 import os
 import re
 import shutil
@@ -48,6 +49,9 @@ if TYPE_CHECKING:
     from agent_k.core.hints import PreprocessingHint
 
 __all__ = ("evaluate", "evaluate_stage1", "evaluate_stage2")
+
+_FLOAT_LITERAL: Final[str] = r"[+-]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][+-]?\d+)?"
+_FOLD_SCORE_PATTERN: Final[re.Pattern[str]] = re.compile(rf"Fold\s+\d+[:\s]+({_FLOAT_LITERAL})")
 
 # Ensure repo root is importable when OpenEvolve loads this file directly.
 _REPO_ROOT: Final[Path] = Path(__file__).resolve().parents[2]
@@ -276,21 +280,31 @@ def _compute_cv_variance(stdout: str) -> float:
     Parses stdout for CV fold scores and computes their variance.
     Lower variance indicates more stable/robust solutions.
 
+    Accepts signed decimals and scientific notation, so scorers that
+    print negative-CV values (sklearn's ``neg_*`` scorers) or tiny
+    losses in exponential form still contribute to the variance signal.
+    Non-finite values (``NaN``/``Inf``) are skipped rather than crashing
+    the statistic.
+
     Args:
         stdout: Standard output from solution execution.
 
     Returns:
-        Variance of CV fold scores, or 0.0 if not found.
+        Variance of CV fold scores, or 0.0 if fewer than two finite
+        scores are found.
     """
-    # Look for patterns like "Fold 1: 0.85", "Fold 2: 0.83", etc.
-    fold_pattern = re.compile(r"Fold\s+\d+[:\s]+([0-9.]+)")
-    fold_scores = [float(match) for match in fold_pattern.findall(stdout)]
+    fold_scores: list[float] = []
+    for raw in _FOLD_SCORE_PATTERN.findall(stdout):
+        try:
+            value = float(raw)
+        except ValueError:
+            continue
+        if math.isfinite(value):
+            fold_scores.append(value)
 
     if len(fold_scores) < 2:
-        # Not enough fold scores to compute variance
         return 0.0
 
-    # Compute variance
     mean_score = sum(fold_scores) / len(fold_scores)
     variance = sum((score - mean_score) ** 2 for score in fold_scores) / len(fold_scores)
     return float(variance)

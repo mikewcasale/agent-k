@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The callable implements an asymmetric MAE/RMSE blend suitable for\n``lightgbm.train(params, ..., fobj=...)``.\n\n- ``mae_rmse_blend`` linearly blends between MAE (0.0) and MSE (1.0) gradients.\n- ``asymmetric_weight`` multiplies the gradient/hessian for over-predictions\n  (``pred - y > 0``); values above 1 push predictions downward, values below 1\n  upward.\n\nReturns ``None`` when the genome selects a LightGBM built-in objective so the\ncaller can rely on ``fobj is None`` to mean \"use the built-in\".",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:build_custom_lightgbm_objective",
+  "line": 212,
+  "notice": "Return a LightGBM ``fobj`` callable for a custom-loss genome, else ``None``.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Return a LightGBM ``fobj`` callable for a custom-loss genome, else ``None``.",
+  "type": "function"
+}

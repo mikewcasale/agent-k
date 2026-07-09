@@ -49,9 +49,19 @@ from .framework import (
     MapElitesArchive,
     Population,
 )
-from .loss import LossFunctionEvolver, LossGenome, build_lightgbm_objective_params
+from .loss import (
+    ASYMMETRIC_OBJECTIVE,
+    BUILTIN_OBJECTIVES,
+    LossFunctionEvolver,
+    LossGenome,
+    ObjectiveCallable,
+    build_custom_lightgbm_objective,
+    build_lightgbm_objective_params,
+)
 
 __all__ = (
+    "ASYMMETRIC_OBJECTIVE",
+    "BUILTIN_OBJECTIVES",
     "BinningGene",
     "DomainFeatureGene",
     "EvolutionaryFramework",
@@ -67,8 +77,10 @@ __all__ = (
     "LossFunctionEvolver",
     "LossGenome",
     "MapElitesArchive",
+    "ObjectiveCallable",
     "Population",
     "RatioGene",
     "TransformGene",
+    "build_custom_lightgbm_objective",
     "build_lightgbm_objective_params",
 )

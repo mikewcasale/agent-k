@@ -139,7 +139,7 @@ def _extract_warnings(stderr: str) -> list[str]:
     return warnings[:10]
 
 
-def _extract_error_feedback(stderr: str, stdout: str, code: str = "") -> str:
+def _extract_error_feedback(stderr: str, stdout: str, code: str = "", *, timed_out: bool = False) -> str:
     """Extract structured error feedback with actionable mutation hints.
 
     Analyzes execution output and provides specific guidance for the LLM
@@ -149,6 +149,9 @@ def _extract_error_feedback(stderr: str, stdout: str, code: str = "") -> str:
         stderr: Standard error output from execution.
         stdout: Standard output from execution.
         code: Optional solution code for context.
+        timed_out: Whether the harness killed the process for exceeding its
+            wall-clock budget. Set from ExecutionResult.timed_out so the
+            Timeout hint fires even when SIGKILL leaves no marker in stderr.
 
     Returns:
         Structured feedback string with mutation hints.
@@ -156,6 +159,17 @@ def _extract_error_feedback(stderr: str, stdout: str, code: str = "") -> str:
     feedback_parts: list[str] = []
 
     # === ERROR-SPECIFIC HINTS ===
+
+    # Timeout issues — check the ExecutionResult flag first so a SIGKILL'd
+    # process (empty stderr) still surfaces the actionable Timeout hint.
+    timeout_in_output = "timeout" in stderr.lower() or "timed out" in stderr.lower()
+    if timed_out or timeout_in_output:
+        feedback_parts.append(
+            "MUTATION HINT [Timeout]: Speed up execution:\n"
+            "- Reduce n_estimators, max_depth, or early_stopping_rounds\n"
+            "- Use fewer CV folds (3 instead of 5)\n"
+            "- Subsample training data"
+        )
 
     # Import errors - suggest fallback patterns
     if "ImportError" in stderr or "ModuleNotFoundError" in stderr:
@@ -190,15 +204,6 @@ def _extract_error_feedback(stderr: str, stdout: str, code: str = "") -> str:
             "- Use `dtype='float32'` instead of float64\n"
             "- Add `gc.collect()` after large operations\n"
             "- Reduce batch size or n_estimators"
-        )
-
-    # Timeout issues
-    if "timeout" in stderr.lower() or "timed out" in stderr.lower():
-        feedback_parts.append(
-            "MUTATION HINT [Timeout]: Speed up execution:\n"
-            "- Reduce n_estimators, max_depth, or early_stopping_rounds\n"
-            "- Use fewer CV folds (3 instead of 5)\n"
-            "- Subsample training data"
         )
 
     # === OUTPUT QUALITY HINTS ===
@@ -370,7 +375,7 @@ def evaluate(program_path: str) -> EvaluationResult:
     # Build structured error feedback for failed evaluations
     error_feedback = ""
     if result.returncode != 0:
-        error_feedback = _extract_error_feedback(result.stderr, result.stdout)
+        error_feedback = _extract_error_feedback(result.stderr, result.stdout, timed_out=result.timed_out)
 
     artifacts = {
         "stdout": _truncate(result.stdout, 2000),
@@ -535,10 +540,15 @@ def evaluate_stage2(program_path: str) -> EvaluationResult:
         valid = result.returncode == 0 and cv_score is not None and submission_path.exists()
 
         if not valid:
-            error_feedback = _extract_error_feedback(result.stderr, result.stdout)
-            logfire.info("stage2_execution_failed", returncode=result.returncode)
+            error_feedback = _extract_error_feedback(result.stderr, result.stdout, timed_out=result.timed_out)
+            logfire.info("stage2_execution_failed", returncode=result.returncode, timed_out=result.timed_out)
             return EvaluationResult(
-                metrics={"combined_score": 0.0, "fitness": 0.0, "valid": 0.0},
+                metrics={
+                    "combined_score": 0.0,
+                    "fitness": 0.0,
+                    "valid": 0.0,
+                    "timeout": 1.0 if result.timed_out else 0.0,
+                },
                 artifacts={
                     "error": "Execution failed on subset",
                     "stage": "stage2",

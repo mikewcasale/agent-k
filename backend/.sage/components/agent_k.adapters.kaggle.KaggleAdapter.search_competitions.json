@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.adapters.kaggle:KaggleAdapter.search_competitions",
-  "line": 200,
+  "line": 283,
   "notice": null,
   "pattern": null,
   "similar": null,

@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-07-10T04:10:23.394208+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1092,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -947,68 +947,80 @@
         "value": "{\"last_verified\": \"2026-01-26\", \"owners\": [\"agent-k-core\"]}"
       },
       {
+        "component": "agent_k.adapters.kaggle:detect_evaluation_metric",
+        "line": 139,
+        "name": "notice",
+        "value": "Detect the evaluation metric and optimization direction from a raw string."
+      },
+      {
+        "component": "agent_k.adapters.kaggle:detect_evaluation_metric",
+        "line": 142,
+        "name": "dev",
+        "value": "See module for behavior details and invariants."
+      },
+      {
         "component": "agent_k.adapters.kaggle:KaggleSettings",
-        "line": 78,
+        "line": 161,
         "name": "notice",
         "value": "Settings for Kaggle adapter."
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleSettings",
-        "line": 81,
+        "line": 164,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleSettings",
-        "line": 84,
+        "line": 167,
         "name": "pattern",
         "value": "{\"name\": \"settings\", \"rationale\": \"Centralizes Kaggle adapter configuration.\", \"violations\": \"Ad-hoc config makes auth inconsistent.\"}"
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 126,
+        "line": 209,
         "name": "notice",
         "value": "Async adapter for Kaggle competition APIs."
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 129,
+        "line": 212,
         "name": "dev",
         "value": "Wraps HTTP calls with retry/backoff and normalizes responses."
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 132,
+        "line": 215,
         "name": "pattern",
         "value": "{\"name\": \"adapter\", \"rationale\": \"Encapsulates Kaggle-specific API behavior.\", \"violations\": \"Direct HTTP use scatters auth/rate-limit logic.\"}"
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 137,
+        "line": 220,
         "name": "implements",
         "value": "[\"agent_k.core.protocols:PlatformAdapter\"]"
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 140,
+        "line": 223,
         "name": "inheritdoc",
         "value": "[\"agent_k.core.protocols:PlatformAdapter\"]"
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 143,
+        "line": 226,
         "name": "collaborators",
         "value": "{\"required\": [\"httpx:AsyncClient\"], \"injection\": \"dataclass\", \"lifecycle\": \"Use as async context manager per mission.\"}"
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 149,
+        "line": 232,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates internal auth and rate-limit state.\"}"
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 154,
+        "line": 237,
         "name": "invariants",
         "value": "[\"self._client is initialized after __post_init__.\"]"
       }

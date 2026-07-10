@@ -11,7 +11,8 @@ from typing import Any
 import httpx
 import pytest
 
-from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
+from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings, detect_evaluation_metric
+from agent_k.core.models import EvaluationMetric
 
 __all__ = ()
 
@@ -88,3 +89,83 @@ class TestKaggleAdapterFromEnv:
 
         # The from_env method should handle missing credentials
         # Test depends on implementation
+
+
+class TestDetectEvaluationMetric:
+    """Tests for `detect_evaluation_metric`.
+
+    Kaggle's ``evaluationMetric`` field returns free-form names ("RMSE",
+    "RootMeanSquaredError", "MulticlassLoss", "SMAPE"). Mislabelling a
+    minimize metric as maximize (or vice-versa) inverts the direction the
+    prototype/evolution phases optimize toward, so this parser has to be
+    both broad and robust.
+    """
+
+    @pytest.mark.parametrize(
+        ("raw", "expected_metric", "expected_direction"),
+        [
+            # Regression (minimize).
+            ("RMSE", EvaluationMetric.RMSE, "minimize"),
+            ("rmse", EvaluationMetric.RMSE, "minimize"),
+            ("RootMeanSquaredError", EvaluationMetric.RMSE, "minimize"),
+            ("MeanColumnwiseRootMeanSquaredError", EvaluationMetric.RMSE, "minimize"),
+            ("MeanSquaredError", EvaluationMetric.RMSE, "minimize"),
+            ("MSE", EvaluationMetric.RMSE, "minimize"),
+            ("RMSPE", EvaluationMetric.RMSE, "minimize"),
+            ("RMSLE", EvaluationMetric.RMSLE, "minimize"),
+            ("RootMeanSquaredLogarithmicError", EvaluationMetric.RMSLE, "minimize"),
+            ("MeanColumnwiseRootMeanSquaredLogarithmicError", EvaluationMetric.RMSLE, "minimize"),
+            ("MAE", EvaluationMetric.MAE, "minimize"),
+            ("MeanAbsoluteError", EvaluationMetric.MAE, "minimize"),
+            ("MedianAbsoluteError", EvaluationMetric.MAE, "minimize"),
+            ("MAPE", EvaluationMetric.MAE, "minimize"),
+            ("SMAPE", EvaluationMetric.MAE, "minimize"),
+            ("SymmetricMeanAbsolutePercentageError", EvaluationMetric.MAE, "minimize"),
+            # Classification loss (minimize).
+            ("LogLoss", EvaluationMetric.LOG_LOSS, "minimize"),
+            ("logloss", EvaluationMetric.LOG_LOSS, "minimize"),
+            ("Log loss", EvaluationMetric.LOG_LOSS, "minimize"),
+            ("MulticlassLoss", EvaluationMetric.LOG_LOSS, "minimize"),
+            ("CategoricalCrossentropy", EvaluationMetric.LOG_LOSS, "minimize"),
+            ("BinaryCrossentropy", EvaluationMetric.LOG_LOSS, "minimize"),
+            # Classification score (maximize).
+            ("Accuracy", EvaluationMetric.ACCURACY, "maximize"),
+            ("CategorizationAccuracy", EvaluationMetric.ACCURACY, "maximize"),
+            ("QuadraticWeightedKappa", EvaluationMetric.ACCURACY, "maximize"),
+            ("Kappa", EvaluationMetric.ACCURACY, "maximize"),
+            ("AUC", EvaluationMetric.AUC, "maximize"),
+            ("AUCROC", EvaluationMetric.AUC, "maximize"),
+            ("ROCAUC", EvaluationMetric.AUC, "maximize"),
+            ("AUCPR", EvaluationMetric.AUC, "maximize"),
+            # F-score family (maximize).
+            ("F1", EvaluationMetric.F1, "maximize"),
+            ("F1Score", EvaluationMetric.F1, "maximize"),
+            ("MacroFScore", EvaluationMetric.F1, "maximize"),
+            ("MicroFScore", EvaluationMetric.F1, "maximize"),
+            ("MeanFScoreEntry", EvaluationMetric.F1, "maximize"),
+            ("MeanFBeta", EvaluationMetric.F1, "maximize"),
+            # Ranking (maximize).
+            ("MAP", EvaluationMetric.MAP, "maximize"),
+            ("MAP@10", EvaluationMetric.MAP, "maximize"),
+            ("MeanAveragePrecision", EvaluationMetric.MAP, "maximize"),
+            ("NDCG", EvaluationMetric.NDCG, "maximize"),
+            ("NDCG@5", EvaluationMetric.NDCG, "maximize"),
+            ("NormalizedDiscountedCumulativeGain", EvaluationMetric.NDCG, "maximize"),
+            # Empty / whitespace / unknown → safe defaults.
+            ("", EvaluationMetric.ACCURACY, "maximize"),
+            ("   ", EvaluationMetric.ACCURACY, "maximize"),
+            ("SomeCustomScore", EvaluationMetric.ACCURACY, "maximize"),
+            # Unknown *error* / *loss* names must still be minimize.
+            ("SomeCustomError", EvaluationMetric.ACCURACY, "minimize"),
+            ("BespokeLoss", EvaluationMetric.ACCURACY, "minimize"),
+            ("PixelDeviation", EvaluationMetric.ACCURACY, "minimize"),
+        ],
+    )
+    def test_detect_evaluation_metric(
+        self, raw: str, expected_metric: EvaluationMetric, expected_direction: str
+    ) -> None:
+        """Every Kaggle-shaped metric string maps to the expected enum + direction."""
+        metric, direction = detect_evaluation_metric(raw)
+
+        assert metric is expected_metric
+        assert direction == expected_direction

@@ -60,14 +60,97 @@ from agent_k.core.exceptions import (
 )
 from agent_k.core.models import Competition, CompetitionType, EvaluationMetric, LeaderboardEntry, Submission
 from agent_k.core.protocols import PlatformAdapter
+from agent_k.core.types import MetricDirection
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
 
-__all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
+__all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION", "detect_evaluation_metric")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
+
+_NON_ALNUM_RE: Final[re.Pattern[str]] = re.compile(r"[^a-z0-9]+")
+_EVALUATION_METRIC_ALIASES: Final[tuple[tuple[str, EvaluationMetric, MetricDirection], ...]] = (
+    # Order matters: longest / most-specific keys must precede more generic ones so
+    # that "rootmeansquaredlogarithmicerror" matches RMSLE before RMSE.
+    # Regression (minimize).
+    ("rootmeansquaredlogarithmicerror", EvaluationMetric.RMSLE, "minimize"),
+    ("meancolumnwiserootmeansquaredlogarithmicerror", EvaluationMetric.RMSLE, "minimize"),
+    ("rmsle", EvaluationMetric.RMSLE, "minimize"),
+    ("logarithmic", EvaluationMetric.RMSLE, "minimize"),
+    ("rootmeansquarederror", EvaluationMetric.RMSE, "minimize"),
+    ("meancolumnwiserootmeansquarederror", EvaluationMetric.RMSE, "minimize"),
+    ("meansquarederror", EvaluationMetric.RMSE, "minimize"),
+    ("rmspe", EvaluationMetric.RMSE, "minimize"),
+    ("rmse", EvaluationMetric.RMSE, "minimize"),
+    ("mse", EvaluationMetric.RMSE, "minimize"),
+    ("symmetricmeanabsolutepercentageerror", EvaluationMetric.MAE, "minimize"),
+    ("meanabsolutepercentageerror", EvaluationMetric.MAE, "minimize"),
+    ("meanabsoluteerror", EvaluationMetric.MAE, "minimize"),
+    ("meancolumnwiseabsoluteerror", EvaluationMetric.MAE, "minimize"),
+    ("medianabsoluteerror", EvaluationMetric.MAE, "minimize"),
+    ("smape", EvaluationMetric.MAE, "minimize"),
+    ("mape", EvaluationMetric.MAE, "minimize"),
+    ("mae", EvaluationMetric.MAE, "minimize"),
+    # Classification loss (minimize).
+    ("multiclassloss", EvaluationMetric.LOG_LOSS, "minimize"),
+    ("categoricalcrossentropy", EvaluationMetric.LOG_LOSS, "minimize"),
+    ("binarycrossentropy", EvaluationMetric.LOG_LOSS, "minimize"),
+    ("crossentropy", EvaluationMetric.LOG_LOSS, "minimize"),
+    ("logloss", EvaluationMetric.LOG_LOSS, "minimize"),
+    # Classification score (maximize).
+    ("categorizationaccuracy", EvaluationMetric.ACCURACY, "maximize"),
+    ("accuracy", EvaluationMetric.ACCURACY, "maximize"),
+    ("quadraticweightedkappa", EvaluationMetric.ACCURACY, "maximize"),
+    ("cohenkappa", EvaluationMetric.ACCURACY, "maximize"),
+    ("kappa", EvaluationMetric.ACCURACY, "maximize"),
+    ("aucroc", EvaluationMetric.AUC, "maximize"),
+    ("aucpr", EvaluationMetric.AUC, "maximize"),
+    ("rocauc", EvaluationMetric.AUC, "maximize"),
+    ("auc", EvaluationMetric.AUC, "maximize"),
+    # F-score family (maximize).
+    ("macrofscore", EvaluationMetric.F1, "maximize"),
+    ("microfscore", EvaluationMetric.F1, "maximize"),
+    ("meanfscore", EvaluationMetric.F1, "maximize"),
+    ("weightedfscore", EvaluationMetric.F1, "maximize"),
+    ("meanfbeta", EvaluationMetric.F1, "maximize"),
+    ("fbeta", EvaluationMetric.F1, "maximize"),
+    ("fscore", EvaluationMetric.F1, "maximize"),
+    ("f1score", EvaluationMetric.F1, "maximize"),
+    ("f1", EvaluationMetric.F1, "maximize"),
+    # Ranking (maximize).
+    ("normalizeddiscountedcumulativegain", EvaluationMetric.NDCG, "maximize"),
+    ("meanaverageprecision", EvaluationMetric.MAP, "maximize"),
+    ("map", EvaluationMetric.MAP, "maximize"),
+    ("ndcg", EvaluationMetric.NDCG, "maximize"),
+)
+_MINIMIZE_HINT_TOKENS: Final[frozenset[str]] = frozenset({"error", "loss", "deviation", "distance"})
+
+
+def detect_evaluation_metric(raw: str) -> tuple[EvaluationMetric, MetricDirection]:
+    """Detect the evaluation metric and optimization direction from a Kaggle metric string.
+
+    Falls back to ``EvaluationMetric.ACCURACY`` with a direction inferred from
+    keyword tokens (``error``/``loss``/``deviation`` → minimize; otherwise
+    maximize) so that unrecognized error-style metrics are not silently marked
+    as maximize.
+
+    @notice: |
+        Detect the evaluation metric and optimization direction from a raw string.
+
+    @dev: |
+        See module for behavior details and invariants.
+    """
+    normalized = _NON_ALNUM_RE.sub("", raw.lower())
+    if not normalized:
+        return EvaluationMetric.ACCURACY, "maximize"
+    for key, metric, direction in _EVALUATION_METRIC_ALIASES:
+        if key in normalized:
+            return metric, direction
+    if any(token in normalized for token in _MINIMIZE_HINT_TOKENS):
+        return EvaluationMetric.ACCURACY, "minimize"
+    return EvaluationMetric.ACCURACY, "maximize"
 
 
 class KaggleSettings(BaseSettings):
@@ -470,43 +553,8 @@ class KaggleAdapter(PlatformAdapter):
             "Community": CompetitionType.COMMUNITY,
         }
 
-        # Map Kaggle metric to our enum
-        metric_map = {
-            "accuracy": EvaluationMetric.ACCURACY,
-            "auc": EvaluationMetric.AUC,
-            "logloss": EvaluationMetric.LOG_LOSS,
-            "rmse": EvaluationMetric.RMSE,
-            "mae": EvaluationMetric.MAE,
-            "rmsle": EvaluationMetric.RMSLE,
-        }
         metric_raw = str(data.get("evaluationMetric", "accuracy")).strip()
-        metric_key = metric_raw.lower()
-        metric = metric_map.get(metric_key)
-        if metric is None:
-            if "logarithmic" in metric_key or "rmsle" in metric_key:
-                metric = EvaluationMetric.RMSLE
-            elif "mean squared" in metric_key or "rmse" in metric_key:
-                metric = EvaluationMetric.RMSE
-            elif "mean absolute" in metric_key or "mae" in metric_key:
-                metric = EvaluationMetric.MAE
-            elif "log loss" in metric_key or "logloss" in metric_key:
-                metric = EvaluationMetric.LOG_LOSS
-            elif "auc" in metric_key:
-                metric = EvaluationMetric.AUC
-            else:
-                metric = EvaluationMetric.ACCURACY
-        metric_direction_map = {
-            EvaluationMetric.ACCURACY: "maximize",
-            EvaluationMetric.AUC: "maximize",
-            EvaluationMetric.F1: "maximize",
-            EvaluationMetric.LOG_LOSS: "minimize",
-            EvaluationMetric.RMSE: "minimize",
-            EvaluationMetric.MAE: "minimize",
-            EvaluationMetric.RMSLE: "minimize",
-            EvaluationMetric.MAP: "maximize",
-            EvaluationMetric.NDCG: "maximize",
-        }
-        metric_direction = metric_direction_map.get(metric, "maximize")
+        metric, metric_direction = detect_evaluation_metric(metric_raw)
 
         # Parse tags - they may be strings or dicts with 'name' key
         raw_tags = data.get("tags", [])

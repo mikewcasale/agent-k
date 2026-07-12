@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-07-12T01:13:56.986532+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -5266,25 +5266,25 @@
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage1",
-        "line": 403,
+        "line": 405,
         "name": "notice",
         "value": "Stage 1: Quick syntax and import validation."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage1",
-        "line": 406,
+        "line": 408,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage2",
-        "line": 501,
+        "line": 503,
         "name": "notice",
         "value": "Stage 2: Medium evaluation on subset of data."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage2",
-        "line": 504,
+        "line": 506,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       }

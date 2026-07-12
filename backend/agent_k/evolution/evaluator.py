@@ -367,10 +367,12 @@ def evaluate(program_path: str) -> EvaluationResult:
         "model_family": _model_family_score(code),
     }
 
-    # Build structured error feedback for failed evaluations
+    # Build structured error feedback for any invalid result so the mutation
+    # LLM gets guidance even when the process exits cleanly (returncode == 0)
+    # but forgets to print a baseline score or write submission.csv.
     error_feedback = ""
-    if result.returncode != 0:
-        error_feedback = _extract_error_feedback(result.stderr, result.stdout)
+    if not valid:
+        error_feedback = _extract_error_feedback(result.stderr, result.stdout, code=code)
 
     artifacts = {
         "stdout": _truncate(result.stdout, 2000),
@@ -535,7 +537,7 @@ def evaluate_stage2(program_path: str) -> EvaluationResult:
         valid = result.returncode == 0 and cv_score is not None and submission_path.exists()
 
         if not valid:
-            error_feedback = _extract_error_feedback(result.stderr, result.stdout)
+            error_feedback = _extract_error_feedback(result.stderr, result.stdout, code=code)
             logfire.info("stage2_execution_failed", returncode=result.returncode)
             return EvaluationResult(
                 metrics={"combined_score": 0.0, "fitness": 0.0, "valid": 0.0},

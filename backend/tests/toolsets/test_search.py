@@ -21,7 +21,25 @@ def test_build_kaggle_search_query() -> None:
 
 
 def test_build_scholarly_query_all() -> None:
-    assert build_scholarly_query("lightgbm") == "site:arxiv.org OR site:paperswithcode.com lightgbm"
+    assert build_scholarly_query("lightgbm") == "(site:arxiv.org OR site:paperswithcode.com) lightgbm"
+
+
+def test_build_scholarly_query_all_applies_topic_to_both_sites() -> None:
+    """Both site restrictions must be grouped so the topic filters both.
+
+    Without the parentheses, `site:arxiv.org OR site:paperswithcode.com lightgbm`
+    binds the topic only to the right operand of OR — arxiv results come back
+    unfiltered by topic. Assert both sites appear inside a parenthesised group
+    that precedes the topic.
+    """
+    query = build_scholarly_query("time series forecasting")
+    assert query.startswith("(")
+    open_paren = query.index("(")
+    close_paren = query.index(")")
+    inside = query[open_paren + 1 : close_paren]
+    assert "site:arxiv.org" in inside
+    assert "site:paperswithcode.com" in inside
+    assert query[close_paren + 1 :].strip() == "time series forecasting"
 
 
 def test_build_scholarly_query_arxiv() -> None:

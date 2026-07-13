@@ -88,7 +88,7 @@ def build_scholarly_query(
         return f"site:arxiv.org {topic}".strip()
     if source == "paperswithcode":
         return f"site:paperswithcode.com {topic}".strip()
-    return f"site:arxiv.org OR site:paperswithcode.com {topic}".strip()
+    return f"(site:arxiv.org OR site:paperswithcode.com) {topic}".strip()
 
 
 def create_web_search_tool(

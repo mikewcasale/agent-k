@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.adapters.kaggle:KaggleAdapter._parse_competition",
-  "line": 523,
+  "id": "agent_k.adapters.kaggle:KaggleAdapter._sleep_backoff",
+  "line": 507,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Parse Kaggle API response into Competition model.",
+  "summary": "Sleep for an exponentially-increasing delay between retries.",
   "type": "method"
 }

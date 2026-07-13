@@ -433,24 +433,84 @@ class KaggleAdapter(PlatformAdapter):
             return downloaded
 
     async def _request(self, method: str, path: str, **kwargs: Any) -> httpx.Response:
-        """Make rate-limited request to Kaggle API."""
+        """Make rate-limited request to Kaggle API.
+
+        Retries on transient network errors (``httpx.HTTPError``), HTTP 429
+        rate-limit responses (honoring ``Retry-After``), and HTTP 5xx server
+        errors. Non-retryable responses (2xx, 4xx other than 429) are returned
+        to the caller as-is so downstream code can dispatch on ``status_code``.
+
+        Raises:
+            RateLimitError: On repeated HTTP 429 responses after
+                ``max_retries`` attempts, so callers can surface a
+                rate-limit-specific message.
+            PlatformConnectionError: On repeated transport errors or when
+                retries are exhausted with a 5xx response.
+        """
         async with self._rate_limit_semaphore:
+            last_transport_error: httpx.HTTPError | None = None
+            last_response: httpx.Response | None = None
+            last_status: int | None = None
             for attempt in range(self.config.max_retries):
                 try:
                     response = await self._client.request(method, path, **kwargs)
-
-                    if response.status_code == 429:
-                        retry_after = int(response.headers.get("Retry-After", 60))
-                        raise RateLimitError("kaggle", "Rate limit exceeded", retry_after=retry_after)
-
-                    return response
-
                 except httpx.HTTPError as exc:
+                    last_transport_error = exc
                     if attempt == self.config.max_retries - 1:
                         raise PlatformConnectionError("kaggle", f"Kaggle API error: {exc}") from exc
-                    await asyncio.sleep(self.config.rate_limit_delay * (attempt + 1))
+                    await self._sleep_backoff(attempt)
+                    continue
 
-            raise PlatformConnectionError("kaggle", "Max retries exceeded")
+                status = response.status_code
+                if status == 429:
+                    retry_after = self._parse_retry_after(response.headers.get("Retry-After"))
+                    if attempt == self.config.max_retries - 1:
+                        raise RateLimitError("kaggle", "Rate limit exceeded", retry_after=int(retry_after))
+                    logfire.warning("kaggle_rate_limited", attempt=attempt + 1, retry_after=retry_after, path=path)
+                    await asyncio.sleep(retry_after)
+                    continue
+
+                if 500 <= status < 600:
+                    last_response = response
+                    last_status = status
+                    if attempt == self.config.max_retries - 1:
+                        return response
+                    logfire.warning("kaggle_server_error", attempt=attempt + 1, status=status, path=path)
+                    await self._sleep_backoff(attempt)
+                    continue
+
+                return response
+
+            # Unreachable: the loop above either returns or raises on every path.
+            if last_response is not None:
+                return last_response
+            raise PlatformConnectionError(
+                "kaggle", f"Max retries exceeded (last_status={last_status}, last_error={last_transport_error})"
+            )
+
+    def _parse_retry_after(self, header_value: str | None) -> float:
+        """Parse a Retry-After header value into seconds.
+
+        Only the delta-seconds form is honored; HTTP-date values fall back to
+        a conservative default derived from :attr:`KaggleSettings.rate_limit_delay`.
+        """
+        default = float(self.config.rate_limit_delay) * 5.0
+        if header_value is None:
+            return default
+        try:
+            value = float(header_value)
+        except (TypeError, ValueError):
+            return default
+        return max(0.0, value)
+
+    async def _sleep_backoff(self, attempt: int) -> None:
+        """Sleep for an exponentially-increasing delay between retries.
+
+        Delay is ``rate_limit_delay * 2**attempt`` capped at 30 seconds; the
+        cap keeps a burst of failures from stalling a mission for minutes.
+        """
+        delay = min(self.config.rate_limit_delay * (2**attempt), 30.0)
+        await asyncio.sleep(delay)
 
     def _raise_rules_not_accepted(self, response: httpx.Response, competition_id: str) -> None:
         if response.status_code != 403:

@@ -814,6 +814,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
             if METRIC_KEY == "mae":
                 return mean_absolute_error(y_true, preds)
             if METRIC_KEY == "rmsle":
+                preds = np.maximum(np.asarray(preds), 0.0)
                 if USES_LOG_TARGET:
                     return mean_squared_error(y_true, preds) ** 0.5
                 return mean_squared_log_error(y_true, preds) ** 0.5
@@ -879,6 +880,8 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
             test_preds = clf.predict(test_df)
             if USES_LOG_TARGET:
                 test_preds = np.expm1(test_preds)
+            if METRIC_KEY == "rmsle":
+                test_preds = np.maximum(np.asarray(test_preds), 0.0)
             if len(TARGET_COLUMNS) == 1:
                 submission[TARGET_COLUMNS[0]] = test_preds
             else:

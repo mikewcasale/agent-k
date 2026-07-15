@@ -7,10 +7,12 @@ Licensed under the MIT License.
 from __future__ import annotations as _annotations
 
 import math
+from datetime import UTC, datetime
+from types import SimpleNamespace
 
 import pytest
 
-from agent_k.core.models import EvaluationMetric
+from agent_k.core.models import Competition, CompetitionType, EvaluationMetric
 from agent_k.mission.nodes import (
     DiscoveryNode,
     EvolutionNode,
@@ -50,6 +52,31 @@ class TestPrototypeNode:
         """Node should be creatable."""
         node = PrototypeNode()
         assert node is not None
+
+    def test_generated_prototype_clips_rmsle_predictions(self) -> None:
+        """Generated RMSLE prototypes must clip predictions to non-negative.
+
+        sklearn.metrics.mean_squared_log_error raises when values are less than
+        -1, and Kaggle rejects RMSLE submissions with negative predictions, so
+        the generated prototype must clip both the validation score inputs and
+        the test-set predictions.
+        """
+        competition = Competition(
+            id="rmsle-test",
+            title="RMSLE Test",
+            competition_type=CompetitionType.PLAYGROUND,
+            metric=EvaluationMetric.RMSLE,
+            metric_direction="minimize",
+            deadline=datetime(2099, 12, 31, tzinfo=UTC),
+        )
+        research = SimpleNamespace(strategy_recommendations=["lightgbm"], recommended_approaches=[])
+
+        code = PrototypeNode()._generate_prototype(
+            competition, research, target_columns=["target"], train_target_columns=["target"], id_column="id"
+        )
+
+        assert 'if METRIC_KEY == "rmsle":\n                preds = np.maximum' in code
+        assert 'if METRIC_KEY == "rmsle":\n                test_preds = np.maximum' in code
 
 
 class TestEvolutionNode:

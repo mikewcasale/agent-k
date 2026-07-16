@@ -77,9 +77,28 @@ _GEO_LON_TOKENS: Final[tuple[str, ...]] = ("lon", "lng", "longitude")
 _PRICE_TOKENS: Final[tuple[str, ...]] = ("price", "cost", "amount", "fare", "salary", "income", "usd", "value")
 _ORDINAL_TOKENS: Final[tuple[str, ...]] = ("rank", "grade", "level", "order", "ordinal", "rating", "stage")
 _IMAGE_EXTENSIONS: Final[tuple[str, ...]] = (".png", ".jpg", ".jpeg", ".bmp", ".gif", ".tiff", ".webp")
+
+
+def _compile_word_pattern(tokens: tuple[str, ...]) -> re.Pattern[str]:
+    """Compile a case-insensitive word-boundary alternation over ``tokens``.
+
+    Boundaries treat ``_`` and non-word characters as separators so tokens like
+    ``lat`` match ``pickup_lat`` but not ``latency`` or ``platinum``.
+    """
+    alternation = "|".join(re.escape(token) for token in tokens)
+    return re.compile(rf"(?:^|[_\W])(?:{alternation})(?:$|[_\W])", re.IGNORECASE)
+
+
+_GEO_LAT_PATTERN: Final[re.Pattern[str]] = _compile_word_pattern(_GEO_LAT_TOKENS)
+_GEO_LON_PATTERN: Final[re.Pattern[str]] = _compile_word_pattern(_GEO_LON_TOKENS)
+_PRICE_TOKEN_PATTERN: Final[re.Pattern[str]] = _compile_word_pattern(_PRICE_TOKENS)
+_ORDINAL_TOKEN_PATTERN: Final[re.Pattern[str]] = _compile_word_pattern(_ORDINAL_TOKENS)
+_GEO_TOKEN_STRIP_PATTERN: Final[re.Pattern[str]] = re.compile(
+    rf"(?:^|[_\W])(?:{'|'.join(re.escape(t) for t in (*_GEO_LAT_TOKENS, *_GEO_LON_TOKENS))})(?=$|[_\W])", re.IGNORECASE
+)
 _GEO_NAME_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
-    "latitude": re.compile(r"(?:^|[_\W])lat(?:itude)?(?:$|[_\W])", re.IGNORECASE),
-    "longitude": re.compile(r"(?:^|[_\W])(?:lon|lng|longitude)(?:$|[_\W])", re.IGNORECASE),
+    "latitude": _GEO_LAT_PATTERN,
+    "longitude": _GEO_LON_PATTERN,
     "neighborhood": re.compile(r"(?:^|[_\W])(?:neighborhood|district|ward|zone|region)(?:$|[_\W])", re.IGNORECASE),
     "zipcode": re.compile(r"(?:^|[_\W])(?:zip|zipcode|postal|postcode)(?:$|[_\W])", re.IGNORECASE),
     "address": re.compile(r"(?:^|[_\W])(?:address|street|location)(?:$|[_\W])", re.IGNORECASE),
@@ -1189,15 +1208,15 @@ def _looks_like_datetime(series: pd.Series, *, threshold: float = 0.8) -> bool:
 
 
 def _is_geo_lat(name: str) -> bool:
-    return any(token in name for token in _GEO_LAT_TOKENS)
+    return _GEO_LAT_PATTERN.search(name) is not None
 
 
 def _is_geo_lon(name: str) -> bool:
-    return any(token in name for token in _GEO_LON_TOKENS)
+    return _GEO_LON_PATTERN.search(name) is not None
 
 
 def _is_price_column(name: str, sample_values: tuple[str, ...]) -> bool:
-    if any(token in name for token in _PRICE_TOKENS):
+    if _PRICE_TOKEN_PATTERN.search(name) is not None:
         return True
     for value in sample_values:
         if any(symbol in value for symbol in ("$", "€", "£", "¥")):
@@ -1214,7 +1233,7 @@ def _is_id_column(name: str, *, unique_ratio: float, is_target: bool) -> bool:
 
 
 def _is_ordinal_name(name: str) -> bool:
-    return any(token in name for token in _ORDINAL_TOKENS)
+    return _ORDINAL_TOKEN_PATTERN.search(name) is not None
 
 
 def _infer_missing_pattern(df: pd.DataFrame, target_columns: Iterable[str]) -> MissingPattern:
@@ -1314,10 +1333,8 @@ def _match_geo_pairs(columns: dict[str, ColumnProfile]) -> list[tuple[str, str]]
 
 
 def _strip_geo_token(name: str) -> str:
-    lowered = name.lower()
-    for token in (*_GEO_LAT_TOKENS, *_GEO_LON_TOKENS):
-        lowered = lowered.replace(token, "")
-    return re.sub(r"[_\W]+", "", lowered)
+    stripped = _GEO_TOKEN_STRIP_PATTERN.sub("", name.lower())
+    return re.sub(r"[_\W]+", "", stripped)
 
 
 def _detect_image_path_columns(columns: dict[str, ColumnProfile]) -> list[str]:

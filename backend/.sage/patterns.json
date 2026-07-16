@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-07-16T02:16:54.224236+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -257,28 +257,28 @@
       },
       {
         "component": "agent_k.core.hints:ColumnType",
-        "line": 94,
+        "line": 113,
         "rationale": "StrEnum for semantic column type classification.",
         "source": "agent_k/core/hints.py",
         "violations": []
       },
       {
         "component": "agent_k.core.hints:MissingPattern",
-        "line": 123,
+        "line": 142,
         "rationale": "StrEnum for MCAR/MAR/MNAR classification.",
         "source": "agent_k/core/hints.py",
         "violations": []
       },
       {
         "component": "agent_k.core.hints:HintCategory",
-        "line": 142,
+        "line": 161,
         "rationale": "StrEnum for grouping preprocessing hints by category.",
         "source": "agent_k/core/hints.py",
         "violations": []
       },
       {
         "component": "agent_k.core.hints:HintResult",
-        "line": 174,
+        "line": 193,
         "rationale": "StrEnum for hint outcome tracking.",
         "source": "agent_k/core/hints.py",
         "violations": []
@@ -1390,28 +1390,28 @@
       },
       {
         "component": "agent_k.core.hints:ColumnProfile",
-        "line": 194,
+        "line": 213,
         "rationale": "Frozen dataclass for immutable column statistics.",
         "source": "agent_k/core/hints.py",
         "violations": []
       },
       {
         "component": "agent_k.core.hints:DistributionStats",
-        "line": 242,
+        "line": 261,
         "rationale": "Frozen dataclass for immutable distribution stats.",
         "source": "agent_k/core/hints.py",
         "violations": []
       },
       {
         "component": "agent_k.core.hints:DatasetProfile",
-        "line": 280,
+        "line": 299,
         "rationale": "Frozen dataclass for immutable dataset profile.",
         "source": "agent_k/core/hints.py",
         "violations": []
       },
       {
         "component": "agent_k.core.hints:PreprocessingHint",
-        "line": 389,
+        "line": 408,
         "rationale": "Mutable dataclass for hint tracking with state.",
         "source": "agent_k/core/hints.py",
         "violations": []

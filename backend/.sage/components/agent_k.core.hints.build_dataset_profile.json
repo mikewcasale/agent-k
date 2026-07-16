@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.hints:build_dataset_profile",
-  "line": 465,
+  "line": 484,
   "notice": "Builds a comprehensive profile of dataset columns for hint generation.",
   "pattern": null,
   "similar": null,

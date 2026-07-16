@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-07-16T02:16:54.223470+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -3378,193 +3378,193 @@
       },
       {
         "component": "agent_k.core.hints:ColumnType",
-        "line": 96,
+        "line": 115,
         "name": "notice",
         "value": "Detected column semantic type."
       },
       {
         "component": "agent_k.core.hints:ColumnType",
-        "line": 99,
+        "line": 118,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.hints:ColumnType",
-        "line": 102,
+        "line": 121,
         "name": "pattern",
         "value": "{\"name\": \"enumeration\", \"rationale\": \"StrEnum for semantic column type classification.\"}"
       },
       {
         "component": "agent_k.core.hints:MissingPattern",
-        "line": 125,
+        "line": 144,
         "name": "notice",
         "value": "Missingness pattern classification."
       },
       {
         "component": "agent_k.core.hints:MissingPattern",
-        "line": 128,
-        "name": "dev",
-        "value": "See module for implementation details and extension points."
-      },
-      {
-        "component": "agent_k.core.hints:MissingPattern",
-        "line": 131,
-        "name": "pattern",
-        "value": "{\"name\": \"enumeration\", \"rationale\": \"StrEnum for MCAR/MAR/MNAR classification.\"}"
-      },
-      {
-        "component": "agent_k.core.hints:HintCategory",
-        "line": 144,
-        "name": "notice",
-        "value": "Hint category tags for prompt grouping."
-      },
-      {
-        "component": "agent_k.core.hints:HintCategory",
         "line": 147,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
-        "component": "agent_k.core.hints:HintCategory",
+        "component": "agent_k.core.hints:MissingPattern",
         "line": 150,
+        "name": "pattern",
+        "value": "{\"name\": \"enumeration\", \"rationale\": \"StrEnum for MCAR/MAR/MNAR classification.\"}"
+      },
+      {
+        "component": "agent_k.core.hints:HintCategory",
+        "line": 163,
+        "name": "notice",
+        "value": "Hint category tags for prompt grouping."
+      },
+      {
+        "component": "agent_k.core.hints:HintCategory",
+        "line": 166,
+        "name": "dev",
+        "value": "See module for implementation details and extension points."
+      },
+      {
+        "component": "agent_k.core.hints:HintCategory",
+        "line": 169,
         "name": "pattern",
         "value": "{\"name\": \"enumeration\", \"rationale\": \"StrEnum for grouping preprocessing hints by category.\"}"
       },
       {
         "component": "agent_k.core.hints:HintResult",
-        "line": 176,
+        "line": 195,
         "name": "notice",
         "value": "Result classification for a hint attempt."
       },
       {
         "component": "agent_k.core.hints:HintResult",
-        "line": 179,
+        "line": 198,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.hints:HintResult",
-        "line": 182,
+        "line": 201,
         "name": "pattern",
         "value": "{\"name\": \"enumeration\", \"rationale\": \"StrEnum for hint outcome tracking.\"}"
       },
       {
         "component": "agent_k.core.hints:ColumnProfile",
-        "line": 196,
+        "line": 215,
         "name": "notice",
         "value": "Profile statistics for a single column."
       },
       {
         "component": "agent_k.core.hints:ColumnProfile",
-        "line": 199,
+        "line": 218,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.hints:ColumnProfile",
-        "line": 202,
+        "line": 221,
         "name": "pattern",
         "value": "{\"name\": \"value-object\", \"rationale\": \"Frozen dataclass for immutable column statistics.\"}"
       },
       {
         "component": "agent_k.core.hints:DistributionStats",
-        "line": 244,
+        "line": 263,
         "name": "notice",
         "value": "Distribution statistics for a numeric column."
       },
       {
         "component": "agent_k.core.hints:DistributionStats",
-        "line": 247,
+        "line": 266,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.hints:DistributionStats",
-        "line": 250,
+        "line": 269,
         "name": "pattern",
         "value": "{\"name\": \"value-object\", \"rationale\": \"Frozen dataclass for immutable distribution stats.\"}"
       },
       {
         "component": "agent_k.core.hints:DatasetProfile",
-        "line": 282,
+        "line": 301,
         "name": "notice",
         "value": "Comprehensive dataset analysis for hint generation."
       },
       {
         "component": "agent_k.core.hints:DatasetProfile",
-        "line": 285,
+        "line": 304,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.hints:DatasetProfile",
-        "line": 288,
+        "line": 307,
         "name": "pattern",
         "value": "{\"name\": \"value-object\", \"rationale\": \"Frozen dataclass for immutable dataset profile.\"}"
       },
       {
         "component": "agent_k.core.hints:PreprocessingHint",
-        "line": 391,
+        "line": 410,
         "name": "notice",
         "value": "Single preprocessing recommendation."
       },
       {
         "component": "agent_k.core.hints:PreprocessingHint",
-        "line": 394,
+        "line": 413,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.hints:PreprocessingHint",
-        "line": 397,
+        "line": 416,
         "name": "pattern",
         "value": "{\"name\": \"value-object\", \"rationale\": \"Mutable dataclass for hint tracking with state.\"}"
       },
       {
         "component": "agent_k.core.hints:build_dataset_profile",
-        "line": 467,
+        "line": 486,
         "name": "notice",
         "value": "Builds a comprehensive profile of dataset columns for hint generation."
       },
       {
         "component": "agent_k.core.hints:build_dataset_profile",
-        "line": 470,
+        "line": 489,
         "name": "dev",
         "value": "Samples up to MAX_PROFILE_ROWS, infers column types, detects missing\npatterns, and computes target correlations."
       },
       {
         "component": "agent_k.core.hints:generate_preprocessing_hints",
-        "line": 517,
+        "line": 536,
         "name": "notice",
         "value": "Returns a list of actionable preprocessing hints based on column profiles."
       },
       {
         "component": "agent_k.core.hints:generate_preprocessing_hints",
-        "line": 520,
+        "line": 539,
         "name": "dev",
         "value": "Analyzes column types, missing patterns, and data characteristics to\ngenerate encoding, imputation, transformation, and model selection hints."
       },
       {
         "component": "agent_k.core.hints:compute_hint_priority",
-        "line": 953,
+        "line": 972,
         "name": "notice",
         "value": "Adjusts hint priority using success rates and recency from the tracker."
       },
       {
         "component": "agent_k.core.hints:compute_hint_priority",
-        "line": 956,
+        "line": 975,
         "name": "dev",
         "value": "Applies success boost, recency penalty, and amplification factors.\nReturns 0.0 if hint is suppressed."
       },
       {
         "component": "agent_k.core.hints:detect_applied_hints",
-        "line": 978,
+        "line": 997,
         "name": "notice",
         "value": "Returns hint IDs that appear to be applied in the given code."
       },
       {
         "component": "agent_k.core.hints:detect_applied_hints",
-        "line": 981,
+        "line": 1000,
         "name": "dev",
         "value": "Matches explicit hint comments, code snippet signatures, and\npattern-based detection for each hint type."
       }

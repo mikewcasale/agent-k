@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.hints:ColumnType",
-  "line": 94,
+  "line": 113,
   "notice": "Detected column semantic type.",
   "pattern": {
     "name": "enumeration",

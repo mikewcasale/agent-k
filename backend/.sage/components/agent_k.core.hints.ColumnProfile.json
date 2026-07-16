@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.hints:ColumnProfile",
-  "line": 194,
+  "line": 213,
   "notice": "Profile statistics for a single column.",
   "pattern": {
     "name": "value-object",

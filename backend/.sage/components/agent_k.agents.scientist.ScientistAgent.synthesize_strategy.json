@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.scientist:ScientistAgent.synthesize_strategy",
-  "line": 514,
+  "line": 516,
   "notice": "Aggregates extracted techniques into prioritized action items.",
   "pattern": null,
   "similar": null,

@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-07-17T23:18:26.756357+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -2440,115 +2440,115 @@
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.get_kaggle_notebooks",
-        "line": 428,
+        "line": 430,
         "name": "notice",
         "value": "Retrieves competition notebooks ordered by vote count or freshness."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.get_kaggle_notebooks",
-        "line": 431,
+        "line": 433,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_top_kernels",
-        "line": 459,
+        "line": 461,
         "name": "notice",
         "value": "Downloads and summarizes kernel code to identify techniques."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_top_kernels",
-        "line": 462,
+        "line": 464,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.extract_techniques",
-        "line": 497,
+        "line": 499,
         "name": "notice",
         "value": "Scans code for common ML techniques and feature engineering patterns."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.extract_techniques",
-        "line": 500,
+        "line": 502,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.synthesize_strategy",
-        "line": 516,
+        "line": 518,
         "name": "notice",
         "value": "Aggregates extracted techniques into prioritized action items."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.synthesize_strategy",
-        "line": 519,
+        "line": 521,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_data_characteristics",
-        "line": 575,
+        "line": 577,
         "name": "notice",
         "value": "Profiles datasets and derives preprocessing hints."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_data_characteristics",
-        "line": 578,
+        "line": 580,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\", \"local filesystem access\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.check_external_data_rules",
-        "line": 619,
+        "line": 621,
         "name": "notice",
         "value": "Fetches rules and infers external data policy."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.check_external_data_rules",
-        "line": 622,
+        "line": 624,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.compute_baseline_estimate",
-        "line": 639,
+        "line": 641,
         "name": "notice",
         "value": "Uses leaderboard median and a difficulty multiplier."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.compute_baseline_estimate",
-        "line": 642,
+        "line": 644,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent._create_agent",
-        "line": 658,
+        "line": 660,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.agents.scientist:ScientistAgent\", \"rationale\": \"Centralizes agent wiring and toolset preparation.\", \"singleton\": true, \"cache_key\": \"module\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent._create_agent",
-        "line": 664,
+        "line": 666,
         "name": "canonical_home",
         "value": "{\"for\": [\"scientist agent construction\"], \"notes\": \"Use ScientistAgent() or module singleton.\"}"
       },
       {
         "component": "agent_k.agents.scientist:get_external_data_policy",
-        "line": 889,
+        "line": 891,
         "name": "notice",
         "value": "Retrieves competition rules and infers external data allowance."
       },
       {
         "component": "agent_k.agents.scientist:get_external_data_policy",
-        "line": 892,
+        "line": 894,
         "name": "dev",
         "value": "Uses simple heuristics and caches results when provided."
       },
       {
         "component": "agent_k.agents.scientist:get_external_data_policy",
-        "line": 895,
+        "line": 897,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"], \"state\": [\"cache (optional)\"]}"
       }

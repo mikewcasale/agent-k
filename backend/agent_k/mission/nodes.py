@@ -2509,8 +2509,10 @@ def _build_leaderboard_analysis(
         for percentile in (0.0, 0.25, 0.5, 0.75, 1.0)
     ]
 
+    top_score = min(scores) if metric_direction == "minimize" else max(scores)
+
     return LeaderboardAnalysis(
-        top_score=max(scores),
+        top_score=top_score,
         median_score=sorted_scores[total // 2],
         target_score=target_score,
         target_percentile=target_percentile,

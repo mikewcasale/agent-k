@@ -166,17 +166,34 @@ class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
     async def _save_checkpoint(self, state: MissionState) -> None:
         """Save state with timestamp and clean up old checkpoints."""
         with logfire.span("mission.persistence.save", mission_id=self.mission_id):
-            timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
-            checkpoint_path = self.mission_dir / f"{CHECKPOINT_PREFIX}{timestamp}.json"
-            checkpoint_path.write_text(state.model_dump_json(indent=2), encoding="utf-8")
+            payload = state.model_dump_json(indent=2)
+            checkpoint_path = self._allocate_checkpoint_path()
+            checkpoint_path.write_text(payload, encoding="utf-8")
             await self._cleanup_old_checkpoints()
 
+    def _allocate_checkpoint_path(self) -> Path:
+        """Return a unique checkpoint path, retrying if the same instant is reused.
+
+        Multiple ``snapshot_*`` calls can fire within the same microsecond as the
+        graph transitions between short-lived nodes; without disambiguation the
+        second write would silently clobber the first and both mtime-ordered
+        rotation and the audit history would lose intermediate state.
+        """
+        timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S_%f")
+        base_path = self.mission_dir / f"{CHECKPOINT_PREFIX}{timestamp}.json"
+        if not base_path.exists():
+            return base_path
+        suffix = 1
+        while True:
+            candidate = self.mission_dir / f"{CHECKPOINT_PREFIX}{timestamp}_{suffix}.json"
+            if not candidate.exists():
+                return candidate
+            suffix += 1
+
     async def _cleanup_old_checkpoints(self) -> None:
-        checkpoints = sorted(
-            self.mission_dir.glob(f"{CHECKPOINT_PREFIX}*.json"), key=lambda p: p.stat().st_mtime, reverse=True
-        )
+        checkpoints = sorted(self.mission_dir.glob(f"{CHECKPOINT_PREFIX}*.json"), key=lambda p: p.name, reverse=True)
         for old_checkpoint in checkpoints[self.max_checkpoints :]:
-            old_checkpoint.unlink()
+            old_checkpoint.unlink(missing_ok=True)
 
 
 def create_persistence(

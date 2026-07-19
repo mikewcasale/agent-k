@@ -31,6 +31,7 @@ from __future__ import annotations as _annotations
 
 import asyncio
 import base64
+import math
 import os
 import re
 import signal
@@ -51,7 +52,9 @@ if TYPE_CHECKING:
 
 __all__ = ("BASELINE_SCORE_PATTERN", "ExecutionResult", "execute_solution", "parse_baseline_score")
 
-BASELINE_SCORE_PATTERN: Final[re.Pattern[str]] = re.compile(r"Baseline .*? score:\s*(-?[0-9.]+)", re.IGNORECASE)
+BASELINE_SCORE_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"Baseline .*? score:\s*([-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?)", re.IGNORECASE
+)
 _CODE_EXECUTION_SYSTEM_PROMPT: Final[str] = (
     "You are a code execution runner. Always call the code_execution tool with the exact "
     "Python code provided by the user message, without modification. After the tool "
@@ -137,13 +140,17 @@ def parse_baseline_score(output: str) -> float | None:
         Extracts numeric score from "Baseline ... score: X.XX" pattern.
 
     @dev: |
-        Returns None if pattern not found or value cannot be parsed.
+        Accepts integer, decimal, and scientific-notation floats. Returns
+        None if the pattern is not found, the token is not a valid float,
+        or the value is non-finite (NaN, +/-inf).
     """
     if match := BASELINE_SCORE_PATTERN.search(output):
         try:
-            return float(match.group(1))
+            value = float(match.group(1))
         except ValueError:
-            pass
+            return None
+        if math.isfinite(value):
+            return value
     return None
 
 

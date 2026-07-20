@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.kaggle:_parse_dataset_files",
+  "line": 319,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/kaggle.py",
+  "summary": "Normalize Kaggle ``/competitions/data/list`` payloads to file records.",
+  "type": "function"
+}

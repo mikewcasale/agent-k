@@ -312,13 +312,40 @@ async def kaggle_list_datasets(
         if response.status_code != 200:
             raise RuntimeError(f"Failed to list datasets: {response.status_code}")
 
-        files = response.json()
-        return {
-            "competition_id": competition_id,
-            "files": [
-                {"name": f.get("name"), "size": f.get("totalBytes"), "description": f.get("description")} for f in files
-            ],
-        }
+        return {"competition_id": competition_id, "files": _parse_dataset_files(response.json())}
+
+
+def _parse_dataset_files(payload: Any) -> list[dict[str, Any]]:
+    """Normalize Kaggle ``/competitions/data/list`` payloads to file records.
+
+    Kaggle historically returned a bare list of file entries, but current
+    responses wrap the list under a ``files`` key. Individual entries may
+    be plain filenames (str), full metadata dicts with ``name``/``totalBytes``,
+    or the ``nameNullable`` variant used by newer API versions.
+    """
+    raw_entries: Any
+    if isinstance(payload, dict):
+        raw_entries = payload.get("files", [])
+    else:
+        raw_entries = payload
+    if not isinstance(raw_entries, list):
+        return []
+
+    files: list[dict[str, Any]] = []
+    for entry in raw_entries:
+        if isinstance(entry, str):
+            files.append({"name": entry, "size": None, "description": None})
+            continue
+        if not isinstance(entry, dict):
+            continue
+        files.append(
+            {
+                "name": entry.get("name") or entry.get("nameNullable"),
+                "size": entry.get("totalBytes") if entry.get("totalBytes") is not None else entry.get("size"),
+                "description": entry.get("description"),
+            }
+        )
+    return files
 
 
 def _resolve_adapter(ctx: RunContext[Any]) -> PlatformAdapter | None:

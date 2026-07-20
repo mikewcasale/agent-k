@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.evolution.framework:MapElitesArchive.cells",
-  "line": 125,
+  "id": "agent_k.evolution.framework:_fitness_or",
+  "line": 94,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/evolution/framework.py",
-  "summary": "Return the current archive cells.",
-  "type": "method"
+  "summary": "Return ``individual.fitness`` if evaluated, else ``sentinel``.",
+  "type": "function"
 }

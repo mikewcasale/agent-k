@@ -550,11 +550,18 @@ def evaluate_stage2(program_path: str) -> EvaluationResult:
         # Calculate preliminary fitness
         fitness = _fitness_from_score(cv_score, metric_direction)
 
-        # Scale fitness to be conservative (stage2 threshold is 0.6)
-        # If it looks promising on subset, give it 0.65 to pass to full eval
-        scaled_fitness = min(0.65, fitness) if fitness > 0.4 else 0.0
+        # Solution executed end-to-end on the subset with a parseable
+        # baseline score and a submission file — it has earned a full
+        # evaluation. The 1000-row fitness estimate is too noisy to
+        # threshold against the cascade stage2 gate directly, and the
+        # direction-biased fitness (positive for maximize, non-positive
+        # for minimize) would otherwise silently drop every RMSE/MAE/
+        # RMSLE/log-loss candidate. Emit a fixed pass-through score just
+        # above the cascade stage2 threshold (0.6, see
+        # openevolve_config.yaml) so the candidate reaches full eval.
+        scaled_fitness = 0.65
 
-        logfire.info("stage2_passed", fitness=scaled_fitness, cv_score=cv_score)
+        logfire.info("stage2_passed", fitness=scaled_fitness, cv_score=cv_score, raw_fitness=fitness)
         return EvaluationResult(
             metrics={
                 "combined_score": scaled_fitness,

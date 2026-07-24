@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-07-24T04:09:06.397162+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -5456,29 +5456,29 @@
         "component": "agent_k.evolution.features:FeatureEvolver",
         "line": 207,
         "name": "dev",
-        "value": "See module for implementation details and extension points."
+        "value": "See module for implementation details and extension points.\n\nCallers may supply ``domain_templates`` with dataset-specific engineered\nfeatures so the evolver stays generic across ML problem types. Whe"
       },
       {
         "component": "agent_k.evolution.features:FeatureEvolver",
-        "line": 210,
+        "line": 214,
         "name": "pattern",
         "value": "{\"name\": \"evolver\", \"rationale\": \"Coordinates evolutionary search over feature genomes.\"}"
       },
       {
         "component": "agent_k.evolution.features:FeatureSelector",
-        "line": 305,
+        "line": 320,
         "name": "notice",
         "value": "Maintain a Pareto front for feature selection trade-offs."
       },
       {
         "component": "agent_k.evolution.features:FeatureSelector",
-        "line": 308,
+        "line": 323,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.features:FeatureSelector",
-        "line": 311,
+        "line": 326,
         "name": "pattern",
         "value": "{\"name\": \"selector\", \"rationale\": \"Pareto-based feature selection with population evolution.\"}"
       }

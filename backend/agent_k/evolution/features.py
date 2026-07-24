@@ -30,7 +30,7 @@ Licensed under the MIT License.
 from __future__ import annotations as _annotations
 
 import random
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Literal
 
@@ -207,25 +207,31 @@ class FeatureEvolver:
     @dev: |
         See module for implementation details and extension points.
 
+        Callers may supply ``domain_templates`` with dataset-specific engineered
+        features so the evolver stays generic across ML problem types. When no
+        templates are supplied, no domain features are seeded.
+
         @pattern:
             name: evolver
             rationale: "Coordinates evolutionary search over feature genomes."
     """
 
-    _default_domains: tuple[DomainFeatureGene, ...] = (
-        DomainFeatureGene("TotalSF", ("TotalBsmtSF", "1stFlrSF", "2ndFlrSF")),
-        DomainFeatureGene("TotalBath", ("FullBath", "HalfBath", "BsmtFullBath", "BsmtHalfBath")),
-        DomainFeatureGene("Age", ("YearBuilt", "YrSold")),
-        DomainFeatureGene("Remod_Age", ("YearRemodAdd", "YrSold")),
-        DomainFeatureGene("QualityScore", ("OverallQual", "OverallCond")),
-    )
-
     def __init__(
-        self, feature_names: list[str], *, rng: random.Random | None = None, population_size: int = 12
+        self,
+        feature_names: list[str],
+        *,
+        rng: random.Random | None = None,
+        population_size: int = 12,
+        domain_templates: Sequence[DomainFeatureGene] | None = None,
     ) -> None:
         self._feature_names = feature_names
         self._rng = rng or random.Random()
         self._population_size = population_size
+        self._domain_templates: tuple[DomainFeatureGene, ...] = tuple(
+            template
+            for template in (domain_templates or ())
+            if all(input_name in feature_names for input_name in template.inputs)
+        )
         self._population = self._initialize_population()
 
     def evolve(self, *, generations: int = 4, fitness_fn: FitnessFn[FeatureGenome] | None = None) -> dict[str, Any]:
@@ -244,17 +250,26 @@ class FeatureEvolver:
         return Population(individuals, rng=self._rng)
 
     def _random_genome(self) -> FeatureGenome:
-        selected = self._rng.sample(self._feature_names, k=max(1, len(self._feature_names) // 3))
+        if not self._feature_names:
+            return FeatureGenome(domain_features=list(self._domain_templates)[:2])
+        sample_size = max(1, min(len(self._feature_names), len(self._feature_names) // 3))
+        selected = self._rng.sample(self._feature_names, k=sample_size)
         transforms = [
             TransformGene(feature=feat, transform=self._rng.choice(["log", "sqrt", "square"])) for feat in selected[:2]
         ]
-        ratios = [RatioGene(numerator=selected[0], denominator=selected[-1])] if len(selected) > 2 else []
+        ratios = (
+            [RatioGene(numerator=selected[0], denominator=selected[-1])]
+            if len(selected) > 2 and selected[0] != selected[-1]
+            else []
+        )
         return FeatureGenome(
             transforms=transforms,
-            interactions=[InteractionGene(selected[0], selected[-1])] if len(selected) > 2 else [],
+            interactions=[InteractionGene(selected[0], selected[-1])]
+            if len(selected) > 2 and selected[0] != selected[-1]
+            else [],
             ratios=ratios,
             binnings=[BinningGene(selected[0], "equal_frequency", bins=10)] if selected else [],
-            domain_features=list(self._default_domains)[:2],
+            domain_features=list(self._domain_templates)[:2],
             selected_features=selected,
         )
 

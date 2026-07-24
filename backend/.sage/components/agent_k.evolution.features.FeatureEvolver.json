@@ -3,7 +3,7 @@
   "anti_patterns": null,
   "canonical_home": null,
   "custom": null,
-  "dev": "See module for implementation details and extension points.",
+  "dev": "See module for implementation details and extension points.\n\nCallers may supply ``domain_templates`` with dataset-specific engineered\nfeatures so the evolver stays generic across ML problem types. When no\ntemplates are supplied, no domain features are seeded.",
   "graph": null,
   "human_review": null,
   "id": "agent_k.evolution.features:FeatureEvolver",

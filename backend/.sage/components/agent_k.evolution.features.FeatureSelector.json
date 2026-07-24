@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.evolution.features:FeatureSelector",
-  "line": 303,
+  "line": 318,
   "notice": "Maintain a Pareto front for feature selection trade-offs.",
   "pattern": {
     "name": "selector",

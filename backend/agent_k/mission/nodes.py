@@ -2504,8 +2504,13 @@ def _build_leaderboard_analysis(
     target_rank = max(1, math.ceil(target_percentile * total))
     target_score = ranked[target_rank - 1]
 
+    # ``ranked`` is direction-aware (best at index 0), so map percentile 1.0
+    # to the top of the leaderboard and percentile 0.0 to the bottom. Sampling
+    # ``sorted_scores`` directly inverted the semantics for minimize metrics
+    # (RMSE/MAE/RMSLE/log-loss), making ``percentile=1.0`` point at the worst
+    # score rather than the best.
     distribution = [
-        {"percentile": percentile, "score": sorted_scores[min(total - 1, int(percentile * (total - 1)))]}
+        {"percentile": percentile, "score": ranked[min(total - 1, int((1.0 - percentile) * (total - 1)))]}
         for percentile in (0.0, 0.25, 0.5, 0.75, 1.0)
     ]
 

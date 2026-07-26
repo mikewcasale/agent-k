@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.tracking:extract_solution_metadata",
-  "line": 883,
+  "line": 885,
   "notice": "Extract model and feature metadata from solution code.",
   "pattern": null,
   "similar": null,

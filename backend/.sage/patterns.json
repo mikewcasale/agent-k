@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-07-26T01:15:48.243454+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -869,7 +869,7 @@
     "metadata-model": [
       {
         "component": "agent_k.core.tracking:ExperimentMetadata",
-        "line": 134,
+        "line": 136,
         "rationale": "Frozen Pydantic model for solution metadata extraction.",
         "source": "agent_k/core/tracking.py",
         "violations": []
@@ -1133,21 +1133,21 @@
     "record-model": [
       {
         "component": "agent_k.core.tracking:ExperimentRecord",
-        "line": 157,
+        "line": 159,
         "rationale": "Pydantic model for experiment persistence.",
         "source": "agent_k/core/tracking.py",
         "violations": []
       },
       {
         "component": "agent_k.core.tracking:KaggleSubmissionRecord",
-        "line": 222,
+        "line": 224,
         "rationale": "Pydantic model for Kaggle submission persistence.",
         "source": "agent_k/core/tracking.py",
         "violations": []
       },
       {
         "component": "agent_k.core.tracking:HintAttemptRecord",
-        "line": 250,
+        "line": 252,
         "rationale": "Pydantic model for hint effectiveness tracking.",
         "source": "agent_k/core/tracking.py",
         "violations": []
@@ -1345,7 +1345,7 @@
     "summary-model": [
       {
         "component": "agent_k.core.tracking:ExperimentSummary",
-        "line": 195,
+        "line": 197,
         "rationale": "Frozen Pydantic model for experiment listing.",
         "source": "agent_k/core/tracking.py",
         "violations": []
@@ -1354,7 +1354,7 @@
     "tracking-service": [
       {
         "component": "agent_k.core.tracking:HintEffectivenessTracker",
-        "line": 728,
+        "line": 730,
         "rationale": "Centralizes hint success tracking and suppression.",
         "source": "agent_k/core/tracking.py",
         "violations": [
@@ -1365,7 +1365,7 @@
     "tracking-store": [
       {
         "component": "agent_k.core.tracking:ExperimentTracker",
-        "line": 277,
+        "line": 279,
         "rationale": "Centralized persistence for experiment metadata.",
         "source": "agent_k/core/tracking.py",
         "violations": [

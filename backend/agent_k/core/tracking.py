@@ -80,37 +80,39 @@ _MODEL_SIGNATURES: Final[tuple[tuple[str, str, re.Pattern[str]], ...]] = (
     ("SVR", "svm", re.compile(r"\bSVR\b")),
     ("LinearSVR", "svm", re.compile(r"\bLinearSVR\b")),
 )
+_FLOAT_VALUE: Final[str] = r"-?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?"
+_INT_VALUE: Final[str] = r"-?\d+"
 _HYPERPARAM_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
-    "n_estimators": re.compile(r"(n_estimators\s*=\s*)(\d+)", re.IGNORECASE),
-    "learning_rate": re.compile(r"(learning_rate\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "max_depth": re.compile(r"(max_depth\s*=\s*)(\d+)", re.IGNORECASE),
-    "min_child_samples": re.compile(r"(min_child_samples\s*=\s*)(\d+)", re.IGNORECASE),
-    "num_leaves": re.compile(r"(num_leaves\s*=\s*)(\d+)", re.IGNORECASE),
-    "subsample": re.compile(r"(subsample\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "colsample_bytree": re.compile(r"(colsample_bytree\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "feature_fraction": re.compile(r"(feature_fraction\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "bagging_fraction": re.compile(r"(bagging_fraction\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "bagging_freq": re.compile(r"(bagging_freq\s*=\s*)(\d+)", re.IGNORECASE),
-    "min_samples_leaf": re.compile(r"(min_samples_leaf\s*=\s*)(\d+)", re.IGNORECASE),
-    "min_samples_split": re.compile(r"(min_samples_split\s*=\s*)(\d+)", re.IGNORECASE),
-    "max_features": re.compile(r"(max_features\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "n_neighbors": re.compile(r"(n_neighbors\s*=\s*)(\d+)", re.IGNORECASE),
-    "leaf_size": re.compile(r"(leaf_size\s*=\s*)(\d+)", re.IGNORECASE),
-    "p": re.compile(r"(?<!\w)(p\s*=\s*)([\d\.]+)", re.IGNORECASE),
+    "n_estimators": re.compile(rf"(n_estimators\s*=\s*)({_INT_VALUE})", re.IGNORECASE),
+    "learning_rate": re.compile(rf"(learning_rate\s*=\s*)({_FLOAT_VALUE})", re.IGNORECASE),
+    "max_depth": re.compile(rf"(max_depth\s*=\s*)({_INT_VALUE})", re.IGNORECASE),
+    "min_child_samples": re.compile(rf"(min_child_samples\s*=\s*)({_INT_VALUE})", re.IGNORECASE),
+    "num_leaves": re.compile(rf"(num_leaves\s*=\s*)({_INT_VALUE})", re.IGNORECASE),
+    "subsample": re.compile(rf"(subsample\s*=\s*)({_FLOAT_VALUE})", re.IGNORECASE),
+    "colsample_bytree": re.compile(rf"(colsample_bytree\s*=\s*)({_FLOAT_VALUE})", re.IGNORECASE),
+    "feature_fraction": re.compile(rf"(feature_fraction\s*=\s*)({_FLOAT_VALUE})", re.IGNORECASE),
+    "bagging_fraction": re.compile(rf"(bagging_fraction\s*=\s*)({_FLOAT_VALUE})", re.IGNORECASE),
+    "bagging_freq": re.compile(rf"(bagging_freq\s*=\s*)({_INT_VALUE})", re.IGNORECASE),
+    "min_samples_leaf": re.compile(rf"(min_samples_leaf\s*=\s*)({_INT_VALUE})", re.IGNORECASE),
+    "min_samples_split": re.compile(rf"(min_samples_split\s*=\s*)({_INT_VALUE})", re.IGNORECASE),
+    "max_features": re.compile(rf"(max_features\s*=\s*)({_FLOAT_VALUE})", re.IGNORECASE),
+    "n_neighbors": re.compile(rf"(n_neighbors\s*=\s*)({_INT_VALUE})", re.IGNORECASE),
+    "leaf_size": re.compile(rf"(leaf_size\s*=\s*)({_INT_VALUE})", re.IGNORECASE),
+    "p": re.compile(rf"(?<!\w)(p\s*=\s*)({_FLOAT_VALUE})", re.IGNORECASE),
     "weights": re.compile(r"(weights\s*=\s*)(\"[^\"]+\"|'[^']+'|\w+)", re.IGNORECASE),
     "metric": re.compile(r"(metric\s*=\s*)(\"[^\"]+\"|'[^']+'|\w+)", re.IGNORECASE),
     "algorithm": re.compile(r"(algorithm\s*=\s*)(\"[^\"]+\"|'[^']+'|\w+)", re.IGNORECASE),
     "objective": re.compile(r"(objective\s*=\s*)(\"[^\"]+\"|'[^']+'|\w+)", re.IGNORECASE),
-    "huber_delta": re.compile(r"(huber_delta\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "quantile_alpha": re.compile(r"(quantile_alpha\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "lambda_l1": re.compile(r"(lambda_l1\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "lambda_l2": re.compile(r"(lambda_l2\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "min_split_gain": re.compile(r"(min_split_gain\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "min_child_weight": re.compile(r"(min_child_weight\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "max_bin": re.compile(r"(max_bin\s*=\s*)(\d+)", re.IGNORECASE),
-    "alpha": re.compile(r"(alpha\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "l1_ratio": re.compile(r"(l1_ratio\s*=\s*)([\d\.]+)", re.IGNORECASE),
-    "max_iter": re.compile(r"(max_iter\s*=\s*)(\d+)", re.IGNORECASE),
+    "huber_delta": re.compile(rf"(huber_delta\s*=\s*)({_FLOAT_VALUE})", re.IGNORECASE),
+    "quantile_alpha": re.compile(rf"(quantile_alpha\s*=\s*)({_FLOAT_VALUE})", re.IGNORECASE),
+    "lambda_l1": re.compile(rf"(lambda_l1\s*=\s*)({_FLOAT_VALUE})", re.IGNORECASE),
+    "lambda_l2": re.compile(rf"(lambda_l2\s*=\s*)({_FLOAT_VALUE})", re.IGNORECASE),
+    "min_split_gain": re.compile(rf"(min_split_gain\s*=\s*)({_FLOAT_VALUE})", re.IGNORECASE),
+    "min_child_weight": re.compile(rf"(min_child_weight\s*=\s*)({_FLOAT_VALUE})", re.IGNORECASE),
+    "max_bin": re.compile(rf"(max_bin\s*=\s*)({_INT_VALUE})", re.IGNORECASE),
+    "alpha": re.compile(rf"(alpha\s*=\s*)({_FLOAT_VALUE})", re.IGNORECASE),
+    "l1_ratio": re.compile(rf"(l1_ratio\s*=\s*)({_FLOAT_VALUE})", re.IGNORECASE),
+    "max_iter": re.compile(rf"(max_iter\s*=\s*)({_INT_VALUE})", re.IGNORECASE),
 }
 _FEATURE_ENGINEERING_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
     "polynomial_interactions": re.compile(r"\bPolynomialFeatures\b"),
@@ -935,9 +937,12 @@ def _parse_hyperparam_value(raw: str) -> Any:
         return cleaned[1:-1]
     if cleaned.lower() in {"none", "null"}:
         return None
-    try:
-        if "." in cleaned:
+    if any(ch in cleaned for ch in (".", "e", "E")):
+        try:
             return float(cleaned)
+        except ValueError:
+            return cleaned
+    try:
         return int(cleaned)
     except ValueError:
         return cleaned

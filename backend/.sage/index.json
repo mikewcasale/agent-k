@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-07-26T01:15:48.242334+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -4526,175 +4526,175 @@
       },
       {
         "component": "agent_k.core.tracking:ExperimentMetadata",
-        "line": 136,
+        "line": 138,
         "name": "notice",
         "value": "Structured metadata extracted from a solution."
       },
       {
         "component": "agent_k.core.tracking:ExperimentMetadata",
-        "line": 139,
+        "line": 141,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.tracking:ExperimentMetadata",
-        "line": 142,
+        "line": 144,
         "name": "pattern",
         "value": "{\"name\": \"metadata-model\", \"rationale\": \"Frozen Pydantic model for solution metadata extraction.\"}"
       },
       {
         "component": "agent_k.core.tracking:ExperimentRecord",
-        "line": 159,
+        "line": 161,
         "name": "notice",
         "value": "Persistent record of an experiment or submission."
       },
       {
         "component": "agent_k.core.tracking:ExperimentRecord",
-        "line": 162,
+        "line": 164,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.tracking:ExperimentRecord",
-        "line": 165,
+        "line": 167,
         "name": "pattern",
         "value": "{\"name\": \"record-model\", \"rationale\": \"Pydantic model for experiment persistence.\"}"
       },
       {
         "component": "agent_k.core.tracking:ExperimentSummary",
-        "line": 197,
+        "line": 199,
         "name": "notice",
         "value": "Lightweight summary of a stored experiment."
       },
       {
         "component": "agent_k.core.tracking:ExperimentSummary",
-        "line": 200,
+        "line": 202,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.tracking:ExperimentSummary",
-        "line": 203,
+        "line": 205,
         "name": "pattern",
         "value": "{\"name\": \"summary-model\", \"rationale\": \"Frozen Pydantic model for experiment listing.\"}"
       },
       {
         "component": "agent_k.core.tracking:KaggleSubmissionRecord",
-        "line": 224,
+        "line": 226,
         "name": "notice",
         "value": "Persistent record of a Kaggle submission and leaderboard scores."
       },
       {
         "component": "agent_k.core.tracking:KaggleSubmissionRecord",
-        "line": 227,
+        "line": 229,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.tracking:KaggleSubmissionRecord",
-        "line": 230,
+        "line": 232,
         "name": "pattern",
         "value": "{\"name\": \"record-model\", \"rationale\": \"Pydantic model for Kaggle submission persistence.\"}"
       },
       {
         "component": "agent_k.core.tracking:HintAttemptRecord",
-        "line": 252,
+        "line": 254,
         "name": "notice",
         "value": "Track preprocessing hint usage and outcomes."
       },
       {
         "component": "agent_k.core.tracking:HintAttemptRecord",
-        "line": 255,
+        "line": 257,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.tracking:HintAttemptRecord",
-        "line": 258,
+        "line": 260,
         "name": "pattern",
         "value": "{\"name\": \"record-model\", \"rationale\": \"Pydantic model for hint effectiveness tracking.\"}"
       },
       {
         "component": "agent_k.core.tracking:ExperimentTracker",
-        "line": 279,
+        "line": 281,
         "name": "notice",
         "value": "SQLite-backed tracker for experiments and submissions."
       },
       {
         "component": "agent_k.core.tracking:ExperimentTracker",
-        "line": 282,
+        "line": 284,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.tracking:ExperimentTracker",
-        "line": 285,
+        "line": 287,
         "name": "pattern",
         "value": "{\"name\": \"tracking-store\", \"rationale\": \"Centralized persistence for experiment metadata.\", \"violations\": \"Distributed tracking logic causes inconsistent history.\"}"
       },
       {
         "component": "agent_k.core.tracking:ExperimentTracker",
-        "line": 290,
+        "line": 292,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Uses SQLite connections without cross-process locking.\"}"
       },
       {
         "component": "agent_k.core.tracking:ExperimentTracker",
-        "line": 295,
+        "line": 297,
         "name": "invariants",
         "value": "[\"Database schema is initialized before writes.\"]"
       },
       {
         "component": "agent_k.core.tracking:HintEffectivenessTracker",
-        "line": 730,
+        "line": 732,
         "name": "notice",
         "value": "Track and aggregate hint performance across generations."
       },
       {
         "component": "agent_k.core.tracking:HintEffectivenessTracker",
-        "line": 733,
+        "line": 735,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.tracking:HintEffectivenessTracker",
-        "line": 736,
+        "line": 738,
         "name": "pattern",
         "value": "{\"name\": \"tracking-service\", \"rationale\": \"Centralizes hint success tracking and suppression.\", \"violations\": \"Distributed tracking makes suppression inconsistent.\"}"
       },
       {
         "component": "agent_k.core.tracking:create_experiment_tracker",
-        "line": 862,
+        "line": 864,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.core.tracking:create_experiment_tracker",
-        "line": 865,
+        "line": 867,
         "name": "notice",
         "value": "Returns a tracker configured with the default database path."
       },
       {
         "component": "agent_k.core.tracking:create_experiment_tracker",
-        "line": 868,
+        "line": 870,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.core.tracking:ExperimentTracker\", \"rationale\": \"Centralizes tracker defaults and storage path.\", \"singleton\": false, \"cache_key\": \"db_path\"}"
       },
       {
         "component": "agent_k.core.tracking:create_experiment_tracker",
-        "line": 874,
+        "line": 876,
         "name": "canonical_home",
         "value": "{\"for\": [\"experiment tracker construction\"], \"notes\": \"Use create_experiment_tracker to ensure defaults.\"}"
       },
       {
         "component": "agent_k.core.tracking:extract_solution_metadata",
-        "line": 885,
+        "line": 887,
         "name": "notice",
         "value": "Extract model and feature metadata from solution code."
       },
       {
         "component": "agent_k.core.tracking:extract_solution_metadata",
-        "line": 888,
+        "line": 890,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       }

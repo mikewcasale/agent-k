@@ -819,12 +819,22 @@ class HintEffectivenessTracker:
         return hint_id in self._amplified[competition_id]
 
     def save(self) -> None:
-        """Persist hint statistics to disk."""
+        """Persist hint statistics to disk.
+
+        Iterates the union of success, failure, and suppressed keys so that
+        hints observed to fail (without any successes) or hints suppressed
+        manually still survive a reload — otherwise the failure counter and
+        suppression flag would be silently dropped on the next process start.
+        """
         self._HINT_TRACKER_PATH.parent.mkdir(parents=True, exist_ok=True)
         data: dict[str, dict[str, dict[str, Any]]] = {}
-        for (comp_id, hint_id), count in self._success_counts.items():
+        keys: set[tuple[str, str]] = set(self._success_counts) | set(self._failure_counts)
+        for comp_id, hint_ids in self._suppressed.items():
+            for hint_id in hint_ids:
+                keys.add((comp_id, hint_id))
+        for comp_id, hint_id in keys:
             data.setdefault(comp_id, {})[hint_id] = {
-                "success": count,
+                "success": self._success_counts.get((comp_id, hint_id), 0),
                 "failure": self._failure_counts.get((comp_id, hint_id), 0),
                 "suppressed": hint_id in self._suppressed.get(comp_id, set()),
             }

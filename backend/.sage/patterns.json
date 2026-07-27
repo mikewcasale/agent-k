@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-07-27T03:10:06.330840+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -373,7 +373,7 @@
       },
       {
         "component": "agent_k.evolution.framework:HyperparamEvolver",
-        "line": 272,
+        "line": 275,
         "rationale": "Coordinates hyperparameter search with adaptive mutation.",
         "source": "agent_k/evolution/framework.py",
         "violations": []
@@ -585,7 +585,7 @@
     "framework": [
       {
         "component": "agent_k.evolution.framework:EvolutionaryFramework",
-        "line": 380,
+        "line": 383,
         "rationale": "Composes multiple evolvers into a unified evolution loop.",
         "source": "agent_k/evolution/framework.py",
         "violations": []
@@ -638,7 +638,7 @@
       },
       {
         "component": "agent_k.evolution.framework:HyperparamGenome",
-        "line": 255,
+        "line": 258,
         "rationale": "Dataclass wrapping hyperparameter key-value pairs.",
         "source": "agent_k/evolution/framework.py",
         "violations": []
@@ -1210,7 +1210,7 @@
     "search-space": [
       {
         "component": "agent_k.evolution.framework:HyperparamSpace",
-        "line": 235,
+        "line": 238,
         "rationale": "Dataclass defining continuous, integer, categorical bounds.",
         "source": "agent_k/evolution/framework.py",
         "violations": []

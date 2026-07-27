@@ -227,6 +227,9 @@ class Population(Generic[GenomeT]):
 
         self.individuals = next_generation
         self.generation += 1
+        # Score the freshly-created children so best()/archive reflect this
+        # generation instead of trailing one step behind.
+        self.evaluate(fitness_fn)
         return next_generation
 
 

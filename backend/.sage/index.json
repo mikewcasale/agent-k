@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-07-27T22:07:23.006472+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -4664,37 +4664,37 @@
       },
       {
         "component": "agent_k.core.tracking:create_experiment_tracker",
-        "line": 862,
+        "line": 872,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.core.tracking:create_experiment_tracker",
-        "line": 865,
+        "line": 875,
         "name": "notice",
         "value": "Returns a tracker configured with the default database path."
       },
       {
         "component": "agent_k.core.tracking:create_experiment_tracker",
-        "line": 868,
+        "line": 878,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.core.tracking:ExperimentTracker\", \"rationale\": \"Centralizes tracker defaults and storage path.\", \"singleton\": false, \"cache_key\": \"db_path\"}"
       },
       {
         "component": "agent_k.core.tracking:create_experiment_tracker",
-        "line": 874,
+        "line": 884,
         "name": "canonical_home",
         "value": "{\"for\": [\"experiment tracker construction\"], \"notes\": \"Use create_experiment_tracker to ensure defaults.\"}"
       },
       {
         "component": "agent_k.core.tracking:extract_solution_metadata",
-        "line": 885,
+        "line": 895,
         "name": "notice",
         "value": "Extract model and feature metadata from solution code."
       },
       {
         "component": "agent_k.core.tracking:extract_solution_metadata",
-        "line": 888,
+        "line": 898,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       }

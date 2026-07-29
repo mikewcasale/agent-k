@@ -100,7 +100,8 @@ def locate_data_files(paths: Iterable[str | Path]) -> tuple[Path, Path, Path]:
         Finds train, test, and sample submission files from a list of paths.
 
     @dev: |
-        Automatically extracts ZIP files and searches for files by name pattern.
+        Automatically extracts ZIP files and searches for files by exact stem,
+        then stem prefix, before falling back to any-file substring match.
         Raises FileNotFoundError if required files are not found.
     """
     files: list[Path] = []
@@ -111,15 +112,9 @@ def locate_data_files(paths: Iterable[str | Path]) -> tuple[Path, Path, Path]:
         if path.suffix.lower() == ".zip" and path.exists():
             files.extend(_safe_extract_zip(path, path.parent))
 
-    def pick(token: str) -> Path | None:
-        for path in files:
-            if token in path.name.lower():
-                return path
-        return None
-
-    train_path = pick("train")
-    test_path = pick("test")
-    sample_path = pick("sample_submission") or pick("submission")
+    train_path = _pick_data_file(files, ("train",))
+    test_path = _pick_data_file(files, ("test",))
+    sample_path = _pick_data_file(files, ("sample_submission", "submission"))
 
     if not train_path or not test_path or not sample_path:
         raise FileNotFoundError("Required competition data files not found")
@@ -167,6 +162,46 @@ def _read_header(path: Path) -> list[str]:
         return next(reader, [])
 
 
+_DATA_EXTENSIONS: tuple[str, ...] = (".csv", ".tsv", ".parquet", ".feather", ".json", ".jsonl")
+
+
+def _pick_data_file(files: list[Path], tokens: tuple[str, ...]) -> Path | None:
+    """Choose the file that best matches one of the given tokens.
+
+    Preference order:
+        1. Exact stem match on a data-format file (train.csv beats latest_scores.csv).
+        2. Stem starts with `<token>_` or `<token>-` on a data-format file
+           (train_v2.csv, train-2024.csv beat unrelated files).
+        3. Any file whose stem contains the token as a substring.
+        4. Any file whose name contains the token as a substring (legacy).
+    """
+    lowered_tokens = tuple(token.lower() for token in tokens)
+    data_files = [path for path in files if path.suffix.lower() in _DATA_EXTENSIONS]
+
+    for candidates in (data_files, files):
+        for token in lowered_tokens:
+            for path in candidates:
+                if path.stem.lower() == token:
+                    return path
+
+    for candidates in (data_files, files):
+        for token in lowered_tokens:
+            for path in candidates:
+                stem = path.stem.lower()
+                if stem.startswith(f"{token}_") or stem.startswith(f"{token}-"):
+                    return path
+
+    for path in files:
+        stem = path.stem.lower()
+        if any(token in stem for token in lowered_tokens):
+            return path
+
+    for path in files:
+        if any(token in path.name.lower() for token in lowered_tokens):
+            return path
+    return None
+
+
 def _safe_extract_zip(archive_path: Path, destination: Path) -> list[Path]:
     extracted: list[Path] = []
     destination_resolved = destination.resolve()
@@ -176,7 +211,7 @@ def _safe_extract_zip(archive_path: Path, destination: Path) -> list[Path]:
             if member.is_dir() or member.filename.endswith("/"):
                 continue
             target_path = (destination / member.filename).resolve()
-            if not str(target_path).startswith(str(destination_resolved)):
+            if not target_path.is_relative_to(destination_resolved):
                 raise ValueError(f"Zip entry escapes destination: {member.filename}")
             archive.extract(member, destination)
             extracted.append(target_path)

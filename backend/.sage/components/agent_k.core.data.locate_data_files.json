@@ -3,7 +3,7 @@
   "anti_patterns": null,
   "canonical_home": null,
   "custom": null,
-  "dev": "Automatically extracts ZIP files and searches for files by name pattern.\nRaises FileNotFoundError if required files are not found.",
+  "dev": "Automatically extracts ZIP files and searches for files by exact stem,\nthen stem prefix, before falling back to any-file substring match.\nRaises FileNotFoundError if required files are not found.",
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.data:locate_data_files",

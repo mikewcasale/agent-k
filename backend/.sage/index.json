@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-07-29T00:15:42.455143+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -2688,17 +2688,17 @@
         "component": "agent_k.core.data:locate_data_files",
         "line": 102,
         "name": "dev",
-        "value": "Automatically extracts ZIP files and searches for files by name pattern.\nRaises FileNotFoundError if required files are not found."
+        "value": "Automatically extracts ZIP files and searches for files by exact stem,\nthen stem prefix, before falling back to any-file substring match.\nRaises FileNotFoundError if required files are not found."
       },
       {
         "component": "agent_k.core.data:stage_competition_data",
-        "line": 135,
+        "line": 130,
         "name": "notice",
         "value": "Copies or links data files to a destination with standardized names."
       },
       {
         "component": "agent_k.core.data:stage_competition_data",
-        "line": 138,
+        "line": 133,
         "name": "dev",
         "value": "Creates train.csv, test.csv, sample_submission.csv in destination.\nUses hard links when possible to save disk space."
       }

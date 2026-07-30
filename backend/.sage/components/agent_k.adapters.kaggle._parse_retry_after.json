@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Returns ``_DEFAULT_RETRY_AFTER`` when the header is missing or unparseable\nand clamps the result to ``[0, _MAX_RETRY_AFTER]`` so a hostile or buggy\nserver cannot pin a mission for hours.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.adapters.kaggle:_parse_retry_after",
+  "line": 78,
+  "notice": "Best-effort parser for RFC 7231 Retry-After (delta-seconds only).",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/adapters/kaggle.py",
+  "summary": "Parse a Retry-After header value into seconds.",
+  "type": "function"
+}

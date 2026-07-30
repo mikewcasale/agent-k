@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-07-30T02:15:01.434842+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1094,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -947,70 +947,94 @@
         "value": "{\"last_verified\": \"2026-01-26\", \"owners\": [\"agent-k-core\"]}"
       },
       {
+        "component": "agent_k.adapters.kaggle:_parse_retry_after",
+        "line": 80,
+        "name": "notice",
+        "value": "Best-effort parser for RFC 7231 Retry-After (delta-seconds only)."
+      },
+      {
+        "component": "agent_k.adapters.kaggle:_parse_retry_after",
+        "line": 83,
+        "name": "dev",
+        "value": "Returns ``_DEFAULT_RETRY_AFTER`` when the header is missing or unparseable\nand clamps the result to ``[0, _MAX_RETRY_AFTER]`` so a hostile or buggy\nserver cannot pin a mission for hours."
+      },
+      {
         "component": "agent_k.adapters.kaggle:KaggleSettings",
-        "line": 78,
+        "line": 104,
         "name": "notice",
         "value": "Settings for Kaggle adapter."
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleSettings",
-        "line": 81,
+        "line": 107,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleSettings",
-        "line": 84,
+        "line": 110,
         "name": "pattern",
         "value": "{\"name\": \"settings\", \"rationale\": \"Centralizes Kaggle adapter configuration.\", \"violations\": \"Ad-hoc config makes auth inconsistent.\"}"
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 126,
+        "line": 152,
         "name": "notice",
         "value": "Async adapter for Kaggle competition APIs."
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 129,
+        "line": 155,
         "name": "dev",
         "value": "Wraps HTTP calls with retry/backoff and normalizes responses."
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 132,
+        "line": 158,
         "name": "pattern",
         "value": "{\"name\": \"adapter\", \"rationale\": \"Encapsulates Kaggle-specific API behavior.\", \"violations\": \"Direct HTTP use scatters auth/rate-limit logic.\"}"
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 137,
+        "line": 163,
         "name": "implements",
         "value": "[\"agent_k.core.protocols:PlatformAdapter\"]"
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 140,
+        "line": 166,
         "name": "inheritdoc",
         "value": "[\"agent_k.core.protocols:PlatformAdapter\"]"
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 143,
+        "line": 169,
         "name": "collaborators",
         "value": "{\"required\": [\"httpx:AsyncClient\"], \"injection\": \"dataclass\", \"lifecycle\": \"Use as async context manager per mission.\"}"
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 149,
+        "line": 175,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates internal auth and rate-limit state.\"}"
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 154,
+        "line": 180,
         "name": "invariants",
         "value": "[\"self._client is initialized after __post_init__.\"]"
+      },
+      {
+        "component": "agent_k.adapters.kaggle:KaggleAdapter._request",
+        "line": 464,
+        "name": "notice",
+        "value": "Retries transient failures (network errors, HTTP 429, HTTP 5xx) with\nexponential backoff, honoring the server's ``Retry-After`` header on\n429 responses. Non-retryable 4xx responses are returned to the"
+      },
+      {
+        "component": "agent_k.adapters.kaggle:KaggleAdapter._request",
+        "line": 470,
+        "name": "dev",
+        "value": "Uses ``rate_limit_delay * 2**attempt`` (capped at ``_MAX_BACKOFF_SECONDS``)\nfor network/5xx retries; a ``Retry-After`` value is clamped by\n``_parse_retry_after``. On terminal failure the appropriate t"
       }
     ],
     "agent_k/adapters/openevolve.py": [

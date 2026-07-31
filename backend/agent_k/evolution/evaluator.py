@@ -305,14 +305,19 @@ def _model_family_score(code: str) -> float:
 
 
 def _fitness_from_score(cv_score: float | None, metric_direction: str) -> float:
-    """Convert CV score to fitness (higher is better)."""
+    """Convert CV score to fitness (higher is better).
+
+    Uses the canonical mapping shared with agents/evolver.py and
+    mission/nodes.py so OpenEvolve's ``combined_score`` stays comparable
+    to the fitness reported elsewhere: ``max(score, 0.0)`` for maximize
+    directions and ``1 / (1 + max(score, 0.0))`` for minimize. A missing
+    ``cv_score`` collapses to ``0.0`` — the worst possible fitness under
+    this scheme — so failed evaluations never rank above valid ones.
+    """
     if cv_score is None:
         return 0.0
-
-    if metric_direction == "maximize":
-        return float(cv_score)
-    else:
-        return -float(cv_score)
+    value = max(float(cv_score), 0.0)
+    return 1.0 / (1.0 + value) if metric_direction == "minimize" else value
 
 
 def evaluate(program_path: str) -> EvaluationResult:

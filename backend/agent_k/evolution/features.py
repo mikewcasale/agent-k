@@ -378,4 +378,8 @@ class FeatureSelector:
 def _dominates(left: FeatureSelectionIndividual, right: FeatureSelectionIndividual) -> bool:
     if left.score is None or right.score is None:
         return False
-    return left.score >= right.score and left.selected_count() <= right.selected_count()
+    left_count = left.selected_count()
+    right_count = right.selected_count()
+    if left.score < right.score or left_count > right_count:
+        return False
+    return left.score > right.score or left_count < right_count

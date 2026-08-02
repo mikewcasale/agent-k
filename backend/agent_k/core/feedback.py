@@ -194,6 +194,14 @@ class SubmissionOrchestrator:
         if improved:
             self._last_score = score
             self._stagnant_generations = 0
+        elif improved is None:
+            # improved=None means "no comparison possible" — either the current
+            # score is missing or the baseline was not seeded yet. Seed the
+            # baseline when we can, but never treat this as a stagnation event:
+            # otherwise the loop trips the convergence stop before any real
+            # comparison has been made.
+            if self._last_score is None and score is not None:
+                self._last_score = score
         else:
             self._stagnant_generations += 1
 

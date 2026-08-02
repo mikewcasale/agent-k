@@ -14,6 +14,8 @@ from agent_k.core.tracking import ExperimentTracker
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from agent_k.core.types import MetricDirection
+
 __all__ = ()
 
 
@@ -28,7 +30,7 @@ _CANDIDATE = SubmissionCandidate(
 def _orchestrator(
     tmp_path: Path,
     *,
-    metric_direction: str = "maximize",
+    metric_direction: MetricDirection = "maximize",
     convergence_generations: int = 4,
     improvement_threshold: float = 1e-4,
     iteration_budget: int = 25,

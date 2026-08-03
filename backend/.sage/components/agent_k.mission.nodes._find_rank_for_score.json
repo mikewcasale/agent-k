@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Returns the first matching entry's ``rank`` in iteration order, matching\nthe pre-existing behavior. Returns ``None`` when nothing matches or the\nlist is empty.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:_find_rank_for_score",
+  "line": 2143,
+  "notice": "Uses ``math.isclose`` so scores that survived a float roundtrip through\nJSON, CSV, or the metric-direction fallback still match.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Locate the rank of an entry whose score matches ``score`` within tolerance.",
+  "type": "function"
+}

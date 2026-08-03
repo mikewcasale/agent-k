@@ -10,7 +10,14 @@ from pathlib import Path
 
 import pytest
 
-from agent_k.adapters.openevolve import OpenEvolveAdapter, OpenEvolveJobState, OpenEvolveSettings
+from agent_k.adapters.openevolve import (
+    _DEFAULT_OPENEVOLVE_MODEL,
+    OpenEvolveAdapter,
+    OpenEvolveJobState,
+    OpenEvolveSettings,
+    _resolve_model_specs,
+)
+from agent_k.infra.providers import OPENROUTER_FREE_MODELS
 
 __all__ = ()
 
@@ -88,3 +95,32 @@ class TestOpenEvolveAdapter:
         solution = await adapter.get_best_solution(job_id)
         assert solution.fitness == pytest.approx(0.9)
         assert solution.solution_code == 'print("hello")'
+
+
+class TestResolveModelSpecs:
+    """Guardrails around the OpenEvolve default model fallback.
+
+    ``_resolve_model_specs`` returns ``[_DEFAULT_OPENEVOLVE_MODEL]`` when the
+    caller passes an empty list, so the default must always point at a live
+    OpenRouter free-tier slug (see commit e145f23 for why this matters).
+    """
+
+    def test_default_model_is_live_free_openrouter_slug(self) -> None:
+        """The fallback default must be a live entry in the free-model registry."""
+        assert _DEFAULT_OPENEVOLVE_MODEL in OPENROUTER_FREE_MODELS.values()
+        assert _DEFAULT_OPENEVOLVE_MODEL.startswith("openrouter:")
+        assert _DEFAULT_OPENEVOLVE_MODEL.endswith(":free")
+
+    def test_empty_input_yields_default(self) -> None:
+        """Empty/whitespace-only specs must fall through to the default."""
+        assert _resolve_model_specs([]) == [_DEFAULT_OPENEVOLVE_MODEL]
+        assert _resolve_model_specs(["", "   "]) == [_DEFAULT_OPENEVOLVE_MODEL]
+
+    def test_anthropic_specs_are_dropped(self) -> None:
+        """Anthropic specs are unsupported by OpenEvolve and must be filtered out."""
+        assert _resolve_model_specs(["anthropic:claude-sonnet-4-5"]) == [_DEFAULT_OPENEVOLVE_MODEL]
+
+    def test_valid_specs_are_preserved_in_order(self) -> None:
+        """Non-empty, supported specs are returned in caller-provided order."""
+        specs = ["openrouter:openai/gpt-oss-120b:free", "openrouter:openai/gpt-oss-20b:free"]
+        assert _resolve_model_specs(specs) == specs

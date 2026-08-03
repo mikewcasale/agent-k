@@ -64,11 +64,17 @@ __all__ = (
 DEVSTRAL_MODEL_ID: Final[str] = "mistralai/devstral-small-2-2512"
 DEVSTRAL_BASE_URL: Final[str] = os.getenv("DEVSTRAL_BASE_URL", "http://192.168.105.1:1234/v1")
 OPENROUTER_FREE_MODELS: Final[dict[str, str]] = {
-    "devstral": "openrouter:mistralai/devstral-2512:free",
-    "kat_coder": "openrouter:kwaipilot/kat-coder-pro:free",
-    "qwen_coder": "openrouter:qwen/qwen3-coder:free",
+    "gpt_oss_120b": "openrouter:openai/gpt-oss-120b:free",
+    "gpt_oss_20b": "openrouter:openai/gpt-oss-20b:free",
 }
 # Free OpenRouter model identifiers for agentic coding tasks.
+#
+# The previously-shipped `devstral-2512:free`, `qwen3-coder:free`, and
+# `kat-coder-pro:free` slugs were retired upstream (Devstral free tier ended;
+# the others are rate-limited or deprecated). See commit e145f23 for the live-
+# mission observation that triggered the frontend swap; the backend mirror
+# that swap here so `OPENROUTER_FREE_MODELS[...]` and the OpenEvolve default
+# stay in sync with what the picker actually offers.
 
 type ModelType = str
 

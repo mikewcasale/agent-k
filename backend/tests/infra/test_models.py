@@ -14,6 +14,7 @@ from pydantic_ai.models.openai import OpenAIChatModel
 from agent_k.infra.providers import (
     DEVSTRAL_BASE_URL,
     DEVSTRAL_MODEL_ID,
+    OPENROUTER_FREE_MODELS,
     create_devstral_model,
     create_openrouter_model,
     get_model,
@@ -111,6 +112,44 @@ class TestGetModel:
         result = get_model("openrouter:mistralai/devstral-small-2505")
 
         assert isinstance(result, OpenAIChatModel)
+
+
+class TestOpenRouterFreeModels:
+    """Guardrails around the OpenRouter free-model registry.
+
+    The frontend's evolution-model picker and the backend's OpenEvolve default
+    both read from this dict indirectly. Commit e145f23 documented that
+    ``devstral-2512:free``, ``qwen3-coder:free``, and ``kat-coder-pro:free``
+    were retired upstream; these tests keep them from silently drifting back.
+    """
+
+    _RETIRED_SLUGS = frozenset(
+        {
+            "openrouter:mistralai/devstral-2512:free",
+            "openrouter:qwen/qwen3-coder:free",
+            "openrouter:kwaipilot/kat-coder-pro:free",
+        }
+    )
+
+    def test_registry_is_non_empty(self) -> None:
+        """Registry must always list at least one live free model.
+
+        The OpenEvolve adapter falls back to this registry when no explicit
+        ``model_specs`` are supplied, so an empty dict would surface as an
+        instant ``KeyError`` in production.
+        """
+        assert OPENROUTER_FREE_MODELS
+
+    def test_no_retired_slugs_present(self) -> None:
+        """None of the documented-dead OpenRouter slugs may be re-shipped."""
+        for key, spec in OPENROUTER_FREE_MODELS.items():
+            assert spec not in self._RETIRED_SLUGS, f"{key} points at retired OpenRouter model {spec!r}"
+
+    def test_all_entries_use_openrouter_free_tier(self) -> None:
+        """Every registry entry must be an ``openrouter:*:free`` spec."""
+        for key, spec in OPENROUTER_FREE_MODELS.items():
+            assert spec.startswith("openrouter:"), f"{key}={spec!r} is not an openrouter: model spec"
+            assert spec.endswith(":free"), f"{key}={spec!r} is not on the :free tier"
 
 
 class TestIsDevstralModel:

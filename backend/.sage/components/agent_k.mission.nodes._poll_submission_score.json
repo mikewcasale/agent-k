@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Sleeps ``interval_seconds`` between polls for a maximum of ``attempts``\niterations. Any exception raised by ``get_submission_status`` is logged\nvia ``logfire.warning`` and treated as \"no score yet\" \u2014 the poll retries\nuntil the budget is exhausted, then returns ``None``.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:_poll_submission_score",
+  "line": 2087,
+  "notice": "Waits for the platform to attach a public score, tolerating transient\nget-status errors so a submitted-but-not-yet-scored submission is not\nrolled back into a mission failure.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Poll a platform adapter for a submission's public score.",
+  "type": "function"
+}

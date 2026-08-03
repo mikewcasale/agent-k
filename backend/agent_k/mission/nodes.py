@@ -81,6 +81,7 @@ from ..core.models import (
     EvolutionState,
     GenerationMetrics,
     LeaderboardAnalysis,
+    LeaderboardEntry,
     MissionCriteria,
     ResearchFindings,
 )
@@ -108,6 +109,10 @@ _BASE_DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = ("xgboost", "catboost")
 _DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = (
     _BASE_DISALLOWED_LIBRARIES if _LIGHTGBM_AVAILABLE else (*_BASE_DISALLOWED_LIBRARIES, "lightgbm")
 )
+_SUBMISSION_POLL_ATTEMPTS: Final[int] = 10
+_SUBMISSION_POLL_INTERVAL_SECONDS: Final[float] = 5.0
+_LEADERBOARD_FETCH_LIMIT: Final[int] = 10_000
+_SCORE_MATCH_TOLERANCE: Final[float] = 1e-9
 
 
 @dataclass
@@ -1784,13 +1789,14 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
 
                 state.final_submission_id = submission.id
 
-                # Wait for score
-                for _ in range(10):  # Poll for score
-                    await asyncio.sleep(5)
-                    status = await platform_adapter.get_submission_status(competition_id, submission.id)
-                    if status.public_score is not None:
-                        state.final_score = status.public_score
-                        break
+                # Wait for score. Transient errors are logged and retried so a
+                # successful submit is never rolled back by a hiccup polling for
+                # its score.
+                polled_score = await _poll_submission_score(
+                    platform_adapter, competition_id=competition_id, submission_id=submission.id
+                )
+                if polled_score is not None:
+                    state.final_score = polled_score
 
                 if state.final_score is None:
                     best_fitness = None
@@ -1814,12 +1820,13 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                             score=state.prototype_score,
                         )
 
-                # Get rank
-                leaderboard = await platform_adapter.get_leaderboard(competition_id, limit=10000)
-                for entry in leaderboard:
-                    if entry.score == state.final_score:
-                        state.final_rank = entry.rank
-                        break
+                # Get rank. A leaderboard-fetch hiccup must not undo the accepted
+                # submission — degrade to an empty leaderboard and null rank.
+                leaderboard = await _fetch_leaderboard_safely(
+                    platform_adapter, competition_id=competition_id, limit=_LEADERBOARD_FETCH_LIMIT
+                )
+                if state.final_score is not None:
+                    state.final_rank = _find_rank_for_score(leaderboard, state.final_score)
 
                 best_fitness = None
                 if state.evolution_state and state.evolution_state.best_solution:
@@ -2067,6 +2074,87 @@ def _cleanup_session_data(mission_id: str) -> None:
             logfire.info("cleaned_session_data", mission_id=mission_id)
     except Exception as exc:
         logfire.warning("session_cleanup_failed", error=str(exc))
+
+
+async def _poll_submission_score(
+    platform_adapter: PlatformAdapter,
+    *,
+    competition_id: str,
+    submission_id: str,
+    attempts: int = _SUBMISSION_POLL_ATTEMPTS,
+    interval_seconds: float = _SUBMISSION_POLL_INTERVAL_SECONDS,
+) -> float | None:
+    """Poll a platform adapter for a submission's public score.
+
+    @notice: |
+        Waits for the platform to attach a public score, tolerating transient
+        get-status errors so a submitted-but-not-yet-scored submission is not
+        rolled back into a mission failure.
+
+    @dev: |
+        Sleeps ``interval_seconds`` between polls for a maximum of ``attempts``
+        iterations. Any exception raised by ``get_submission_status`` is logged
+        via ``logfire.warning`` and treated as "no score yet" — the poll retries
+        until the budget is exhausted, then returns ``None``.
+    """
+    for attempt in range(1, attempts + 1):
+        await asyncio.sleep(interval_seconds)
+        try:
+            status = await platform_adapter.get_submission_status(competition_id, submission_id)
+        except Exception as exc:
+            logfire.warning(
+                "submission_status_poll_error",
+                competition_id=competition_id,
+                submission_id=submission_id,
+                attempt=attempt,
+                max_attempts=attempts,
+                error=str(exc),
+            )
+            continue
+        if status.public_score is not None:
+            return status.public_score
+    return None
+
+
+async def _fetch_leaderboard_safely(
+    platform_adapter: PlatformAdapter, *, competition_id: str, limit: int
+) -> list[LeaderboardEntry]:
+    """Fetch a competition's leaderboard, returning ``[]`` on error.
+
+    @notice: |
+        Isolates a non-critical leaderboard fetch from the outer submission
+        pipeline so a transient network/API error cannot mark an accepted
+        submission as a mission failure.
+
+    @dev: |
+        On success, returns ``get_leaderboard``'s list unchanged. On any raised
+        exception, emits a ``logfire.warning`` and returns an empty list.
+    """
+    try:
+        return await platform_adapter.get_leaderboard(competition_id, limit=limit)
+    except Exception as exc:
+        logfire.warning("leaderboard_fetch_error", competition_id=competition_id, limit=limit, error=str(exc))
+        return []
+
+
+def _find_rank_for_score(
+    entries: list[LeaderboardEntry], score: float, *, tolerance: float = _SCORE_MATCH_TOLERANCE
+) -> int | None:
+    """Locate the rank of an entry whose score matches ``score`` within tolerance.
+
+    @notice: |
+        Uses ``math.isclose`` so scores that survived a float roundtrip through
+        JSON, CSV, or the metric-direction fallback still match.
+
+    @dev: |
+        Returns the first matching entry's ``rank`` in iteration order, matching
+        the pre-existing behavior. Returns ``None`` when nothing matches or the
+        list is empty.
+    """
+    for entry in entries:
+        if math.isclose(entry.score, score, rel_tol=tolerance, abs_tol=tolerance):
+            return entry.rank
+    return None
 
 
 def _is_rate_limit_error(error: Exception | str | None) -> bool:

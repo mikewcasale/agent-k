@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "On success, returns ``get_leaderboard``'s list unchanged. On any raised\nexception, emits a ``logfire.warning`` and returns an empty list.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:_fetch_leaderboard_safely",
+  "line": 2122,
+  "notice": "Isolates a non-critical leaderboard fetch from the outer submission\npipeline so a transient network/API error cannot mark an accepted\nsubmission as a mission failure.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Fetch a competition's leaderboard, returning ``[]`` on error.",
+  "type": "function"
+}

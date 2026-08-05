@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Signature matches LightGBM's callable-objective contract. L1's true\nsecond derivative is zero everywhere, so we fall back to a positive\nconstant hessian for the L1 component to keep the tree learner\nnumerically stable \u2014 this mirrors LightGBM's own ``regression_l1``\nimplementation.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:make_blended_objective",
+  "line": 240,
+  "notice": "``blend=0.0`` recovers L2 (MSE), ``blend=1.0`` recovers L1 (MAE).\nIntermediate values interpolate the gradients linearly.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Build a LightGBM custom objective mixing L1 and L2 gradients.",
+  "type": "function"
+}

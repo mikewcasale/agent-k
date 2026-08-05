@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-08-05T00:17:18.817561+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -380,7 +380,7 @@
       },
       {
         "component": "agent_k.evolution.loss:LossFunctionEvolver",
-        "line": 68,
+        "line": 99,
         "rationale": "Coordinates evolutionary search over loss function genomes.",
         "source": "agent_k/evolution/loss.py",
         "violations": []
@@ -645,7 +645,7 @@
       },
       {
         "component": "agent_k.evolution.loss:LossGenome",
-        "line": 46,
+        "line": 73,
         "rationale": "Dataclass for LightGBM loss function parameters.",
         "source": "agent_k/evolution/loss.py",
         "violations": []

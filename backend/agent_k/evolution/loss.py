@@ -1,7 +1,9 @@
 """Loss function evolution for LightGBM objectives.
 
 @notice: |
-    Loss function evolution for LightGBM objectives.
+    Loss function evolution for LightGBM objectives, including custom Python
+    objective callables that consume genome parameters LightGBM's built-in
+    objectives cannot express (asymmetric penalties, blended MAE/RMSE).
 
 @dev: |
     See module for implementation details and extension points.
@@ -19,7 +21,7 @@
         - "Create parallel modules without updating @similar or @graph."
 
 @human-review:
-    last-verified: 2026-01-26
+    last-verified: 2026-08-05
     owners:
         - agent-k-core
 
@@ -30,15 +32,40 @@ Licensed under the MIT License.
 from __future__ import annotations as _annotations
 
 import random
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from agent_k.evolution.framework import FitnessFn, Individual, Population
 
-type LossObjective = str
-"""LightGBM objective identifiers."""
+if TYPE_CHECKING:
+    import numpy as np
+    from lightgbm import Dataset
 
-__all__ = ("LossFunctionEvolver", "LossGenome", "build_lightgbm_objective_params")
+type LossObjective = str
+"""LightGBM objective identifiers.
+
+Built-in string identifiers: ``regression``, ``regression_l1``, ``huber``,
+``quantile``. Custom callable-backed identifiers: ``asymmetric`` (weights
+under/over-prediction differently) and ``blended`` (blends MAE and MSE
+gradients via ``mae_rmse_blend``).
+"""
+
+ObjectiveCallable = Callable[["np.ndarray", "Dataset"], tuple["np.ndarray", "np.ndarray"]]
+"""LightGBM custom objective signature returning (gradient, hessian)."""
+
+_BUILTIN_OBJECTIVES: frozenset[str] = frozenset({"regression", "regression_l1", "huber", "quantile"})
+_CUSTOM_OBJECTIVES: frozenset[str] = frozenset({"asymmetric", "blended"})
+_HESSIAN_FLOOR: float = 1e-6
+
+__all__ = (
+    "LossFunctionEvolver",
+    "LossGenome",
+    "ObjectiveCallable",
+    "build_lightgbm_objective_params",
+    "make_asymmetric_objective",
+    "make_blended_objective",
+)
 
 
 @dataclass(slots=True)
@@ -49,7 +76,11 @@ class LossGenome:
         Genome for evolving custom objective functions.
 
     @dev: |
-        See module for implementation details and extension points.
+        Fields ``asymmetric_weight`` and ``mae_rmse_blend`` drive custom
+        Python objective callables selected via ``objective``. Fields
+        ``huber_delta`` and ``quantile_alpha`` map to LightGBM's native
+        ``alpha`` parameter for the ``huber`` and ``quantile`` objectives
+        respectively.
 
         @pattern:
             name: genome-model
@@ -78,7 +109,7 @@ class LossFunctionEvolver:
             rationale: "Coordinates evolutionary search over loss function genomes."
     """
 
-    _objectives: tuple[str, ...] = ("regression", "regression_l1", "huber", "quantile")
+    _objectives: tuple[str, ...] = ("regression", "regression_l1", "huber", "quantile", "asymmetric", "blended")
 
     def __init__(
         self, fitness_fn: FitnessFn[LossGenome], *, population_size: int = 16, rng: random.Random | None = None
@@ -136,24 +167,105 @@ class LossFunctionEvolver:
 
 
 def build_lightgbm_objective_params(genome: LossGenome) -> dict[str, Any]:
-    """Create LightGBM objective params from a LossGenome.
+    """Create LightGBM params from a LossGenome.
 
     @notice: |
-        Create LightGBM objective params from a LossGenome.
+        Emits parameters using LightGBM's native parameter names. Built-in
+        objectives yield a pure ``{"objective": str, ...}`` mapping suitable
+        for ``lightgbm.train``. Custom objectives yield an
+        ``{"objective": callable}`` mapping whose callable consumes genome
+        fields LightGBM's built-ins cannot express.
 
     @dev: |
-        See module for behavior details and invariants.
+        Huber's transition point is LightGBM's ``alpha`` parameter, not
+        ``huber_delta`` (which LightGBM silently ignores). Quantile
+        regression also uses ``alpha``. ``asymmetric`` returns a callable
+        objective driven by ``asymmetric_weight`` (>1 penalizes under-
+        prediction more). ``blended`` returns a callable objective mixing
+        L1 and L2 gradients per ``mae_rmse_blend`` (0.0 → pure MSE, 1.0 →
+        pure MAE). Pass the returned dict straight to ``lightgbm.train``'s
+        ``params``; do not merge ``asymmetric_weight`` / ``mae_rmse_blend`` /
+        ``huber_delta`` yourself — LightGBM will silently discard them.
     """
-    params: dict[str, Any] = {
-        "objective": genome.objective,
-        "asymmetric_weight": genome.asymmetric_weight,
-        "mae_rmse_blend": genome.mae_rmse_blend,
-    }
-    if genome.objective == "quantile":
-        params["alpha"] = genome.quantile_alpha
-    if genome.objective == "huber":
-        params["huber_delta"] = genome.huber_delta
-    return params
+    objective = genome.objective
+
+    if objective == "huber":
+        return {"objective": "huber", "alpha": genome.huber_delta}
+    if objective == "quantile":
+        return {"objective": "quantile", "alpha": genome.quantile_alpha}
+    if objective == "asymmetric":
+        return {"objective": make_asymmetric_objective(genome.asymmetric_weight)}
+    if objective == "blended":
+        return {"objective": make_blended_objective(genome.mae_rmse_blend)}
+    if objective in _BUILTIN_OBJECTIVES:
+        return {"objective": objective}
+
+    raise ValueError(
+        f"Unknown loss objective {objective!r}. Expected one of {sorted(_BUILTIN_OBJECTIVES | _CUSTOM_OBJECTIVES)}."
+    )
+
+
+def make_asymmetric_objective(weight: float) -> ObjectiveCallable:
+    """Build a LightGBM custom objective with asymmetric squared error.
+
+    @notice: |
+        Under-predictions (pred < label) are penalized by ``weight``; over-
+        predictions carry unit weight. ``weight == 1.0`` reduces to L2.
+
+    @dev: |
+        Signature matches LightGBM's callable-objective contract:
+        ``(preds, train_data) -> (grad, hess)`` operating on the raw margin.
+        For squared error the raw margin equals the prediction. Hessian is
+        clipped away from zero so the boosting split-finder stays numerically
+        stable when ``weight`` collapses toward zero.
+    """
+    if weight <= 0.0:
+        raise ValueError(f"asymmetric weight must be positive, got {weight!r}")
+
+    def _asymmetric(preds: np.ndarray, dataset: Dataset) -> tuple[np.ndarray, np.ndarray]:
+        import numpy as _np
+
+        y_true = dataset.get_label()
+        residual = preds - y_true
+        # weight applied when we under-predict (residual < 0)
+        w = _np.where(residual < 0.0, weight, 1.0)
+        grad = 2.0 * residual * w
+        hess = _np.maximum(2.0 * w, _HESSIAN_FLOOR)
+        return grad, hess
+
+    return _asymmetric
+
+
+def make_blended_objective(blend: float) -> ObjectiveCallable:
+    """Build a LightGBM custom objective mixing L1 and L2 gradients.
+
+    @notice: |
+        ``blend=0.0`` recovers L2 (MSE), ``blend=1.0`` recovers L1 (MAE).
+        Intermediate values interpolate the gradients linearly.
+
+    @dev: |
+        Signature matches LightGBM's callable-objective contract. L1's true
+        second derivative is zero everywhere, so we fall back to a positive
+        constant hessian for the L1 component to keep the tree learner
+        numerically stable — this mirrors LightGBM's own ``regression_l1``
+        implementation.
+    """
+    if not 0.0 <= blend <= 1.0:
+        raise ValueError(f"blend must be in [0.0, 1.0], got {blend!r}")
+
+    def _blended(preds: np.ndarray, dataset: Dataset) -> tuple[np.ndarray, np.ndarray]:
+        import numpy as _np
+
+        y_true = dataset.get_label()
+        residual = preds - y_true
+        l1_grad = _np.sign(residual)
+        l2_grad = 2.0 * residual
+        grad = blend * l1_grad + (1.0 - blend) * l2_grad
+        hess = _np.full_like(residual, blend + 2.0 * (1.0 - blend), dtype=_np.float64)
+        _np.maximum(hess, _HESSIAN_FLOOR, out=hess)
+        return grad, hess
+
+    return _blended
 
 
 def _clip(value: float, lower: float, upper: float) -> float:

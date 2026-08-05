@@ -3,11 +3,11 @@
   "anti_patterns": null,
   "canonical_home": null,
   "custom": null,
-  "dev": "See module for implementation details and extension points.",
+  "dev": "Fields ``asymmetric_weight`` and ``mae_rmse_blend`` drive custom\nPython objective callables selected via ``objective``. Fields\n``huber_delta`` and ``quantile_alpha`` map to LightGBM's native\n``alpha`` parameter for the ``huber`` and ``quantile`` objectives\nrespectively.",
   "graph": null,
   "human_review": null,
   "id": "agent_k.evolution.loss:LossGenome",
-  "line": 46,
+  "line": 73,
   "notice": "Genome for evolving custom objective functions.",
   "pattern": {
     "name": "genome-model",

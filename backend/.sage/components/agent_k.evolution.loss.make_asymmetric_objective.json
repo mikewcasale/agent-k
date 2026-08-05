@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Signature matches LightGBM's callable-objective contract:\n``(preds, train_data) -> (grad, hess)`` operating on the raw margin.\nFor squared error the raw margin equals the prediction. Hessian is\nclipped away from zero so the boosting split-finder stays numerically\nstable when ``weight`` collapses toward zero.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:make_asymmetric_objective",
+  "line": 209,
+  "notice": "Under-predictions (pred < label) are penalized by ``weight``; over-\npredictions carry unit weight. ``weight == 1.0`` reduces to L2.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Build a LightGBM custom objective with asymmetric squared error.",
+  "type": "function"
+}

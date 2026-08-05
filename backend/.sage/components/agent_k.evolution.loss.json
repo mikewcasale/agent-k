@@ -19,14 +19,14 @@
     ]
   },
   "human_review": {
-    "last_verified": "2026-01-26",
+    "last_verified": "2026-08-05",
     "owners": [
       "agent-k-core"
     ]
   },
   "id": "agent_k.evolution.loss",
   "line": 1,
-  "notice": "Loss function evolution for LightGBM objectives.",
+  "notice": "Loss function evolution for LightGBM objectives, including custom Python\nobjective callables that consume genome parameters LightGBM's built-in\nobjectives cannot express (asymmetric penalties, blended MAE/RMSE).",
   "pattern": null,
   "similar": null,
   "source": "agent_k/evolution/loss.py",

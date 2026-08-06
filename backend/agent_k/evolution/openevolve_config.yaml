@@ -13,8 +13,11 @@ llm:
   timeout: 90
   retries: 3
   retry_delay: 5
+  # Kept in sync with agent_k.infra.providers.DEFAULT_OPENROUTER_FREE_MODEL.
+  # Runtime callers usually override via OpenEvolveRunner.model_specs, but this
+  # is the fallback when no override is supplied and the YAML is loaded raw.
   models:
-    - name: "mistralai/devstral-2512:free"
+    - name: "openai/gpt-oss-120b:free"
       weight: 1.0
 
 prompt:

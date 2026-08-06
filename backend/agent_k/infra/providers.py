@@ -58,17 +58,21 @@ __all__ = (
     "DEVSTRAL_MODEL_ID",
     "DEVSTRAL_BASE_URL",
     "OPENROUTER_FREE_MODELS",
+    "DEFAULT_OPENROUTER_FREE_MODEL",
     "ModelType",
 )
 
 DEVSTRAL_MODEL_ID: Final[str] = "mistralai/devstral-small-2-2512"
 DEVSTRAL_BASE_URL: Final[str] = os.getenv("DEVSTRAL_BASE_URL", "http://192.168.105.1:1234/v1")
+# Free OpenRouter model identifiers for agentic coding tasks. Slugs are verified
+# live against OpenRouter before landing; refresh when a live-mission run turns
+# up an "endpoints not found" / "free period ended" / upstream rate-limit signal.
+# Kept in sync with frontend/lib/ai/agent-k-models.ts DEFAULT_EVOLUTION_MODELS.
 OPENROUTER_FREE_MODELS: Final[dict[str, str]] = {
-    "devstral": "openrouter:mistralai/devstral-2512:free",
-    "kat_coder": "openrouter:kwaipilot/kat-coder-pro:free",
-    "qwen_coder": "openrouter:qwen/qwen3-coder:free",
+    "gpt_oss_120b": "openrouter:openai/gpt-oss-120b:free",
+    "gpt_oss_20b": "openrouter:openai/gpt-oss-20b:free",
 }
-# Free OpenRouter model identifiers for agentic coding tasks.
+DEFAULT_OPENROUTER_FREE_MODEL: Final[str] = OPENROUTER_FREE_MODELS["gpt_oss_120b"]
 
 type ModelType = str
 

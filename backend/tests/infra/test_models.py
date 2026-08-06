@@ -12,8 +12,10 @@ import pytest
 from pydantic_ai.models.openai import OpenAIChatModel
 
 from agent_k.infra.providers import (
+    DEFAULT_OPENROUTER_FREE_MODEL,
     DEVSTRAL_BASE_URL,
     DEVSTRAL_MODEL_ID,
+    OPENROUTER_FREE_MODELS,
     create_devstral_model,
     create_openrouter_model,
     get_model,
@@ -111,6 +113,43 @@ class TestGetModel:
         result = get_model("openrouter:mistralai/devstral-small-2505")
 
         assert isinstance(result, OpenAIChatModel)
+
+
+class TestOpenRouterFreeModels:
+    """Tests for the OpenRouter free-model registry."""
+
+    _DEAD_SLUGS: frozenset[str] = frozenset(
+        {
+            "mistralai/devstral-2512:free",
+            "kwaipilot/kat-coder-pro:free",
+            "qwen/qwen3-coder:free",
+            "deepseek/deepseek-chat-v3-0324:free",
+        }
+    )
+
+    def test_registry_not_empty(self) -> None:
+        """Registry must expose at least one live free model."""
+        assert OPENROUTER_FREE_MODELS
+
+    def test_all_specs_are_openrouter_prefixed(self) -> None:
+        """Every registered spec must be resolvable by get_model()."""
+        for spec in OPENROUTER_FREE_MODELS.values():
+            assert spec.startswith("openrouter:"), spec
+
+    def test_all_specs_are_free_tier(self) -> None:
+        """Free-tier registry must only contain :free slugs."""
+        for spec in OPENROUTER_FREE_MODELS.values():
+            assert spec.endswith(":free"), spec
+
+    def test_no_known_dead_slugs(self) -> None:
+        """Slugs that returned 404 / rate-limits in prior live runs must stay out."""
+        for spec in OPENROUTER_FREE_MODELS.values():
+            slug = spec.removeprefix("openrouter:")
+            assert slug not in self._DEAD_SLUGS, spec
+
+    def test_default_is_registered(self) -> None:
+        """DEFAULT_OPENROUTER_FREE_MODEL must reference a registry entry."""
+        assert DEFAULT_OPENROUTER_FREE_MODEL in set(OPENROUTER_FREE_MODELS.values())
 
 
 class TestIsDevstralModel:

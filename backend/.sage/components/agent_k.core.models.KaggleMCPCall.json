@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.models:KaggleMCPCall",
-  "line": 329,
+  "line": 341,
   "notice": "Kaggle MCP tool call.",
   "pattern": {
     "name": "specialization",

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Lookup order:\n  1. Compact alias table (normalized, punctuation stripped).\n  2. Substring pattern list (handles verbose Kaggle names).\n  3. `default`, with a `logfire` warning tagged `metric_unresolved`.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.metrics:parse_metric",
+  "line": 250,
+  "notice": "Recognizes both compact aliases (\"rmse\", \"auc\") and long names\n(\"RootMeanSquaredError\", \"QuadraticWeightedKappa\").",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/metrics.py",
+  "summary": "Parse a raw metric string into an EvaluationMetric and its direction.",
+  "type": "function"
+}

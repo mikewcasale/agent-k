@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.strategy:FitnessPolicy",
-  "line": 170,
+  "line": 168,
   "notice": "Policy controlling fitness adjustments.",
   "pattern": {
     "name": "policy-model",

@@ -431,6 +431,51 @@
       "type": "provides"
     },
     {
+      "source": "agent_k.core.metrics",
+      "target": "agent_k.core.metrics:parse_metric",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.metrics",
+      "target": "agent_k.core.metrics:metric_direction",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.metrics",
+      "target": "agent_k.core.metrics:is_classification_metric",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.metrics",
+      "target": "agent_k.core.metrics:uses_probability",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.metrics",
+      "target": "agent_k.core.metrics:CLASSIFICATION_METRICS",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.metrics",
+      "target": "agent_k.core.metrics:PROBA_METRICS",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.metrics",
+      "target": "agent_k.core.metrics:REGRESSION_METRICS",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.metrics",
+      "target": "agent_k.core.models",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.core.metrics",
+      "target": "agent_k.adapters.kaggle",
+      "type": "similar"
+    },
+    {
       "source": "agent_k.core.models",
       "target": "agent_k.core.models",
       "type": "provides"
@@ -921,7 +966,7 @@
       "type": "similar"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831739+00:00",
+  "generated": "2026-08-07T23:24:33.070511+00:00",
   "nodes": [
     {
       "id": "agent_k",
@@ -1042,6 +1087,12 @@
       "label": "hints",
       "pattern": "analysis-hints",
       "source": "agent_k/core/hints.py"
+    },
+    {
+      "id": "agent_k.core.metrics",
+      "label": "metrics",
+      "pattern": "registry",
+      "source": "agent_k/core/metrics.py"
     },
     {
       "id": "agent_k.core.models",

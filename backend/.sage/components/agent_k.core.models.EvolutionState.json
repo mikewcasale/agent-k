@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.models:EvolutionState",
-  "line": 532,
+  "line": 544,
   "notice": "State of the evolution process.",
   "pattern": {
     "name": "immutable-entity",

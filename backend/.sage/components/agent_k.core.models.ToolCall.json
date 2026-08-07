@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.models:ToolCall",
-  "line": 281,
+  "line": 293,
   "notice": "Base model for tool invocation tracking.",
   "pattern": {
     "name": "immutable-entity",

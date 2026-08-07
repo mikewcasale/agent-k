@@ -1,5 +1,5 @@
 {
-  "count": 59,
+  "count": 60,
   "entries": [
     {
       "component": "agent_k",
@@ -220,6 +220,17 @@
       ],
       "line": 1,
       "source": "agent_k/core/hints.py"
+    },
+    {
+      "component": "agent_k.core.metrics",
+      "do": [
+        "Add new metric aliases here; keep adapters call `parse_metric`."
+      ],
+      "do_not": [
+        "Duplicate metric-name \u2192 enum tables in adapters or nodes."
+      ],
+      "line": 1,
+      "source": "agent_k/core/metrics.py"
     },
     {
       "component": "agent_k.core.models",
@@ -651,6 +662,6 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831787+00:00",
+  "generated": "2026-08-07T23:24:33.070723+00:00",
   "version": "1.3.6"
 }

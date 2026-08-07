@@ -1,0 +1,50 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Add new metric aliases here; keep adapters call `parse_metric`."
+    ],
+    "do_not": [
+      "Duplicate metric-name \u2192 enum tables in adapters or nodes."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Kaggle's `evaluationMetric` field is free-form text (e.g. \"AUC\",\n\"AreaUnderROCCurve\", \"SymmetricMeanAbsolutePercentageError\"). Downstream\nstrategy/evolution code needs a canonical `EvaluationMetric`, a\nminimize/maximize direction, and taxonomy flags. Rather than scattering\nthose maps across adapters and nodes, this module owns them.",
+  "graph": {
+    "id": "agent_k.core.metrics",
+    "pattern": "registry",
+    "provides": [
+      "agent_k.core.metrics:parse_metric",
+      "agent_k.core.metrics:metric_direction",
+      "agent_k.core.metrics:is_classification_metric",
+      "agent_k.core.metrics:uses_probability",
+      "agent_k.core.metrics:CLASSIFICATION_METRICS",
+      "agent_k.core.metrics:PROBA_METRICS",
+      "agent_k.core.metrics:REGRESSION_METRICS"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-08-07",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.core.metrics",
+  "line": 1,
+  "notice": "Central registry for evaluation metric parsing, direction, and taxonomy.",
+  "pattern": null,
+  "similar": [
+    {
+      "id": "agent_k.core.models",
+      "when": "EvaluationMetric enum definition; this module maps to it."
+    },
+    {
+      "id": "agent_k.adapters.kaggle",
+      "when": "Adapter parsing of Kaggle competition payloads."
+    }
+  ],
+  "source": "agent_k/core/metrics.py",
+  "summary": "Evaluation metric registry and parsing for AGENT-K.",
+  "type": "module"
+}

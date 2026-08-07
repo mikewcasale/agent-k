@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.models:LeaderboardEntry",
-  "line": 232,
+  "line": 244,
   "notice": "Entry in competition leaderboard.",
   "pattern": {
     "name": "immutable-entity",

@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.models:MissionCriteria",
-  "line": 713,
+  "line": 725,
   "notice": "Criteria constraining mission execution.",
   "pattern": {
     "name": "immutable-entity",

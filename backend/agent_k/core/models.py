@@ -154,16 +154,28 @@ class EvaluationMetric(StrEnum):
     ACCURACY = "accuracy"
     AUC = "auc"
     LOG_LOSS = "logLoss"
+    MULTI_LOG_LOSS = "multiLogLoss"
     F1 = "f1"
+    BALANCED_ACCURACY = "balancedAccuracy"
+    MCC = "mcc"
+    QUADRATIC_KAPPA = "quadraticKappa"
 
     # Regression
     RMSE = "rmse"
     MAE = "mae"
     RMSLE = "rmsle"
+    MEDAE = "medae"
+    R2 = "r2"
+    SMAPE = "smape"
+    MAPE = "mape"
+    MCRMSE = "mcrmse"
+    SPEARMAN = "spearman"
+    PEARSON = "pearson"
 
     # Ranking
     MAP = "map"
     NDCG = "ndcg"
+    MRR = "mrr"
 
 
 class Competition(BaseModel):

@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.models:ResearchFindings",
-  "line": 690,
+  "line": 702,
   "notice": "Complete research findings for a competition.",
   "pattern": {
     "name": "immutable-entity",

@@ -1,11 +1,11 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-08-07T23:24:33.071030+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 114,
+        "line": 115,
         "rationale": "Encapsulates Kaggle-specific API behavior.",
         "source": "agent_k/adapters/kaggle.py",
         "violations": [
@@ -306,7 +306,7 @@
       },
       {
         "component": "agent_k.core.strategy:ProblemType",
-        "line": 68,
+        "line": 66,
         "rationale": "StrEnum for ML problem taxonomy.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -574,7 +574,7 @@
     "fitness-input": [
       {
         "component": "agent_k.core.strategy:FitnessInput",
-        "line": 146,
+        "line": 144,
         "rationale": "Captures evaluation signals for scoring.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -654,7 +654,7 @@
     "graph-node": [
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 115,
+        "line": 119,
         "rationale": "Encapsulates discovery phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -663,7 +663,7 @@
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 273,
+        "line": 277,
         "rationale": "Encapsulates research phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -672,7 +672,7 @@
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 419,
+        "line": 423,
         "rationale": "Encapsulates prototype phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -681,7 +681,7 @@
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 900,
+        "line": 899,
         "rationale": "Encapsulates evolution phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -690,7 +690,7 @@
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1602,
+        "line": 1601,
         "rationale": "Encapsulates submission phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -710,119 +710,119 @@
     "immutable-entity": [
       {
         "component": "agent_k.core.models:Competition",
-        "line": 170,
+        "line": 182,
         "rationale": "Frozen Pydantic model for competition metadata.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:LeaderboardEntry",
-        "line": 232,
+        "line": 244,
         "rationale": "Frozen Pydantic model for leaderboard row data.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:Submission",
-        "line": 255,
+        "line": 267,
         "rationale": "Frozen Pydantic model for submission records.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:ToolCall",
-        "line": 281,
+        "line": 293,
         "rationale": "Base frozen model for tool call telemetry.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:PlannedTask",
-        "line": 390,
+        "line": 402,
         "rationale": "Frozen Pydantic model for task planning and tracking.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:PhasePlan",
-        "line": 424,
+        "line": 436,
         "rationale": "Frozen Pydantic model for phase-level planning.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:MissionPlan",
-        "line": 453,
+        "line": 465,
         "rationale": "Frozen Pydantic model for complete mission planning.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:GenerationMetrics",
-        "line": 476,
+        "line": 488,
         "rationale": "Frozen Pydantic model for evolution generation metrics.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:LeaderboardSubmission",
-        "line": 506,
+        "line": 518,
         "rationale": "Frozen Pydantic model for leaderboard submission records.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:EvolutionState",
-        "line": 532,
+        "line": 544,
         "rationale": "Frozen Pydantic model for evolution state tracking.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:MemoryEntry",
-        "line": 565,
+        "line": 577,
         "rationale": "Frozen Pydantic model for memory store entries.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:Checkpoint",
-        "line": 591,
+        "line": 603,
         "rationale": "Frozen Pydantic model for state checkpoint records.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:MemoryState",
-        "line": 613,
+        "line": 625,
         "rationale": "Frozen Pydantic model for aggregate memory state.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:ErrorEvent",
-        "line": 634,
+        "line": 646,
         "rationale": "Frozen Pydantic model for error event records.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:LeaderboardAnalysis",
-        "line": 664,
+        "line": 676,
         "rationale": "Frozen Pydantic model for leaderboard analysis results.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:ResearchFindings",
-        "line": 690,
+        "line": 702,
         "rationale": "Frozen Pydantic model for research findings aggregate.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:MissionCriteria",
-        "line": 713,
+        "line": 725,
         "rationale": "Frozen Pydantic model for mission execution constraints.",
         "source": "agent_k/core/models.py",
         "violations": []
@@ -1055,7 +1055,7 @@
     "policy-model": [
       {
         "component": "agent_k.core.strategy:TechniquePolicy",
-        "line": 119,
+        "line": 117,
         "rationale": "Encodes technique constraints for evolution.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -1064,7 +1064,7 @@
       },
       {
         "component": "agent_k.core.strategy:FitnessPolicy",
-        "line": 170,
+        "line": 168,
         "rationale": "Encodes penalty tuning for fitness scoring.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -1084,7 +1084,7 @@
     "profile-model": [
       {
         "component": "agent_k.core.strategy:ProblemProfile",
-        "line": 93,
+        "line": 91,
         "rationale": "Bundles task metadata for downstream policies.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -1228,7 +1228,7 @@
     "settings": [
       {
         "component": "agent_k.adapters.kaggle:KaggleSettings",
-        "line": 74,
+        "line": 75,
         "rationale": "Centralizes Kaggle adapter configuration.",
         "source": "agent_k/adapters/kaggle.py",
         "violations": [
@@ -1304,28 +1304,28 @@
     "specialization": [
       {
         "component": "agent_k.core.models:WebSearchCall",
-        "line": 309,
+        "line": 321,
         "rationale": "Extends ToolCall with web search specific fields.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:KaggleMCPCall",
-        "line": 329,
+        "line": 341,
         "rationale": "Extends ToolCall with Kaggle API specific fields.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:CodeExecutorCall",
-        "line": 347,
+        "line": 359,
         "rationale": "Extends ToolCall with code execution specific fields.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:MemoryCall",
-        "line": 370,
+        "line": 382,
         "rationale": "Extends ToolCall with memory operation specific fields.",
         "source": "agent_k/core/models.py",
         "violations": []

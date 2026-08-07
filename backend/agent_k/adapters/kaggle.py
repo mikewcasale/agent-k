@@ -58,7 +58,8 @@ from agent_k.core.exceptions import (
     RateLimitError,
     SubmissionError,
 )
-from agent_k.core.models import Competition, CompetitionType, EvaluationMetric, LeaderboardEntry, Submission
+from agent_k.core.metrics import parse_metric
+from agent_k.core.models import Competition, CompetitionType, LeaderboardEntry, Submission
 from agent_k.core.protocols import PlatformAdapter
 
 if TYPE_CHECKING:
@@ -470,43 +471,8 @@ class KaggleAdapter(PlatformAdapter):
             "Community": CompetitionType.COMMUNITY,
         }
 
-        # Map Kaggle metric to our enum
-        metric_map = {
-            "accuracy": EvaluationMetric.ACCURACY,
-            "auc": EvaluationMetric.AUC,
-            "logloss": EvaluationMetric.LOG_LOSS,
-            "rmse": EvaluationMetric.RMSE,
-            "mae": EvaluationMetric.MAE,
-            "rmsle": EvaluationMetric.RMSLE,
-        }
-        metric_raw = str(data.get("evaluationMetric", "accuracy")).strip()
-        metric_key = metric_raw.lower()
-        metric = metric_map.get(metric_key)
-        if metric is None:
-            if "logarithmic" in metric_key or "rmsle" in metric_key:
-                metric = EvaluationMetric.RMSLE
-            elif "mean squared" in metric_key or "rmse" in metric_key:
-                metric = EvaluationMetric.RMSE
-            elif "mean absolute" in metric_key or "mae" in metric_key:
-                metric = EvaluationMetric.MAE
-            elif "log loss" in metric_key or "logloss" in metric_key:
-                metric = EvaluationMetric.LOG_LOSS
-            elif "auc" in metric_key:
-                metric = EvaluationMetric.AUC
-            else:
-                metric = EvaluationMetric.ACCURACY
-        metric_direction_map = {
-            EvaluationMetric.ACCURACY: "maximize",
-            EvaluationMetric.AUC: "maximize",
-            EvaluationMetric.F1: "maximize",
-            EvaluationMetric.LOG_LOSS: "minimize",
-            EvaluationMetric.RMSE: "minimize",
-            EvaluationMetric.MAE: "minimize",
-            EvaluationMetric.RMSLE: "minimize",
-            EvaluationMetric.MAP: "maximize",
-            EvaluationMetric.NDCG: "maximize",
-        }
-        metric_direction = metric_direction_map.get(metric, "maximize")
+        metric_raw = str(data.get("evaluationMetric", "accuracy"))
+        metric, metric_direction = parse_metric(metric_raw)
 
         # Parse tags - they may be strings or dicts with 'name' key
         raw_tags = data.get("tags", [])

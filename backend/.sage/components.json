@@ -264,6 +264,22 @@
   },
   {
     "consumes": [],
+    "id": "agent_k.core.metrics",
+    "line": 1,
+    "pattern": "registry",
+    "provides": [
+      "agent_k.core.metrics:parse_metric",
+      "agent_k.core.metrics:metric_direction",
+      "agent_k.core.metrics:is_classification_metric",
+      "agent_k.core.metrics:uses_probability",
+      "agent_k.core.metrics:CLASSIFICATION_METRICS",
+      "agent_k.core.metrics:PROBA_METRICS",
+      "agent_k.core.metrics:REGRESSION_METRICS"
+    ],
+    "source": "agent_k/core/metrics.py"
+  },
+  {
+    "consumes": [],
     "id": "agent_k.core.models",
     "line": 1,
     "pattern": "domain-models",

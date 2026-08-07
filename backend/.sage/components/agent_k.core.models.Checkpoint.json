@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.models:Checkpoint",
-  "line": 591,
+  "line": 603,
   "notice": "Mission state checkpoint.",
   "pattern": {
     "name": "immutable-entity",

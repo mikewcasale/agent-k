@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.models:LeaderboardSubmission",
-  "line": 506,
+  "line": 518,
   "notice": "Record of a submission to the competition leaderboard.",
   "pattern": {
     "name": "immutable-entity",

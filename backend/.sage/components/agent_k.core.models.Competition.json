@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.models:Competition",
-  "line": 170,
+  "line": 182,
   "notice": "Kaggle competition entity.",
   "pattern": {
     "name": "immutable-entity",

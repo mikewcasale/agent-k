@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.models:CodeExecutorCall",
-  "line": 347,
+  "line": 359,
   "notice": "Code execution tool call.",
   "pattern": {
     "name": "specialization",

@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.models:ErrorEvent",
-  "line": 634,
+  "line": 646,
   "notice": "Record of an error event.",
   "pattern": {
     "name": "immutable-entity",

@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.models:PlannedTask",
-  "line": 390,
+  "line": 402,
   "notice": "A planned task within a phase.",
   "pattern": {
     "name": "immutable-entity",

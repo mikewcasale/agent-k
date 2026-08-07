@@ -76,6 +76,10 @@ from ..core.constants import (
 from ..core.data import infer_competition_schema, locate_data_files, stage_competition_data
 from ..core.exceptions import classify_error
 from ..core.hints import DatasetProfile, PreprocessingHint, build_dataset_profile, generate_preprocessing_hints
+from ..core.metrics import (
+    CLASSIFICATION_METRICS as _METRIC_CLASSIFICATION_METRICS,
+    PROBA_METRICS as _METRIC_PROBA_METRICS,
+)
 from ..core.models import (
     EvaluationMetric,
     EvolutionState,
@@ -630,13 +634,8 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         strategy_text = " ".join(strategy_items)
         strategy_lower = strategy_text.lower()
 
-        is_classification = metric_key in {
-            EvaluationMetric.ACCURACY,
-            EvaluationMetric.AUC,
-            EvaluationMetric.LOG_LOSS,
-            EvaluationMetric.F1,
-        }
-        uses_proba = metric_key in {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
+        is_classification = metric_key in _METRIC_CLASSIFICATION_METRICS
+        uses_proba = metric_key in _METRIC_PROBA_METRICS
 
         if "lightgbm" in strategy_lower or "lgbm" in strategy_lower:
             model_class = "LGBMClassifier" if is_classification else "LGBMRegressor"
@@ -2173,19 +2172,12 @@ def _prediction_value(
         return 0.0, 0.0
 
     mean_value = sum(numeric_values) / len(numeric_values)
-    proba_metrics = {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
-    classification_metrics = {
-        EvaluationMetric.ACCURACY,
-        EvaluationMetric.AUC,
-        EvaluationMetric.LOG_LOSS,
-        EvaluationMetric.F1,
-    }
 
-    if metric in proba_metrics:
+    if metric in _METRIC_PROBA_METRICS:
         pred_numeric = min(max(mean_value, 1e-3), 1 - 1e-3)
         return pred_numeric, pred_numeric
 
-    if metric in classification_metrics:
+    if metric in _METRIC_CLASSIFICATION_METRICS:
         if mapping:
             majority = Counter(raw_values).most_common(1)[0][0]
             return majority, float(mapping.get(majority, 0))
@@ -2259,6 +2251,64 @@ def _evaluate_metric(metric: EvaluationMetric, values: list[float], prediction: 
             return 0.0
         mse = sum((math.log1p(value) - math.log1p(pred)) ** 2 for value in valid_values) / len(valid_values)
         return math.sqrt(mse)
+
+    if metric == EvaluationMetric.MEDAE:
+        deltas = sorted(abs(value - prediction) for value in values)
+        mid = len(deltas) // 2
+        if len(deltas) % 2 == 1:
+            return deltas[mid]
+        return (deltas[mid - 1] + deltas[mid]) / 2.0
+
+    if metric == EvaluationMetric.MCRMSE:
+        mse = sum((value - prediction) ** 2 for value in values) / len(values)
+        return math.sqrt(mse)
+
+    if metric == EvaluationMetric.SMAPE:
+        total = 0.0
+        for value in values:
+            denom = (abs(value) + abs(prediction)) / 2.0
+            total += 0.0 if denom == 0 else abs(value - prediction) / denom
+        return total / len(values)
+
+    if metric == EvaluationMetric.MAPE:
+        nonzero = [value for value in values if value != 0]
+        if not nonzero:
+            return 0.0
+        return sum(abs((value - prediction) / value) for value in nonzero) / len(nonzero)
+
+    if metric == EvaluationMetric.R2:
+        mean_value = sum(values) / len(values)
+        ss_tot = sum((value - mean_value) ** 2 for value in values)
+        if ss_tot == 0:
+            return 0.0
+        ss_res = sum((value - prediction) ** 2 for value in values)
+        return 1.0 - ss_res / ss_tot
+
+    if metric in {EvaluationMetric.SPEARMAN, EvaluationMetric.PEARSON}:
+        # Constant baselines have zero correlation with any non-constant target.
+        return 0.0
+
+    if metric == EvaluationMetric.MULTI_LOG_LOSS:
+        prob = min(max(prediction, 1e-6), 1 - 1e-6)
+        return -sum(value * math.log(prob) + (1 - value) * math.log(1 - prob) for value in values) / len(values)
+
+    if metric == EvaluationMetric.BALANCED_ACCURACY:
+        # Two-class balanced accuracy for the majority-prediction baseline.
+        pos = values.count(1)
+        neg = len(values) - pos
+        if pos == 0 or neg == 0:
+            return 0.5
+        tpr = 1.0 if prediction == 1 else 0.0
+        tnr = 1.0 if prediction == 0 else 0.0
+        return (tpr + tnr) / 2.0
+
+    if metric == EvaluationMetric.MCC:
+        # A constant classifier produces zero MCC by convention.
+        return 0.0
+
+    if metric == EvaluationMetric.QUADRATIC_KAPPA:
+        # Constant predictions yield undefined kappa; use zero baseline.
+        return 0.0
 
     return 0.0
 

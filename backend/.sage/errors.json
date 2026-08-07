@@ -1,1 +1,42 @@
-[]
+[
+  {
+    "code": "V005",
+    "component": "agent_k.core.metrics:metric_direction",
+    "level": "WARN",
+    "line": 292,
+    "message": "Public component missing @notice or @dev",
+    "source": "agent_k/core/metrics.py"
+  },
+  {
+    "code": "V005",
+    "component": "agent_k.core.metrics:is_classification_metric",
+    "level": "WARN",
+    "line": 297,
+    "message": "Public component missing @notice or @dev",
+    "source": "agent_k/core/metrics.py"
+  },
+  {
+    "code": "V005",
+    "component": "agent_k.core.metrics:is_regression_metric",
+    "level": "WARN",
+    "line": 302,
+    "message": "Public component missing @notice or @dev",
+    "source": "agent_k/core/metrics.py"
+  },
+  {
+    "code": "V005",
+    "component": "agent_k.core.metrics:is_ranking_metric",
+    "level": "WARN",
+    "line": 307,
+    "message": "Public component missing @notice or @dev",
+    "source": "agent_k/core/metrics.py"
+  },
+  {
+    "code": "V005",
+    "component": "agent_k.core.metrics:uses_probability",
+    "level": "WARN",
+    "line": 312,
+    "message": "Public component missing @notice or @dev",
+    "source": "agent_k/core/metrics.py"
+  }
+]

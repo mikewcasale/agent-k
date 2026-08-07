@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-08-07T04:10:55.173405+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -6368,61 +6368,61 @@
       },
       {
         "component": "agent_k.mission.persistence:MissionPersistence",
-        "line": 60,
+        "line": 63,
         "name": "notice",
         "value": "Mission-specific persistence with checkpoint rotation and resumability."
       },
       {
         "component": "agent_k.mission.persistence:MissionPersistence",
-        "line": 63,
+        "line": 66,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.persistence:MissionPersistence",
-        "line": 66,
+        "line": 69,
         "name": "pattern",
         "value": "{\"name\": \"state-persistence\", \"rationale\": \"Stores mission snapshots for resumption and auditability.\", \"violations\": \"Ad-hoc persistence complicates recovery.\"}"
       },
       {
         "component": "agent_k.mission.persistence:MissionPersistence",
-        "line": 71,
+        "line": 74,
         "name": "collaborators",
         "value": "{\"required\": [\"pydantic_graph.persistence.file:FileStatePersistence\"], \"injection\": \"constructor\", \"lifecycle\": \"Scoped per mission.\"}"
       },
       {
         "component": "agent_k.mission.persistence:MissionPersistence",
-        "line": 77,
+        "line": 80,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates on-disk checkpoints and in-memory snapshots.\"}"
       },
       {
         "component": "agent_k.mission.persistence:MissionPersistence",
-        "line": 82,
+        "line": 85,
         "name": "invariants",
         "value": "[\"mission_dir exists before persistence operations.\"]"
       },
       {
         "component": "agent_k.mission.persistence:create_persistence",
-        "line": 187,
+        "line": 197,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.mission.persistence:create_persistence",
-        "line": 190,
+        "line": 200,
         "name": "notice",
         "value": "Creates a MissionPersistence instance for the given mission."
       },
       {
         "component": "agent_k.mission.persistence:create_persistence",
-        "line": 193,
+        "line": 203,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.mission.persistence:MissionPersistence\", \"rationale\": \"Centralizes checkpoint path defaults.\", \"singleton\": false, \"cache_key\": \"mission_id\"}"
       },
       {
         "component": "agent_k.mission.persistence:create_persistence",
-        "line": 199,
+        "line": 209,
         "name": "canonical_home",
         "value": "{\"for\": [\"mission persistence construction\"], \"notes\": \"Use create_persistence to ensure defaults.\"}"
       }

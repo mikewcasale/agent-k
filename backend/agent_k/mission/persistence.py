@@ -35,6 +35,8 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
+import asyncio
+import itertools
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated, Any, Final
@@ -52,6 +54,7 @@ __all__ = ("MissionPersistence", "create_persistence", "CHECKPOINT_DIR")
 
 CHECKPOINT_DIR: Final[Path] = Path("~/.agent_k/checkpoints").expanduser()
 CHECKPOINT_PREFIX: Final[str] = "checkpoint_"
+CHECKPOINT_TIMESTAMP_FORMAT: Final[str] = "%Y%m%d_%H%M%S_%f"
 
 
 class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
@@ -93,6 +96,10 @@ class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
         self.max_checkpoints = max_checkpoints
         self.mission_dir = checkpoint_dir / mission_id
         self.mission_dir.mkdir(parents=True, exist_ok=True)
+        # Monotonic per-instance sequence guarantees strict ordering when two
+        # checkpoints land in the same microsecond (fast phase transitions,
+        # tests, or coarse-resolution filesystem clocks).
+        self._checkpoint_sequence = itertools.count()
 
         super().__init__(self.mission_dir / "state.json")
 
@@ -166,17 +173,20 @@ class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
     async def _save_checkpoint(self, state: MissionState) -> None:
         """Save state with timestamp and clean up old checkpoints."""
         with logfire.span("mission.persistence.save", mission_id=self.mission_id):
-            timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
-            checkpoint_path = self.mission_dir / f"{CHECKPOINT_PREFIX}{timestamp}.json"
-            checkpoint_path.write_text(state.model_dump_json(indent=2), encoding="utf-8")
+            timestamp = datetime.now(UTC).strftime(CHECKPOINT_TIMESTAMP_FORMAT)
+            sequence = next(self._checkpoint_sequence)
+            checkpoint_path = self.mission_dir / f"{CHECKPOINT_PREFIX}{timestamp}_{sequence:06d}.json"
+            payload = state.model_dump_json(indent=2)
+            await asyncio.to_thread(checkpoint_path.write_text, payload, encoding="utf-8")
             await self._cleanup_old_checkpoints()
 
     async def _cleanup_old_checkpoints(self) -> None:
-        checkpoints = sorted(
-            self.mission_dir.glob(f"{CHECKPOINT_PREFIX}*.json"), key=lambda p: p.stat().st_mtime, reverse=True
-        )
+        # Filenames encode timestamp + monotonic sequence, so lexicographic
+        # ordering matches creation order even when st_mtime is coarse or
+        # identical across writes in the same second.
+        checkpoints = sorted(self.mission_dir.glob(f"{CHECKPOINT_PREFIX}*.json"), key=lambda p: p.name, reverse=True)
         for old_checkpoint in checkpoints[self.max_checkpoints :]:
-            old_checkpoint.unlink()
+            await asyncio.to_thread(old_checkpoint.unlink, missing_ok=True)
 
 
 def create_persistence(

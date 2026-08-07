@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-08-07T04:10:55.174490+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -1334,7 +1334,7 @@
     "state-persistence": [
       {
         "component": "agent_k.mission.persistence:MissionPersistence",
-        "line": 58,
+        "line": 61,
         "rationale": "Stores mission snapshots for resumption and auditability.",
         "source": "agent_k/mission/persistence.py",
         "violations": [

@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.tracking:ExperimentRecord",
-  "line": 157,
+  "line": 161,
   "notice": "Persistent record of an experiment or submission.",
   "pattern": {
     "name": "record-model",

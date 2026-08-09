@@ -63,6 +63,10 @@ __all__ = (
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _DEFAULT_EXPERIMENT_DB: Final[Path] = Path("~/.agent_k/experiments/experiments.sqlite").expanduser()
+_SQLITE_CONNECT_TIMEOUT_SECONDS: Final[float] = 30.0
+"""Python-side wait for SQLite lock acquisition before raising OperationalError."""
+_SQLITE_BUSY_TIMEOUT_MS: Final[int] = 30_000
+"""SQLite-side busy_timeout, matches the Python connect timeout above."""
 _MODEL_SIGNATURES: Final[tuple[tuple[str, str, re.Pattern[str]], ...]] = (
     ("LGBMRegressor", "lightgbm", re.compile(r"\bLGBMRegressor\b")),
     ("LGBMClassifier", "lightgbm", re.compile(r"\bLGBMClassifier\b")),
@@ -290,10 +294,11 @@ class ExperimentTracker:
         @concurrency:
             model: asyncio
             safe: false
-            reason: "Uses SQLite connections without cross-process locking."
+            reason: "Serializes writers via SQLite WAL and a 30s busy_timeout."
 
         @invariants:
             - "Database schema is initialized before writes."
+            - "Every connection enables WAL journal, NORMAL synchronous, and a 30s busy_timeout."
     """
 
     _table_name: Final[str] = "experiments"
@@ -625,8 +630,11 @@ class ExperimentTracker:
         )
 
     def _connect(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self._db_path)
+        conn = sqlite3.connect(self._db_path, timeout=_SQLITE_CONNECT_TIMEOUT_SECONDS)
         conn.row_factory = sqlite3.Row
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("PRAGMA synchronous=NORMAL")
+        conn.execute(f"PRAGMA busy_timeout={_SQLITE_BUSY_TIMEOUT_MS}")
         return conn
 
     def _initialize_schema(self) -> None:

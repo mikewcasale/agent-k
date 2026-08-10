@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.adapters.kaggle:KaggleAdapter._parse_competition",
-  "line": 504,
+  "id": "agent_k.adapters.kaggle:KaggleAdapter._download_file_atomic",
+  "line": 438,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Parse Kaggle API response into Competition model.",
+  "summary": "Stream a competition file to ``<file>.part`` then rename atomically.",
   "type": "method"
 }

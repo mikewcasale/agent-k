@@ -49,6 +49,7 @@ import importlib.util
 import json
 import math
 import os
+import re
 import shutil
 import tempfile
 import traceback
@@ -108,6 +109,35 @@ _BASE_DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = ("xgboost", "catboost")
 _DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = (
     _BASE_DISALLOWED_LIBRARIES if _LIGHTGBM_AVAILABLE else (*_BASE_DISALLOWED_LIBRARIES, "lightgbm")
 )
+
+# Specific rate-limit / capacity-exhaustion phrases. Word-boundary matched with
+# flexible whitespace/underscore separators so provider-specific spellings all
+# hit (``rate limit``/``rate_limit``/``RateLimitError``/``ratelimit`` etc.).
+_RATE_LIMIT_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"rate[\s_]?limit"
+    r"|too[\s_]?many[\s_]?requests"
+    r"|quota[\s_]?(?:exceeded|reached|error)"
+    r"|insufficient[\s_]?(?:quota|credits?)"
+    r"|out[\s_]?of[\s_]?credits?"
+    r"|no[\s_]?credits?[\s_]?(?:left|remaining)"
+    r"|credit[\s_]?limit"
+    r"|request[\s_]?limit"
+    r"|limit[\s_]?reached"
+    r"|retry[\s_-]?after",
+    re.IGNORECASE,
+)
+# Transient server-side error phrases (mapped to retryable 5xx behavior).
+_TRANSIENT_SERVER_PATTERN: Final[re.Pattern[str]] = re.compile(
+    r"internal[\s_]?server[\s_]?error"
+    r"|bad[\s_]?gateway"
+    r"|service[\s_]?unavailable"
+    r"|gateway[\s_]?timeout"
+    r"|upstream[\s_]?error",
+    re.IGNORECASE,
+)
+# Retryable HTTP status tokens, matched as whole words so ``500ms`` / ``5000``
+# / ``$500`` in unrelated context don't trigger a rate-limit fallback.
+_RETRY_STATUS_TOKEN_PATTERN: Final[re.Pattern[str]] = re.compile(r"\b(?:429|500|502|503|504)\b")
 
 
 @dataclass
@@ -2070,38 +2100,40 @@ def _cleanup_session_data(mission_id: str) -> None:
 
 
 def _is_rate_limit_error(error: Exception | str | None) -> bool:
+    """Detect rate-limit / transient-5xx errors that warrant backoff-and-retry.
+
+    Detection layers, in order of specificity:
+
+    1. Exception attributes — a ``status_code`` (or ``response.status_code``) of
+       429 or any 5xx; or a string ``code`` / ``error_code`` containing "rate"
+       (e.g., OpenAI's ``rate_limit_exceeded``).
+    2. Specific message phrases — rate-limit and credit-exhaustion patterns
+       matched via regex with flexible whitespace/underscore separators so
+       ``rate limit``, ``rate_limit``, ``RateLimitError``, and ``ratelimit`` all
+       hit. Bare tokens like ``exceeded``, ``credits``, ``quota``, ``server
+       error`` no longer trigger on their own — the previous substring form
+       misfired on unrelated errors ("max_tokens exceeded", "used 500 credits").
+    3. Retryable HTTP status tokens in the message — ``429`` / ``500`` / ``502``
+       / ``503`` / ``504`` matched as whole words. This avoids the earlier
+       substring form matching ``500ms``, ``5000``, or ``iteration 500``.
+    """
     if not error:
         return False
     if isinstance(error, Exception):
         status_code = getattr(error, "status_code", None)
         response_status = getattr(getattr(error, "response", None), "status_code", None)
-        if status_code == 429 or response_status == 429:
-            return True
-        if isinstance(status_code, int) and status_code >= 500:
-            return True
-        if isinstance(response_status, int) and response_status >= 500:
-            return True
+        for code in (status_code, response_status):
+            if isinstance(code, int) and (code == 429 or 500 <= code <= 599):
+                return True
         error_code = getattr(error, "code", None) or getattr(error, "error_code", None)
         if isinstance(error_code, str) and "rate" in error_code.lower():
             return True
-    message = str(error).lower()
-    triggers = (
-        "rate limit",
-        "rate_limit",
-        "request_limit",
-        "quota",
-        "too many requests",
-        "limit reached",
-        "exceeded",
-        "429",
-        "insufficient credits",
-        "credit limit",
-        "credits",
-        "internal server error",
-        "server error",
-        "500",
-    )
-    return any(trigger in message for trigger in triggers)
+    message = str(error)
+    if _RATE_LIMIT_PATTERN.search(message):
+        return True
+    if _TRANSIENT_SERVER_PATTERN.search(message):
+        return True
+    return bool(_RETRY_STATUS_TOKEN_PATTERN.search(message))
 
 
 def _filter_disallowed_recommendations(recommendations: list[str]) -> list[str]:

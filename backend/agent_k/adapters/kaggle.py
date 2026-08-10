@@ -393,7 +393,14 @@ class KaggleAdapter(PlatformAdapter):
             )
 
     async def download_data(self, competition_id: str, destination: str) -> list[str]:
-        """Download competition data files."""
+        """Download competition data files.
+
+        Each file streams to a ``.part`` sibling and is atomically renamed
+        into place only after the transfer completes, so a mid-stream error
+        never leaves a truncated ``train.csv``/``test.csv`` behind for the
+        next mission to consume. Transient network errors are retried with
+        exponential backoff up to ``config.max_retries`` attempts.
+        """
         with logfire.span("kaggle.download_data", competition_id=competition_id):
             dest_path = Path(destination)
             dest_path.mkdir(parents=True, exist_ok=True)
@@ -422,15 +429,49 @@ class KaggleAdapter(PlatformAdapter):
                     file_url = f"/competitions/data/download/{competition_id}/{quote(file_name)}"
 
                 file_path = dest_path / file_name
-                async with self._client.stream("GET", file_url, follow_redirects=True) as file_response:
-                    self._raise_rules_not_accepted(file_response, competition_id)
-                    file_response.raise_for_status()
-                    with file_path.open("wb") as handle:
-                        async for chunk in file_response.aiter_bytes():
-                            handle.write(chunk)
+                await self._download_file_atomic(file_url, file_path, competition_id=competition_id)
                 downloaded.append(str(file_path))
 
             return downloaded
+
+    async def _download_file_atomic(self, file_url: str, file_path: Path, *, competition_id: str) -> None:
+        """Stream a competition file to ``<file>.part`` then rename atomically.
+
+        Retries on transient ``httpx.HTTPError``s with exponential backoff so
+        a flaky connection doesn't abort an otherwise recoverable download.
+        """
+        temp_path = file_path.with_name(f"{file_path.name}.part")
+        attempts = max(1, self.config.max_retries)
+        for attempt in range(1, attempts + 1):
+            temp_path.unlink(missing_ok=True)
+            try:
+                async with self._client.stream("GET", file_url, follow_redirects=True) as file_response:
+                    self._raise_rules_not_accepted(file_response, competition_id)
+                    file_response.raise_for_status()
+                    with temp_path.open("wb") as handle:
+                        async for chunk in file_response.aiter_bytes():
+                            handle.write(chunk)
+                temp_path.replace(file_path)
+                return
+            except httpx.HTTPError as exc:
+                temp_path.unlink(missing_ok=True)
+                if attempt >= attempts:
+                    raise PlatformConnectionError(
+                        "kaggle", f"Failed to download {file_path.name} after {attempts} attempts: {exc}"
+                    ) from exc
+                delay = self.config.rate_limit_delay * (2 ** (attempt - 1))
+                logfire.warning(
+                    "kaggle_download_retry",
+                    competition_id=competition_id,
+                    file_name=file_path.name,
+                    attempt=attempt,
+                    delay_seconds=delay,
+                    error=str(exc),
+                )
+                await asyncio.sleep(delay)
+            except BaseException:
+                temp_path.unlink(missing_ok=True)
+                raise
 
     async def _request(self, method: str, path: str, **kwargs: Any) -> httpx.Response:
         """Make rate-limited request to Kaggle API."""

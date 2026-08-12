@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.toolsets.kaggle:kaggle_get_competition",
-  "line": 244,
+  "line": 274,
   "notice": "Fetches competition metadata and caches results.",
   "pattern": null,
   "similar": null,

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Provided for tests and long-running processes that need to force a\nfresh fetch (for example after competition metadata changes upstream).",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.kaggle:clear_competition_cache",
+  "line": 85,
+  "notice": "Clears the module-level competition cache.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/kaggle.py",
+  "summary": "Empty the process-wide Kaggle competition cache.",
+  "type": "function"
+}

@@ -14,6 +14,8 @@
         - agent_k.toolsets.kaggle:kaggle_get_competition
         - agent_k.toolsets.kaggle:kaggle_get_leaderboard
         - agent_k.toolsets.kaggle:kaggle_list_datasets
+        - agent_k.toolsets.kaggle:clear_competition_cache
+        - agent_k.toolsets.kaggle:COMPETITION_CACHE_MAX_ENTRIES
     pattern: toolset
 
 @similar:
@@ -37,9 +39,11 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
+import os
 import time
+from collections import OrderedDict
 from functools import wraps
-from typing import TYPE_CHECKING, Annotated, Any, ParamSpec, TypeVar, cast
+from typing import TYPE_CHECKING, Annotated, Any, Final, ParamSpec, TypeVar, cast
 
 import logfire
 from pydantic_ai import RunContext
@@ -60,12 +64,38 @@ P = ParamSpec("P")
 ToolResultT = TypeVar("ToolResultT")
 """Type variable for tool result payloads."""
 
-__all__ = ("KaggleDeps", "kaggle_toolset")
+__all__ = ("COMPETITION_CACHE_MAX_ENTRIES", "KaggleDeps", "clear_competition_cache", "kaggle_toolset")
 
 kaggle_toolset: FunctionToolset[Any] = FunctionToolset(id="kaggle")
 
-# Cache for competition data
-_cache: dict[str, Competition] = {}
+# Upper bound for the process-wide Kaggle competition cache. Bounded so that a
+# long-running FastAPI service doesn't accumulate every competition it has ever
+# looked at; override via ``AGENT_K_KAGGLE_CACHE_MAX`` for stress tests. The
+# default sits well above the largest realistic mission working set (~50 comps)
+# while still capping process memory growth.
+COMPETITION_CACHE_MAX_ENTRIES: Final[int] = max(1, int(os.getenv("AGENT_K_KAGGLE_CACHE_MAX", "512")))
+
+# LRU-ordered cache for competition data. Uses OrderedDict so that accesses can
+# move an entry to the "most recently used" end, keeping the hottest slugs warm
+# even when the cap is reached under heavy discovery workloads.
+_cache: OrderedDict[str, Competition] = OrderedDict()
+
+
+def clear_competition_cache() -> None:
+    """Empty the process-wide Kaggle competition cache.
+
+    @notice: |
+        Clears the module-level competition cache.
+
+    @dev: |
+        Provided for tests and long-running processes that need to force a
+        fresh fetch (for example after competition metadata changes upstream).
+
+    @effects:
+        state:
+            - _cache is emptied
+    """
+    _cache.clear()
 
 
 def _error_dict_response(error: str) -> dict[str, Any]:
@@ -251,6 +281,7 @@ async def kaggle_get_competition(
 
         if competition_id in _cache:
             comp = _cache[competition_id]
+            _cache.move_to_end(competition_id)
         else:
             comp = await adapter.get_competition(competition_id)
             _store_competition(ctx, comp)
@@ -329,7 +360,12 @@ def _resolve_adapter(ctx: RunContext[Any]) -> PlatformAdapter | None:
 
 
 def _store_competition(ctx: RunContext[Any], competition: Competition) -> None:
+    # Move-to-end + evict-oldest keeps the cache bounded regardless of how many
+    # distinct competitions the process encounters across missions or requests.
     _cache[competition.id] = competition
+    _cache.move_to_end(competition.id)
+    while len(_cache) > COMPETITION_CACHE_MAX_ENTRIES:
+        _cache.popitem(last=False)
     search_cache = getattr(ctx.deps, "search_cache", None)
     if isinstance(search_cache, dict):
         search_cache[competition.id] = competition

@@ -8,11 +8,14 @@ from __future__ import annotations as _annotations
 
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from unittest.mock import AsyncMock
 
 import pytest
 from pydantic_ai import RunContext
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 from agent_k.core.models import Competition, CompetitionType, EvaluationMetric
 from agent_k.toolsets import kaggle as kaggle_toolset_module
@@ -42,7 +45,7 @@ class _StubDeps:
 
 
 @pytest.fixture(autouse=True)
-def _reset_cache() -> None:
+def _reset_cache() -> Iterator[None]:
     """Ensure each test starts and ends with an empty module-level cache."""
     clear_competition_cache()
     yield

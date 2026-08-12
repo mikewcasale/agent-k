@@ -626,7 +626,9 @@
       "agent_k.toolsets.kaggle:kaggle_search_competitions",
       "agent_k.toolsets.kaggle:kaggle_get_competition",
       "agent_k.toolsets.kaggle:kaggle_get_leaderboard",
-      "agent_k.toolsets.kaggle:kaggle_list_datasets"
+      "agent_k.toolsets.kaggle:kaggle_list_datasets",
+      "agent_k.toolsets.kaggle:clear_competition_cache",
+      "agent_k.toolsets.kaggle:COMPETITION_CACHE_MAX_ENTRIES"
     ],
     "source": "agent_k/toolsets/kaggle.py"
   },

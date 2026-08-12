@@ -628,7 +628,9 @@
         "agent_k.toolsets.kaggle:kaggle_search_competitions",
         "agent_k.toolsets.kaggle:kaggle_get_competition",
         "agent_k.toolsets.kaggle:kaggle_get_leaderboard",
-        "agent_k.toolsets.kaggle:kaggle_list_datasets"
+        "agent_k.toolsets.kaggle:kaggle_list_datasets",
+        "agent_k.toolsets.kaggle:clear_competition_cache",
+        "agent_k.toolsets.kaggle:COMPETITION_CACHE_MAX_ENTRIES"
       ],
       "source": "agent_k/toolsets/kaggle.py"
     },
@@ -705,7 +707,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-08-12T00:21:02.103750+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +769,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1093,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -6720,49 +6722,67 @@
       },
       {
         "component": "agent_k.toolsets.kaggle",
-        "line": 19,
+        "line": 21,
         "name": "similar",
         "value": "[{\"id\": \"agent_k.adapters.kaggle\", \"when\": \"Adapter implementation backing these tools.\"}]"
       },
       {
         "component": "agent_k.toolsets.kaggle",
-        "line": 23,
+        "line": 25,
         "name": "agent_guidance",
         "value": "{\"do\": [\"Use agent_k.toolsets.kaggle as the canonical home for this capability.\"], \"do_not\": [\"Create parallel modules without updating @similar or @graph.\"]}"
       },
       {
         "component": "agent_k.toolsets.kaggle",
-        "line": 29,
+        "line": 31,
         "name": "human_review",
         "value": "{\"last_verified\": \"2026-01-26\", \"owners\": [\"agent-k-core\"]}"
       },
       {
+        "component": "agent_k.toolsets.kaggle:clear_competition_cache",
+        "line": 87,
+        "name": "notice",
+        "value": "Clears the module-level competition cache."
+      },
+      {
+        "component": "agent_k.toolsets.kaggle:clear_competition_cache",
+        "line": 90,
+        "name": "dev",
+        "value": "Provided for tests and long-running processes that need to force a\nfresh fetch (for example after competition metadata changes upstream)."
+      },
+      {
+        "component": "agent_k.toolsets.kaggle:clear_competition_cache",
+        "line": 94,
+        "name": "effects",
+        "value": "{\"state\": [\"_cache is emptied\"]}"
+      },
+      {
         "component": "agent_k.toolsets.kaggle:kaggle_search_competitions",
-        "line": 196,
+        "line": 226,
         "name": "notice",
         "value": "Returns metadata for competitions matching search criteria."
       },
       {
         "component": "agent_k.toolsets.kaggle:kaggle_search_competitions",
-        "line": 199,
+        "line": 229,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"], \"state\": [\"in-module cache\"]}"
       },
       {
         "component": "agent_k.toolsets.kaggle:kaggle_get_competition",
-        "line": 246,
+        "line": 276,
         "name": "notice",
         "value": "Fetches competition metadata and caches results."
       },
       {
         "component": "agent_k.toolsets.kaggle:kaggle_get_leaderboard",
-        "line": 276,
+        "line": 307,
         "name": "notice",
         "value": "Returns leaderboard entries ordered by rank."
       },
       {
         "component": "agent_k.toolsets.kaggle:kaggle_list_datasets",
-        "line": 302,
+        "line": 333,
         "name": "notice",
         "value": "Returns file metadata for competition datasets."
       }

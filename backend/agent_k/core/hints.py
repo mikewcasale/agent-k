@@ -72,11 +72,15 @@ MISSING_RATE_THRESHOLD: Final[float] = 0.05
 SKEWNESS_THRESHOLD: Final[float] = 1.0
 MISSING_PATTERN_CORR_THRESHOLD: Final[float] = 0.2
 
-_GEO_LAT_TOKENS: Final[tuple[str, ...]] = ("lat", "latitude")
-_GEO_LON_TOKENS: Final[tuple[str, ...]] = ("lon", "lng", "longitude")
-_PRICE_TOKENS: Final[tuple[str, ...]] = ("price", "cost", "amount", "fare", "salary", "income", "usd", "value")
-_ORDINAL_TOKENS: Final[tuple[str, ...]] = ("rank", "grade", "level", "order", "ordinal", "rating", "stage")
+_GEO_LAT_TOKENS: Final[frozenset[str]] = frozenset({"lat", "latitude"})
+_GEO_LON_TOKENS: Final[frozenset[str]] = frozenset({"lon", "lng", "longitude"})
+_PRICE_TOKENS: Final[frozenset[str]] = frozenset(
+    {"price", "cost", "amount", "fare", "salary", "income", "usd", "value"}
+)
+_ORDINAL_TOKENS: Final[frozenset[str]] = frozenset({"rank", "grade", "level", "order", "ordinal", "rating", "stage"})
 _IMAGE_EXTENSIONS: Final[tuple[str, ...]] = (".png", ".jpg", ".jpeg", ".bmp", ".gif", ".tiff", ".webp")
+_CAMEL_CASE_BOUNDARY: Final[re.Pattern[str]] = re.compile(r"([a-z0-9])([A-Z])|([A-Z])([A-Z][a-z])")
+_TOKEN_SPLIT: Final[re.Pattern[str]] = re.compile(r"[^a-z0-9]+")
 _GEO_NAME_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
     "latitude": re.compile(r"(?:^|[_\W])lat(?:itude)?(?:$|[_\W])", re.IGNORECASE),
     "longitude": re.compile(r"(?:^|[_\W])(?:lon|lng|longitude)(?:$|[_\W])", re.IGNORECASE),
@@ -1024,10 +1028,9 @@ def _profile_column(name: str, series: pd.Series, *, target_columns: Iterable[st
         is_datetime = _looks_like_datetime(series)
 
     avg_length = _average_length(series)
-    name_lower = name.lower()
 
     column_type = _detect_column_type(
-        name=name_lower,
+        name=name,
         is_numeric=is_numeric,
         is_bool=is_bool,
         is_datetime=is_datetime,
@@ -1188,16 +1191,27 @@ def _looks_like_datetime(series: pd.Series, *, threshold: float = 0.8) -> bool:
     return float(parsed.notna().mean()) >= threshold
 
 
+def _name_tokens(name: str) -> frozenset[str]:
+    """Split a column name into lowercase tokens across camelCase and non-alphanumeric boundaries.
+
+    Splits on both underscore/hyphen/space style separators and camelCase transitions so tokens
+    can be matched exactly instead of as substrings, avoiding false positives like "template"
+    matching "lat" or "border" matching "order".
+    """
+    snake = _CAMEL_CASE_BOUNDARY.sub(r"\1\3_\2\4", name)
+    return frozenset(token for token in _TOKEN_SPLIT.split(snake.lower()) if token)
+
+
 def _is_geo_lat(name: str) -> bool:
-    return any(token in name for token in _GEO_LAT_TOKENS)
+    return bool(_name_tokens(name) & _GEO_LAT_TOKENS)
 
 
 def _is_geo_lon(name: str) -> bool:
-    return any(token in name for token in _GEO_LON_TOKENS)
+    return bool(_name_tokens(name) & _GEO_LON_TOKENS)
 
 
 def _is_price_column(name: str, sample_values: tuple[str, ...]) -> bool:
-    if any(token in name for token in _PRICE_TOKENS):
+    if _name_tokens(name) & _PRICE_TOKENS:
         return True
     for value in sample_values:
         if any(symbol in value for symbol in ("$", "€", "£", "¥")):
@@ -1208,13 +1222,14 @@ def _is_price_column(name: str, sample_values: tuple[str, ...]) -> bool:
 def _is_id_column(name: str, *, unique_ratio: float, is_target: bool) -> bool:
     if is_target:
         return False
-    if name == "id" or name.endswith("_id"):
+    lowered = name.lower()
+    if lowered == "id" or lowered.endswith("_id"):
         return True
     return unique_ratio >= 0.98
 
 
 def _is_ordinal_name(name: str) -> bool:
-    return any(token in name for token in _ORDINAL_TOKENS)
+    return bool(_name_tokens(name) & _ORDINAL_TOKENS)
 
 
 def _infer_missing_pattern(df: pd.DataFrame, target_columns: Iterable[str]) -> MissingPattern:
@@ -1315,7 +1330,8 @@ def _match_geo_pairs(columns: dict[str, ColumnProfile]) -> list[tuple[str, str]]
 
 def _strip_geo_token(name: str) -> str:
     lowered = name.lower()
-    for token in (*_GEO_LAT_TOKENS, *_GEO_LON_TOKENS):
+    # Longer tokens first so that "latitude" is stripped before "lat" and leaves a clean base.
+    for token in sorted(_GEO_LAT_TOKENS | _GEO_LON_TOKENS, key=len, reverse=True):
         lowered = lowered.replace(token, "")
     return re.sub(r"[_\W]+", "", lowered)
 

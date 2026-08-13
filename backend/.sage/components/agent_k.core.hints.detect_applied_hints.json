@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.hints:detect_applied_hints",
-  "line": 976,
+  "line": 980,
   "notice": "Returns hint IDs that appear to be applied in the given code.",
   "pattern": null,
   "similar": null,

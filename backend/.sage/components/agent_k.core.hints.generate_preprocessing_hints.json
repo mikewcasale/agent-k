@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.hints:generate_preprocessing_hints",
-  "line": 515,
+  "line": 519,
   "notice": "Returns a list of actionable preprocessing hints based on column profiles.",
   "pattern": null,
   "similar": null,

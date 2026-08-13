@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.hints:PreprocessingHint",
-  "line": 389,
+  "line": 393,
   "notice": "Single preprocessing recommendation.",
   "pattern": {
     "name": "value-object",

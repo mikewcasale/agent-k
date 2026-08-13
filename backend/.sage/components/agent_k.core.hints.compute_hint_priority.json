@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.hints:compute_hint_priority",
-  "line": 951,
+  "line": 955,
   "notice": "Adjusts hint priority using success rates and recency from the tracker.",
   "pattern": null,
   "similar": null,

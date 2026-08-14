@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-08-14T23:21:42.157590+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -6830,55 +6830,55 @@
       },
       {
         "component": "agent_k.toolsets.memory:create_memory_backend",
-        "line": 245,
+        "line": 251,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.toolsets.memory:create_memory_backend",
-        "line": 248,
+        "line": 254,
         "name": "notice",
         "value": "Creates a file-backed memory tool for Anthropic providers."
       },
       {
         "component": "agent_k.toolsets.memory:create_memory_backend",
-        "line": 251,
+        "line": 257,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.toolsets.memory:AgentKMemoryTool\", \"rationale\": \"Centralizes default storage path behavior.\", \"singleton\": false, \"cache_key\": \"storage_path\"}"
       },
       {
         "component": "agent_k.toolsets.memory:create_memory_backend",
-        "line": 257,
+        "line": 263,
         "name": "canonical_home",
         "value": "{\"for\": [\"memory backend construction\"], \"notes\": \"Use create_memory_backend to ensure defaults.\"}"
       },
       {
         "component": "agent_k.toolsets.memory:prepare_memory_tool",
-        "line": 270,
+        "line": 276,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.toolsets.memory:prepare_memory_tool",
-        "line": 273,
+        "line": 279,
         "name": "notice",
         "value": "Returns MemoryTool only for Anthropic models."
       },
       {
         "component": "agent_k.toolsets.memory:register_memory_tool",
-        "line": 285,
+        "line": 291,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.toolsets.memory:register_memory_tool",
-        "line": 288,
+        "line": 294,
         "name": "notice",
         "value": "Attaches the memory tool to the agent with a plain tool handler."
       },
       {
         "component": "agent_k.toolsets.memory:register_memory_tool",
-        "line": 291,
+        "line": 297,
         "name": "effects",
         "value": "{\"state\": [\"agent tool registry\"]}"
       }

@@ -44,3 +44,61 @@ def test_str_replace(tmp_path: Path) -> None:
 
     viewed = backend.call({"command": "view", "path": "shared/notes.txt"})
     assert "alpha gamma" in viewed
+
+
+def test_str_replace_rejects_non_unique_match(tmp_path: Path) -> None:
+    backend = create_memory_backend(tmp_path)
+
+    backend.call({"command": "create", "path": "notes.txt", "file_text": "foo bar foo baz foo"})
+
+    result = backend.call({"command": "str_replace", "path": "notes.txt", "old_str": "foo", "new_str": "qux"})
+
+    assert result.startswith("Error:")
+    assert "3 times" in result
+
+    viewed = backend.call({"command": "view", "path": "notes.txt"})
+    assert "foo bar foo baz foo" in viewed
+
+
+def test_str_replace_reports_not_found(tmp_path: Path) -> None:
+    backend = create_memory_backend(tmp_path)
+
+    backend.call({"command": "create", "path": "notes.txt", "file_text": "alpha"})
+
+    result = backend.call({"command": "str_replace", "path": "notes.txt", "old_str": "missing", "new_str": "gamma"})
+
+    assert result.startswith("Error:")
+    assert "not found" in result
+
+
+def test_insert_places_text_after_target_line(tmp_path: Path) -> None:
+    backend = create_memory_backend(tmp_path)
+
+    backend.call({"command": "create", "path": "notes.txt", "file_text": "line1\nline2\nline3\n"})
+
+    backend.call({"command": "insert", "path": "notes.txt", "insert_line": 1, "insert_text": "inserted"})
+
+    viewed = backend.call({"command": "view", "path": "notes.txt"})
+    assert viewed.splitlines() == ["line1", "inserted", "line2", "line3"]
+
+
+def test_insert_at_beginning_when_insert_line_zero(tmp_path: Path) -> None:
+    backend = create_memory_backend(tmp_path)
+
+    backend.call({"command": "create", "path": "notes.txt", "file_text": "line1\nline2\n"})
+
+    backend.call({"command": "insert", "path": "notes.txt", "insert_line": 0, "insert_text": "top"})
+
+    viewed = backend.call({"command": "view", "path": "notes.txt"})
+    assert viewed.splitlines() == ["top", "line1", "line2"]
+
+
+def test_insert_at_end_when_insert_line_beyond_length(tmp_path: Path) -> None:
+    backend = create_memory_backend(tmp_path)
+
+    backend.call({"command": "create", "path": "notes.txt", "file_text": "line1\nline2"})
+
+    backend.call({"command": "insert", "path": "notes.txt", "insert_line": 999, "insert_text": "tail"})
+
+    viewed = backend.call({"command": "view", "path": "notes.txt"})
+    assert viewed.splitlines() == ["line1", "line2", "tail"]

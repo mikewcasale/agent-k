@@ -66,10 +66,7 @@ class TestDetectAppliedHintsSignatures:
         # Signature detection must use \b (word boundary), not the 2-char literal.
         # Use a hint whose snippet has no fallback substring in _hint_patterns so
         # only the signature path can flip the flag.
-        hint = _make_hint(
-            "custom_signature_hint",
-            "def MySpecialTransformer(x):\n    return x\n",
-        )
+        hint = _make_hint("custom_signature_hint", "def MySpecialTransformer(x):\n    return x\n")
         code_hit = "MySpecialTransformer(df)"
         code_miss = "MySpecialTransformerX(df)"
         assert "custom_signature_hint" in detect_applied_hints(code_hit, [hint])

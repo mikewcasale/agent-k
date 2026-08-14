@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.toolsets.memory:register_memory_tool",
-  "line": 283,
+  "line": 289,
   "notice": "Attaches the memory tool to the agent with a plain tool handler.",
   "pattern": null,
   "similar": null,

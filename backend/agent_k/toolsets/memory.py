@@ -160,10 +160,15 @@ class AgentKMemoryTool(_MemoryBase):  # pragma: no cover - optional dependency
             occurrences = text.count(command.old_str)
             if occurrences == 0:
                 return f'Error: "{command.old_str}" not found in {command.path}.'
+            if occurrences > 1:
+                return (
+                    f'Error: "{command.old_str}" appears {occurrences} times in {command.path}; '
+                    "old_str must uniquely identify the text to replace."
+                )
 
-            updated = text.replace(command.old_str, command.new_str)
+            updated = text.replace(command.old_str, command.new_str, 1)
             self._write_text(path, updated)
-            return f"Replaced {occurrences} occurrence(s) in {command.path}."
+            return f"Replaced 1 occurrence in {command.path}."
 
     def insert(self, command: Any) -> str:
         """Insert text at a specified line in a file."""
@@ -181,8 +186,9 @@ class AgentKMemoryTool(_MemoryBase):  # pragma: no cover - optional dependency
 
             text = self._read_text(path)
             lines = text.splitlines()
-            index = max(command.insert_line - 1, 0)
-            index = min(index, len(lines))
+            # Anthropic memory tool spec: insert_line is the line number AFTER which to insert
+            # text (0 = insert at the beginning of the file, len(lines) = append at end).
+            index = max(0, min(int(command.insert_line), len(lines)))
             lines.insert(index, command.insert_text)
             updated = "\n".join(lines)
             if text.endswith("\n"):

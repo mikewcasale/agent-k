@@ -75,7 +75,7 @@
     "for": [
       "memory backend construction"
     ],
-    "line": 243,
+    "line": 249,
     "notes": "Use create_memory_backend to ensure defaults.",
     "source": "agent_k/toolsets/memory.py"
   },

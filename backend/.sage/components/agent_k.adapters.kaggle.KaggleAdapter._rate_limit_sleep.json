@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.adapters.kaggle:KaggleAdapter.platform_name",
-  "line": 190,
+  "id": "agent_k.adapters.kaggle:KaggleAdapter._rate_limit_sleep",
+  "line": 529,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Return the platform identifier.",
+  "summary": "Sleep for a 429 retry.",
   "type": "method"
 }

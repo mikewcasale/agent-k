@@ -1,11 +1,11 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-08-16T01:18:02.252510+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 114,
+        "line": 124,
         "rationale": "Encapsulates Kaggle-specific API behavior.",
         "source": "agent_k/adapters/kaggle.py",
         "violations": [
@@ -1228,7 +1228,7 @@
     "settings": [
       {
         "component": "agent_k.adapters.kaggle:KaggleSettings",
-        "line": 74,
+        "line": 84,
         "rationale": "Centralizes Kaggle adapter configuration.",
         "source": "agent_k/adapters/kaggle.py",
         "violations": [

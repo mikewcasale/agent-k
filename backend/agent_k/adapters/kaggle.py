@@ -37,6 +37,7 @@ from __future__ import annotations as _annotations
 import asyncio
 import csv
 import io
+import random
 import re
 import zipfile
 from dataclasses import dataclass, field
@@ -68,6 +69,15 @@ __all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
+# Status codes we treat as transient and retry with exponential backoff.
+# 429 is handled separately so we can honor Retry-After. 5xx entries here
+# cover Kaggle's usual upstream/edge-cache blips (502/503/504) and generic
+# 500 responses that Kaggle briefly emits during deploys.
+_RETRYABLE_STATUS_CODES: Final[frozenset[int]] = frozenset({500, 502, 503, 504})
+# Upper bound on any single retry sleep. Prevents a hostile or misconfigured
+# Retry-After header (e.g. 3600s) from pinning a mission for an hour before
+# we even attempt again — we would rather surface the error to the caller.
+_MAX_RETRY_SLEEP_SECONDS: Final[float] = 30.0
 
 
 class KaggleSettings(BaseSettings):
@@ -433,24 +443,98 @@ class KaggleAdapter(PlatformAdapter):
             return downloaded
 
     async def _request(self, method: str, path: str, **kwargs: Any) -> httpx.Response:
-        """Make rate-limited request to Kaggle API."""
+        """Make a rate-limited request to the Kaggle API with retry/backoff.
+
+        Retries on the failure modes Kaggle exhibits in practice:
+
+        * ``httpx.HTTPError`` — connection resets, DNS blips, timeouts.
+        * HTTP 429 — honors ``Retry-After`` when present, capped by
+          ``_MAX_RETRY_SLEEP_SECONDS`` so a large header value can't pin the
+          mission before we surface the error.
+        * Transient 5xx (500/502/503/504) — Kaggle's edge/upstream cache
+          returns these for a few seconds around deploys; the previous
+          implementation returned them straight to the caller, forcing the
+          calling code to interpret raw ``response.status_code`` for retryable
+          upstream errors.
+
+        Sleeps use exponential backoff with jitter to avoid synchronizing
+        retries across the semaphore-bounded pool of concurrent requests.
+        After ``config.max_retries`` attempts, raises the appropriate typed
+        exception: ``RateLimitError`` on 429 (preserves the previous contract),
+        ``PlatformConnectionError`` on network or 5xx exhaustion.
+        """
+        attempts = max(1, self.config.max_retries)
         async with self._rate_limit_semaphore:
-            for attempt in range(self.config.max_retries):
+            for attempt in range(1, attempts + 1):
+                delay: float | None = None
+                status_code: int | None = None
+                retry_after: int | None = None
+                error: Exception | None = None
+
                 try:
                     response = await self._client.request(method, path, **kwargs)
-
-                    if response.status_code == 429:
-                        retry_after = int(response.headers.get("Retry-After", 60))
-                        raise RateLimitError("kaggle", "Rate limit exceeded", retry_after=retry_after)
-
-                    return response
-
                 except httpx.HTTPError as exc:
-                    if attempt == self.config.max_retries - 1:
+                    error = exc
+                    if attempt >= attempts:
                         raise PlatformConnectionError("kaggle", f"Kaggle API error: {exc}") from exc
-                    await asyncio.sleep(self.config.rate_limit_delay * (attempt + 1))
+                    delay = self._retry_delay(attempt)
+                else:
+                    if response.status_code == 429:
+                        status_code = 429
+                        retry_after = _parse_retry_after(response.headers.get("Retry-After"))
+                        if attempt >= attempts:
+                            raise RateLimitError("kaggle", "Rate limit exceeded", retry_after=retry_after)
+                        delay = self._rate_limit_sleep(attempt, retry_after)
+                    elif response.status_code in _RETRYABLE_STATUS_CODES:
+                        status_code = response.status_code
+                        if attempt >= attempts:
+                            raise PlatformConnectionError(
+                                "kaggle", f"Kaggle API returned {response.status_code} after {attempts} attempts"
+                            )
+                        delay = self._retry_delay(attempt)
+                    else:
+                        return response
 
+                logfire.warning(
+                    "kaggle_request_retry",
+                    method=method,
+                    path=path,
+                    attempt=attempt,
+                    max_attempts=attempts,
+                    delay_seconds=delay,
+                    status_code=status_code,
+                    retry_after=retry_after,
+                    error=str(error) if error else None,
+                )
+                await asyncio.sleep(delay or 0.0)
+
+            # Defensive: the loop above always returns or raises on the final
+            # attempt. This keeps the type checker happy and traces any bug
+            # that would otherwise exit the loop silently.
             raise PlatformConnectionError("kaggle", "Max retries exceeded")
+
+    def _retry_delay(self, attempt: int) -> float:
+        """Exponential backoff with jitter, capped at ``_MAX_RETRY_SLEEP_SECONDS``.
+
+        Uses "full jitter" between ``0.5 * base`` and ``base`` so a burst of
+        concurrent retries doesn't synchronize on the same wake-up.
+        """
+        base = self.config.rate_limit_delay
+        if base <= 0:
+            return 0.0
+        exponential = min(base * (2 ** (attempt - 1)), _MAX_RETRY_SLEEP_SECONDS)
+        return random.uniform(exponential * 0.5, exponential)
+
+    def _rate_limit_sleep(self, attempt: int, retry_after: int | None) -> float:
+        """Sleep for a 429 retry.
+
+        Prefers the server's ``Retry-After`` hint when present, but bounded so
+        an unusually large value can't stall the caller for minutes. Falls
+        back to exponential backoff when the header is missing or invalid.
+        """
+        if retry_after is None or retry_after <= 0:
+            return self._retry_delay(attempt)
+        return min(float(retry_after), _MAX_RETRY_SLEEP_SECONDS)
 
     def _raise_rules_not_accepted(self, response: httpx.Response, competition_id: str) -> None:
         if response.status_code != 403:
@@ -556,3 +640,24 @@ class KaggleAdapter(PlatformAdapter):
             tags=tags,
             url=data.get("url"),
         )
+
+
+def _parse_retry_after(raw: str | None) -> int | None:
+    """Parse a ``Retry-After`` header into whole seconds.
+
+    Accepts the integer-seconds form Kaggle emits in practice. HTTP-date
+    values are ignored (returned as ``None``) so the caller falls back to
+    exponential backoff rather than misinterpreting a date as seconds.
+    """
+    if not raw:
+        return None
+    value = raw.strip()
+    if not value:
+        return None
+    try:
+        seconds = int(value)
+    except ValueError:
+        return None
+    if seconds < 0:
+        return None
+    return seconds

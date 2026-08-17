@@ -38,6 +38,7 @@ import json
 import os
 import re
 import sqlite3
+import threading
 import uuid
 from collections import defaultdict
 from datetime import UTC, datetime
@@ -59,6 +60,7 @@ __all__ = (
     "ExperimentTracker",
     "create_experiment_tracker",
     "extract_solution_metadata",
+    "reset_experiment_trackers",
 )
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
@@ -854,21 +856,30 @@ class HintEffectivenessTracker:
                     self._suppressed[comp_id].add(hint_id)
 
 
+_TRACKER_CACHE: dict[Path, ExperimentTracker] = {}
+_TRACKER_CACHE_LOCK: Final[threading.Lock] = threading.Lock()
+
+
 def create_experiment_tracker(
     db_path: Annotated[Path | None, Doc("SQLite database path override.")] = None,
 ) -> ExperimentTracker:
     """Factory for ExperimentTracker instances.
 
+    Trackers are memoized per resolved database path so schema DDL runs
+    once per process instead of on every construction. Callers that need
+    a fresh instance can call ``reset_experiment_trackers`` first (tests)
+    or instantiate ``ExperimentTracker`` directly.
+
     @dev: |
         See module for behavior details and invariants.
 
         @notice: |
-            Returns a tracker configured with the default database path.
+            Returns a cached tracker keyed by resolved database path.
 
         @factory-for:
             id: agent_k.core.tracking:ExperimentTracker
             rationale: "Centralizes tracker defaults and storage path."
-            singleton: false
+            singleton: true
             cache-key: db_path
 
         @canonical-home:
@@ -876,7 +887,30 @@ def create_experiment_tracker(
                 - "experiment tracker construction"
             notes: "Use create_experiment_tracker to ensure defaults."
     """
-    return ExperimentTracker(db_path=db_path)
+    resolved = (db_path or _resolve_db_path()).expanduser()
+    cached = _TRACKER_CACHE.get(resolved)
+    if cached is not None:
+        return cached
+    with _TRACKER_CACHE_LOCK:
+        cached = _TRACKER_CACHE.get(resolved)
+        if cached is not None:
+            return cached
+        tracker = ExperimentTracker(db_path=resolved)
+        _TRACKER_CACHE[resolved] = tracker
+        return tracker
+
+
+def reset_experiment_trackers() -> None:
+    """Clear cached ``ExperimentTracker`` instances.
+
+    Intended for tests that swap ``AGENT_K_EXPERIMENT_DB`` or otherwise
+    need a tracker to re-init its schema.
+
+    @notice: |
+        Empties the module-level tracker cache.
+    """
+    with _TRACKER_CACHE_LOCK:
+        _TRACKER_CACHE.clear()
 
 
 def extract_solution_metadata(solution_code: str) -> ExperimentMetadata:

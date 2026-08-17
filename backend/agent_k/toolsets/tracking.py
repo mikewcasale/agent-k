@@ -36,13 +36,14 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
+import asyncio
 from typing import Annotated, Any
 
 from pydantic_ai import RunContext
 from pydantic_ai.toolsets import FunctionToolset
 
 from agent_k.core.sage import Doc, Range
-from agent_k.core.tracking import ExperimentRecord, ExperimentTracker
+from agent_k.core.tracking import ExperimentRecord, create_experiment_tracker
 
 __all__ = ("tracking_toolset",)
 
@@ -57,11 +58,15 @@ async def tracking_record_experiment(
 
     @notice: |
         Validates and stores the experiment record.
+
+    @dev: |
+        Runs the SQLite write in a worker thread so the event loop is
+        not blocked while the tracker fsyncs.
     """
     _ = ctx
-    tracker = ExperimentTracker()
+    tracker = create_experiment_tracker()
     entry = ExperimentRecord.model_validate(record)
-    stored = tracker.record_experiment(entry)
+    stored = await asyncio.to_thread(tracker.record_experiment, entry)
     return tracker.summarize(stored).model_dump(mode="json")
 
 
@@ -75,10 +80,13 @@ async def tracking_list_experiments(
 
     @notice: |
         Returns summarized experiment records.
+
+    @dev: |
+        Reads run in a worker thread to keep the event loop responsive.
     """
     _ = ctx
-    tracker = ExperimentTracker()
-    records = tracker.list_experiments(competition_id, limit=limit)
+    tracker = create_experiment_tracker()
+    records = await asyncio.to_thread(tracker.list_experiments, competition_id, limit=limit)
     return [tracker.summarize(record).model_dump(mode="json") for record in records]
 
 
@@ -93,8 +101,11 @@ async def tracking_best_experiment(
 
     @notice: |
         Returns the top experiment summary or None.
+
+    @dev: |
+        SQLite query runs off-loop via ``asyncio.to_thread``.
     """
     _ = ctx
-    tracker = ExperimentTracker()
-    record = tracker.best_experiment(competition_id, metric=metric, direction=direction)
+    tracker = create_experiment_tracker()
+    record = await asyncio.to_thread(tracker.best_experiment, competition_id, metric=metric, direction=direction)
     return tracker.summarize(record).model_dump(mode="json") if record else None

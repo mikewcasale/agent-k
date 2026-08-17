@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.core.tracking:ExperimentTracker.get_improvement_history",
-  "line": 488,
-  "notice": null,
+  "id": "agent_k.core.tracking:reset_experiment_trackers",
+  "line": 904,
+  "notice": "Empties the module-level tracker cache.",
   "pattern": null,
   "similar": null,
   "source": "agent_k/core/tracking.py",
-  "summary": "Analyze leaderboard score progression over time.",
-  "type": "method"
+  "summary": "Clear cached ``ExperimentTracker`` instances.",
+  "type": "function"
 }

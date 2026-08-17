@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Returns ``None`` when the fitness carries no recoverable score: a missing\nvalue, or a non-positive minimize-direction fitness (which encodes a\nfailed evaluation rather than a real score). Scores clamped by\n:func:`score_to_fitness` are not recoverable and round-trip to ``0.0``.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.fitness:fitness_to_score",
+  "line": 90,
+  "notice": "Recovers the metric score behind a canonical fitness value.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/fitness.py",
+  "summary": "Invert :func:`score_to_fitness` back to a metric score.",
+  "type": "function"
+}

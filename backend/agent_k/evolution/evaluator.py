@@ -60,6 +60,8 @@ _DEFAULT_VALIDATION_SPLIT: Final[float] = 0.2
 _STAGE1_TIMEOUT: Final[int] = 5
 _STAGE2_TIMEOUT: Final[int] = 30
 _STAGE2_DATA_ROWS: Final[int] = 1000
+_STAGE2_PASS_FLOOR: Final[float] = 0.6
+_STAGE2_PASS_SPAN: Final[float] = 0.05
 _MODEL_FAMILY_PATTERNS: Final[tuple[tuple[float, re.Pattern[str]], ...]] = (
     (3.0, re.compile(r"\b(Stacking|Voting|Bagging|AdaBoost)(?:Regressor|Classifier)?\b")),
     (2.0, re.compile(r"\bKNeighbors(?:Regressor|Classifier)\b")),
@@ -111,10 +113,16 @@ def _load_hints(hints_data: list[dict[str, Any]]) -> list[Any]:
 
 
 def _failure_metrics() -> dict[str, float]:
-    """Return metrics for a failed evaluation."""
+    """Return metrics for a failed evaluation.
+
+    Fitness is pinned to ``FITNESS_FLOOR`` so failures sort below every solution
+    that produced a real score under either metric direction.
+    """
+    from agent_k.core.fitness import FITNESS_FLOOR
+
     return {
-        "combined_score": 0.0,
-        "fitness": 0.0,
+        "combined_score": FITNESS_FLOOR,
+        "fitness": FITNESS_FLOOR,
         "cv_score": 0.0,
         "cv_variance": 0.0,
         "valid": 0.0,
@@ -304,15 +312,19 @@ def _model_family_score(code: str) -> float:
     return 3.0
 
 
-def _fitness_from_score(cv_score: float | None, metric_direction: str) -> float:
-    """Convert CV score to fitness (higher is better)."""
-    if cv_score is None:
-        return 0.0
+def _fitness_from_score(cv_score: float | None, metric_direction: str, *, valid: bool = True) -> float:
+    """Convert CV score to canonical fitness (non-negative, higher is better).
 
-    if metric_direction == "maximize":
-        return float(cv_score)
-    else:
-        return -float(cv_score)
+    Delegates to ``agent_k.core.fitness`` so the evaluator, which runs
+    out-of-process under OpenEvolve, reports fitness on exactly the same scale
+    the Evolver agent reads back. Invalid runs report the floor so a crashed
+    program can never outrank one that produced a real score.
+    """
+    from agent_k.core.fitness import FITNESS_FLOOR, coerce_metric_direction, score_to_fitness
+
+    if not valid:
+        return FITNESS_FLOOR
+    return score_to_fitness(cv_score, coerce_metric_direction(metric_direction))
 
 
 def evaluate(program_path: str) -> EvaluationResult:
@@ -353,7 +365,7 @@ def evaluate(program_path: str) -> EvaluationResult:
     submission_path = work_dir / "submission.csv"
     valid = result.returncode == 0 and cv_score is not None and submission_path.exists()
 
-    fitness = _fitness_from_score(cv_score, metric_direction)
+    fitness = _fitness_from_score(cv_score, metric_direction, valid=valid)
     cv_variance = _compute_cv_variance(result.stdout)
     metrics = {
         "combined_score": fitness,
@@ -548,11 +560,12 @@ def evaluate_stage2(program_path: str) -> EvaluationResult:
             )
 
         # Calculate preliminary fitness
-        fitness = _fitness_from_score(cv_score, metric_direction)
+        fitness = _fitness_from_score(cv_score, metric_direction, valid=valid)
 
-        # Scale fitness to be conservative (stage2 threshold is 0.6)
-        # If it looks promising on subset, give it 0.65 to pass to full eval
-        scaled_fitness = min(0.65, fitness) if fitness > 0.4 else 0.0
+        # Stage 2 only proves the solution runs and scores on a subset, so report a
+        # conservative band just above the 0.6 cascade threshold. Ordering within the
+        # band is preserved so OpenEvolve still prefers the stronger subset scores.
+        scaled_fitness = _STAGE2_PASS_FLOOR + min(fitness, 1.0) * _STAGE2_PASS_SPAN
 
         logfire.info("stage2_passed", fitness=scaled_fitness, cv_score=cv_score)
         return EvaluationResult(

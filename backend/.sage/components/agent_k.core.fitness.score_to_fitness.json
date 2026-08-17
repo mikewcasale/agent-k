@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "For \"minimize\" metrics the score is mapped through ``1 / (1 + score)``,\nwhich is strictly decreasing on ``[0, inf)`` and lands in ``(0, 1]`` so a\nvalid solution always beats ``FITNESS_FLOOR``. For \"maximize\" metrics the\nscore is passed through, clamped at ``FITNESS_FLOOR``. ``None`` scores\nreport ``FITNESS_FLOOR``.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.fitness:score_to_fitness",
+  "line": 69,
+  "notice": "Maps a raw metric score onto the canonical AGENT-K fitness scale.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/fitness.py",
+  "summary": "Convert a metric score into non-negative, higher-is-better fitness.",
+  "type": "function"
+}

@@ -1,5 +1,5 @@
 {
-  "component_count": 59,
+  "component_count": 60,
   "components": [
     {
       "consumes": [],
@@ -253,6 +253,16 @@
         "agent_k.core.feedback"
       ],
       "source": "agent_k/core/feedback.py"
+    },
+    {
+      "consumes": [],
+      "id": "agent_k.core.fitness",
+      "line": 1,
+      "pattern": "value-conversion",
+      "provides": [
+        "agent_k.core.fitness"
+      ],
+      "source": "agent_k/core/fitness.py"
     },
     {
       "consumes": [],
@@ -705,7 +715,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-08-17T22:08:05.437367+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -726,6 +736,7 @@
     "agent_k/core/deps.py",
     "agent_k/core/exceptions.py",
     "agent_k/core/feedback.py",
+    "agent_k/core/fitness.py",
     "agent_k/core/hints.py",
     "agent_k/core/models.py",
     "agent_k/core/protocols.py",
@@ -767,7 +778,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1102,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -1514,253 +1525,253 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry",
-        "line": 319,
+        "line": 320,
         "name": "pattern",
         "value": "{\"name\": \"archive-entry\", \"rationale\": \"Encapsulates elite metadata for sampling.\", \"violations\": \"Unstructured elites make selection brittle.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry.to_payload",
-        "line": 338,
+        "line": 339,
         "name": "notice",
         "value": "Converts the archive entry into a JSON-serializable payload."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry.to_payload",
-        "line": 341,
+        "line": 342,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 365,
+        "line": 366,
         "name": "notice",
         "value": "Configuration for the Evolver agent."
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 368,
+        "line": 369,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 371,
+        "line": 372,
         "name": "pattern",
         "value": "{\"name\": \"settings\", \"rationale\": \"Centralizes evolutionary optimization configuration.\", \"violations\": \"Ad-hoc overrides lead to unstable evolution runs.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 438,
+        "line": 439,
         "name": "notice",
         "value": "Dependencies for the Evolver agent."
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 441,
+        "line": 442,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 444,
+        "line": 445,
         "name": "pattern",
         "value": "{\"name\": \"dependency-container\", \"rationale\": \"Groups runtime services and evolution state.\", \"violations\": \"Scattered state makes evolution hard to resume.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 449,
+        "line": 450,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\", \"agent_k.core.models:Competition\"], \"optional\": [\"agent_k.core.tracking:ExperimentTracker\", \"agent_k.core.hints:"
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 460,
+        "line": 461,
         "name": "invariants",
         "value": "[\"population_size >= 1\", \"max_generations >= min_generations\"]"
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 503,
+        "line": 504,
         "name": "notice",
         "value": "Result of evolution process."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 506,
+        "line": 507,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 509,
+        "line": 510,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Stable schema for successful evolution outputs.\", \"violations\": \"Free-form outputs hinder submission automation.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 528,
+        "line": 529,
         "name": "notice",
         "value": "Failure result for evolution process."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 531,
+        "line": 532,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 534,
+        "line": 535,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Stable schema for failed evolution outputs.\", \"violations\": \"Opaque errors make recovery harder.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 561,
+        "line": 562,
         "name": "notice",
         "value": "Optimizes prototype solutions via evolutionary search.\nUse the module-level evolver_agent or agent registry."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 565,
+        "line": 566,
         "name": "dev",
         "value": "Registers evolution tools and coordinates mutation/evaluation cycles."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 568,
+        "line": 569,
         "name": "pattern",
         "value": "{\"name\": \"agent-singleton\", \"rationale\": \"Single instance keeps memory/tool registration consistent.\", \"violations\": \"Multiple instances duplicate tool registrations.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 573,
+        "line": 574,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.adapters.openevolve:OpenEvolveRunner\"], \"injection\": \"deps via RunContext\", \"lifecycle\": "
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 582,
+        "line": 583,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates evolution state and caches.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 587,
+        "line": 588,
         "name": "invariants",
         "value": "[\"self._agent is initialized after __init__ completes.\", \"self._toolset registers evolution tools exactly once.\"]"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.__init__",
-        "line": 600,
+        "line": 601,
         "name": "notice",
         "value": "Builds the agent singleton and registers tools."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.__init__",
-        "line": 603,
+        "line": 604,
         "name": "dev",
         "value": "Initializes memory backend, toolset, and pydantic-ai Agent."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.__init__",
-        "line": 606,
+        "line": 607,
         "name": "state_changes",
         "value": "[\"self._settings\", \"self._toolset\", \"self._agent\"]"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.run_openevolve",
-        "line": 639,
+        "line": 640,
         "name": "notice",
         "value": "Delegates mutation and evaluation to OpenEvolve when enabled."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.run_openevolve",
-        "line": 642,
+        "line": 643,
         "name": "effects",
         "value": "{\"io\": [\"OpenEvolve API requests\"], \"state\": [\"deps.best_solution\", \"deps.best_fitness\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.mutate_solution",
-        "line": 724,
+        "line": 725,
         "name": "notice",
         "value": "Applies a mutation strategy and returns the mutated code."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.mutate_solution",
-        "line": 727,
+        "line": 728,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.evaluate_fitness",
-        "line": 773,
+        "line": 774,
         "name": "notice",
         "value": "Runs evaluation and emits fitness telemetry."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.evaluate_fitness",
-        "line": 776,
+        "line": 777,
         "name": "effects",
         "value": "{\"io\": [\"local execution\"], \"state\": [\"ctx.deps.best_fitness\", \"ctx.deps.best_solution\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.record_generation",
-        "line": 882,
+        "line": 883,
         "name": "notice",
         "value": "Appends generation metrics and emits telemetry."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.record_generation",
-        "line": 885,
+        "line": 886,
         "name": "effects",
         "value": "{\"state\": [\"ctx.deps.generation_history\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.check_convergence",
-        "line": 920,
+        "line": 921,
         "name": "notice",
         "value": "Determines whether fitness has plateaued or target score reached."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.check_convergence",
-        "line": 923,
+        "line": 924,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.sample_elites",
-        "line": 989,
+        "line": 990,
         "name": "notice",
         "value": "Selects top and diverse elites from the archive."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.sample_elites",
-        "line": 992,
+        "line": 993,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.submit_to_kaggle",
-        "line": 1011,
+        "line": 1012,
         "name": "notice",
         "value": "Writes a submission file and triggers adapter submission."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.submit_to_kaggle",
-        "line": 1014,
+        "line": 1015,
         "name": "effects",
         "value": "{\"io\": [\"local filesystem access\", \"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent._create_agent",
-        "line": 1054,
+        "line": 1055,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.agents.evolver:EvolverAgent\", \"rationale\": \"Centralizes agent wiring and toolset preparation.\", \"singleton\": true, \"cache_key\": \"module\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent._create_agent",
-        "line": 1060,
+        "line": 1061,
         "name": "canonical_home",
         "value": "{\"for\": [\"evolver agent construction\"], \"notes\": \"Use EvolverAgent() or module singleton.\"}"
       }
@@ -3345,6 +3356,80 @@
         "value": "{\"name\": \"orchestrator\", \"rationale\": \"Coordinates submission feedback loops with tracker.\"}"
       }
     ],
+    "agent_k/core/fitness.py": [
+      {
+        "component": "agent_k.core.fitness",
+        "line": 3,
+        "name": "notice",
+        "value": "Canonical score/fitness conversions for AGENT-K."
+      },
+      {
+        "component": "agent_k.core.fitness",
+        "line": 6,
+        "name": "dev",
+        "value": "Every producer and consumer of a fitness value (the OpenEvolve evaluator,\nthe Evolver agent, the strategy fitness factory) must use these helpers so\nthat a single convention holds end to end: fitness "
+      },
+      {
+        "component": "agent_k.core.fitness",
+        "line": 14,
+        "name": "graph",
+        "value": "{\"id\": \"agent_k.core.fitness\", \"provides\": [\"agent_k.core.fitness\"], \"pattern\": \"value-conversion\"}"
+      },
+      {
+        "component": "agent_k.core.fitness",
+        "line": 20,
+        "name": "similar",
+        "value": "[{\"id\": \"agent_k.core.strategy\", \"when\": \"Building fitness policies and functions rather than converting values.\"}]"
+      },
+      {
+        "component": "agent_k.core.fitness",
+        "line": 24,
+        "name": "agent_guidance",
+        "value": "{\"do\": [\"Use agent_k.core.fitness as the canonical home for this capability.\", \"Convert scores with score_to_fitness before comparing solutions.\"], \"do_not\": [\"Create parallel modules without updating"
+      },
+      {
+        "component": "agent_k.core.fitness",
+        "line": 32,
+        "name": "human_review",
+        "value": "{\"last_verified\": \"2026-08-17\", \"owners\": [\"agent-k-core\"]}"
+      },
+      {
+        "component": "agent_k.core.fitness:coerce_metric_direction",
+        "line": 57,
+        "name": "notice",
+        "value": "Normalizes a direction string, defaulting to \"maximize\"."
+      },
+      {
+        "component": "agent_k.core.fitness:coerce_metric_direction",
+        "line": 60,
+        "name": "dev",
+        "value": "Competition metadata and OpenEvolve context payloads carry the direction\nas a plain string. Anything that is not exactly \"minimize\" (case and\nwhitespace insensitive) is treated as \"maximize\"."
+      },
+      {
+        "component": "agent_k.core.fitness:score_to_fitness",
+        "line": 71,
+        "name": "notice",
+        "value": "Maps a raw metric score onto the canonical AGENT-K fitness scale."
+      },
+      {
+        "component": "agent_k.core.fitness:score_to_fitness",
+        "line": 74,
+        "name": "dev",
+        "value": "For \"minimize\" metrics the score is mapped through ``1 / (1 + score)``,\nwhich is strictly decreasing on ``[0, inf)`` and lands in ``(0, 1]`` so a\nvalid solution always beats ``FITNESS_FLOOR``. For \"ma"
+      },
+      {
+        "component": "agent_k.core.fitness:fitness_to_score",
+        "line": 92,
+        "name": "notice",
+        "value": "Recovers the metric score behind a canonical fitness value."
+      },
+      {
+        "component": "agent_k.core.fitness:fitness_to_score",
+        "line": 95,
+        "name": "dev",
+        "value": "Returns ``None`` when the fitness carries no recoverable score: a missing\nvalue, or a non-positive minimize-direction fitness (which encodes a\nfailed evaluation rather than a real score). Scores clamp"
+      }
+    ],
     "agent_k/core/hints.py": [
       {
         "component": "agent_k.core.hints",
@@ -4344,151 +4429,151 @@
       },
       {
         "component": "agent_k.core.strategy:ProblemType",
-        "line": 70,
+        "line": 71,
         "name": "notice",
         "value": "Supported ML problem types for policy selection."
       },
       {
         "component": "agent_k.core.strategy:ProblemType",
-        "line": 73,
+        "line": 74,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.strategy:ProblemType",
-        "line": 76,
+        "line": 77,
         "name": "pattern",
         "value": "{\"name\": \"enumeration\", \"rationale\": \"StrEnum for ML problem taxonomy.\", \"violations\": \"String literals drift across policy logic.\"}"
       },
       {
         "component": "agent_k.core.strategy:ProblemProfile",
-        "line": 95,
+        "line": 96,
         "name": "notice",
         "value": "Profile describing the ML task for a competition."
       },
       {
         "component": "agent_k.core.strategy:ProblemProfile",
-        "line": 98,
+        "line": 99,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.strategy:ProblemProfile",
-        "line": 101,
+        "line": 102,
         "name": "pattern",
         "value": "{\"name\": \"profile-model\", \"rationale\": \"Bundles task metadata for downstream policies.\", \"violations\": \"Implicit profiles make policy decisions inconsistent.\"}"
       },
       {
         "component": "agent_k.core.strategy:TechniquePolicy",
-        "line": 121,
+        "line": 122,
         "name": "notice",
         "value": "Generic technique policy for solution enforcement."
       },
       {
         "component": "agent_k.core.strategy:TechniquePolicy",
-        "line": 124,
+        "line": 125,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.strategy:TechniquePolicy",
-        "line": 127,
+        "line": 128,
         "name": "pattern",
         "value": "{\"name\": \"policy-model\", \"rationale\": \"Encodes technique constraints for evolution.\", \"violations\": \"Inline tuning fragments policy definitions.\"}"
       },
       {
         "component": "agent_k.core.strategy:FitnessInput",
-        "line": 148,
+        "line": 149,
         "name": "notice",
         "value": "Input payload for fitness scoring."
       },
       {
         "component": "agent_k.core.strategy:FitnessInput",
-        "line": 151,
+        "line": 152,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.strategy:FitnessInput",
-        "line": 154,
+        "line": 155,
         "name": "pattern",
         "value": "{\"name\": \"fitness-input\", \"rationale\": \"Captures evaluation signals for scoring.\", \"violations\": \"Ad-hoc inputs drift across fitness logic.\"}"
       },
       {
         "component": "agent_k.core.strategy:FitnessPolicy",
-        "line": 172,
+        "line": 173,
         "name": "notice",
         "value": "Policy controlling fitness adjustments."
       },
       {
         "component": "agent_k.core.strategy:FitnessPolicy",
-        "line": 175,
+        "line": 176,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.strategy:FitnessPolicy",
-        "line": 178,
+        "line": 179,
         "name": "pattern",
         "value": "{\"name\": \"policy-model\", \"rationale\": \"Encodes penalty tuning for fitness scoring.\", \"violations\": \"Inline penalties drift across runs.\"}"
       },
       {
         "component": "agent_k.core.strategy:build_problem_profile",
-        "line": 194,
+        "line": 195,
         "name": "notice",
         "value": "Creates a ProblemProfile from competition metadata and data schema."
       },
       {
         "component": "agent_k.core.strategy:build_problem_profile",
-        "line": 197,
+        "line": 198,
         "name": "dev",
         "value": "Infers problem type (tabular/vision/text, classification/regression)\nfrom competition tags and evaluation metric."
       },
       {
         "component": "agent_k.core.strategy:build_technique_policy",
-        "line": 228,
+        "line": 229,
         "name": "notice",
         "value": "Creates a TechniquePolicy with evolution parameters for the problem type."
       },
       {
         "component": "agent_k.core.strategy:build_technique_policy",
-        "line": 231,
+        "line": 232,
         "name": "dev",
         "value": "Adjusts population size and generation limits based on criteria.\nTarget transforms and outlier clipping are disabled (handled by evolver)."
       },
       {
         "component": "agent_k.core.strategy:build_fitness_policy",
-        "line": 268,
+        "line": 269,
         "name": "notice",
         "value": "Creates a FitnessPolicy with penalty weights and thresholds."
       },
       {
         "component": "agent_k.core.strategy:build_fitness_policy",
-        "line": 271,
+        "line": 272,
         "name": "dev",
         "value": "Penalty weight scales with min_improvements_required.\nComplexity threshold defaults based on problem type."
       },
       {
         "component": "agent_k.core.strategy:build_fitness_function",
-        "line": 298,
+        "line": 299,
         "name": "notice",
         "value": "Creates a callable fitness function from a FitnessPolicy."
       },
       {
         "component": "agent_k.core.strategy:build_fitness_function",
-        "line": 301,
+        "line": 302,
         "name": "dev",
         "value": "Returns a closure that scores FitnessInput based on policy thresholds.\nInvalid inputs return 0.0; penalties applied for runtime/complexity."
       },
       {
         "component": "agent_k.core.strategy:apply_solution_policy",
-        "line": 325,
+        "line": 326,
         "name": "notice",
         "value": "Transforms solution code based on technique policy (currently no-op)."
       },
       {
         "component": "agent_k.core.strategy:apply_solution_policy",
-        "line": 328,
+        "line": 329,
         "name": "dev",
         "value": "Policy injection is disabled to allow evolutionary search to handle\ndata preparation generically. Returns (code, []) unchanged."
       }
@@ -5254,37 +5339,37 @@
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate",
-        "line": 321,
+        "line": 333,
         "name": "notice",
         "value": "Evaluate a program and return metrics and artifacts for OpenEvolve."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate",
-        "line": 324,
+        "line": 336,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage1",
-        "line": 403,
+        "line": 415,
         "name": "notice",
         "value": "Stage 1: Quick syntax and import validation."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage1",
-        "line": 406,
+        "line": 418,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage2",
-        "line": 501,
+        "line": 513,
         "name": "notice",
         "value": "Stage 2: Medium evaluation on subset of data."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage2",
-        "line": 504,
+        "line": 516,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       }

@@ -35,6 +35,7 @@ from enum import StrEnum
 from typing import TYPE_CHECKING, Final
 
 from .data import CompetitionSchema
+from .fitness import FITNESS_FLOOR, score_to_fitness
 from .models import Competition, EvaluationMetric, MissionCriteria
 from .types import MetricDirection
 
@@ -305,16 +306,16 @@ def build_fitness_function(policy: FitnessPolicy) -> FitnessFunction:
 
     def fitness(input_data: FitnessInput) -> float:
         if not input_data.valid:
-            return 0.0
+            return FITNESS_FLOOR
 
-        base = _score_to_fitness(input_data.cv_score, policy.metric_direction)
+        base = score_to_fitness(input_data.cv_score, policy.metric_direction)
         if policy.runtime_ms_threshold and input_data.runtime_ms > policy.runtime_ms_threshold:
             base *= max(0.0, 1.0 - policy.penalty_weight)
         if policy.complexity_threshold and input_data.complexity > policy.complexity_threshold:
             base *= max(0.0, 1.0 - policy.penalty_weight)
         if input_data.stage and input_data.stage in policy.stage_weights:
             base *= policy.stage_weights[input_data.stage]
-        return max(0.0, base)
+        return max(FITNESS_FLOOR, base)
 
     return fitness
 
@@ -330,9 +331,3 @@ def apply_solution_policy(code: str, policy: TechniquePolicy) -> tuple[str, list
         data preparation generically. Returns (code, []) unchanged.
     """
     return code, []
-
-
-def _score_to_fitness(score: float, direction: MetricDirection) -> float:
-    if direction == "minimize":
-        return 1.0 / (1.0 + max(score, 0.0))
-    return max(score, 0.0)

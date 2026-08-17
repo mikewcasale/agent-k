@@ -1,0 +1,42 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.core.fitness as the canonical home for this capability.",
+      "Convert scores with score_to_fitness before comparing solutions."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph.",
+      "Negate scores to express minimize direction; fitness must stay non-negative."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Every producer and consumer of a fitness value (the OpenEvolve evaluator,\nthe Evolver agent, the strategy fitness factory) must use these helpers so\nthat a single convention holds end to end: fitness is always non-negative\nand higher-is-better, regardless of metric direction. Failed or invalid\nevaluations report ``FITNESS_FLOOR`` so they can never outrank a solution\nthat actually ran.",
+  "graph": {
+    "id": "agent_k.core.fitness",
+    "pattern": "value-conversion",
+    "provides": [
+      "agent_k.core.fitness"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-08-17",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.core.fitness",
+  "line": 1,
+  "notice": "Canonical score/fitness conversions for AGENT-K.",
+  "pattern": null,
+  "similar": [
+    {
+      "id": "agent_k.core.strategy",
+      "when": "Building fitness policies and functions rather than converting values."
+    }
+  ],
+  "source": "agent_k/core/fitness.py",
+  "summary": "Canonical score/fitness conversions for AGENT-K.",
+  "type": "module"
+}

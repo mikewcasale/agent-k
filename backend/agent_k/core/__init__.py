@@ -78,6 +78,7 @@ from .exceptions import (
     SubmissionError,
     ToolExecutionError,
 )
+from .fitness import FITNESS_FLOOR, coerce_metric_direction, fitness_to_score, score_to_fitness
 from .models import (
     Checkpoint,
     CodeExecutorCall,
@@ -180,6 +181,10 @@ __all__ = (
     "StateTransitionError",
     "SubmissionError",
     "ToolExecutionError",
+    "FITNESS_FLOOR",
+    "coerce_metric_direction",
+    "fitness_to_score",
+    "score_to_fitness",
     "BaseDeps",
     "KaggleDeps",
     "Checkpoint",

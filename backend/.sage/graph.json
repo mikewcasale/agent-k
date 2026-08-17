@@ -426,6 +426,16 @@
       "type": "provides"
     },
     {
+      "source": "agent_k.core.fitness",
+      "target": "agent_k.core.fitness",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.fitness",
+      "target": "agent_k.core.strategy",
+      "type": "similar"
+    },
+    {
       "source": "agent_k.core.hints",
       "target": "agent_k.core.hints",
       "type": "provides"
@@ -921,7 +931,7 @@
       "type": "similar"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831739+00:00",
+  "generated": "2026-08-17T22:08:05.437906+00:00",
   "nodes": [
     {
       "id": "agent_k",
@@ -1036,6 +1046,12 @@
       "label": "feedback",
       "pattern": "feedback-models",
       "source": "agent_k/core/feedback.py"
+    },
+    {
+      "id": "agent_k.core.fitness",
+      "label": "fitness",
+      "pattern": "value-conversion",
+      "source": "agent_k/core/fitness.py"
     },
     {
       "id": "agent_k.core.hints",

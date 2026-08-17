@@ -80,6 +80,7 @@ from agent_k.core.constants import (
     SOLUTION_EXECUTION_TIMEOUT_SECONDS,
 )
 from agent_k.core.data import CompetitionSchema, stage_competition_data
+from agent_k.core.fitness import coerce_metric_direction, fitness_to_score, score_to_fitness
 from agent_k.core.hints import DatasetProfile, PreprocessingHint, compute_hint_priority, detect_applied_hints
 from agent_k.core.sage import Doc, Range
 from agent_k.core.solution import execute_solution
@@ -1542,16 +1543,10 @@ class EvolverAgent(MemoryMixin):
         return {"AGENT_K_VALIDATION_SPLIT": f"{validation_split:.6f}"}
 
     def _fitness_from_score(self, score: float, direction: str) -> float:
-        return 1.0 / (1.0 + max(score, 0.0)) if direction == "minimize" else max(score, 0.0)
+        return score_to_fitness(score, coerce_metric_direction(direction))
 
     def _score_from_fitness(self, fitness: float | None, direction: str) -> float | None:
-        if fitness is None:
-            return None
-        if direction == "minimize":
-            if fitness <= 0:
-                return None
-            return (1.0 / fitness) - 1.0
-        return fitness
+        return fitness_to_score(fitness, coerce_metric_direction(direction))
 
     def _score_delta(self, before: float, after: float, direction: str) -> float:
         if direction == "minimize":

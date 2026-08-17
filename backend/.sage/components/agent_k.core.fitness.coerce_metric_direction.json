@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Competition metadata and OpenEvolve context payloads carry the direction\nas a plain string. Anything that is not exactly \"minimize\" (case and\nwhitespace insensitive) is treated as \"maximize\".",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.fitness:coerce_metric_direction",
+  "line": 55,
+  "notice": "Normalizes a direction string, defaulting to \"maximize\".",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/fitness.py",
+  "summary": "Normalize a free-form direction string to a MetricDirection.",
+  "type": "function"
+}

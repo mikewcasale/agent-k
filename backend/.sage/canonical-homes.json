@@ -3,7 +3,7 @@
     "for": [
       "evolver agent construction"
     ],
-    "line": 1052,
+    "line": 1053,
     "notes": "Use EvolverAgent() or module singleton.",
     "source": "agent_k/agents/evolver.py"
   },

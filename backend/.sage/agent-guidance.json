@@ -1,5 +1,5 @@
 {
-  "count": 59,
+  "count": 60,
   "entries": [
     {
       "component": "agent_k",
@@ -209,6 +209,19 @@
       ],
       "line": 1,
       "source": "agent_k/core/feedback.py"
+    },
+    {
+      "component": "agent_k.core.fitness",
+      "do": [
+        "Use agent_k.core.fitness as the canonical home for this capability.",
+        "Convert scores with score_to_fitness before comparing solutions."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph.",
+        "Negate scores to express minimize direction; fitness must stay non-negative."
+      ],
+      "line": 1,
+      "source": "agent_k/core/fitness.py"
     },
     {
       "component": "agent_k.core.hints",
@@ -651,6 +664,6 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831787+00:00",
+  "generated": "2026-08-17T22:08:05.438053+00:00",
   "version": "1.3.6"
 }

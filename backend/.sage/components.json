@@ -254,6 +254,16 @@
   },
   {
     "consumes": [],
+    "id": "agent_k.core.fitness",
+    "line": 1,
+    "pattern": "value-conversion",
+    "provides": [
+      "agent_k.core.fitness"
+    ],
+    "source": "agent_k/core/fitness.py"
+  },
+  {
+    "consumes": [],
     "id": "agent_k.core.hints",
     "line": 1,
     "pattern": "analysis-hints",

@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.agents.evolver:EvolverAgent.agent",
-  "line": 739,
+  "id": "agent_k.agents.evolver:_copy_staged_inputs",
+  "line": 2788,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/agents/evolver.py",
-  "summary": "Return the underlying pydantic-ai Agent.",
-  "type": "method"
+  "summary": "Copy staged competition inputs into an isolated execution directory.",
+  "type": "function"
 }

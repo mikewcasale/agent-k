@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Staging and copying happen under one lock so eviction can never remove a\ndirectory that another evaluation is still reading from.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_SplitStageCache.stage_into",
+  "line": 411,
+  "notice": "Reuses previously staged CSV inputs for identical split parameters.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Copy staged split inputs into ``destination``, materializing them only when needed.",
+  "type": "method"
+}

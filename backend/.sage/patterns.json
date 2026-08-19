@@ -1,6 +1,6 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
-  "pattern_count": 57,
+  "generated": "2026-08-19T00:14:06.364411+00:00",
+  "pattern_count": 59,
   "patterns": {
     "adapter": [
       {
@@ -47,7 +47,7 @@
     "agent-singleton": [
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 556,
+        "line": 673,
         "rationale": "Single instance keeps memory/tool registration consistent.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -76,7 +76,7 @@
     "archive-entry": [
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry",
-        "line": 317,
+        "line": 326,
         "rationale": "Encapsulates elite metadata for sampling.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -91,6 +91,17 @@
         "rationale": "Generic archive for MAP-Elites diversity preservation.",
         "source": "agent_k/evolution/framework.py",
         "violations": []
+      }
+    ],
+    "bounded-cache": [
+      {
+        "component": "agent_k.agents.evolver:_SplitStageCache",
+        "line": 387,
+        "rationale": "Keeps at most a few staged splits on disk while removing repeated CSV I/O.",
+        "source": "agent_k/agents/evolver.py",
+        "violations": [
+          "Unbounded staging leaks directories across competitions."
+        ]
       }
     ],
     "classifier": [
@@ -134,7 +145,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 436,
+        "line": 553,
         "rationale": "Groups runtime services and evolution state.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -947,7 +958,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 501,
+        "line": 618,
         "rationale": "Stable schema for successful evolution outputs.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -956,7 +967,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 526,
+        "line": 643,
         "rationale": "Stable schema for failed evolution outputs.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -1246,7 +1257,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 363,
+        "line": 480,
         "rationale": "Centralizes evolutionary optimization configuration.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -1329,6 +1340,17 @@
         "rationale": "Extends ToolCall with memory operation specific fields.",
         "source": "agent_k/core/models.py",
         "violations": []
+      }
+    ],
+    "staged-artifact": [
+      {
+        "component": "agent_k.agents.evolver:_StagedSplit",
+        "line": 373,
+        "rationale": "Splits are deterministic, so their CSV inputs are reusable across candidates.",
+        "source": "agent_k/agents/evolver.py",
+        "violations": [
+          "Re-parsing the full training file per candidate dominates evaluation cost."
+        ]
       }
     ],
     "state-persistence": [

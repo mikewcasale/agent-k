@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_SplitStageCache",
+  "line": 387,
+  "notice": null,
+  "pattern": {
+    "name": "bounded-cache",
+    "rationale": "Keeps at most a few staged splits on disk while removing repeated CSV I/O.",
+    "violations": "Unbounded staging leaks directories across competitions."
+  },
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Bounded LRU cache of staged validation splits keyed by split parameters.",
+  "type": "class"
+}

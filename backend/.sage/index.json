@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-08-19T00:14:06.363391+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1095,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -1514,253 +1514,283 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry",
-        "line": 319,
+        "line": 328,
         "name": "pattern",
         "value": "{\"name\": \"archive-entry\", \"rationale\": \"Encapsulates elite metadata for sampling.\", \"violations\": \"Unstructured elites make selection brittle.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry.to_payload",
-        "line": 338,
+        "line": 347,
         "name": "notice",
         "value": "Converts the archive entry into a JSON-serializable payload."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry.to_payload",
-        "line": 341,
+        "line": 350,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
+        "component": "agent_k.agents.evolver:_StagedSplit",
+        "line": 375,
+        "name": "pattern",
+        "value": "{\"name\": \"staged-artifact\", \"rationale\": \"Splits are deterministic, so their CSV inputs are reusable across candidates.\", \"violations\": \"Re-parsing the full training file per candidate dominates evalu"
+      },
+      {
+        "component": "agent_k.agents.evolver:_SplitStageCache",
+        "line": 389,
+        "name": "pattern",
+        "value": "{\"name\": \"bounded-cache\", \"rationale\": \"Keeps at most a few staged splits on disk while removing repeated CSV I/O.\", \"violations\": \"Unbounded staging leaks directories across competitions.\"}"
+      },
+      {
+        "component": "agent_k.agents.evolver:_SplitStageCache.stage_into",
+        "line": 413,
+        "name": "notice",
+        "value": "Reuses previously staged CSV inputs for identical split parameters."
+      },
+      {
+        "component": "agent_k.agents.evolver:_SplitStageCache.stage_into",
+        "line": 416,
+        "name": "dev",
+        "value": "Staging and copying happen under one lock so eviction can never remove a\ndirectory that another evaluation is still reading from."
+      },
+      {
+        "component": "agent_k.agents.evolver:_SplitStageCache.stage_into",
+        "line": 420,
+        "name": "effects",
+        "value": "{\"state\": [\"Stages split CSVs under the session directory and evicts the least recently used entry.\", \"Writes train.csv, test.csv, and sample_submission.csv into destination.\"]}"
+      },
+      {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 365,
+        "line": 482,
         "name": "notice",
         "value": "Configuration for the Evolver agent."
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 368,
+        "line": 485,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 371,
+        "line": 488,
         "name": "pattern",
         "value": "{\"name\": \"settings\", \"rationale\": \"Centralizes evolutionary optimization configuration.\", \"violations\": \"Ad-hoc overrides lead to unstable evolution runs.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 438,
+        "line": 555,
         "name": "notice",
         "value": "Dependencies for the Evolver agent."
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 441,
+        "line": 558,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 444,
+        "line": 561,
         "name": "pattern",
         "value": "{\"name\": \"dependency-container\", \"rationale\": \"Groups runtime services and evolution state.\", \"violations\": \"Scattered state makes evolution hard to resume.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 449,
+        "line": 566,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\", \"agent_k.core.models:Competition\"], \"optional\": [\"agent_k.core.tracking:ExperimentTracker\", \"agent_k.core.hints:"
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 460,
+        "line": 577,
         "name": "invariants",
         "value": "[\"population_size >= 1\", \"max_generations >= min_generations\"]"
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 503,
+        "line": 620,
         "name": "notice",
         "value": "Result of evolution process."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 506,
+        "line": 623,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 509,
+        "line": 626,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Stable schema for successful evolution outputs.\", \"violations\": \"Free-form outputs hinder submission automation.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 528,
+        "line": 645,
         "name": "notice",
         "value": "Failure result for evolution process."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 531,
+        "line": 648,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 534,
+        "line": 651,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Stable schema for failed evolution outputs.\", \"violations\": \"Opaque errors make recovery harder.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 561,
+        "line": 678,
         "name": "notice",
         "value": "Optimizes prototype solutions via evolutionary search.\nUse the module-level evolver_agent or agent registry."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 565,
+        "line": 682,
         "name": "dev",
         "value": "Registers evolution tools and coordinates mutation/evaluation cycles."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 568,
+        "line": 685,
         "name": "pattern",
         "value": "{\"name\": \"agent-singleton\", \"rationale\": \"Single instance keeps memory/tool registration consistent.\", \"violations\": \"Multiple instances duplicate tool registrations.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 573,
+        "line": 690,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.adapters.openevolve:OpenEvolveRunner\"], \"injection\": \"deps via RunContext\", \"lifecycle\": "
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 582,
+        "line": 699,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates evolution state and caches.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 587,
+        "line": 704,
         "name": "invariants",
         "value": "[\"self._agent is initialized after __init__ completes.\", \"self._toolset registers evolution tools exactly once.\"]"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.__init__",
-        "line": 600,
+        "line": 717,
         "name": "notice",
         "value": "Builds the agent singleton and registers tools."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.__init__",
-        "line": 603,
+        "line": 720,
         "name": "dev",
         "value": "Initializes memory backend, toolset, and pydantic-ai Agent."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.__init__",
-        "line": 606,
+        "line": 723,
         "name": "state_changes",
         "value": "[\"self._settings\", \"self._toolset\", \"self._agent\"]"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.run_openevolve",
-        "line": 639,
+        "line": 756,
         "name": "notice",
         "value": "Delegates mutation and evaluation to OpenEvolve when enabled."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.run_openevolve",
-        "line": 642,
+        "line": 759,
         "name": "effects",
         "value": "{\"io\": [\"OpenEvolve API requests\"], \"state\": [\"deps.best_solution\", \"deps.best_fitness\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.mutate_solution",
-        "line": 724,
+        "line": 841,
         "name": "notice",
         "value": "Applies a mutation strategy and returns the mutated code."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.mutate_solution",
-        "line": 727,
+        "line": 844,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.evaluate_fitness",
-        "line": 773,
+        "line": 890,
         "name": "notice",
         "value": "Runs evaluation and emits fitness telemetry."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.evaluate_fitness",
-        "line": 776,
+        "line": 893,
         "name": "effects",
         "value": "{\"io\": [\"local execution\"], \"state\": [\"ctx.deps.best_fitness\", \"ctx.deps.best_solution\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.record_generation",
-        "line": 882,
+        "line": 999,
         "name": "notice",
         "value": "Appends generation metrics and emits telemetry."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.record_generation",
-        "line": 885,
+        "line": 1002,
         "name": "effects",
         "value": "{\"state\": [\"ctx.deps.generation_history\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.check_convergence",
-        "line": 920,
+        "line": 1037,
         "name": "notice",
         "value": "Determines whether fitness has plateaued or target score reached."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.check_convergence",
-        "line": 923,
+        "line": 1040,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.sample_elites",
-        "line": 989,
+        "line": 1106,
         "name": "notice",
         "value": "Selects top and diverse elites from the archive."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.sample_elites",
-        "line": 992,
+        "line": 1109,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.submit_to_kaggle",
-        "line": 1011,
+        "line": 1128,
         "name": "notice",
         "value": "Writes a submission file and triggers adapter submission."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.submit_to_kaggle",
-        "line": 1014,
+        "line": 1131,
         "name": "effects",
         "value": "{\"io\": [\"local filesystem access\", \"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent._create_agent",
-        "line": 1054,
+        "line": 1171,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.agents.evolver:EvolverAgent\", \"rationale\": \"Centralizes agent wiring and toolset preparation.\", \"singleton\": true, \"cache_key\": \"module\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent._create_agent",
-        "line": 1060,
+        "line": 1177,
         "name": "canonical_home",
         "value": "{\"for\": [\"evolver agent construction\"], \"notes\": \"Use EvolverAgent() or module singleton.\"}"
       }

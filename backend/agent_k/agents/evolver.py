@@ -47,12 +47,16 @@ Licensed under the MIT License.
 from __future__ import annotations as _annotations
 
 import ast
+import asyncio
 import csv
 import hashlib
 import json
 import random
 import re
+import shutil
 import tempfile
+import weakref
+from collections import OrderedDict
 from dataclasses import dataclass, field
 from pathlib import Path
 from textwrap import dedent
@@ -310,6 +314,11 @@ _HINT_COMMENT_PREFIX: Final[str] = "# Applied hint: "
 _ENCODING_HINT_IDS: Final[frozenset[str]] = frozenset(
     {"onehot_low_cardinality", "target_encode_high_cardinality", "frequency_encode_high_cardinality", "ordinal_encode"}
 )
+_STAGED_INPUT_FILES: Final[tuple[str, ...]] = ("train.csv", "test.csv", "sample_submission.csv")
+_SPLIT_CACHE_DIRNAME: Final[str] = ".split_cache"
+_SPLIT_CACHE_MAX_ENTRIES: Final[int] = 4
+_SHORT_RUN_GENERATION_LIMIT: Final[int] = 5
+_SHORT_RUN_MAX_ROWS: Final[int] = 800
 
 
 @dataclass(frozen=True, slots=True)
@@ -357,6 +366,114 @@ class EvolutionArchiveEntry:
             "code": code,
             "truncated": truncated,
         }
+
+
+@dataclass(frozen=True, slots=True, eq=False)
+class _StagedSplit:
+    """Deterministic train/validation split materialized on disk for reuse.
+
+    @pattern:
+        name: staged-artifact
+        rationale: "Splits are deterministic, so their CSV inputs are reusable across candidates."
+        violations: "Re-parsing the full training file per candidate dominates evaluation cost."
+    """
+
+    directory: Path
+    y_val: pd.DataFrame
+    id_column: str
+
+
+class _SplitStageCache:
+    """Bounded LRU cache of staged validation splits keyed by split parameters.
+
+    @pattern:
+        name: bounded-cache
+        rationale: "Keeps at most a few staged splits on disk while removing repeated CSV I/O."
+        violations: "Unbounded staging leaks directories across competitions."
+    """
+
+    def __init__(self, *, max_entries: int = _SPLIT_CACHE_MAX_ENTRIES) -> None:
+        self._entries: OrderedDict[str, _StagedSplit] = OrderedDict()
+        self._max_entries = max_entries
+        self._locks: weakref.WeakKeyDictionary[asyncio.AbstractEventLoop, asyncio.Lock] = weakref.WeakKeyDictionary()
+
+    async def stage_into(
+        self,
+        destination: Path,
+        *,
+        data_dir: Path,
+        train_path: Path,
+        id_column: str | None,
+        target_columns: list[str],
+        validation_split: float,
+        max_rows: int | None,
+    ) -> _StagedSplit:
+        """Copy staged split inputs into ``destination``, materializing them only when needed.
+
+        @notice: |
+            Reuses previously staged CSV inputs for identical split parameters.
+
+        @dev: |
+            Staging and copying happen under one lock so eviction can never remove a
+            directory that another evaluation is still reading from.
+
+        @effects:
+            state:
+                - "Stages split CSVs under the session directory and evicts the least recently used entry."
+                - "Writes train.csv, test.csv, and sample_submission.csv into destination."
+        """
+        key = _split_cache_key(
+            train_path=train_path,
+            id_column=id_column,
+            target_columns=target_columns,
+            validation_split=validation_split,
+            max_rows=max_rows,
+        )
+        async with self._lock():
+            staged = self._entries.get(key)
+            if staged is not None and all((staged.directory / name).exists() for name in _STAGED_INPUT_FILES):
+                self._entries.move_to_end(key)
+                logfire.debug("validation_split_cache_hit", key=key, validation_rows=len(staged.y_val))
+            else:
+                staged = await asyncio.to_thread(
+                    _stage_validation_split,
+                    cache_root=data_dir.parent / _SPLIT_CACHE_DIRNAME,
+                    key=key,
+                    train_path=train_path,
+                    id_column=id_column,
+                    target_columns=target_columns,
+                    validation_split=validation_split,
+                    max_rows=max_rows,
+                )
+                self._entries[key] = staged
+                self._entries.move_to_end(key)
+                self._evict()
+                logfire.info(
+                    "validation_split_staged",
+                    key=key,
+                    validation_rows=len(staged.y_val),
+                    max_rows=max_rows,
+                    directory=str(staged.directory),
+                )
+
+            await asyncio.to_thread(_copy_staged_inputs, staged.directory, destination)
+            return staged
+
+    def _lock(self) -> asyncio.Lock:
+        loop = asyncio.get_running_loop()
+        lock = self._locks.get(loop)
+        if lock is None:
+            lock = asyncio.Lock()
+            self._locks[loop] = lock
+        return lock
+
+    def _evict(self) -> None:
+        while len(self._entries) > self._max_entries:
+            _, evicted = self._entries.popitem(last=False)
+            shutil.rmtree(evicted.directory, ignore_errors=True)
+
+
+_SPLIT_STAGE_CACHE: Final[_SplitStageCache] = _SplitStageCache()
 
 
 class EvolverSettings(BaseSettings):
@@ -1882,30 +1999,20 @@ class EvolverAgent(MemoryMixin):
         max_rows: int | None = None,
         timeout_seconds: int | None = None,
     ) -> dict[str, Any]:
+        target_columns = list(ctx.deps.train_target_columns or ctx.deps.target_columns)
         with tempfile.TemporaryDirectory(dir=str(ctx.deps.data_dir)) as run_dir:
             run_path = Path(run_dir)
-            train_df, val_features, y_val, id_column = _prepare_validation_split(
+            staged = await _SPLIT_STAGE_CACHE.stage_into(
+                run_path,
+                data_dir=ctx.deps.data_dir,
                 train_path=ctx.deps.train_path,
                 id_column=ctx.deps.id_column,
-                target_columns=list(ctx.deps.train_target_columns or ctx.deps.target_columns),
+                target_columns=target_columns,
                 validation_split=validation_split,
+                max_rows=_resolve_split_max_rows(max_rows=max_rows, max_generations=ctx.deps.max_generations),
             )
-            if max_rows is not None and max_rows > 0:
-                train_df = train_df.head(max_rows).copy()
-                val_features = val_features.head(max_rows).copy()
-                y_val = y_val.head(max_rows).copy()
-            elif ctx.deps.max_generations <= 5:
-                train_df = train_df.head(800).copy()
-                val_features = val_features.head(800).copy()
-                y_val = y_val.head(800).copy()
-
-            target_columns = list(ctx.deps.train_target_columns or ctx.deps.target_columns)
-            train_df.to_csv(run_path / "train.csv", index=False)
-            val_features.to_csv(run_path / "test.csv", index=False)
-            sample_submission = pd.DataFrame({id_column: val_features[id_column].values})
-            for col in target_columns:
-                sample_submission[col] = 0.0
-            sample_submission.to_csv(run_path / "sample_submission.csv", index=False)
+            id_column = staged.id_column
+            y_val = staged.y_val
 
             execution = await execute_solution(
                 solution_code,
@@ -2611,6 +2718,76 @@ def _prepare_validation_split(
     y_val = val_df[[resolved_id, *target_columns]].copy()
     val_features = val_df.drop(columns=target_columns, errors="ignore").copy()
     return train_df, val_features, y_val, resolved_id
+
+
+def _resolve_split_max_rows(*, max_rows: int | None, max_generations: int) -> int | None:
+    """Resolve the row cap applied to a staged split for an evaluation stage."""
+    if max_rows is not None and max_rows > 0:
+        return max_rows
+    if max_generations <= _SHORT_RUN_GENERATION_LIMIT:
+        return _SHORT_RUN_MAX_ROWS
+    return None
+
+
+def _split_cache_key(
+    *, train_path: Path, id_column: str | None, target_columns: list[str], validation_split: float, max_rows: int | None
+) -> str:
+    """Build a content-sensitive cache key for a staged validation split."""
+    try:
+        stat = train_path.stat()
+        fingerprint = f"{stat.st_size}:{stat.st_mtime_ns}"
+    except OSError:
+        fingerprint = "unavailable"
+    payload = "|".join(
+        (
+            str(train_path),
+            fingerprint,
+            id_column or "",
+            ",".join(target_columns),
+            f"{validation_split:.6f}",
+            str(max_rows or 0),
+        )
+    )
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
+
+
+def _stage_validation_split(
+    *,
+    cache_root: Path,
+    key: str,
+    train_path: Path,
+    id_column: str | None,
+    target_columns: list[str],
+    validation_split: float,
+    max_rows: int | None,
+) -> _StagedSplit:
+    """Materialize a deterministic validation split as reusable CSV inputs on disk."""
+    train_df, val_features, y_val, resolved_id = _prepare_validation_split(
+        train_path=train_path, id_column=id_column, target_columns=target_columns, validation_split=validation_split
+    )
+    if max_rows is not None and max_rows > 0:
+        train_df = train_df.head(max_rows)
+        val_features = val_features.head(max_rows)
+        y_val = y_val.head(max_rows)
+
+    directory = cache_root / key
+    shutil.rmtree(directory, ignore_errors=True)
+    directory.mkdir(parents=True, exist_ok=True)
+
+    train_df.to_csv(directory / "train.csv", index=False)
+    val_features.to_csv(directory / "test.csv", index=False)
+    sample_submission = pd.DataFrame({resolved_id: val_features[resolved_id].to_numpy()})
+    for column in target_columns:
+        sample_submission[column] = 0.0
+    sample_submission.to_csv(directory / "sample_submission.csv", index=False)
+
+    return _StagedSplit(directory=directory, y_val=y_val.copy(), id_column=resolved_id)
+
+
+def _copy_staged_inputs(source: Path, destination: Path) -> None:
+    """Copy staged competition inputs into an isolated execution directory."""
+    for name in _STAGED_INPUT_FILES:
+        shutil.copyfile(source / name, destination / name)
 
 
 def _score_submission(

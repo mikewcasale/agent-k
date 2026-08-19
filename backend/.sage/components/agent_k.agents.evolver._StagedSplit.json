@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_StagedSplit",
+  "line": 373,
+  "notice": null,
+  "pattern": {
+    "name": "staged-artifact",
+    "rationale": "Splits are deterministic, so their CSV inputs are reusable across candidates.",
+    "violations": "Re-parsing the full training file per candidate dominates evaluation cost."
+  },
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Deterministic train/validation split materialized on disk for reuse.",
+  "type": "class"
+}

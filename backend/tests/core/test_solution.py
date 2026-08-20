@@ -6,6 +6,8 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
+import asyncio
+import os
 from typing import TYPE_CHECKING
 
 import pytest
@@ -88,3 +90,31 @@ class TestExecuteSolution:
 
         assert result.timed_out is True
         assert result.returncode != 0
+
+    @pytest.mark.skipif(os.name != "posix", reason="process-group reaping is posix-only")
+    async def test_execute_solution_cancellation_reaps_child(self, tmp_path: Path) -> None:
+        """Cancelling execution must not orphan the child subprocess."""
+        pid_file = tmp_path / "child.pid"
+        code = (
+            "import os, time\n"
+            f"with open({str(pid_file)!r}, 'w') as handle:\n"
+            "    handle.write(str(os.getpid()))\n"
+            "time.sleep(30)\n"
+        )
+        task = asyncio.ensure_future(execute_solution(code, tmp_path, timeout_seconds=30))
+
+        for _ in range(200):  # bounded wait for the child to record its pid (~10s max)
+            if pid_file.exists() and pid_file.read_text():
+                break
+            await asyncio.sleep(0.05)
+        else:  # pragma: no cover - defensive: child never started
+            task.cancel()
+            pytest.fail("child process never recorded its pid")
+
+        child_pid = int(pid_file.read_text())
+        task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await task
+
+        with pytest.raises(ProcessLookupError):
+            os.kill(child_pid, 0)

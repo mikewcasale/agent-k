@@ -184,6 +184,15 @@ async def _execute_solution_local(
         logfire.warning("solution_execution_timeout", timeout_seconds=timeout_seconds, pid=process.pid)
         _terminate_process(process)
         stdout, stderr = await _safe_communicate(process, timeout_seconds=5)
+    except BaseException:
+        # Cancellation (e.g. mission abort) or any unexpected error must not orphan the
+        # child process group. Started with start_new_session=True, a leaked child keeps
+        # consuming CPU for the rest of the candidate budget. Reap it before propagating.
+        if process.returncode is None:
+            logfire.warning("solution_execution_aborted", pid=process.pid)
+            _terminate_process(process)
+            await _safe_communicate(process, timeout_seconds=5)
+        raise
 
     runtime_ms = int((time.perf_counter() - start_time) * 1000)
     return ExecutionResult(

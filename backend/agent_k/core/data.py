@@ -31,16 +31,94 @@ from __future__ import annotations as _annotations
 
 import csv
 import os
+import re
 import shutil
 import zipfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
+
+import logfire
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
 __all__ = ("CompetitionSchema", "infer_competition_schema", "locate_data_files", "stage_competition_data")
+
+_ARCHIVE_SUFFIXES: Final[frozenset[str]] = frozenset({".zip", ".gz", ".bz2", ".xz", ".7z", ".tar", ".tgz"})
+_SUFFIX_SCORES: Final[dict[str, int]] = {
+    ".csv": 30,
+    ".tsv": 24,
+    ".parquet": 20,
+    ".feather": 20,
+    ".txt": 10,
+    ".json": 6,
+    ".jsonl": 6,
+}
+_CAMEL_BOUNDARY: Final[re.Pattern[str]] = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
+_TOKEN_SEPARATOR: Final[re.Pattern[str]] = re.compile(r"[^a-z0-9]+")
+_AUXILIARY_TOKENS: Final[frozenset[str]] = frozenset(
+    {
+        "label",
+        "labels",
+        "meta",
+        "metadata",
+        "example",
+        "examples",
+        "dict",
+        "dictionary",
+        "description",
+        "descriptions",
+        "info",
+        "extra",
+        "supplement",
+        "supplemental",
+        "old",
+        "backup",
+        "raw",
+    }
+)
+_EXACT_STEM_BONUS: Final[int] = 200
+_EXACT_STEM_RANK_PENALTY: Final[int] = 10
+_EXTRA_TOKEN_PENALTY: Final[int] = 12
+_AUXILIARY_TOKEN_PENALTY: Final[int] = 40
+_DEPTH_PENALTY: Final[int] = 2
+
+
+@dataclass(frozen=True, slots=True)
+class _RoleSpec:
+    """Matching rules used to rank candidate files for one competition data role."""
+
+    role: str
+    exact_stems: tuple[str, ...]
+    required_tokens: frozenset[str]
+    allowed_tokens: frozenset[str]
+    fallback_tokens: tuple[str, ...]
+
+
+_ROLE_SPECS: Final[tuple[_RoleSpec, ...]] = (
+    _RoleSpec(
+        role="sample",
+        exact_stems=("sample_submission", "submission"),
+        required_tokens=frozenset({"submission"}),
+        allowed_tokens=frozenset({"submission", "sample", "format", "csv"}),
+        fallback_tokens=("sample_submission", "submission"),
+    ),
+    _RoleSpec(
+        role="train",
+        exact_stems=("train", "training"),
+        required_tokens=frozenset({"train", "training"}),
+        allowed_tokens=frozenset({"train", "training", "data", "set", "features", "values", "csv"}),
+        fallback_tokens=("train",),
+    ),
+    _RoleSpec(
+        role="test",
+        exact_stems=("test", "testing"),
+        required_tokens=frozenset({"test", "testing"}),
+        allowed_tokens=frozenset({"test", "testing", "data", "set", "features", "values", "csv"}),
+        fallback_tokens=("test",),
+    ),
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -109,22 +187,91 @@ def locate_data_files(paths: Iterable[str | Path]) -> tuple[Path, Path, Path]:
         path = Path(path_value)
         files.append(path)
         if path.suffix.lower() == ".zip" and path.exists():
-            files.extend(_safe_extract_zip(path, path.parent))
+            try:
+                files.extend(_safe_extract_zip(path, path.parent))
+            except (zipfile.BadZipFile, OSError, ValueError) as exc:
+                logfire.warning("zip_extract_failed", archive=str(path), error=str(exc))
 
-    def pick(token: str) -> Path | None:
-        for path in files:
-            if token in path.name.lower():
+    selected: dict[str, Path] = {}
+    for spec in _ROLE_SPECS:
+        chosen = _select_role_file(files, spec, exclude=frozenset(selected.values()))
+        if chosen is not None:
+            selected[spec.role] = chosen
+
+    missing = [spec.role for spec in _ROLE_SPECS if spec.role not in selected]
+    if missing:
+        raise FileNotFoundError(
+            f"Required competition data files not found (missing: {', '.join(sorted(missing))}); "
+            f"candidates: {sorted({path.name for path in files})}"
+        )
+
+    return selected["train"], selected["test"], selected["sample"]
+
+
+def _select_role_file(files: Iterable[Path], spec: _RoleSpec, *, exclude: frozenset[Path]) -> Path | None:
+    """Pick the best-matching file for one data role.
+
+    Ranks candidates so canonical names (``train.csv``) beat auxiliary ones
+    (``train_labels.csv``) regardless of directory iteration order, then falls
+    back to loose substring matching so unusual layouts still resolve.
+    """
+    ranked: list[tuple[int, int, int, str, Path]] = []
+    for path in files:
+        if path in exclude:
+            continue
+        score = _score_candidate(path, spec)
+        if score is None:
+            continue
+        ranked.append((-score, len(path.parts), len(path.name), str(path), path))
+
+    if ranked:
+        return min(ranked)[4]
+
+    for token in spec.fallback_tokens:
+        for path in sorted(files, key=lambda candidate: (len(candidate.parts), str(candidate))):
+            if path not in exclude and token in path.name.lower():
                 return path
+
+    return None
+
+
+def _score_candidate(path: Path, spec: _RoleSpec) -> int | None:
+    """Score a candidate file for a role, or return ``None`` when it does not qualify."""
+    suffix_score = _SUFFIX_SCORES.get(_effective_suffix(path))
+    if suffix_score is None:
         return None
 
-    train_path = pick("train")
-    test_path = pick("test")
-    sample_path = pick("sample_submission") or pick("submission")
+    tokens = _stem_tokens(path)
+    if not spec.required_tokens.intersection(tokens):
+        return None
 
-    if not train_path or not test_path or not sample_path:
-        raise FileNotFoundError("Required competition data files not found")
+    score = suffix_score
+    normalized = "_".join(tokens)
+    if normalized in spec.exact_stems:
+        score += _EXACT_STEM_BONUS - _EXACT_STEM_RANK_PENALTY * spec.exact_stems.index(normalized)
 
-    return train_path, test_path, sample_path
+    extra_tokens = [token for token in tokens if token not in spec.allowed_tokens]
+    score -= _EXTRA_TOKEN_PENALTY * len(extra_tokens)
+    score -= _AUXILIARY_TOKEN_PENALTY * sum(1 for token in extra_tokens if token in _AUXILIARY_TOKENS)
+    score -= _DEPTH_PENALTY * len(path.parts)
+    return score
+
+
+def _effective_suffix(path: Path) -> str:
+    """Return the data suffix of a path, looking through a single archive suffix."""
+    suffix = path.suffix.lower()
+    if suffix in _ARCHIVE_SUFFIXES:
+        return Path(path.stem).suffix.lower()
+    return suffix
+
+
+def _stem_tokens(path: Path) -> tuple[str, ...]:
+    """Split a filename stem into lowercase tokens, honouring camelCase boundaries."""
+    stem = path.stem
+    if _effective_suffix(path) and path.suffix.lower() in _ARCHIVE_SUFFIXES:
+        stem = Path(stem).stem
+    spaced = _CAMEL_BOUNDARY.sub("_", stem)
+    return tuple(token for token in _TOKEN_SEPARATOR.split(spaced.lower()) if token)
 
 
 def stage_competition_data(
@@ -162,9 +309,11 @@ def stage_competition_data(
 
 
 def _read_header(path: Path) -> list[str]:
-    with path.open("r", encoding="utf-8", errors="ignore", newline="") as handle:
+    # utf-8-sig strips a leading BOM; without it the first column name keeps a
+    # "﻿" prefix and every downstream lookup on the id column misses.
+    with path.open("r", encoding="utf-8-sig", errors="ignore", newline="") as handle:
         reader = csv.reader(handle)
-        return next(reader, [])
+        return [column.strip() for column in next(reader, [])]
 
 
 def _safe_extract_zip(archive_path: Path, destination: Path) -> list[Path]:
@@ -176,9 +325,11 @@ def _safe_extract_zip(archive_path: Path, destination: Path) -> list[Path]:
             if member.is_dir() or member.filename.endswith("/"):
                 continue
             target_path = (destination / member.filename).resolve()
-            if not str(target_path).startswith(str(destination_resolved)):
+            if not target_path.is_relative_to(destination_resolved):
                 raise ValueError(f"Zip entry escapes destination: {member.filename}")
-            archive.extract(member, destination)
+            # Re-extracting on every mission phase costs minutes on large archives.
+            if not (target_path.exists() and target_path.stat().st_size == member.file_size):
+                archive.extract(member, destination)
             extracted.append(target_path)
 
     return extracted

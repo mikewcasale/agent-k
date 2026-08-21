@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.data:_select_role_file",
+  "line": 212,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/data.py",
+  "summary": "Pick the best-matching file for one data role.",
+  "type": "function"
+}

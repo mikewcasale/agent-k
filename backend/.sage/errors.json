@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "code": "V002",
+    "component": "agent_k.core.data:_RoleSpec",
+    "level": "ERROR",
+    "line": 90,
+    "message": "Class missing @pattern",
+    "source": "agent_k/core/data.py"
+  }
+]

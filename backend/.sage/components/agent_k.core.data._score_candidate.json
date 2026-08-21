@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.data:_score_candidate",
+  "line": 239,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/data.py",
+  "summary": "Score a candidate file for a role, or return ``None`` when it does not qualify.",
+  "type": "function"
+}

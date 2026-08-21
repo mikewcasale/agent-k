@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Guards against empty, non-numeric, or non-positive overrides so a\nmalformed value cannot silently disable request timeouts.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.providers:_positive_float_env",
+  "line": 69,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/providers.py",
+  "summary": "Read a strictly-positive float from the environment, falling back on bad input.",
+  "type": "function"
+}

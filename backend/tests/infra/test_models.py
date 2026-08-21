@@ -14,6 +14,9 @@ from pydantic_ai.models.openai import OpenAIChatModel
 from agent_k.infra.providers import (
     DEVSTRAL_BASE_URL,
     DEVSTRAL_MODEL_ID,
+    MODEL_CONNECT_TIMEOUT_SECONDS,
+    MODEL_READ_TIMEOUT_SECONDS,
+    _positive_float_env,
     create_devstral_model,
     create_openrouter_model,
     get_model,
@@ -55,6 +58,16 @@ class TestCreateDevstralModel:
         model = create_devstral_model(model_id="custom-model")
 
         assert isinstance(model, OpenAIChatModel)
+
+    def test_applies_bounded_timeout(self) -> None:
+        """Underlying OpenAI client should carry the configured connect/read timeouts."""
+        model = create_devstral_model()
+
+        timeout = model.client.timeout
+        assert timeout.connect == MODEL_CONNECT_TIMEOUT_SECONDS
+        assert timeout.read == MODEL_READ_TIMEOUT_SECONDS
+        # A finite read timeout is what prevents a hung endpoint from blocking a turn.
+        assert timeout.read is not None
 
 
 class TestCreateOpenRouterModel:
@@ -111,6 +124,38 @@ class TestGetModel:
         result = get_model("openrouter:mistralai/devstral-small-2505")
 
         assert isinstance(result, OpenAIChatModel)
+
+
+class TestPositiveFloatEnv:
+    """Tests for the _positive_float_env helper."""
+
+    def test_returns_default_when_unset(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Missing env var should yield the default."""
+        monkeypatch.delenv("AGENT_K_TEST_TIMEOUT", raising=False)
+
+        assert _positive_float_env("AGENT_K_TEST_TIMEOUT", 42.0) == 42.0
+
+    def test_parses_valid_override(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """A valid positive override should be parsed."""
+        monkeypatch.setenv("AGENT_K_TEST_TIMEOUT", "12.5")
+
+        assert _positive_float_env("AGENT_K_TEST_TIMEOUT", 42.0) == 12.5
+
+    def test_rejects_non_numeric(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """A non-numeric override should fall back to the default."""
+        monkeypatch.setenv("AGENT_K_TEST_TIMEOUT", "not-a-number")
+
+        assert _positive_float_env("AGENT_K_TEST_TIMEOUT", 42.0) == 42.0
+
+    def test_rejects_non_positive(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        """Zero or negative overrides should fall back to the default."""
+        monkeypatch.setenv("AGENT_K_TEST_TIMEOUT", "0")
+
+        assert _positive_float_env("AGENT_K_TEST_TIMEOUT", 42.0) == 42.0
+
+        monkeypatch.setenv("AGENT_K_TEST_TIMEOUT", "-5")
+
+        assert _positive_float_env("AGENT_K_TEST_TIMEOUT", 42.0) == 42.0
 
 
 class TestIsDevstralModel:

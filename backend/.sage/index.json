@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-08-21T23:14:45.911910+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1093,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -5995,86 +5995,104 @@
         "value": "{\"last_verified\": \"2026-01-26\", \"owners\": [\"agent-k-core\"]}"
       },
       {
+        "component": "agent_k.infra.providers:_positive_float_env",
+        "line": 71,
+        "name": "dev",
+        "value": "Guards against empty, non-numeric, or non-positive overrides so a\nmalformed value cannot silently disable request timeouts."
+      },
+      {
+        "component": "agent_k.infra.providers:_build_timeout_http_client",
+        "line": 104,
+        "name": "notice",
+        "value": "Builds an httpx.AsyncClient with explicit timeouts for model providers."
+      },
+      {
+        "component": "agent_k.infra.providers:_build_timeout_http_client",
+        "line": 107,
+        "name": "dev",
+        "value": "The OpenAI SDK adopts a supplied client's timeout when it differs from\nthe httpx default, so an explicit non-default timeout here prevents a\nhung local or free-tier endpoint from blocking an agent tur"
+      },
+      {
         "component": "agent_k.infra.providers:create_devstral_model",
-        "line": 85,
+        "line": 126,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.infra.providers:create_devstral_model",
-        "line": 88,
+        "line": 129,
         "name": "notice",
         "value": "Creates an OpenAIChatModel configured for Devstral."
       },
       {
         "component": "agent_k.infra.providers:create_devstral_model",
-        "line": 91,
+        "line": 132,
         "name": "factory_for",
         "value": "{\"id\": \"pydantic_ai.models.openai:OpenAIChatModel\", \"rationale\": \"Centralizes local LM Studio configuration.\", \"singleton\": false, \"cache_key\": \"model_id\"}"
       },
       {
         "component": "agent_k.infra.providers:create_devstral_model",
-        "line": 97,
+        "line": 138,
         "name": "canonical_home",
         "value": "{\"for\": [\"devstral model creation\"], \"notes\": \"Use create_devstral_model for local Devstral endpoints.\"}"
       },
       {
         "component": "agent_k.infra.providers:create_openrouter_model",
-        "line": 119,
+        "line": 161,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.infra.providers:create_openrouter_model",
-        "line": 122,
+        "line": 164,
         "name": "notice",
         "value": "Creates an OpenAIChatModel configured for OpenRouter."
       },
       {
         "component": "agent_k.infra.providers:create_openrouter_model",
-        "line": 125,
+        "line": 167,
         "name": "factory_for",
         "value": "{\"id\": \"pydantic_ai.models.openai:OpenAIChatModel\", \"rationale\": \"Centralizes OpenRouter provider configuration.\", \"singleton\": false, \"cache_key\": \"model_id\"}"
       },
       {
         "component": "agent_k.infra.providers:create_openrouter_model",
-        "line": 131,
+        "line": 173,
         "name": "canonical_home",
         "value": "{\"for\": [\"openrouter model creation\"], \"notes\": \"Use create_openrouter_model for OpenRouter endpoints.\"}"
       },
       {
         "component": "agent_k.infra.providers:get_model",
-        "line": 147,
+        "line": 189,
         "name": "notice",
         "value": "Resolves model specs into provider-specific model objects when needed."
       },
       {
         "component": "agent_k.infra.providers:get_model",
-        "line": 150,
+        "line": 192,
         "name": "dev",
         "value": "Returns a string for standard pydantic-ai model specs."
       },
       {
         "component": "agent_k.infra.providers:get_model",
-        "line": 153,
+        "line": 195,
         "name": "factory_for",
         "value": "{\"id\": \"pydantic_ai.models:Model\", \"rationale\": \"Centralized model resolution for all agents.\", \"singleton\": false, \"cache_key\": \"model_spec\"}"
       },
       {
         "component": "agent_k.infra.providers:get_model",
-        "line": 159,
+        "line": 201,
         "name": "canonical_home",
         "value": "{\"for\": [\"model resolution\"], \"notes\": \"Use get_model to normalize model specs.\"}"
       },
       {
         "component": "agent_k.infra.providers:is_devstral_model",
-        "line": 191,
+        "line": 233,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.infra.providers:is_devstral_model",
-        "line": 194,
+        "line": 236,
         "name": "notice",
         "value": "Returns true when the model spec targets Devstral."
       }

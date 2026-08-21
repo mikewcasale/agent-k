@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The OpenAI SDK adopts a supplied client's timeout when it differs from\nthe httpx default, so an explicit non-default timeout here prevents a\nhung local or free-tier endpoint from blocking an agent turn forever.\nRead/write/pool share MODEL_READ_TIMEOUT_SECONDS; connect is separate.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.providers:_build_timeout_http_client",
+  "line": 102,
+  "notice": "Builds an httpx.AsyncClient with explicit timeouts for model providers.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/providers.py",
+  "summary": "Create an httpx client with bounded connect/read timeouts for model calls.",
+  "type": "function"
+}

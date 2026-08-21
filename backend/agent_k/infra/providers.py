@@ -41,6 +41,7 @@ from __future__ import annotations as _annotations
 import os
 from typing import TYPE_CHECKING, Annotated, Final
 
+import httpx
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.providers.openrouter import OpenRouterProvider
@@ -57,12 +58,36 @@ __all__ = (
     "is_devstral_model",
     "DEVSTRAL_MODEL_ID",
     "DEVSTRAL_BASE_URL",
+    "MODEL_CONNECT_TIMEOUT_SECONDS",
+    "MODEL_READ_TIMEOUT_SECONDS",
     "OPENROUTER_FREE_MODELS",
     "ModelType",
 )
 
+
+def _positive_float_env(name: str, default: float) -> float:
+    """Read a strictly-positive float from the environment, falling back on bad input.
+
+    @dev: |
+        Guards against empty, non-numeric, or non-positive overrides so a
+        malformed value cannot silently disable request timeouts.
+    """
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    try:
+        value = float(raw)
+    except ValueError:
+        return default
+    return value if value > 0.0 else default
+
+
 DEVSTRAL_MODEL_ID: Final[str] = "mistralai/devstral-small-2-2512"
 DEVSTRAL_BASE_URL: Final[str] = os.getenv("DEVSTRAL_BASE_URL", "http://192.168.105.1:1234/v1")
+MODEL_CONNECT_TIMEOUT_SECONDS: Final[float] = _positive_float_env("AGENT_K_MODEL_CONNECT_TIMEOUT_SECONDS", 10.0)
+# Max seconds to wait for a TCP connection to a model endpoint.
+MODEL_READ_TIMEOUT_SECONDS: Final[float] = _positive_float_env("AGENT_K_MODEL_TIMEOUT_SECONDS", 120.0)
+# Max seconds to wait for response bytes (per streamed chunk for streaming responses).
 OPENROUTER_FREE_MODELS: Final[dict[str, str]] = {
     "devstral": "openrouter:mistralai/devstral-2512:free",
     "kat_coder": "openrouter:kwaipilot/kat-coder-pro:free",
@@ -71,6 +96,22 @@ OPENROUTER_FREE_MODELS: Final[dict[str, str]] = {
 # Free OpenRouter model identifiers for agentic coding tasks.
 
 type ModelType = str
+
+
+def _build_timeout_http_client() -> httpx.AsyncClient:
+    """Create an httpx client with bounded connect/read timeouts for model calls.
+
+    @notice: |
+        Builds an httpx.AsyncClient with explicit timeouts for model providers.
+
+    @dev: |
+        The OpenAI SDK adopts a supplied client's timeout when it differs from
+        the httpx default, so an explicit non-default timeout here prevents a
+        hung local or free-tier endpoint from blocking an agent turn forever.
+        Read/write/pool share MODEL_READ_TIMEOUT_SECONDS; connect is separate.
+    """
+    timeout = httpx.Timeout(MODEL_READ_TIMEOUT_SECONDS, connect=MODEL_CONNECT_TIMEOUT_SECONDS)
+    return httpx.AsyncClient(timeout=timeout)
 
 
 def create_devstral_model(
@@ -106,6 +147,7 @@ def create_devstral_model(
         provider=OpenAIProvider(
             base_url=url,
             api_key="not-required",  # Local LM Studio doesn't require auth
+            http_client=_build_timeout_http_client(),
         ),
     )
 
@@ -133,7 +175,7 @@ def create_openrouter_model(model_id: Annotated[str, Doc("OpenRouter model ident
                 - "openrouter model creation"
             notes: "Use create_openrouter_model for OpenRouter endpoints."
     """
-    return OpenAIChatModel(model_id, provider=OpenRouterProvider())
+    return OpenAIChatModel(model_id, provider=OpenRouterProvider(http_client=_build_timeout_http_client()))
 
 
 def get_model(model_spec: Annotated[str, Doc("Model specification string.")]) -> Model | str:

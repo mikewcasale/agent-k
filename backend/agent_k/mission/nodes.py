@@ -92,6 +92,7 @@ from ..core.tracking import (
     create_experiment_tracker,
     extract_solution_metadata,
 )
+from ..evolution.loss import LossGenome, render_lightgbm_objective_source
 from .state import GraphContext, MissionResult, MissionState
 
 if TYPE_CHECKING:
@@ -99,6 +100,7 @@ if TYPE_CHECKING:
     from pydantic_ai import Agent
 
     from ..core.protocols import PlatformAdapter
+    from ..core.strategy import ProblemProfile
     from ..ui.agui import EventEmitter
 
 __all__ = ("DiscoveryNode", "ResearchNode", "PrototypeNode", "EvolutionNode", "SubmissionNode")
@@ -1099,14 +1101,7 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
             strategy_recommendations = research.strategy_recommendations if research else []
             filtered_recommendations = _filter_disallowed_recommendations(strategy_recommendations)
             strategy_text = "; ".join(filtered_recommendations) if filtered_recommendations else "N/A"
-            lightgbm_guidance = (
-                "LightGBM is available. Prefer it for tree-based models instead of XGBoost. "
-                "For evolutionary searches, always try evolving custom LightGBM loss settings "
-                "(quantile alpha, huber delta, asymmetric weighting, MAE/RMSE blends) via the "
-                "LightGBM custom objective interface."
-                if _LIGHTGBM_AVAILABLE
-                else "LightGBM is unavailable in this runtime; do not import or use it."
-            )
+            lightgbm_guidance = _build_lightgbm_guidance(profile)
             avoid_library_guidance = (
                 "Avoid XGBoost and CatBoost unless explicitly enabled for the mission; "
                 "prefer LightGBM for tree-based boosting."
@@ -2102,6 +2097,29 @@ def _is_rate_limit_error(error: Exception | str | None) -> bool:
         "500",
     )
     return any(trigger in message for trigger in triggers)
+
+
+def _build_lightgbm_guidance(profile: ProblemProfile) -> str:
+    if not _LIGHTGBM_AVAILABLE:
+        return "LightGBM is unavailable in this runtime; do not import or use it."
+    preference = "LightGBM is available. Prefer it for tree-based models instead of XGBoost. "
+    if profile.is_classification:
+        return preference + (
+            "Tune the built-in binary/multiclass objectives together with class_weight, "
+            "is_unbalance, or scale_pos_weight; LightGBM silently ignores invented parameter "
+            "names, so never pass keys outside its documented parameter list."
+        )
+    return preference + (
+        "For evolutionary searches, always evolve the custom loss. Built-in regression objectives "
+        "only accept `alpha` (the huber transition point, or the quantile level); names such as "
+        "huber_delta, asymmetric_weight, or mae_rmse_blend are silently ignored by LightGBM. To "
+        "evolve asymmetric penalties or MAE/RMSE blends, pass a custom objective callable via "
+        "LGBMRegressor(objective=custom_objective) or lgb.train(params=dict(objective=custom_objective)), "
+        "keep exactly two parameters on it, and mutate its constants across generations. A custom "
+        "objective disables boost_from_average, so center the target (fit on y - y.mean() and add the "
+        "mean back to predictions) or pass init_score. Reference implementation to mutate:\n"
+        f"{render_lightgbm_objective_source(LossGenome())}"
+    )
 
 
 def _filter_disallowed_recommendations(recommendations: list[str]) -> list[str]:

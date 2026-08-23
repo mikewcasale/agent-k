@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The returned callable works with both LightGBM entry points: ``lgb.train``\npasses ``(preds, Dataset)`` while the sklearn wrapper passes\n``(y_true, y_pred)``. It must keep exactly two parameters because the sklearn\nwrapper switches call conventions on the callable's arity. Gradients blend\nsquared error with a pseudo-Huber surrogate (``mae_rmse_blend``), switch to a\nsmoothed pinball loss for the ``quantile`` objective, and scale\nover-predictions by ``asymmetric_weight``.\nHessians are strictly positive so LightGBM leaf updates stay finite.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:build_custom_objective",
+  "line": 245,
+  "notice": "Build a LightGBM custom objective implementing the evolved loss.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Build a LightGBM custom objective implementing the evolved loss.",
+  "type": "function"
+}

@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-08-23T01:19:15.986861+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1097,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -5674,51 +5674,93 @@
       },
       {
         "component": "agent_k.evolution.loss:LossGenome",
-        "line": 48,
+        "line": 108,
         "name": "notice",
         "value": "Genome for evolving custom objective functions."
       },
       {
         "component": "agent_k.evolution.loss:LossGenome",
-        "line": 51,
+        "line": 111,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.loss:LossGenome",
-        "line": 54,
+        "line": 114,
         "name": "pattern",
         "value": "{\"name\": \"genome-model\", \"rationale\": \"Dataclass for LightGBM loss function parameters.\"}"
       },
       {
         "component": "agent_k.evolution.loss:LossFunctionEvolver",
-        "line": 70,
+        "line": 130,
         "name": "notice",
         "value": "Evolve LightGBM loss function parameters via genetic search."
       },
       {
         "component": "agent_k.evolution.loss:LossFunctionEvolver",
-        "line": 73,
+        "line": 133,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.loss:LossFunctionEvolver",
-        "line": 76,
+        "line": 136,
         "name": "pattern",
         "value": "{\"name\": \"evolver\", \"rationale\": \"Coordinates evolutionary search over loss function genomes.\"}"
       },
       {
-        "component": "agent_k.evolution.loss:build_lightgbm_objective_params",
-        "line": 141,
+        "component": "agent_k.evolution.loss:_ObjectiveSettings",
+        "line": 202,
         "name": "notice",
-        "value": "Create LightGBM objective params from a LossGenome."
+        "value": "Validated gradient/hessian settings derived from a genome."
+      },
+      {
+        "component": "agent_k.evolution.loss:_ObjectiveSettings",
+        "line": 205,
+        "name": "dev",
+        "value": "See module for implementation details and extension points."
+      },
+      {
+        "component": "agent_k.evolution.loss:_ObjectiveSettings",
+        "line": 208,
+        "name": "pattern",
+        "value": "{\"name\": \"settings-model\", \"rationale\": \"Clamps evolved genome values into a numerically safe range once.\"}"
       },
       {
         "component": "agent_k.evolution.loss:build_lightgbm_objective_params",
-        "line": 144,
+        "line": 225,
+        "name": "notice",
+        "value": "Create built-in LightGBM objective params from a LossGenome."
+      },
+      {
+        "component": "agent_k.evolution.loss:build_lightgbm_objective_params",
+        "line": 228,
         "name": "dev",
-        "value": "See module for behavior details and invariants."
+        "value": "Emits only parameters LightGBM actually recognizes. ``alpha`` is the huber\ntransition point for ``huber`` and the pinball level for ``quantile``.\nAsymmetric weighting and MAE/RMSE blending have no bui"
+      },
+      {
+        "component": "agent_k.evolution.loss:build_custom_objective",
+        "line": 247,
+        "name": "notice",
+        "value": "Build a LightGBM custom objective implementing the evolved loss."
+      },
+      {
+        "component": "agent_k.evolution.loss:build_custom_objective",
+        "line": 250,
+        "name": "dev",
+        "value": "The returned callable works with both LightGBM entry points: ``lgb.train``\npasses ``(preds, Dataset)`` while the sklearn wrapper passes\n``(y_true, y_pred)``. It must keep exactly two parameters becaus"
+      },
+      {
+        "component": "agent_k.evolution.loss:render_lightgbm_objective_source",
+        "line": 273,
+        "name": "notice",
+        "value": "Render the evolved objective as standalone source code."
+      },
+      {
+        "component": "agent_k.evolution.loss:render_lightgbm_objective_source",
+        "line": 276,
+        "name": "dev",
+        "value": "Generated solutions run in an isolated interpreter that cannot import\n``agent_k``, so the objective is emitted as a self-contained ``numpy``-only\nfunction. The rendered code is numerically identical t"
       }
     ],
     "agent_k/infra/__init__.py": [
@@ -6150,181 +6192,181 @@
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 123,
+        "line": 125,
         "name": "notice",
         "value": "Discovery phase node."
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 126,
+        "line": 128,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 129,
+        "line": 131,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates discovery phase logic in the mission graph.\", \"violations\": \"Discovery logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 134,
+        "line": 136,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.lobbyist:LobbyistAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifec"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 144,
+        "line": 146,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 149,
+        "line": 151,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 281,
+        "line": 283,
         "name": "notice",
         "value": "Research phase node."
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 284,
+        "line": 286,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 287,
+        "line": 289,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates research phase logic in the mission graph.\", \"violations\": \"Research logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 292,
+        "line": 294,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.scientist:ScientistAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lif"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 302,
+        "line": 304,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 307,
+        "line": 309,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 427,
+        "line": 429,
         "name": "notice",
         "value": "Prototype phase node."
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 430,
+        "line": 432,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 433,
+        "line": 435,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates prototype phase logic in the mission graph.\", \"violations\": \"Prototype logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 438,
+        "line": 440,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.solution:execute_solution\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 447,
+        "line": 449,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 452,
+        "line": 454,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 908,
+        "line": 910,
         "name": "notice",
         "value": "Evolution phase node."
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 911,
+        "line": 913,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 914,
+        "line": 916,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates evolution phase logic in the mission graph.\", \"violations\": \"Evolution logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 919,
+        "line": 921,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.evolver:EvolverAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated pe"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 928,
+        "line": 930,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 933,
+        "line": 935,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1610,
+        "line": 1605,
         "name": "notice",
         "value": "Submission phase node."
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1613,
+        "line": 1608,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1616,
+        "line": 1611,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates submission phase logic in the mission graph.\", \"violations\": \"Submission logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1621,
+        "line": 1616,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.agents.evolver:EvolverAgent\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated pe"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1630,
+        "line": 1625,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1635,
+        "line": 1630,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       }

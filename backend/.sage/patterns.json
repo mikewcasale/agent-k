@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-08-23T01:19:15.987657+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -380,7 +380,7 @@
       },
       {
         "component": "agent_k.evolution.loss:LossFunctionEvolver",
-        "line": 68,
+        "line": 128,
         "rationale": "Coordinates evolutionary search over loss function genomes.",
         "source": "agent_k/evolution/loss.py",
         "violations": []
@@ -645,7 +645,7 @@
       },
       {
         "component": "agent_k.evolution.loss:LossGenome",
-        "line": 46,
+        "line": 106,
         "rationale": "Dataclass for LightGBM loss function parameters.",
         "source": "agent_k/evolution/loss.py",
         "violations": []
@@ -654,7 +654,7 @@
     "graph-node": [
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 115,
+        "line": 117,
         "rationale": "Encapsulates discovery phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -663,7 +663,7 @@
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 273,
+        "line": 275,
         "rationale": "Encapsulates research phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -672,7 +672,7 @@
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 419,
+        "line": 421,
         "rationale": "Encapsulates prototype phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -681,7 +681,7 @@
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 900,
+        "line": 902,
         "rationale": "Encapsulates evolution phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -690,7 +690,7 @@
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1602,
+        "line": 1597,
         "rationale": "Encapsulates submission phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -1290,6 +1290,13 @@
         "violations": [
           "Scattered env lookups drift across modules."
         ]
+      },
+      {
+        "component": "agent_k.evolution.loss:_ObjectiveSettings",
+        "line": 200,
+        "rationale": "Clamps evolved genome values into a numerically safe range once.",
+        "source": "agent_k/evolution/loss.py",
+        "violations": []
       },
       {
         "component": "agent_k.infra.config:Settings",

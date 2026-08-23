@@ -1,0 +1,20 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:_ObjectiveSettings",
+  "line": 200,
+  "notice": "Validated gradient/hessian settings derived from a genome.",
+  "pattern": {
+    "name": "settings-model",
+    "rationale": "Clamps evolved genome values into a numerically safe range once."
+  },
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Validated gradient/hessian settings derived from a genome.",
+  "type": "class"
+}

@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.evolution.loss:LossGenome",
-  "line": 46,
+  "line": 106,
   "notice": "Genome for evolving custom objective functions.",
   "pattern": {
     "name": "genome-model",

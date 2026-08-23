@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.mission.nodes:SubmissionNode",
-  "line": 1602,
+  "line": 1597,
   "notice": "Submission phase node.",
   "pattern": {
     "name": "graph-node",

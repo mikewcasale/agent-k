@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Generated solutions run in an isolated interpreter that cannot import\n``agent_k``, so the objective is emitted as a self-contained ``numpy``-only\nfunction. The rendered code is numerically identical to\n:func:`build_custom_objective` for the same genome.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:render_lightgbm_objective_source",
+  "line": 271,
+  "notice": "Render the evolved objective as standalone source code.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Render the evolved objective as standalone source code.",
+  "type": "function"
+}

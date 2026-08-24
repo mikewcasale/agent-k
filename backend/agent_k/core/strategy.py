@@ -60,6 +60,9 @@ _CLASSIFICATION_METRICS: Final[frozenset[EvaluationMetric]] = frozenset(
 )
 _VISION_TAGS: Final[frozenset[str]] = frozenset({"vision", "computer vision", "image", "images"})
 _TEXT_TAGS: Final[frozenset[str]] = frozenset({"nlp", "text", "language"})
+_TIME_SERIES_TAGS: Final[frozenset[str]] = frozenset(
+    {"time series", "time_series", "timeseries", "forecasting", "forecast", "temporal"}
+)
 
 type FitnessFunction = Callable[["FitnessInput"], float]
 
@@ -81,11 +84,34 @@ class ProblemType(StrEnum):
 
     TABULAR_REGRESSION = "tabular_regression"
     TABULAR_CLASSIFICATION = "tabular_classification"
+    TIME_SERIES_REGRESSION = "time_series_regression"
+    TIME_SERIES_CLASSIFICATION = "time_series_classification"
     VISION_REGRESSION = "vision_regression"
     VISION_CLASSIFICATION = "vision_classification"
     TEXT_REGRESSION = "text_regression"
     TEXT_CLASSIFICATION = "text_classification"
     UNKNOWN = "unknown"
+
+
+_STRUCTURED_TYPES: Final[frozenset[ProblemType]] = frozenset(
+    {
+        ProblemType.TABULAR_REGRESSION,
+        ProblemType.TABULAR_CLASSIFICATION,
+        ProblemType.TIME_SERIES_REGRESSION,
+        ProblemType.TIME_SERIES_CLASSIFICATION,
+    }
+)
+"""Problem types backed by row/column data where tabular preprocessing policies apply."""
+
+_STRUCTURED_REGRESSION_TYPES: Final[frozenset[ProblemType]] = frozenset(
+    {ProblemType.TABULAR_REGRESSION, ProblemType.TIME_SERIES_REGRESSION}
+)
+"""Structured problem types whose numeric targets are eligible for target transforms."""
+
+_TEMPORAL_TYPES: Final[frozenset[ProblemType]] = frozenset(
+    {ProblemType.TIME_SERIES_REGRESSION, ProblemType.TIME_SERIES_CLASSIFICATION}
+)
+"""Problem types that require chronological validation instead of shuffled splits."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,6 +138,12 @@ class ProblemProfile:
     id_column: str
     uses_proba: bool
     is_classification: bool
+    time_column: str | None = None
+
+    @property
+    def is_temporal(self) -> bool:
+        """Whether the problem must be validated in chronological order."""
+        return self.problem_type in _TEMPORAL_TYPES or self.time_column is not None
 
 
 @dataclass(frozen=True, slots=True)
@@ -195,18 +227,25 @@ def build_problem_profile(competition: Competition, schema: CompetitionSchema) -
         Creates a ProblemProfile from competition metadata and data schema.
 
     @dev: |
-        Infers problem type (tabular/vision/text, classification/regression)
-        from competition tags and evaluation metric.
+        Infers problem type (tabular/time-series/vision/text, classification/regression)
+        from competition tags, the inferred schema, and the evaluation metric.
+        A temporal problem is recognized either from competition tags or from a
+        temporal ordering column detected in the data schema.
     """
     metric = competition.metric
     is_classification = metric in _CLASSIFICATION_METRICS
     uses_proba = metric in {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
 
     tags = {tag.lower() for tag in competition.tags}
+    is_temporal = bool(tags & _TIME_SERIES_TAGS) or schema.time_column is not None
     if tags & _VISION_TAGS:
         problem_type = ProblemType.VISION_CLASSIFICATION if is_classification else ProblemType.VISION_REGRESSION
     elif tags & _TEXT_TAGS:
         problem_type = ProblemType.TEXT_CLASSIFICATION if is_classification else ProblemType.TEXT_REGRESSION
+    elif is_temporal:
+        problem_type = (
+            ProblemType.TIME_SERIES_CLASSIFICATION if is_classification else ProblemType.TIME_SERIES_REGRESSION
+        )
     else:
         problem_type = ProblemType.TABULAR_CLASSIFICATION if is_classification else ProblemType.TABULAR_REGRESSION
 
@@ -219,6 +258,7 @@ def build_problem_profile(competition: Competition, schema: CompetitionSchema) -
         id_column=schema.id_column,
         uses_proba=uses_proba,
         is_classification=is_classification,
+        time_column=schema.time_column,
     )
 
 
@@ -232,7 +272,7 @@ def build_technique_policy(profile: ProblemProfile, criteria: MissionCriteria | 
         Adjusts population size and generation limits based on criteria.
         Target transforms and outlier clipping are disabled (handled by evolver).
     """
-    enable_target_transform = profile.problem_type == ProblemType.TABULAR_REGRESSION
+    enable_target_transform = profile.problem_type in _STRUCTURED_REGRESSION_TYPES
     min_generations = 5
     min_population_size = 6
     min_elite_archive_size = 3
@@ -246,8 +286,7 @@ def build_technique_policy(profile: ProblemProfile, criteria: MissionCriteria | 
 
     return TechniquePolicy(
         problem_type=profile.problem_type,
-        enable_outlier_clipping=profile.problem_type
-        in {ProblemType.TABULAR_REGRESSION, ProblemType.TABULAR_CLASSIFICATION},
+        enable_outlier_clipping=profile.problem_type in _STRUCTURED_TYPES,
         enable_target_transform=enable_target_transform,
         min_generations=min_generations,
         min_population_size=min_population_size,
@@ -277,7 +316,7 @@ def build_fitness_policy(
         penalty_weight = min(0.2, 0.05 + criteria.min_improvements_required * 0.02)
 
     if complexity_threshold is None:
-        if profile.problem_type in {ProblemType.TABULAR_CLASSIFICATION, ProblemType.TABULAR_REGRESSION}:
+        if profile.problem_type in _STRUCTURED_TYPES:
             complexity_threshold = 800
         else:
             complexity_threshold = 600

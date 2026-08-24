@@ -18,10 +18,11 @@ from agent_k.core.strategy import (
     build_fitness_function,
     build_fitness_policy,
     build_problem_profile,
+    build_technique_policy,
 )
 
 
-def _competition(metric: EvaluationMetric) -> Competition:
+def _competition(metric: EvaluationMetric, tags: frozenset[str] = frozenset({"tabular"})) -> Competition:
     return Competition(
         id="sample-competition",
         title="Sample Competition",
@@ -33,7 +34,7 @@ def _competition(metric: EvaluationMetric) -> Competition:
         prize_pool=None,
         max_team_size=1,
         max_daily_submissions=5,
-        tags=frozenset({"tabular"}),
+        tags=tags,
         url=None,
     )
 
@@ -56,6 +57,55 @@ def test_build_problem_profile_classification() -> None:
     )
     assert profile.problem_type == ProblemType.TABULAR_CLASSIFICATION
     assert profile.is_classification is True
+
+
+def test_build_problem_profile_time_series_from_schema() -> None:
+    """A detected temporal column promotes a tabular competition to time series."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.RMSE),
+        CompetitionSchema(
+            id_column="id", target_columns=["sales"], train_target_columns=["sales"], time_column="sale_date"
+        ),
+    )
+    assert profile.problem_type == ProblemType.TIME_SERIES_REGRESSION
+    assert profile.time_column == "sale_date"
+    assert profile.is_temporal is True
+
+
+def test_build_problem_profile_time_series_from_tags() -> None:
+    """Temporal competition tags promote the profile even without a detected column."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.AUC, tags=frozenset({"time series"})),
+        CompetitionSchema(id_column="id", target_columns=["target"], train_target_columns=["target"]),
+    )
+    assert profile.problem_type == ProblemType.TIME_SERIES_CLASSIFICATION
+    assert profile.is_temporal is True
+
+
+def test_build_problem_profile_tabular_is_not_temporal() -> None:
+    """Plain tabular competitions keep the tabular profile and stay non-temporal."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.RMSE),
+        CompetitionSchema(id_column="id", target_columns=["target"], train_target_columns=["target"]),
+    )
+    assert profile.problem_type == ProblemType.TABULAR_REGRESSION
+    assert profile.is_temporal is False
+
+
+def test_time_series_policies_match_structured_defaults() -> None:
+    """Time-series problems reuse the structured (tabular) policy thresholds."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.RMSE),
+        CompetitionSchema(
+            id_column="id", target_columns=["sales"], train_target_columns=["sales"], time_column="sale_date"
+        ),
+    )
+    technique_policy = build_technique_policy(profile)
+    fitness_policy = build_fitness_policy(profile, None, max_runtime_ms=1000)
+
+    assert technique_policy.enable_outlier_clipping is True
+    assert technique_policy.enable_target_transform is True
+    assert fitness_policy.complexity_threshold == 800
 
 
 def test_fitness_factory_penalizes_runtime_and_complexity() -> None:

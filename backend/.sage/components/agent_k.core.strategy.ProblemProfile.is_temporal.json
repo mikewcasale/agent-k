@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.mission.nodes:PrototypeNode._generate_prototype",
-  "line": 619,
+  "id": "agent_k.core.strategy:ProblemProfile.is_temporal",
+  "line": 145,
   "notice": null,
   "pattern": null,
   "similar": null,
-  "source": "agent_k/mission/nodes.py",
-  "summary": "Generate prototype solution code.",
+  "source": "agent_k/core/strategy.py",
+  "summary": "Whether the problem must be validated in chronological order.",
   "type": "method"
 }

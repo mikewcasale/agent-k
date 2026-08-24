@@ -504,6 +504,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         target_columns=schema.target_columns,
                         train_target_columns=schema.train_target_columns,
                         id_column=schema.id_column,
+                        time_column=profile.time_column,
                     )
                     prototype_code, notes = apply_solution_policy(prototype_code, technique_policy)
                     if notes:
@@ -613,6 +614,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         target_columns: list[str],
         train_target_columns: list[str],
         id_column: str,
+        time_column: str | None = None,
     ) -> str:
         """Generate prototype solution code."""
         metric = getattr(competition, "metric", None)
@@ -620,6 +622,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         metric_value = metric_key.value
         target_columns_repr = repr(target_columns)
         train_target_columns_repr = repr(train_target_columns)
+        time_column_repr = repr(time_column)
         strategy_items: list[str] = []
         for attr in ("strategy_recommendations", "recommended_approaches"):
             value = getattr(research, attr, None)
@@ -703,6 +706,8 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         TARGET_COLUMNS = {target_columns_repr}
         TRAIN_TARGET_COLUMNS = {train_target_columns_repr}
         ID_COLUMN = "{id_column}"
+        TIME_COLUMN = {time_column_repr}
+        TIME_ORDINAL_COLUMN = "agent_k_time_ordinal"
         METRIC = "{metric_value}"
         METRIC_KEY = METRIC.lower().replace("_", "")
         VALIDATION_SPLIT = float(os.getenv("AGENT_K_VALIDATION_SPLIT", "0.2"))
@@ -717,7 +722,40 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         if len(TRAIN_TARGET_COLUMNS) == 1:
             y = train_df[TRAIN_TARGET_COLUMNS[0]]
         X = train_df.drop(columns=TRAIN_TARGET_COLUMNS)
-        
+
+        def _temporal_values(series):
+            if pd.api.types.is_numeric_dtype(series):
+                return pd.to_numeric(series, errors="coerce")
+            parsed = pd.to_datetime(series, errors="coerce")
+            if parsed.notna().mean() >= 0.8:
+                return parsed
+            numeric = pd.to_numeric(series, errors="coerce")
+            if numeric.notna().mean() >= 0.8:
+                return numeric
+            return None
+
+        def _expand_temporal(frame, values):
+            if pd.api.types.is_datetime64_any_dtype(values):
+                if getattr(values.dt, "tz", None) is not None:
+                    values = values.dt.tz_convert("UTC").dt.tz_localize(None)
+                frame[TIME_ORDINAL_COLUMN] = (values - pd.Timestamp("1970-01-01")).dt.total_seconds()
+                frame["agent_k_time_year"] = values.dt.year.astype("float64")
+                frame["agent_k_time_month"] = values.dt.month.astype("float64")
+                frame["agent_k_time_day"] = values.dt.day.astype("float64")
+                frame["agent_k_time_dayofweek"] = values.dt.dayofweek.astype("float64")
+            else:
+                frame[TIME_ORDINAL_COLUMN] = values.astype("float64")
+            frame.drop(columns=[TIME_COLUMN], inplace=True)
+
+        HAS_TIME_ORDER = False
+        if TIME_COLUMN and TIME_COLUMN in X.columns and TIME_COLUMN in test_df.columns:
+            train_time = _temporal_values(X[TIME_COLUMN])
+            test_time = _temporal_values(test_df[TIME_COLUMN])
+            if train_time is not None and test_time is not None:
+                _expand_temporal(X, train_time)
+                _expand_temporal(test_df, test_time)
+                HAS_TIME_ORDER = True
+
         categorical_cols = X.select_dtypes(include=["object", "category"]).columns
         numeric_cols = X.select_dtypes(exclude=["object", "category"]).columns
         
@@ -744,14 +782,32 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 else MultiOutputRegressor(base_model)
             )
         
-        X_train, X_val, y_train, y_val = train_test_split(
-            X,
-            y,
-            test_size=VALIDATION_SPLIT,
-            random_state=42,
-            stratify=y if IS_CLASSIFICATION and len(TRAIN_TARGET_COLUMNS) == 1 else None,
-        )
-        
+        def _chronological_split(features, targets):
+            order_values = features[TIME_ORDINAL_COLUMN]
+            order_values = order_values.fillna(order_values.max())
+            positions = np.argsort(order_values.to_numpy(), kind="stable")
+            split_at = int(len(features) * (1.0 - VALIDATION_SPLIT))
+            split_at = max(1, min(len(features) - 1, split_at))
+            train_pos = positions[:split_at]
+            val_pos = positions[split_at:]
+            return (
+                features.iloc[train_pos],
+                features.iloc[val_pos],
+                targets.iloc[train_pos],
+                targets.iloc[val_pos],
+            )
+
+        if HAS_TIME_ORDER and len(X) > 2:
+            X_train, X_val, y_train, y_val = _chronological_split(X, y)
+        else:
+            X_train, X_val, y_train, y_val = train_test_split(
+                X,
+                y,
+                test_size=VALIDATION_SPLIT,
+                random_state=42,
+                stratify=y if IS_CLASSIFICATION and len(TRAIN_TARGET_COLUMNS) == 1 else None,
+            )
+
         clf = Pipeline(steps=[
             ("preprocessor", preprocessor),
             ("model", base_model),
@@ -1134,6 +1190,14 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 )
             if technique_policy.enable_outlier_clipping:
                 base_prompt += "\nConsider clipping extreme numeric outliers via quantiles."
+            if profile.is_temporal:
+                order_hint = f" ordered by column '{profile.time_column}'" if profile.time_column else ""
+                base_prompt += (
+                    f"\nThis dataset is temporal{order_hint}. Validate chronologically with TimeSeriesSplit or a "
+                    "trailing time-ordered holdout; never use shuffled KFold, train_test_split without ordering, or "
+                    "stratified random splits. Engineer lag, rolling-window, and calendar features computed only "
+                    "from rows strictly earlier than the row being predicted."
+                )
 
             baseline_fitness = _fitness_from_score(state.prototype_score, competition.metric_direction)
             best_solution = state.prototype_code or ""

@@ -57,6 +57,94 @@ def test_infer_competition_schema_multiclass(tmp_path: Path) -> None:
     assert schema.train_target_columns == ["target"]
 
 
+def test_infer_competition_schema_detects_date_column(tmp_path: Path) -> None:
+    train_path = tmp_path / "train.csv"
+    test_path = tmp_path / "test.csv"
+    sample_path = tmp_path / "sample_submission.csv"
+
+    _write_csv(
+        train_path,
+        ["id", "sale_date", "store", "sales"],
+        [["1", "2024-01-01", "a", "10"], ["2", "2024-01-02", "b", "12"], ["3", "2024-01-03", "a", "11"]],
+    )
+    _write_csv(test_path, ["id", "sale_date", "store"], [["4", "2024-01-04", "a"]])
+    _write_csv(sample_path, ["id", "sales"], [["4", "0"]])
+
+    schema = infer_competition_schema(train_path, test_path, sample_path)
+
+    assert schema.time_column == "sale_date"
+
+
+def test_infer_competition_schema_prefers_most_specific_temporal_column(tmp_path: Path) -> None:
+    train_path = tmp_path / "train.csv"
+    test_path = tmp_path / "test.csv"
+    sample_path = tmp_path / "sample_submission.csv"
+
+    _write_csv(
+        train_path,
+        ["id", "week", "timestamp", "target"],
+        [["1", "1", "2024-01-01", "10"], ["2", "2", "2024-01-08", "12"], ["3", "3", "2024-01-15", "11"]],
+    )
+    _write_csv(test_path, ["id", "week", "timestamp"], [["4", "4", "2024-01-22"]])
+    _write_csv(sample_path, ["id", "target"], [["4", "0"]])
+
+    schema = infer_competition_schema(train_path, test_path, sample_path)
+
+    assert schema.time_column == "timestamp"
+
+
+def test_infer_competition_schema_ignores_non_monotonic_duration_column(tmp_path: Path) -> None:
+    """A duration feature named like a time column must not be used for ordering."""
+    train_path = tmp_path / "train.csv"
+    test_path = tmp_path / "test.csv"
+    sample_path = tmp_path / "sample_submission.csv"
+
+    _write_csv(
+        train_path, ["id", "response_time", "target"], [["1", "3.4", "10"], ["2", "0.8", "12"], ["3", "9.1", "11"]]
+    )
+    _write_csv(test_path, ["id", "response_time"], [["4", "2.2"]])
+    _write_csv(sample_path, ["id", "target"], [["4", "0"]])
+
+    schema = infer_competition_schema(train_path, test_path, sample_path)
+
+    assert schema.time_column is None
+
+
+def test_infer_competition_schema_ignores_train_only_temporal_column(tmp_path: Path) -> None:
+    """A temporal column missing from test cannot be used at inference time."""
+    train_path = tmp_path / "train.csv"
+    test_path = tmp_path / "test.csv"
+    sample_path = tmp_path / "sample_submission.csv"
+
+    _write_csv(
+        train_path,
+        ["id", "event_date", "feature", "target"],
+        [["1", "2024-01-01", "0.1", "10"], ["2", "2024-01-02", "0.2", "12"], ["3", "2024-01-03", "0.3", "11"]],
+    )
+    _write_csv(test_path, ["id", "feature"], [["4", "0.4"]])
+    _write_csv(sample_path, ["id", "target"], [["4", "0"]])
+
+    schema = infer_competition_schema(train_path, test_path, sample_path)
+
+    assert schema.time_column is None
+
+
+def test_infer_competition_schema_accepts_monotonic_numeric_period(tmp_path: Path) -> None:
+    train_path = tmp_path / "train.csv"
+    test_path = tmp_path / "test.csv"
+    sample_path = tmp_path / "sample_submission.csv"
+
+    _write_csv(
+        train_path, ["id", "period", "target"], [["1", "1", "10"], ["2", "2", "12"], ["3", "3", "11"], ["4", "4", "13"]]
+    )
+    _write_csv(test_path, ["id", "period"], [["5", "5"]])
+    _write_csv(sample_path, ["id", "target"], [["5", "0"]])
+
+    schema = infer_competition_schema(train_path, test_path, sample_path)
+
+    assert schema.time_column == "period"
+
+
 def test_locate_data_files_from_zip(tmp_path: Path) -> None:
     zip_path = tmp_path / "data.zip"
     train_path = tmp_path / "train.csv"

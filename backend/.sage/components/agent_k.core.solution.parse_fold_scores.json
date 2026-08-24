@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Uses the shared numeric grammar so scientific notation, negatives, and\nsigned values are captured. Non-finite values are dropped rather than\npropagated into aggregate statistics.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.solution:parse_fold_scores",
+  "line": 175,
+  "notice": "Collects numeric scores printed after ``Fold N:`` (or ``Fold N ``,\n``Fold N =``) markers so downstream evaluators can compute stability\nstatistics from stdout.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/solution.py",
+  "summary": "Extract per-fold CV scores from solution output.",
+  "type": "function"
+}

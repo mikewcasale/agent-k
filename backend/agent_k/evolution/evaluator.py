@@ -282,10 +282,9 @@ def _compute_cv_variance(stdout: str) -> float:
     Returns:
         Variance of CV fold scores, or 0.0 if not found.
     """
-    # Look for patterns like "Fold 1: 0.85", "Fold 2: 0.83", etc.
-    fold_pattern = re.compile(r"Fold\s+\d+[:\s]+([0-9.]+)")
-    fold_scores = [float(match) for match in fold_pattern.findall(stdout)]
+    from agent_k.core.solution import parse_fold_scores
 
+    fold_scores = parse_fold_scores(stdout)
     if len(fold_scores) < 2:
         # Not enough fold scores to compute variance
         return 0.0

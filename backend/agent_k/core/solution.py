@@ -31,6 +31,7 @@ from __future__ import annotations as _annotations
 
 import asyncio
 import base64
+import math
 import os
 import re
 import signal
@@ -49,9 +50,25 @@ from agent_k.infra.providers import get_model
 if TYPE_CHECKING:
     from pathlib import Path
 
-__all__ = ("BASELINE_SCORE_PATTERN", "ExecutionResult", "execute_solution", "parse_baseline_score")
+__all__ = (
+    "BASELINE_SCORE_PATTERN",
+    "FOLD_SCORE_PATTERN",
+    "NUMBER_PATTERN_STR",
+    "ExecutionResult",
+    "execute_solution",
+    "parse_baseline_score",
+    "parse_fold_scores",
+)
 
-BASELINE_SCORE_PATTERN: Final[re.Pattern[str]] = re.compile(r"Baseline .*? score:\s*(-?[0-9.]+)", re.IGNORECASE)
+# Numeric grammar shared by all solution-output parsers. Covers optional sign,
+# decimal, scientific notation, and IEEE ``nan``/``inf`` literals so that scores
+# produced by common float formatters (``str(1e-5) == '1e-05'``) are captured
+# faithfully instead of being silently truncated.
+NUMBER_PATTERN_STR: Final[str] = r"[+-]?(?:\d+\.\d*|\.\d+|\d+)(?:[eE][+-]?\d+)?|[+-]?(?:inf(?:inity)?|nan)"
+BASELINE_SCORE_PATTERN: Final[re.Pattern[str]] = re.compile(
+    rf"Baseline(?:\s+\S+)?\s+score\s*[:=]\s*({NUMBER_PATTERN_STR})", re.IGNORECASE
+)
+FOLD_SCORE_PATTERN: Final[re.Pattern[str]] = re.compile(rf"Fold\s+\d+[:=\s]+({NUMBER_PATTERN_STR})", re.IGNORECASE)
 _CODE_EXECUTION_SYSTEM_PROMPT: Final[str] = (
     "You are a code execution runner. Always call the code_execution tool with the exact "
     "Python code provided by the user message, without modification. After the tool "
@@ -137,14 +154,45 @@ def parse_baseline_score(output: str) -> float | None:
         Extracts numeric score from "Baseline ... score: X.XX" pattern.
 
     @dev: |
-        Returns None if pattern not found or value cannot be parsed.
+        Accepts an optional single-token metric label, decimals, signed values,
+        scientific notation (``1.2e-05``), and rejects non-finite values
+        (``nan``/``inf``) since those are meaningless fitness signals. Returns
+        ``None`` when the pattern is absent or the captured value cannot be
+        coerced to a finite float.
     """
     if match := BASELINE_SCORE_PATTERN.search(output):
         try:
-            return float(match.group(1))
+            value = float(match.group(1))
         except ValueError:
-            pass
+            return None
+        if not math.isfinite(value):
+            return None
+        return value
     return None
+
+
+def parse_fold_scores(output: str) -> list[float]:
+    """Extract per-fold CV scores from solution output.
+
+    @notice: |
+        Collects numeric scores printed after ``Fold N:`` (or ``Fold N ``,
+        ``Fold N =``) markers so downstream evaluators can compute stability
+        statistics from stdout.
+
+    @dev: |
+        Uses the shared numeric grammar so scientific notation, negatives, and
+        signed values are captured. Non-finite values are dropped rather than
+        propagated into aggregate statistics.
+    """
+    scores: list[float] = []
+    for match in FOLD_SCORE_PATTERN.finditer(output):
+        try:
+            value = float(match.group(1))
+        except ValueError:
+            continue
+        if math.isfinite(value):
+            scores.append(value)
+    return scores
 
 
 def _normalize_kaggle_paths(code: str) -> str:

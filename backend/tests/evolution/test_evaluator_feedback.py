@@ -6,9 +6,39 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
-from agent_k.evolution.evaluator import _extract_error_feedback
+import pytest
+
+from agent_k.evolution.evaluator import _compute_cv_variance, _extract_error_feedback
 
 __all__ = ()
+
+
+def test_compute_cv_variance_returns_zero_for_insufficient_folds() -> None:
+    """Fewer than two fold scores cannot yield a variance signal."""
+    assert _compute_cv_variance("Fold 1: 0.85") == 0.0
+    assert _compute_cv_variance("") == 0.0
+
+
+def test_compute_cv_variance_matches_manual_calculation() -> None:
+    """Variance should match the population variance of parsed fold scores."""
+    stdout = "Fold 1: 0.80\nFold 2: 0.90\nFold 3: 0.85"
+    mean = (0.80 + 0.90 + 0.85) / 3
+    expected = sum((s - mean) ** 2 for s in (0.80, 0.90, 0.85)) / 3
+
+    assert _compute_cv_variance(stdout) == pytest.approx(expected)
+
+
+def test_compute_cv_variance_handles_scientific_and_negative_scores() -> None:
+    """Sci-notation and negative fold scores must contribute to variance."""
+    stdout = "Fold 1: 1.0e-3\nFold 2: 2.0e-3\nFold 3: 3.0e-3"
+    variance = _compute_cv_variance(stdout)
+
+    # Should be strictly positive; the old regex would drop these entirely and
+    # return 0.0, hiding stability differences between candidates.
+    assert variance > 0.0
+
+    negatives_stdout = "Fold 1: -0.5\nFold 2: -0.6"
+    assert _compute_cv_variance(negatives_stdout) > 0.0
 
 
 def test_extract_error_feedback_import_error() -> None:

@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.evolution.evaluator:evaluate_stage2",
-  "line": 488,
+  "line": 487,
   "notice": "Stage 2: Medium evaluation on subset of data.",
   "pattern": null,
   "similar": null,

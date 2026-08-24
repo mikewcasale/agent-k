@@ -10,7 +10,13 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from agent_k.core.solution import _is_sensitive_env_key, _sanitize_env, execute_solution, parse_baseline_score
+from agent_k.core.solution import (
+    _is_sensitive_env_key,
+    _sanitize_env,
+    execute_solution,
+    parse_baseline_score,
+    parse_fold_scores,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -33,6 +39,23 @@ class TestParseBaselineScore:
             ("some text\nBaseline logLoss score: 1.2345\n", 1.2345),
             ("no score here", None),
             ("Baseline score: not-a-number", None),
+            # Scientific notation: previously silently truncated (e.g. ``1.2345``
+            # instead of ``1.2345e-05``), destroying fitness signal for metrics
+            # like RMSLE on normalized targets.
+            ("Baseline RMSLE score: 1.2345e-05", 1.2345e-05),
+            ("Baseline MAE score: -3.2e2", -320.0),
+            ("Baseline logLoss score: 4.5E+2", 450.0),
+            # Missing metric label: previously failed to match.
+            ("Baseline score: 0.834", 0.834),
+            # Alternate separators / signs.
+            ("Baseline score = 0.42", 0.42),
+            ("Baseline MAE score: +1.5", 1.5),
+            (".Baseline MAE score:.5", 0.5),
+            # Non-finite values must be rejected so evolution cannot rank
+            # crashed runs above real solutions.
+            ("Baseline MAE score: nan", None),
+            ("Baseline MAE score: inf", None),
+            ("Baseline MAE score: -inf", None),
         ],
     )
     def test_parse_baseline_score(self, output: str, expected: float | None) -> None:
@@ -42,6 +65,36 @@ class TestParseBaselineScore:
             assert result is None
         else:
             assert result == pytest.approx(expected)
+
+
+class TestParseFoldScores:
+    """Tests for per-fold CV score parsing used by evolution stability metrics."""
+
+    @pytest.mark.parametrize(
+        ("output", "expected"),
+        [
+            ("Fold 1: 0.85\nFold 2: 0.83\nFold 3: 0.87", [0.85, 0.83, 0.87]),
+            # Sci-notation and negatives (log-losses returned as negatives by
+            # sklearn cross_val_score with ``neg_log_loss``).
+            ("Fold 1: -1.2e-3\nFold 2: -1.4e-3", [-1.2e-3, -1.4e-3]),
+            # Colon-only separator without whitespace.
+            ("Fold 1:0.85\nFold 2:0.83", [0.85, 0.83]),
+            # Whitespace-only separator.
+            ("Fold 1 0.85\nFold 2 0.83", [0.85, 0.83]),
+            # Equals separator.
+            ("Fold 1 = 0.9\nFold 2 = 0.91", [0.9, 0.91]),
+            # ``Fold 10.85`` (no separator) must not be misparsed as
+            # ``Fold 1 -> 0.85``.
+            ("Fold 10.85", []),
+            # nan/inf must be dropped, not propagated into variance.
+            ("Fold 1: 0.85\nFold 2: nan\nFold 3: 0.87", [0.85, 0.87]),
+            # No matches.
+            ("no folds here", []),
+        ],
+    )
+    def test_parse_fold_scores(self, output: str, expected: list[float]) -> None:
+        """Fold score parsing should tolerate common formats and reject junk."""
+        assert parse_fold_scores(output) == pytest.approx(expected)
 
 
 class TestEnvSanitization:

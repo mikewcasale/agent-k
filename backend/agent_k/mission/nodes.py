@@ -108,6 +108,7 @@ _BASE_DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = ("xgboost", "catboost")
 _DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = (
     _BASE_DISALLOWED_LIBRARIES if _LIGHTGBM_AVAILABLE else (*_BASE_DISALLOWED_LIBRARIES, "lightgbm")
 )
+_PROTOTYPE_TEMPLATE_INDENT: Final[str] = " " * 8
 
 
 @dataclass
@@ -642,29 +643,35 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
             model_class = "LGBMClassifier" if is_classification else "LGBMRegressor"
             fallback_class = "GradientBoostingClassifier" if is_classification else "GradientBoostingRegressor"
             model_import = "from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor"
-            model_bootstrap = dedent(
-                """
-                HAS_LGB = False
-                try:
-                    from lightgbm import LGBMClassifier, LGBMRegressor
-                    HAS_LGB = True
-                except Exception:
+            model_bootstrap = _align_prototype_block(
+                dedent(
+                    """
                     HAS_LGB = False
-                """
-            ).strip()
-            model_init = dedent(
-                f"""
-                if HAS_LGB:
-                    base_model = {model_class}(random_state=42)
-                else:
-                    base_model = {fallback_class}(random_state=42)
-                """
-            ).strip()
+                    try:
+                        from lightgbm import LGBMClassifier, LGBMRegressor
+                        HAS_LGB = True
+                    except Exception:
+                        HAS_LGB = False
+                    """
+                ).strip()
+            )
+            model_init = _align_prototype_block(
+                dedent(
+                    f"""
+                    if HAS_LGB:
+                        base_model = {model_class}(random_state=42)
+                    else:
+                        base_model = {fallback_class}(random_state=42)
+                    """
+                ).strip()
+            )
         elif "linear" in strategy_lower:
             model_class = "LogisticRegression" if is_classification else "LinearRegression"
             model_import = "from sklearn.linear_model import LogisticRegression, LinearRegression"
             model_bootstrap = ""
-            model_init = f"base_model = {model_class}(random_state=42)"
+            # LinearRegression has a closed-form fit and rejects random_state.
+            model_args = "max_iter=1000, random_state=42" if is_classification else ""
+            model_init = f"base_model = {model_class}({model_args})"
         elif "gradient" in strategy_lower or "boost" in strategy_lower:
             model_class = "GradientBoostingClassifier" if is_classification else "GradientBoostingRegressor"
             model_import = "from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor"
@@ -716,8 +723,25 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         y = train_df[TRAIN_TARGET_COLUMNS]
         if len(TRAIN_TARGET_COLUMNS) == 1:
             y = train_df[TRAIN_TARGET_COLUMNS[0]]
-        X = train_df.drop(columns=TRAIN_TARGET_COLUMNS)
-        
+
+        # The submission id identifies a row, it does not describe one: keeping it turns a
+        # string id into one one-hot column per training row. Columns absent from test.csv
+        # cannot be used at prediction time either.
+        excluded = set(TRAIN_TARGET_COLUMNS)
+        if ID_COLUMN:
+            excluded.add(ID_COLUMN)
+        FEATURE_COLUMNS = [
+            column for column in train_df.columns if column not in excluded and column in test_df.columns
+        ]
+        if not FEATURE_COLUMNS:
+            FEATURE_COLUMNS = [
+                column
+                for column in train_df.columns
+                if column not in TRAIN_TARGET_COLUMNS and column in test_df.columns
+            ]
+        X = train_df[FEATURE_COLUMNS]
+        X_test = test_df[FEATURE_COLUMNS]
+
         categorical_cols = X.select_dtypes(include=["object", "category"]).columns
         numeric_cols = X.select_dtypes(exclude=["object", "category"]).columns
         
@@ -744,12 +768,19 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 else MultiOutputRegressor(base_model)
             )
         
+        stratify_labels = None
+        if IS_CLASSIFICATION and len(TRAIN_TARGET_COLUMNS) == 1:
+            label_counts = y.value_counts()
+            # Stratifying on a class with a single member raises in train_test_split.
+            if not label_counts.empty and label_counts.min() >= 2:
+                stratify_labels = y
+
         X_train, X_val, y_train, y_val = train_test_split(
             X,
             y,
             test_size=VALIDATION_SPLIT,
             random_state=42,
-            stratify=y if IS_CLASSIFICATION and len(TRAIN_TARGET_COLUMNS) == 1 else None,
+            stratify=stratify_labels,
         )
         
         clf = Pipeline(steps=[
@@ -847,7 +878,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         submission = pd.read_csv("sample_submission.csv")
         if IS_CLASSIFICATION and USES_PROBA:
             if len(TRAIN_TARGET_COLUMNS) == 1 and len(TARGET_COLUMNS) > 1:
-                test_probas = clf.predict_proba(test_df)
+                test_probas = clf.predict_proba(X_test)
                 class_labels = [str(label) for label in model_step.classes_]
                 proba_df = pd.DataFrame(test_probas, columns=class_labels)
 
@@ -865,10 +896,10 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     else:
                         submission[column] = 0.0
             elif len(TRAIN_TARGET_COLUMNS) == 1:
-                test_probas = clf.predict_proba(test_df)
+                test_probas = clf.predict_proba(X_test)
                 submission[TARGET_COLUMNS[0]] = test_probas[:, 1]
             else:
-                test_probas = clf.predict_proba(test_df)
+                test_probas = clf.predict_proba(X_test)
                 for idx, column in enumerate(TARGET_COLUMNS):
                     column_proba = test_probas[idx]
                     if column_proba.ndim == 2 and column_proba.shape[1] > 1:
@@ -876,7 +907,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     else:
                         submission[column] = column_proba.ravel()
         else:
-            test_preds = clf.predict(test_df)
+            test_preds = clf.predict(X_test)
             if USES_LOG_TARGET:
                 test_preds = np.expm1(test_preds)
             if len(TARGET_COLUMNS) == 1:
@@ -2324,6 +2355,22 @@ def _write_fallback_submission(
                             target, next(iter(per_column_predictions.values()), 0.0)
                         )
                 writer.writerow(entry)
+
+
+def _align_prototype_block(block: str) -> str:
+    """Re-indent an interpolated code block to the prototype template indentation.
+
+    ``textwrap.dedent`` removes the whitespace prefix common to every non-blank
+    line. A multi-line fragment interpolated at column zero therefore drops that
+    common prefix to nothing and leaves the surrounding template indented, which
+    makes the generated module unparseable. Indenting the continuation lines to
+    match the template keeps the dedent well defined.
+    """
+    lines = block.splitlines()
+    if len(lines) <= 1:
+        return block
+    aligned = [f"{_PROTOTYPE_TEMPLATE_INDENT}{line}" if line.strip() else line for line in lines[1:]]
+    return "\n".join([lines[0], *aligned])
 
 
 def _generate_fallback_prototype(

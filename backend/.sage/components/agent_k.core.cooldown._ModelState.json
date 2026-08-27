@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.cooldown:_ModelState",
+  "line": 102,
+  "notice": "Mutable cooldown bookkeeping for one model spec.",
+  "pattern": {
+    "name": "state-record",
+    "rationale": "Keeps per-model cooldown counters in one place.",
+    "violations": "Parallel dicts drift out of sync with each other."
+  },
+  "similar": null,
+  "source": "agent_k/core/cooldown.py",
+  "summary": "Mutable cooldown bookkeeping for one model spec.",
+  "type": "class"
+}

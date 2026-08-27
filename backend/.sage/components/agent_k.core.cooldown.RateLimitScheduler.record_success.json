@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.cooldown:RateLimitScheduler.record_success",
+  "line": 215,
+  "notice": "Resets cooldown escalation after a successful call.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/cooldown.py",
+  "summary": "Clear the consecutive rate-limit streak for a model.",
+  "type": "method"
+}

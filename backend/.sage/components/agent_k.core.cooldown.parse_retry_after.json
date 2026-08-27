@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Accepts integer-second and HTTP-date header formats. Returns None when no\nusable hint is present so callers fall back to their own backoff.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.cooldown:parse_retry_after",
+  "line": 273,
+  "notice": "Reads Retry-After from an exception, response headers, or raw value.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/cooldown.py",
+  "summary": "Extract a Retry-After delay in seconds from an error or header value.",
+  "type": "function"
+}

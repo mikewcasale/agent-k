@@ -1,0 +1,42 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.core.cooldown as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Free and shared model endpoints answer with HTTP 429 under load. Callers that\ntreat a single 429 as terminal lose the remaining work budget even though the\nendpoint recovers within seconds. This module tracks per-model cooldowns so a\ncaller can rotate to a ready model, sleep for a bounded interval, and only\ngive up once every model is retired or the wait budget is spent.",
+  "graph": {
+    "id": "agent_k.core.cooldown",
+    "pattern": "scheduler",
+    "provides": [
+      "agent_k.core.cooldown:ModelLease",
+      "agent_k.core.cooldown:RateLimitScheduler",
+      "agent_k.core.cooldown:parse_retry_after"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-08-27",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.core.cooldown",
+  "line": 1,
+  "notice": "Rate-limit cooldown scheduling for model-backed work loops.",
+  "pattern": null,
+  "similar": [
+    {
+      "id": "agent_k.core.exceptions",
+      "when": "Error taxonomy; this module schedules retries after rate limits."
+    }
+  ],
+  "source": "agent_k/core/cooldown.py",
+  "summary": "Rate-limit cooldown scheduling for model-backed work loops.",
+  "type": "module"
+}

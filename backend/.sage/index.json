@@ -1,5 +1,5 @@
 {
-  "component_count": 59,
+  "component_count": 60,
   "components": [
     {
       "consumes": [],
@@ -212,6 +212,18 @@
         "agent_k.core.constants"
       ],
       "source": "agent_k/core/constants.py"
+    },
+    {
+      "consumes": [],
+      "id": "agent_k.core.cooldown",
+      "line": 1,
+      "pattern": "scheduler",
+      "provides": [
+        "agent_k.core.cooldown:ModelLease",
+        "agent_k.core.cooldown:RateLimitScheduler",
+        "agent_k.core.cooldown:parse_retry_after"
+      ],
+      "source": "agent_k/core/cooldown.py"
     },
     {
       "consumes": [],
@@ -705,7 +717,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-08-27T02:21:59.807975+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -722,6 +734,7 @@
     "agent_k/agents/scientist.py",
     "agent_k/core/__init__.py",
     "agent_k/core/constants.py",
+    "agent_k/core/cooldown.py",
     "agent_k/core/data.py",
     "agent_k/core/deps.py",
     "agent_k/core/exceptions.py",
@@ -767,7 +780,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1119,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -2615,6 +2628,182 @@
         "line": 21,
         "name": "human_review",
         "value": "{\"last_verified\": \"2026-01-26\", \"owners\": [\"agent-k-core\"]}"
+      }
+    ],
+    "agent_k/core/cooldown.py": [
+      {
+        "component": "agent_k.core.cooldown",
+        "line": 3,
+        "name": "notice",
+        "value": "Rate-limit cooldown scheduling for model-backed work loops."
+      },
+      {
+        "component": "agent_k.core.cooldown",
+        "line": 6,
+        "name": "dev",
+        "value": "Free and shared model endpoints answer with HTTP 429 under load. Callers that\ntreat a single 429 as terminal lose the remaining work budget even though the\nendpoint recovers within seconds. This modul"
+      },
+      {
+        "component": "agent_k.core.cooldown",
+        "line": 13,
+        "name": "graph",
+        "value": "{\"id\": \"agent_k.core.cooldown\", \"provides\": [\"agent_k.core.cooldown:ModelLease\", \"agent_k.core.cooldown:RateLimitScheduler\", \"agent_k.core.cooldown:parse_retry_after\"], \"pattern\": \"scheduler\"}"
+      },
+      {
+        "component": "agent_k.core.cooldown",
+        "line": 21,
+        "name": "similar",
+        "value": "[{\"id\": \"agent_k.core.exceptions\", \"when\": \"Error taxonomy; this module schedules retries after rate limits.\"}]"
+      },
+      {
+        "component": "agent_k.core.cooldown",
+        "line": 25,
+        "name": "agent_guidance",
+        "value": "{\"do\": [\"Use agent_k.core.cooldown as the canonical home for this capability.\"], \"do_not\": [\"Create parallel modules without updating @similar or @graph.\"]}"
+      },
+      {
+        "component": "agent_k.core.cooldown",
+        "line": 31,
+        "name": "human_review",
+        "value": "{\"last_verified\": \"2026-08-27\", \"owners\": [\"agent-k-core\"]}"
+      },
+      {
+        "component": "agent_k.core.cooldown:ModelLease",
+        "line": 81,
+        "name": "notice",
+        "value": "Outcome of a scheduler acquisition attempt."
+      },
+      {
+        "component": "agent_k.core.cooldown:ModelLease",
+        "line": 84,
+        "name": "dev",
+        "value": "Exactly one of the three states is reported: a ready ``model``, a\n``wait_seconds`` hint when every live model is cooling down, or\n``exhausted`` when no model can be used again."
+      },
+      {
+        "component": "agent_k.core.cooldown:ModelLease",
+        "line": 89,
+        "name": "pattern",
+        "value": "{\"name\": \"result-object\", \"rationale\": \"Keeps the three scheduler outcomes explicit for callers.\", \"violations\": \"Tuple returns hide the exhausted case and get mishandled.\"}"
+      },
+      {
+        "component": "agent_k.core.cooldown:_ModelState",
+        "line": 104,
+        "name": "notice",
+        "value": "Mutable cooldown bookkeeping for one model spec."
+      },
+      {
+        "component": "agent_k.core.cooldown:_ModelState",
+        "line": 107,
+        "name": "dev",
+        "value": "See module for implementation details and extension points."
+      },
+      {
+        "component": "agent_k.core.cooldown:_ModelState",
+        "line": 110,
+        "name": "pattern",
+        "value": "{\"name\": \"state-record\", \"rationale\": \"Keeps per-model cooldown counters in one place.\", \"violations\": \"Parallel dicts drift out of sync with each other.\"}"
+      },
+      {
+        "component": "agent_k.core.cooldown:RateLimitScheduler",
+        "line": 125,
+        "name": "notice",
+        "value": "Round-robin scheduler that parks rate-limited models on a cooldown."
+      },
+      {
+        "component": "agent_k.core.cooldown:RateLimitScheduler",
+        "line": 128,
+        "name": "dev",
+        "value": "``acquire`` returns the next model that is off cooldown. When every live\nmodel is cooling down it returns the bounded sleep the caller should\nperform, debiting the shared wait budget so a run cannot s"
+      },
+      {
+        "component": "agent_k.core.cooldown:RateLimitScheduler",
+        "line": 135,
+        "name": "pattern",
+        "value": "{\"name\": \"scheduler\", \"rationale\": \"Centralizes rate-limit backoff for model rotation loops.\", \"violations\": \"Ad-hoc eviction drops models that recover in seconds.\"}"
+      },
+      {
+        "component": "agent_k.core.cooldown:RateLimitScheduler",
+        "line": 140,
+        "name": "concurrency",
+        "value": "{\"model\": \"single-task\", \"safe\": false, \"reason\": \"Mutates per-model state without locking.\"}"
+      },
+      {
+        "component": "agent_k.core.cooldown:RateLimitScheduler",
+        "line": 145,
+        "name": "invariants",
+        "value": "[\"Wait budget never goes negative.\", \"A retired model is never returned by acquire.\"]"
+      },
+      {
+        "component": "agent_k.core.cooldown:RateLimitScheduler.active_models",
+        "line": 171,
+        "name": "dev",
+        "value": "See module for behavior details and invariants."
+      },
+      {
+        "component": "agent_k.core.cooldown:RateLimitScheduler.active_models",
+        "line": 174,
+        "name": "notice",
+        "value": "Returns the model specs still eligible for scheduling."
+      },
+      {
+        "component": "agent_k.core.cooldown:RateLimitScheduler.acquire",
+        "line": 182,
+        "name": "notice",
+        "value": "Picks the next model that is off cooldown, else a sleep hint."
+      },
+      {
+        "component": "agent_k.core.cooldown:RateLimitScheduler.acquire",
+        "line": 185,
+        "name": "dev",
+        "value": "Rotation starts from the internal cursor so consecutive calls spread\nload across models. When no model is ready the returned\n``wait_seconds`` is debited from the shared wait budget; once the\nbudget is"
+      },
+      {
+        "component": "agent_k.core.cooldown:RateLimitScheduler.record_success",
+        "line": 217,
+        "name": "dev",
+        "value": "See module for behavior details and invariants."
+      },
+      {
+        "component": "agent_k.core.cooldown:RateLimitScheduler.record_success",
+        "line": 220,
+        "name": "notice",
+        "value": "Resets cooldown escalation after a successful call."
+      },
+      {
+        "component": "agent_k.core.cooldown:RateLimitScheduler.record_rate_limit",
+        "line": 237,
+        "name": "notice",
+        "value": "Applies exponential cooldown, honoring Retry-After when supplied."
+      },
+      {
+        "component": "agent_k.core.cooldown:RateLimitScheduler.record_rate_limit",
+        "line": 240,
+        "name": "dev",
+        "value": "The cooldown doubles per consecutive rate limit and is capped by\n``max_cooldown_seconds``. A ``retry_after`` hint wins when it asks\nfor a longer wait than the computed backoff. The model is retired\non"
+      },
+      {
+        "component": "agent_k.core.cooldown:RateLimitScheduler.retire",
+        "line": 261,
+        "name": "dev",
+        "value": "See module for behavior details and invariants."
+      },
+      {
+        "component": "agent_k.core.cooldown:RateLimitScheduler.retire",
+        "line": 264,
+        "name": "notice",
+        "value": "Marks a model as permanently unavailable."
+      },
+      {
+        "component": "agent_k.core.cooldown:parse_retry_after",
+        "line": 275,
+        "name": "notice",
+        "value": "Reads Retry-After from an exception, response headers, or raw value."
+      },
+      {
+        "component": "agent_k.core.cooldown:parse_retry_after",
+        "line": 278,
+        "name": "dev",
+        "value": "Accepts integer-second and HTTP-date header formats. Returns None when no\nusable hint is present so callers fall back to their own backoff."
       }
     ],
     "agent_k/core/data.py": [
@@ -6150,181 +6339,181 @@
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 123,
+        "line": 125,
         "name": "notice",
         "value": "Discovery phase node."
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 126,
+        "line": 128,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 129,
+        "line": 131,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates discovery phase logic in the mission graph.\", \"violations\": \"Discovery logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 134,
+        "line": 136,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.lobbyist:LobbyistAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifec"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 144,
+        "line": 146,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 149,
+        "line": 151,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 281,
+        "line": 283,
         "name": "notice",
         "value": "Research phase node."
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 284,
+        "line": 286,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 287,
+        "line": 289,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates research phase logic in the mission graph.\", \"violations\": \"Research logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 292,
+        "line": 294,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.scientist:ScientistAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lif"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 302,
+        "line": 304,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 307,
+        "line": 309,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 427,
+        "line": 429,
         "name": "notice",
         "value": "Prototype phase node."
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 430,
+        "line": 432,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 433,
+        "line": 435,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates prototype phase logic in the mission graph.\", \"violations\": \"Prototype logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 438,
+        "line": 440,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.solution:execute_solution\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 447,
+        "line": 449,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 452,
+        "line": 454,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 908,
+        "line": 910,
         "name": "notice",
         "value": "Evolution phase node."
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 911,
+        "line": 913,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 914,
+        "line": 916,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates evolution phase logic in the mission graph.\", \"violations\": \"Evolution logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 919,
+        "line": 921,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.evolver:EvolverAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated pe"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 928,
+        "line": 930,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 933,
+        "line": 935,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1610,
+        "line": 1658,
         "name": "notice",
         "value": "Submission phase node."
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1613,
+        "line": 1661,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1616,
+        "line": 1664,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates submission phase logic in the mission graph.\", \"violations\": \"Submission logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1621,
+        "line": 1669,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.agents.evolver:EvolverAgent\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated pe"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1630,
+        "line": 1678,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1635,
+        "line": 1683,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       }

@@ -213,6 +213,18 @@
   },
   {
     "consumes": [],
+    "id": "agent_k.core.cooldown",
+    "line": 1,
+    "pattern": "scheduler",
+    "provides": [
+      "agent_k.core.cooldown:ModelLease",
+      "agent_k.core.cooldown:RateLimitScheduler",
+      "agent_k.core.cooldown:parse_retry_after"
+    ],
+    "source": "agent_k/core/cooldown.py"
+  },
+  {
+    "consumes": [],
     "id": "agent_k.core.data",
     "line": 1,
     "pattern": "data-access",

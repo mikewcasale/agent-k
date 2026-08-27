@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The cooldown doubles per consecutive rate limit and is capped by\n``max_cooldown_seconds``. A ``retry_after`` hint wins when it asks\nfor a longer wait than the computed backoff. The model is retired\nonce the streak reaches ``max_consecutive_rate_limits``.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.cooldown:RateLimitScheduler.record_rate_limit",
+  "line": 235,
+  "notice": "Applies exponential cooldown, honoring Retry-After when supplied.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/cooldown.py",
+  "summary": "Park a model on an escalating cooldown and report the interval.",
+  "type": "method"
+}

@@ -401,6 +401,26 @@
       "type": "provides"
     },
     {
+      "source": "agent_k.core.cooldown",
+      "target": "agent_k.core.cooldown:ModelLease",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.cooldown",
+      "target": "agent_k.core.cooldown:RateLimitScheduler",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.cooldown",
+      "target": "agent_k.core.cooldown:parse_retry_after",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.core.cooldown",
+      "target": "agent_k.core.exceptions",
+      "type": "similar"
+    },
+    {
       "source": "agent_k.core.data",
       "target": "agent_k.core.data",
       "type": "provides"
@@ -921,7 +941,7 @@
       "type": "similar"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831739+00:00",
+  "generated": "2026-08-27T02:21:59.808513+00:00",
   "nodes": [
     {
       "id": "agent_k",
@@ -1012,6 +1032,12 @@
       "label": "constants",
       "pattern": "constants",
       "source": "agent_k/core/constants.py"
+    },
+    {
+      "id": "agent_k.core.cooldown",
+      "label": "cooldown",
+      "pattern": "scheduler",
+      "source": "agent_k/core/cooldown.py"
     },
     {
       "id": "agent_k.core.data",

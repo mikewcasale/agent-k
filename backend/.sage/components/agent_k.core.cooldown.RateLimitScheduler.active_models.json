@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.cooldown:RateLimitScheduler.active_models",
+  "line": 169,
+  "notice": "Returns the model specs still eligible for scheduling.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/cooldown.py",
+  "summary": "Model specs that have not been retired.",
+  "type": "method"
+}

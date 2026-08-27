@@ -1,6 +1,6 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
-  "pattern_count": 57,
+  "generated": "2026-08-27T02:21:59.808767+00:00",
+  "pattern_count": 60,
   "patterns": {
     "adapter": [
       {
@@ -654,7 +654,7 @@
     "graph-node": [
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 115,
+        "line": 117,
         "rationale": "Encapsulates discovery phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -663,7 +663,7 @@
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 273,
+        "line": 275,
         "rationale": "Encapsulates research phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -672,7 +672,7 @@
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 419,
+        "line": 421,
         "rationale": "Encapsulates prototype phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -681,7 +681,7 @@
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 900,
+        "line": 902,
         "rationale": "Encapsulates evolution phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -690,7 +690,7 @@
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1602,
+        "line": 1650,
         "rationale": "Encapsulates submission phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -1185,6 +1185,17 @@
         "violations": []
       }
     ],
+    "result-object": [
+      {
+        "component": "agent_k.core.cooldown:ModelLease",
+        "line": 79,
+        "rationale": "Keeps the three scheduler outcomes explicit for callers.",
+        "source": "agent_k/core/cooldown.py",
+        "violations": [
+          "Tuple returns hide the exhausted case and get mishandled."
+        ]
+      }
+    ],
     "retriever": [
       {
         "component": "agent_k.embeddings.retriever:RAGRetriever",
@@ -1193,6 +1204,17 @@
         "source": "agent_k/embeddings/retriever.py",
         "violations": [
           "Scattered retrieval logic leads to inconsistent ranking."
+        ]
+      }
+    ],
+    "scheduler": [
+      {
+        "component": "agent_k.core.cooldown:RateLimitScheduler",
+        "line": 123,
+        "rationale": "Centralizes rate-limit backoff for model rotation loops.",
+        "source": "agent_k/core/cooldown.py",
+        "violations": [
+          "Ad-hoc eviction drops models that recover in seconds."
         ]
       }
     ],
@@ -1339,6 +1361,17 @@
         "source": "agent_k/mission/persistence.py",
         "violations": [
           "Ad-hoc persistence complicates recovery."
+        ]
+      }
+    ],
+    "state-record": [
+      {
+        "component": "agent_k.core.cooldown:_ModelState",
+        "line": 102,
+        "rationale": "Keeps per-model cooldown counters in one place.",
+        "source": "agent_k/core/cooldown.py",
+        "violations": [
+          "Parallel dicts drift out of sync with each other."
         ]
       }
     ],

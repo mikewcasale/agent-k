@@ -73,6 +73,7 @@ from ..core.constants import (
     RESEARCH_TIMEOUT_SECONDS,
     SUBMISSION_TIMEOUT_SECONDS,
 )
+from ..core.cooldown import RateLimitScheduler, parse_retry_after
 from ..core.data import infer_competition_schema, locate_data_files, stage_competition_data
 from ..core.exceptions import classify_error
 from ..core.hints import DatasetProfile, PreprocessingHint, build_dataset_profile, generate_preprocessing_hints
@@ -104,6 +105,7 @@ if TYPE_CHECKING:
 __all__ = ("DiscoveryNode", "ResearchNode", "PrototypeNode", "EvolutionNode", "SubmissionNode")
 
 _LIGHTGBM_AVAILABLE: Final[bool] = importlib.util.find_spec("lightgbm") is not None
+_OPENEVOLVE_SCHEDULER_KEY: Final[str] = "openevolve"
 _BASE_DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = ("xgboost", "catboost")
 _DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = (
     _BASE_DISALLOWED_LIBRARIES if _LIGHTGBM_AVAILABLE else (*_BASE_DISALLOWED_LIBRARIES, "lightgbm")
@@ -1205,6 +1207,30 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     convergence_detected = True
                     convergence_reason = "rate_limit"
 
+            def _record_cooldown(scheduler: RateLimitScheduler, model_spec: str, error: Any) -> None:
+                cooldown = scheduler.record_rate_limit(model_spec, retry_after=parse_retry_after(error))
+                logfire.warning(
+                    "evolution_model_cooldown",
+                    model=model_spec,
+                    cooldown_seconds=round(cooldown, 2),
+                    active_models=len(scheduler.active_models),
+                )
+
+            async def _next_ready_model(scheduler: RateLimitScheduler) -> str | None:
+                """Return the next model off cooldown, sleeping through bounded waits."""
+                while True:
+                    lease = scheduler.acquire()
+                    if lease.exhausted:
+                        return None
+                    if lease.model is not None:
+                        return lease.model
+                    logfire.info(
+                        "evolution_rate_limit_cooldown",
+                        wait_seconds=round(lease.wait_seconds, 2),
+                        active_models=len(scheduler.active_models),
+                    )
+                    await asyncio.sleep(lease.wait_seconds)
+
             async def _emit_failure(result: EvolutionFailure) -> End[MissionResult]:
                 _append_error(result.error_message, result.error_type)
                 await emitter.emit_phase_error(
@@ -1306,32 +1332,41 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
             }
 
             if use_openevolve:
-                deps_instance = EvolverDeps(
-                    **deps_kwargs,
-                    initial_solution=best_solution,
-                    best_solution=best_solution or None,
-                    best_fitness=best_fitness,
-                    max_generations=max_rounds,
-                    improvement_count=improvement_count,
-                    elite_archive=elite_archive,
-                )
-                evolver_instance = EvolverAgent(settings=evolver_settings, register=False)
-                try:
-                    result = await evolver_instance.run_openevolve(
-                        deps_instance, base_prompt=base_prompt, model_specs=evolution_models or [evolver_settings.model]
+                openevolve_scheduler = RateLimitScheduler(models=[_OPENEVOLVE_SCHEDULER_KEY])
+                while True:
+                    deps_instance = EvolverDeps(
+                        **deps_kwargs,
+                        initial_solution=best_solution,
+                        best_solution=best_solution or None,
+                        best_fitness=best_fitness,
+                        max_generations=max_rounds,
+                        improvement_count=improvement_count,
+                        elite_archive=elite_archive,
                     )
-                except Exception as exc:
-                    if _is_rate_limit_error(exc):
+                    evolver_instance = EvolverAgent(settings=evolver_settings, register=False)
+                    try:
+                        result = await evolver_instance.run_openevolve(
+                            deps_instance,
+                            base_prompt=base_prompt,
+                            model_specs=evolution_models or [evolver_settings.model],
+                        )
+                    except Exception as exc:
+                        if not _is_rate_limit_error(exc):
+                            raise
                         _apply_rate_limit(
                             str(exc),
                             model_spec=None,
                             error_type=getattr(exc, "code", None),
                             deps=deps_instance,
-                            mark_convergence=True,
+                            mark_convergence=False,
                         )
-                    else:
-                        raise
-                else:
+                        _record_cooldown(openevolve_scheduler, _OPENEVOLVE_SCHEDULER_KEY, exc)
+                        if await _next_ready_model(openevolve_scheduler) is not None:
+                            continue
+                        convergence_detected = True
+                        convergence_reason = "rate_limit"
+                        break
+
                     if isinstance(result, EvolutionFailure):
                         if not await _apply_fallback(
                             result, deps=deps_instance, model="openevolve", update_partial=False
@@ -1339,43 +1374,50 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                             return await _emit_failure(result)
                     else:
                         _apply_success(result, deps_instance)
+                    break
 
             elif not evolution_models:
-                deps_instance = EvolverDeps(
-                    **deps_kwargs,
-                    initial_solution=best_solution,
-                    best_solution=best_solution or None,
-                    best_fitness=best_fitness,
-                    max_generations=max_rounds,
-                    improvement_count=improvement_count,
-                    elite_archive=elite_archive,
-                )
-                evolver_agent = _resolve_agent(deps, "evolver")
-                try:
-                    run_result = await evolver_agent.run(base_prompt, deps=deps_instance)
-                except Exception as exc:
-                    if _is_rate_limit_error(exc):
+                primary_scheduler = RateLimitScheduler(models=[evolver_settings.model])
+                while True:
+                    deps_instance = EvolverDeps(
+                        **deps_kwargs,
+                        initial_solution=best_solution,
+                        best_solution=best_solution or None,
+                        best_fitness=best_fitness,
+                        max_generations=max_rounds,
+                        improvement_count=improvement_count,
+                        elite_archive=elite_archive,
+                    )
+                    evolver_agent = _resolve_agent(deps, "evolver")
+                    rate_limit_error: Any
+                    try:
+                        run_result = await evolver_agent.run(base_prompt, deps=deps_instance)
+                    except Exception as exc:
+                        if not _is_rate_limit_error(exc):
+                            raise
+                        rate_limit_error = exc
                         _apply_rate_limit(
                             str(exc),
                             model_spec=None,
                             error_type=getattr(exc, "code", None),
                             deps=deps_instance,
-                            mark_convergence=True,
+                            mark_convergence=False,
                         )
                     else:
-                        raise
-                else:
-                    result = run_result.output
-                    if isinstance(result, EvolutionFailure):
+                        result = run_result.output
+                        if not isinstance(result, EvolutionFailure):
+                            _apply_success(result, deps_instance)
+                            break
                         if _is_rate_limit_error(result.error_message) or _is_rate_limit_error(result.error_type):
                             if result.partial_solution:
                                 best_solution = result.partial_solution
+                            rate_limit_error = result.error_message
                             _apply_rate_limit(
                                 result.error_message,
                                 model_spec=None,
                                 error_type=result.error_type,
                                 deps=deps_instance,
-                                mark_convergence=True,
+                                mark_convergence=False,
                             )
                         elif _is_constraints_failure(result.error_message):
                             await _apply_fallback(
@@ -1388,24 +1430,36 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                                 require_solution=False,
                                 error_type=result.error_type or "constraints",
                             )
+                            break
                         else:
                             if not await _apply_fallback(result, deps=deps_instance, model="primary"):
                                 if result.partial_solution:
                                     _set_partial_solution(result.partial_solution)
                                 return await _emit_failure(result)
-                    else:
-                        _apply_success(result, deps_instance)
+                            break
+
+                    _record_cooldown(primary_scheduler, evolver_settings.model, rate_limit_error)
+                    if await _next_ready_model(primary_scheduler) is not None:
+                        continue
+                    convergence_detected = True
+                    convergence_reason = "rate_limit"
+                    break
             else:
                 agents_by_model: dict[str, Any] = {}
                 remaining_generations = max_rounds
-                available_models = [model for model in evolution_models if model]
+                rotation_scheduler = RateLimitScheduler(models=[model for model in evolution_models if model])
                 segment_index = 0
-                model_index = 0
 
-                while remaining_generations > 0 and available_models:
+                while remaining_generations > 0:
+                    ready_model = await _next_ready_model(rotation_scheduler)
+                    if ready_model is None:
+                        convergence_detected = True
+                        convergence_reason = "rate_limit"
+                        break
+                    model_spec = ready_model
                     segment_index += 1
-                    rotation_stride = max(5, min(25, math.ceil(remaining_generations / max(len(available_models), 1))))
-                    model_spec = available_models[model_index % len(available_models)]
+                    active_model_count = max(len(rotation_scheduler.active_models), 1)
+                    rotation_stride = max(5, min(25, math.ceil(remaining_generations / active_model_count)))
                     segment_generations = min(rotation_stride, remaining_generations)
                     generation_offset = len(combined_history)
 
@@ -1445,11 +1499,8 @@ Model rotation segment {segment_index} using {model_spec}."""
                                 deps=segment_deps,
                                 mark_convergence=False,
                             )
+                            _record_cooldown(rotation_scheduler, model_spec, exc)
                             agents_by_model.pop(model_spec, None)
-                            available_models = [model for model in available_models if model != model_spec]
-                            if not available_models:
-                                convergence_detected = True
-                                convergence_reason = "rate_limit"
                             continue
                         raise
 
@@ -1465,11 +1516,8 @@ Model rotation segment {segment_index} using {model_spec}."""
                                 deps=segment_deps,
                                 mark_convergence=False,
                             )
+                            _record_cooldown(rotation_scheduler, model_spec, result.error_message)
                             agents_by_model.pop(model_spec, None)
-                            available_models = [model for model in available_models if model != model_spec]
-                            if not available_models:
-                                convergence_detected = True
-                                convergence_reason = "rate_limit"
                             continue
                         if _is_constraints_failure(result.error_message):
                             await _apply_fallback(
@@ -1491,11 +1539,11 @@ Model rotation segment {segment_index} using {model_spec}."""
                             _set_partial_solution(result.partial_solution)
                         return await _emit_failure(result)
 
+                    rotation_scheduler.record_success(model_spec)
                     if best_fitness is None or result.best_fitness > best_fitness:
                         best_fitness = result.best_fitness
                         best_solution = result.best_solution
                     improvement_count = segment_deps.improvement_count
-                    model_index += 1
 
                     if result.convergence_achieved and len(combined_history) >= min_generations:
                         convergence_detected = True
@@ -1518,7 +1566,7 @@ Model rotation segment {segment_index} using {model_spec}."""
 
                     remaining_generations = max_rounds - len(combined_history)
 
-                if not available_models and remaining_generations > 0:
+                if not rotation_scheduler.active_models and remaining_generations > 0:
                     convergence_detected = True
                     convergence_reason = "rate_limit"
 

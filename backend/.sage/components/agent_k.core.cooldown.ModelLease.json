@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Exactly one of the three states is reported: a ready ``model``, a\n``wait_seconds`` hint when every live model is cooling down, or\n``exhausted`` when no model can be used again.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.cooldown:ModelLease",
+  "line": 79,
+  "notice": "Outcome of a scheduler acquisition attempt.",
+  "pattern": {
+    "name": "result-object",
+    "rationale": "Keeps the three scheduler outcomes explicit for callers.",
+    "violations": "Tuple returns hide the exhausted case and get mishandled."
+  },
+  "similar": null,
+  "source": "agent_k/core/cooldown.py",
+  "summary": "Outcome of a scheduler acquisition attempt.",
+  "type": "class"
+}

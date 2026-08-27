@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "``acquire`` returns the next model that is off cooldown. When every live\nmodel is cooling down it returns the bounded sleep the caller should\nperform, debiting the shared wait budget so a run cannot stall forever.\nA model is retired after ``max_consecutive_rate_limits`` rate limits with\nno successful call in between.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.cooldown:RateLimitScheduler",
+  "line": 123,
+  "notice": "Round-robin scheduler that parks rate-limited models on a cooldown.",
+  "pattern": {
+    "name": "scheduler",
+    "rationale": "Centralizes rate-limit backoff for model rotation loops.",
+    "violations": "Ad-hoc eviction drops models that recover in seconds."
+  },
+  "similar": null,
+  "source": "agent_k/core/cooldown.py",
+  "summary": "Round-robin scheduler that parks rate-limited models on a cooldown.",
+  "type": "class"
+}

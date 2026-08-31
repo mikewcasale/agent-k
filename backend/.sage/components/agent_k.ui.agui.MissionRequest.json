@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.ui.agui:MissionRequest",
-  "line": 218,
+  "line": 228,
   "notice": "Request to start a new mission.",
   "pattern": {
     "name": "request-model",

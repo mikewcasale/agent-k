@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.ui.agui:EventEmitter.emit_phase_error",
-  "line": 472,
-  "notice": null,
+  "id": "agent_k.ui.agui:EventEmitter.dropped_events",
+  "line": 379,
+  "notice": "Count of events dropped under backpressure.",
   "pattern": null,
   "similar": null,
   "source": "agent_k/ui/agui.py",
-  "summary": "Emit phase error event.",
+  "summary": "Number of events discarded because the buffer was full.",
   "type": "method"
 }

@@ -83,7 +83,7 @@
     "for": [
       "AG-UI application construction"
     ],
-    "line": 1007,
+    "line": 1070,
     "notes": "Use create_app to initialize the FastAPI server.",
     "source": "agent_k/ui/agui.py"
   }

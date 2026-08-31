@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.ui.agui:AgentKEvent",
-  "line": 283,
+  "line": 293,
   "notice": "Event to be streamed to the frontend.",
   "pattern": {
     "name": "event-model",

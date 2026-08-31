@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.ui.agui:EventEmitter",
-  "line": 332,
+  "line": 342,
   "notice": "Emitter for AG-UI events.",
   "pattern": {
     "name": "event-emitter",

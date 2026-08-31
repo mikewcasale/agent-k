@@ -86,6 +86,53 @@ class TestHyperparameterMutation:
         assert "." in match.group(1)
 
 
+class TestObjectiveMutation:
+    """Tests keeping objective mutation inside the competition's problem family."""
+
+    @pytest.mark.parametrize(
+        ("current", "allowed"),
+        [
+            ("binary", {"binary", "cross_entropy"}),
+            ("multiclass", {"multiclass", "multiclassova"}),
+            ("regression", {"regression", "regression_l1", "huber", "fair", "quantile"}),
+        ],
+    )
+    def test_objective_mutation_stays_in_family(self, current: str, allowed: set[str]) -> None:
+        """A mutated objective must remain valid for the same target domain."""
+        code = f'model = lgb.LGBMModel(objective="{current}", learning_rate=0.05)'
+        observed: set[str] = set()
+        for seed in range(60):
+            mutated = _evolver._apply_hyperparameter_mutation(
+                code, {"param": "objective", "magnitude": 0.2, "seed": seed}
+            )
+            match = re.search(r'objective\s*=\s*"([^"]+)"', mutated)
+            assert match is not None
+            observed.add(match.group(1))
+
+        assert observed <= allowed
+        assert observed - {current}
+
+    def test_unknown_objective_is_left_alone(self) -> None:
+        """A callable or narrow-domain objective must not be swapped for a guess."""
+        for current in ("custom_objective", "poisson"):
+            code = f"model = lgb.LGBMRegressor(objective={current!r}, num_leaves=31)"
+            for seed in range(20):
+                mutated = _evolver._apply_hyperparameter_mutation(
+                    code, {"param": "objective", "magnitude": 0.2, "seed": seed}
+                )
+                assert f"objective={current!r}" in mutated
+
+    def test_other_hyperparameters_remain_mutable_beside_unknown_objective(self) -> None:
+        """Skipping the objective must not stop the operator from mutating something else."""
+        code = 'model = lgb.LGBMRegressor(objective="poisson", learning_rate=0.1)'
+        mutated = {
+            _evolver._apply_hyperparameter_mutation(code, {"magnitude": 0.4, "seed": seed}) for seed in range(20)
+        }
+
+        assert all('objective="poisson"' in variant for variant in mutated)
+        assert any(variant != code for variant in mutated)
+
+
 class TestStructuralMutation:
     """Tests for structural mutation helpers."""
 

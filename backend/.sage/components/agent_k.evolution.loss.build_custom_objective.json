@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The returned callable matches LightGBM's ``lgb.train`` contract: it takes the raw scores\nand the training :class:`lightgbm.Dataset` and returns ``(grad, hess)``. Pass it as\n``params[\"objective\"]`` (LightGBM 4.x removed the ``fobj`` argument).\n\nRegression blends a squared-error term with a pseudo-Huber term via ``mae_rmse_blend``\n(0 is pure L2, 1 is pure pseudo-Huber), so the hessian stays strictly positive where\nLightGBM's native ``huber`` zeroes it outside the delta band. Binary uses weighted\nlogistic loss and multiclass uses weighted softmax cross-entropy.\n\n``asymmetric_weight`` reweights the costly side of each loss: under-predictions for\nregression, the positive class for binary, and \u2014 above 1.0 \u2014 the rarer classes for\nmulticlass, interpolating from uniform to fully inverse-frequency weighting.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:build_custom_objective",
+  "line": 316,
+  "notice": "Build a LightGBM custom objective callable from a LossGenome.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Build a LightGBM custom objective callable from a LossGenome.",
+  "type": "function"
+}

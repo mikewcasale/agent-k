@@ -101,6 +101,7 @@ from agent_k.core.tracking import (
     HintEffectivenessTracker,
     extract_solution_metadata,
 )
+from agent_k.evolution.loss import alternative_objectives
 from agent_k.infra.providers import get_model
 from agent_k.toolsets import code_toolset, create_production_toolset, prepare_code_execution_tool, prepare_memory_tool
 
@@ -254,7 +255,6 @@ _CATEGORICAL_HYPERPARAMS: Final[dict[str, tuple[str, ...]]] = {
     "weights": ("uniform", "distance"),
     "metric": ("minkowski", "euclidean", "manhattan", "chebyshev"),
     "algorithm": ("auto", "ball_tree", "kd_tree", "brute"),
-    "objective": ("regression", "regression_l1", "huber", "quantile"),
 }
 _KNN_PARAM_KEYS: Final[frozenset[str]] = frozenset({"n_neighbors", "weights", "metric", "p", "leaf_size", "algorithm"})
 _MODEL_SWAPS: Final[dict[str, str]] = {
@@ -2452,12 +2452,17 @@ class EvolverAgent(MemoryMixin):
             if requested and name != requested:
                 continue
             if match := pattern.search(code):
+                if name == "objective" and not alternative_objectives(match.group(2)):
+                    continue
                 candidates.append((name, pattern, match))
 
         if not candidates:
             return self._apply_point_mutation(code, params)
 
         name, pattern, match = rng.choice(candidates)
+        if name == "objective":
+            swapped = rng.choice(alternative_objectives(match.group(2)))
+            return pattern.sub(f"{match.group(1)}{json.dumps(swapped)}", code, count=1)
         if name in _CATEGORICAL_HYPERPARAMS:
             current = match.group(2).strip().strip("'\"")
             options = list(_CATEGORICAL_HYPERPARAMS[name])

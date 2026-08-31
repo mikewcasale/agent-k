@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-08-31T03:16:46.662274+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1101,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -5673,52 +5673,118 @@
         "value": "{\"last_verified\": \"2026-01-26\", \"owners\": [\"agent-k-core\"]}"
       },
       {
+        "component": "agent_k.evolution.loss:canonical_objective",
+        "line": 115,
+        "name": "notice",
+        "value": "Resolve a LightGBM objective name or alias to its canonical spelling."
+      },
+      {
+        "component": "agent_k.evolution.loss:canonical_objective",
+        "line": 118,
+        "name": "dev",
+        "value": "Quoting and case from source code are stripped first. Returns ``None`` for objectives\noutside the known families, including callables and narrow-domain objectives, so callers\ncan decline to reason abo"
+      },
+      {
+        "component": "agent_k.evolution.loss:objective_family",
+        "line": 131,
+        "name": "notice",
+        "value": "Resolve the problem family of a LightGBM objective name or alias."
+      },
+      {
+        "component": "agent_k.evolution.loss:objective_family",
+        "line": 134,
+        "name": "dev",
+        "value": "Returns ``None`` for unknown objectives so search operators can leave them untouched\ninstead of guessing a target domain."
+      },
+      {
+        "component": "agent_k.evolution.loss:family_objectives",
+        "line": 145,
+        "name": "notice",
+        "value": "Return the interchangeable objectives for a problem family."
+      },
+      {
+        "component": "agent_k.evolution.loss:family_objectives",
+        "line": 148,
+        "name": "dev",
+        "value": "Unknown families yield an empty tuple rather than raising, so search operators degrade\nto leaving the objective untouched."
+      },
+      {
+        "component": "agent_k.evolution.loss:alternative_objectives",
+        "line": 158,
+        "name": "notice",
+        "value": "Return same-family objectives that can safely replace ``objective``."
+      },
+      {
+        "component": "agent_k.evolution.loss:alternative_objectives",
+        "line": 161,
+        "name": "dev",
+        "value": "The canonical form of the current objective is excluded so callers always get a genuine\nalternative. An unknown objective yields an empty tuple."
+      },
+      {
         "component": "agent_k.evolution.loss:LossGenome",
-        "line": 48,
+        "line": 175,
         "name": "notice",
         "value": "Genome for evolving custom objective functions."
       },
       {
         "component": "agent_k.evolution.loss:LossGenome",
-        "line": 51,
+        "line": 178,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.loss:LossGenome",
-        "line": 54,
+        "line": 181,
         "name": "pattern",
         "value": "{\"name\": \"genome-model\", \"rationale\": \"Dataclass for LightGBM loss function parameters.\"}"
       },
       {
         "component": "agent_k.evolution.loss:LossFunctionEvolver",
-        "line": 70,
+        "line": 200,
         "name": "notice",
         "value": "Evolve LightGBM loss function parameters via genetic search."
       },
       {
         "component": "agent_k.evolution.loss:LossFunctionEvolver",
-        "line": 73,
+        "line": 203,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.loss:LossFunctionEvolver",
-        "line": 76,
+        "line": 206,
         "name": "pattern",
         "value": "{\"name\": \"evolver\", \"rationale\": \"Coordinates evolutionary search over loss function genomes.\"}"
       },
       {
         "component": "agent_k.evolution.loss:build_lightgbm_objective_params",
-        "line": 141,
+        "line": 291,
         "name": "notice",
-        "value": "Create LightGBM objective params from a LossGenome."
+        "value": "Create LightGBM booster params from a LossGenome."
       },
       {
         "component": "agent_k.evolution.loss:build_lightgbm_objective_params",
-        "line": 144,
+        "line": 294,
         "name": "dev",
-        "value": "See module for behavior details and invariants."
+        "value": "Only parameters LightGBM actually reads are emitted. ``huber`` and ``quantile`` are both\ncontrolled by ``alpha`` (LightGBM has no ``huber_delta`` parameter, so emitting one is a\nsilent no-op), ``fair`"
+      },
+      {
+        "component": "agent_k.evolution.loss:build_custom_objective",
+        "line": 318,
+        "name": "notice",
+        "value": "Build a LightGBM custom objective callable from a LossGenome."
+      },
+      {
+        "component": "agent_k.evolution.loss:build_custom_objective",
+        "line": 321,
+        "name": "dev",
+        "value": "The returned callable matches LightGBM's ``lgb.train`` contract: it takes the raw scores\nand the training :class:`lightgbm.Dataset` and returns ``(grad, hess)``. Pass it as\n``params[\"objective\"]`` (Li"
+      },
+      {
+        "component": "agent_k.evolution.loss:build_custom_objective",
+        "line": 335,
+        "name": "raises ValueError",
+        "value": "If the genome family has no custom-objective formulation."
       }
     ],
     "agent_k/infra/__init__.py": [

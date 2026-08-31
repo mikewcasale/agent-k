@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.ui.agui:ChatHandler",
-  "line": 699,
+  "line": 762,
   "notice": "Handle chat requests for mission and non-mission modes.",
   "pattern": {
     "name": "handler",

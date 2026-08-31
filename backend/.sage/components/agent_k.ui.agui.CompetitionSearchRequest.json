@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.ui.agui:CompetitionSearchRequest",
-  "line": 243,
+  "line": 253,
   "notice": "Request payload for competition search.",
   "pattern": {
     "name": "request-model",

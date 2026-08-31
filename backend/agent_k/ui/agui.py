@@ -67,6 +67,9 @@ if TYPE_CHECKING:
 
 __all__ = (
     "AgentKEvent",
+    "EVENT_DROP_LOG_INTERVAL",
+    "EVENT_QUEUE_MAX_SIZE",
+    "EVENT_STREAM_HEARTBEAT_SECONDS",
     "EventEmitter",
     "ChatHandler",
     "IntentClassifier",
@@ -145,6 +148,13 @@ Extract the following criteria if mentioned:
 If the message is NOT about starting a mission, return is_mission=False with null criteria.
 If it IS a mission request, return is_mission=True with extracted criteria (use defaults for unspecified fields).
 """
+
+# Upper bound on buffered SSE events per mission; missions run headless (no
+# `/stream` consumer) whenever an orchestrator builds its own emitter, so an
+# unbounded queue would grow for the lifetime of the mission.
+EVENT_QUEUE_MAX_SIZE: Final[int] = 2048
+EVENT_STREAM_HEARTBEAT_SECONDS: Final[float] = 30.0
+EVENT_DROP_LOG_INTERVAL: Final[int] = 256
 
 # Event types that should be sent as data events (type "8")
 AGENT_K_EVENT_TYPES: Final[frozenset[str]] = frozenset(
@@ -354,10 +364,24 @@ class EventEmitter:
 
         @invariants:
             - "Events are only enqueued when not closed."
+            - "Buffered events never exceed EVENT_QUEUE_MAX_SIZE."
+            - "Events queued before close() are drained by stream() before it ends."
     """
 
-    _queue: asyncio.Queue[AgentKEvent] = field(default_factory=asyncio.Queue)
+    _queue: asyncio.Queue[AgentKEvent | None] = field(
+        default_factory=lambda: asyncio.Queue(maxsize=EVENT_QUEUE_MAX_SIZE)
+    )
     _closed: bool = False
+    _dropped: int = 0
+
+    @property
+    def dropped_events(self) -> int:
+        """Number of events discarded because the buffer was full.
+
+        @notice: |
+            Count of events dropped under backpressure.
+        """
+        return self._dropped
 
     async def emit(
         self,
@@ -368,6 +392,10 @@ class EventEmitter:
 
         @notice: |
             Enqueues an event for SSE streaming.
+
+        @dev: |
+            Never blocks the producer: when the buffer is full the oldest
+            event is discarded so the newest (and any terminal event) is kept.
         """
         if self._closed:
             return
@@ -377,25 +405,60 @@ class EventEmitter:
         # Log event emission
         logfire.debug("event_emitted", event_type=event_type, data_keys=list(data.keys()))
 
-        await self._queue.put(event)
+        self._enqueue(event)
 
     async def stream(self) -> AsyncIterator[str]:
         """Stream events as SSE.
 
+        @notice: |
+            Yields SSE frames until the emitter is closed and drained.
+
+        @dev: |
+            close() enqueues a sentinel, so buffered events emitted just
+            before shutdown (notably ``mission-complete``) are still
+            delivered and the generator ends without waiting for a heartbeat.
+
         Yields:
             SSE-formatted event strings.
         """
-        while not self._closed:
+        while True:
             try:
-                event = await asyncio.wait_for(self._queue.get(), timeout=30)
-                yield event.to_sse()
+                event = await asyncio.wait_for(self._queue.get(), timeout=EVENT_STREAM_HEARTBEAT_SECONDS)
             except TimeoutError:
+                if self._closed:
+                    return
                 # Send heartbeat to keep connection alive
                 yield ": heartbeat\n\n"
+                continue
+            if event is None:
+                return
+            yield event.to_sse()
 
     def close(self) -> None:
-        """Close the event stream."""
+        """Close the event stream.
+
+        @notice: |
+            Marks the emitter closed and wakes any active stream.
+        """
+        if self._closed:
+            return
         self._closed = True
+        self._enqueue(None)
+
+    def _enqueue(self, event: AgentKEvent | None) -> None:
+        """Put an item on the buffer, evicting the oldest entry when full."""
+        while True:
+            try:
+                self._queue.put_nowait(event)
+                return
+            except asyncio.QueueFull:
+                try:
+                    self._queue.get_nowait()
+                except asyncio.QueueEmpty:  # pragma: no cover - drained concurrently
+                    continue
+                self._dropped += 1
+                if self._dropped == 1 or self._dropped % EVENT_DROP_LOG_INTERVAL == 0:
+                    logfire.warning("event_stream_backpressure", dropped=self._dropped, max_size=EVENT_QUEUE_MAX_SIZE)
 
     async def emit_phase_start(self, phase: str, objectives: list[str]) -> None:
         """Emit phase start event."""
@@ -1311,10 +1374,12 @@ def create_app() -> FastAPI:
         emitter = missions[mission_id]["emitter"]
 
         async def event_generator() -> AsyncIterator[str]:
+            # Check for disconnect *after* forwarding: the previous ordering
+            # pulled an event off the queue and then discarded it.
             async for event in emitter.stream():
+                yield event
                 if await request.is_disconnected():
                     break
-                yield event
 
         return StreamingResponse(
             event_generator(),

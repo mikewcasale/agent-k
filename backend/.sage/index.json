@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-08-31T22:06:45.559366+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1095,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -7152,277 +7152,307 @@
       },
       {
         "component": "agent_k.ui.agui:MissionRequest",
-        "line": 220,
+        "line": 230,
         "name": "notice",
         "value": "Request to start a new mission."
       },
       {
         "component": "agent_k.ui.agui:MissionRequest",
-        "line": 223,
+        "line": 233,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:MissionRequest",
-        "line": 226,
+        "line": 236,
         "name": "pattern",
         "value": "{\"name\": \"request-model\", \"rationale\": \"Frozen Pydantic model for mission start requests.\"}"
       },
       {
         "component": "agent_k.ui.agui:CompetitionSearchRequest",
-        "line": 245,
+        "line": 255,
         "name": "notice",
         "value": "Request payload for competition search."
       },
       {
         "component": "agent_k.ui.agui:CompetitionSearchRequest",
-        "line": 248,
+        "line": 258,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:CompetitionSearchRequest",
-        "line": 251,
+        "line": 261,
         "name": "pattern",
         "value": "{\"name\": \"request-model\", \"rationale\": \"Frozen Pydantic model for competition search requests.\"}"
       },
       {
         "component": "agent_k.ui.agui:CompetitionFetchRequest",
-        "line": 267,
+        "line": 277,
         "name": "notice",
         "value": "Request payload for fetching competition details by URL."
       },
       {
         "component": "agent_k.ui.agui:CompetitionFetchRequest",
-        "line": 270,
+        "line": 280,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:CompetitionFetchRequest",
-        "line": 273,
+        "line": 283,
         "name": "pattern",
         "value": "{\"name\": \"request-model\", \"rationale\": \"Frozen Pydantic model for competition fetch requests.\"}"
       },
       {
         "component": "agent_k.ui.agui:AgentKEvent",
-        "line": 285,
+        "line": 295,
         "name": "notice",
         "value": "Event to be streamed to the frontend."
       },
       {
         "component": "agent_k.ui.agui:AgentKEvent",
-        "line": 288,
+        "line": 298,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:AgentKEvent",
-        "line": 291,
+        "line": 301,
         "name": "pattern",
         "value": "{\"name\": \"event-model\", \"rationale\": \"Frozen Pydantic model for SSE event streaming.\"}"
       },
       {
         "component": "agent_k.ui.agui:MissionIntentOutput",
-        "line": 310,
+        "line": 320,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Frozen Pydantic model for agent structured output.\"}"
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 339,
+        "line": 349,
         "name": "notice",
         "value": "Emitter for AG-UI events."
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 342,
+        "line": 352,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 345,
+        "line": 355,
         "name": "pattern",
         "value": "{\"name\": \"event-emitter\", \"rationale\": \"Centralizes event streaming for the UI.\", \"violations\": \"Direct SSE writes bypass buffering and tracing.\"}"
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 350,
+        "line": 360,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates internal queue and closed state.\"}"
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 355,
+        "line": 365,
         "name": "invariants",
-        "value": "[\"Events are only enqueued when not closed.\"]"
+        "value": "[\"Events are only enqueued when not closed.\", \"Buffered events never exceed EVENT_QUEUE_MAX_SIZE.\", \"Events queued before close() are drained by stream() before it ends.\"]"
+      },
+      {
+        "component": "agent_k.ui.agui:EventEmitter.dropped_events",
+        "line": 381,
+        "name": "notice",
+        "value": "Count of events dropped under backpressure."
       },
       {
         "component": "agent_k.ui.agui:EventEmitter.emit",
-        "line": 369,
+        "line": 393,
         "name": "notice",
         "value": "Enqueues an event for SSE streaming."
       },
       {
+        "component": "agent_k.ui.agui:EventEmitter.emit",
+        "line": 396,
+        "name": "dev",
+        "value": "Never blocks the producer: when the buffer is full the oldest\nevent is discarded so the newest (and any terminal event) is kept."
+      },
+      {
+        "component": "agent_k.ui.agui:EventEmitter.stream",
+        "line": 413,
+        "name": "notice",
+        "value": "Yields SSE frames until the emitter is closed and drained."
+      },
+      {
+        "component": "agent_k.ui.agui:EventEmitter.stream",
+        "line": 416,
+        "name": "dev",
+        "value": "close() enqueues a sentinel, so buffered events emitted just\nbefore shutdown (notably ``mission-complete``) are still\ndelivered and the generator ends without waiting for a heartbeat."
+      },
+      {
+        "component": "agent_k.ui.agui:EventEmitter.close",
+        "line": 440,
+        "name": "notice",
+        "value": "Marks the emitter closed and wakes any active stream."
+      },
+      {
         "component": "agent_k.ui.agui:TaskEmissionContext",
-        "line": 550,
+        "line": 613,
         "name": "notice",
         "value": "Context manager for task-scoped event emission."
       },
       {
         "component": "agent_k.ui.agui:TaskEmissionContext",
-        "line": 553,
+        "line": 616,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:TaskEmissionContext",
-        "line": 556,
+        "line": 619,
         "name": "pattern",
         "value": "{\"name\": \"context-model\", \"rationale\": \"Async context manager for task lifecycle events.\"}"
       },
       {
         "component": "agent_k.ui.agui:MissionIntentResult",
-        "line": 595,
+        "line": 658,
         "name": "notice",
         "value": "Result of mission intent parsing."
       },
       {
         "component": "agent_k.ui.agui:MissionIntentResult",
-        "line": 598,
+        "line": 661,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:MissionIntentResult",
-        "line": 601,
+        "line": 664,
         "name": "pattern",
         "value": "{\"name\": \"result-model\", \"rationale\": \"Dataclass for intent classification result.\"}"
       },
       {
         "component": "agent_k.ui.agui:IntentClassifier",
-        "line": 614,
+        "line": 677,
         "name": "notice",
         "value": "Classify whether a message requests a mission."
       },
       {
         "component": "agent_k.ui.agui:IntentClassifier",
-        "line": 617,
+        "line": 680,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:IntentClassifier",
-        "line": 620,
+        "line": 683,
         "name": "pattern",
         "value": "{\"name\": \"classifier\", \"rationale\": \"Dataclass for LLM-backed intent classification.\"}"
       },
       {
         "component": "agent_k.ui.agui:MissionCriteriaParser",
-        "line": 669,
+        "line": 732,
         "name": "notice",
         "value": "Parse mission criteria from intent output."
       },
       {
         "component": "agent_k.ui.agui:MissionCriteriaParser",
-        "line": 672,
+        "line": 735,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:MissionCriteriaParser",
-        "line": 675,
+        "line": 738,
         "name": "pattern",
         "value": "{\"name\": \"parser\", \"rationale\": \"Dataclass for extracting mission criteria from intent.\"}"
       },
       {
         "component": "agent_k.ui.agui:ChatHandler",
-        "line": 701,
+        "line": 764,
         "name": "notice",
         "value": "Handle chat requests for mission and non-mission modes."
       },
       {
         "component": "agent_k.ui.agui:ChatHandler",
-        "line": 704,
+        "line": 767,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:ChatHandler",
-        "line": 707,
+        "line": 770,
         "name": "pattern",
         "value": "{\"name\": \"handler\", \"rationale\": \"Dataclass coordinating intent classification and parsing.\"}"
       },
       {
         "component": "agent_k.ui.agui:parse_mission_intent",
-        "line": 868,
+        "line": 931,
         "name": "notice",
         "value": "Parse chat messages to detect mission intent and extract criteria."
       },
       {
         "component": "agent_k.ui.agui:parse_mission_intent",
-        "line": 871,
+        "line": 934,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.ui.agui:transform_to_vercel_stream",
-        "line": 892,
+        "line": 955,
         "name": "notice",
         "value": "Transform EventEmitter output to Vercel AI Data Stream format."
       },
       {
         "component": "agent_k.ui.agui:transform_to_vercel_stream",
-        "line": 895,
+        "line": 958,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.ui.agui:stream_text_response",
-        "line": 946,
+        "line": 1009,
         "name": "notice",
         "value": "Stream a simple text response in Vercel AI format."
       },
       {
         "component": "agent_k.ui.agui:stream_text_response",
-        "line": 949,
-        "name": "dev",
-        "value": "See module for behavior details and invariants."
-      },
-      {
-        "component": "agent_k.ui.agui:create_app",
-        "line": 1009,
-        "name": "dev",
-        "value": "See module for behavior details and invariants."
-      },
-      {
-        "component": "agent_k.ui.agui:create_app",
         "line": 1012,
+        "name": "dev",
+        "value": "See module for behavior details and invariants."
+      },
+      {
+        "component": "agent_k.ui.agui:create_app",
+        "line": 1072,
+        "name": "dev",
+        "value": "See module for behavior details and invariants."
+      },
+      {
+        "component": "agent_k.ui.agui:create_app",
+        "line": 1075,
         "name": "notice",
         "value": "Constructs the FastAPI app with routes and middleware."
       },
       {
         "component": "agent_k.ui.agui:create_app",
-        "line": 1015,
+        "line": 1078,
         "name": "factory_for",
         "value": "{\"id\": \"fastapi:FastAPI\", \"rationale\": \"Centralizes AG-UI app wiring.\", \"singleton\": false, \"cache_key\": \"app\"}"
       },
       {
         "component": "agent_k.ui.agui:create_app",
-        "line": 1021,
+        "line": 1084,
         "name": "canonical_home",
         "value": "{\"for\": [\"AG-UI application construction\"], \"notes\": \"Use create_app to initialize the FastAPI server.\"}"
       },
       {
         "component": "agent_k.ui.agui:main",
-        "line": 1768,
+        "line": 1833,
         "name": "notice",
         "value": "Run the AG-UI server."
       },
       {
         "component": "agent_k.ui.agui:main",
-        "line": 1771,
+        "line": 1836,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       }

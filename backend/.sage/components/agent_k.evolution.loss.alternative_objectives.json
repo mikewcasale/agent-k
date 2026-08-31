@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The canonical form of the current objective is excluded so callers always get a genuine\nalternative. An unknown objective yields an empty tuple.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:alternative_objectives",
+  "line": 156,
+  "notice": "Return same-family objectives that can safely replace ``objective``.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Return same-family objectives that can safely replace ``objective``.",
+  "type": "function"
+}

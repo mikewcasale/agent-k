@@ -223,7 +223,8 @@ X_test = test_df[X.columns]  # Ensure same columns as training
 def huber_objective(y_true, y_pred, delta=1.0):
     residual = y_pred - y_true
     grad = np.where(np.abs(residual) <= delta, residual, delta * np.sign(residual))
-    hess = np.where(np.abs(residual) <= delta, 1.0, 0.0)
+    # Keep the hessian strictly positive: a zero hessian makes LightGBM leaf values explode.
+    hess = np.ones_like(residual)
     return grad, hess
 ```
 """

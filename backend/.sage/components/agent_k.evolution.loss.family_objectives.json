@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Unknown families yield an empty tuple rather than raising, so search operators degrade\nto leaving the objective untouched.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:family_objectives",
+  "line": 143,
+  "notice": "Return the interchangeable objectives for a problem family.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Return the interchangeable objectives for a problem family.",
+  "type": "function"
+}

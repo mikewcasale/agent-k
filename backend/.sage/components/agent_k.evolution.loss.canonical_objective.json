@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Quoting and case from source code are stripped first. Returns ``None`` for objectives\noutside the known families, including callables and narrow-domain objectives, so callers\ncan decline to reason about them.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:canonical_objective",
+  "line": 113,
+  "notice": "Resolve a LightGBM objective name or alias to its canonical spelling.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Resolve a LightGBM objective name or alias to its canonical spelling.",
+  "type": "function"
+}

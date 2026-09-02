@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Returns an invalid result when the file is missing so callers can fall\nback to the next candidate solution. Repairs are attempted once, and the\npost-repair validation is what the caller acts on.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:_check_submission",
+  "line": 2297,
+  "notice": "Guards Kaggle's limited daily submission slots against malformed uploads.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Validate a generated submission and repair it when the defects are recoverable.",
+  "type": "function"
+}

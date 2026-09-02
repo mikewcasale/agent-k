@@ -73,7 +73,7 @@ from ..core.constants import (
     RESEARCH_TIMEOUT_SECONDS,
     SUBMISSION_TIMEOUT_SECONDS,
 )
-from ..core.data import infer_competition_schema, locate_data_files, stage_competition_data
+from ..core.data import CompetitionSchema, infer_competition_schema, locate_data_files, stage_competition_data
 from ..core.exceptions import classify_error
 from ..core.hints import DatasetProfile, PreprocessingHint, build_dataset_profile, generate_preprocessing_hints
 from ..core.models import (
@@ -86,6 +86,7 @@ from ..core.models import (
 )
 from ..core.solution import execute_solution, parse_baseline_score
 from ..core.strategy import apply_solution_policy, build_fitness_policy, build_problem_profile, build_technique_policy
+from ..core.submission import SubmissionValidation, repair_submission, validate_submission
 from ..core.tracking import (
     ExperimentRecord,
     HintEffectivenessTracker,
@@ -1743,7 +1744,10 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         model_spec=evolver_settings.model,
                     )
 
-                    if not submission_path.exists() or execution.returncode != 0 or execution.timed_out:
+                    validation = _check_submission(
+                        submission_path, staged["sample"], schema=schema, stage="best_solution"
+                    )
+                    if not validation.is_valid or execution.returncode != 0 or execution.timed_out:
                         fallback_code = state.prototype_code
                         if fallback_code and fallback_code != best_code:
                             fallback_code, notes = apply_solution_policy(fallback_code, technique_policy)
@@ -1756,8 +1760,11 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                                 use_builtin_code_execution=True,
                                 model_spec=evolver_settings.model,
                             )
+                            validation = _check_submission(
+                                submission_path, staged["sample"], schema=schema, stage="prototype"
+                            )
 
-                        if not submission_path.exists() or execution.returncode != 0 or execution.timed_out:
+                        if not validation.is_valid or execution.returncode != 0 or execution.timed_out:
                             _write_fallback_submission(
                                 train_path=staged["train"],
                                 test_path=staged["test"],
@@ -1765,14 +1772,18 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                                 metric=competition.metric,
                                 output_path=submission_path,
                             )
+                            validation = _check_submission(
+                                submission_path, staged["sample"], schema=schema, stage="statistical_fallback"
+                            )
 
-                    if not submission_path.exists():
+                    if not validation.is_valid:
                         _cleanup_session_data(state.mission_id)
                         return End(
                             MissionResult(
                                 success=False,
                                 mission_id=state.mission_id,
-                                error_message="Failed to generate submission file",
+                                competition_id=competition_id,
+                                error_message=f"Submission file is not valid for upload: {validation.summary}",
                                 phases_completed=list(state.phases_completed),
                             )
                         )
@@ -2278,6 +2289,49 @@ def _compute_baseline_score(*, train_path: Path, target_columns: list[str], metr
 
 def _normalize_label(label: Any) -> str:
     return str(label).lower().replace("class_", "").replace("class ", "")
+
+
+def _check_submission(
+    submission_path: Path, sample_path: Path, *, schema: CompetitionSchema, stage: str
+) -> SubmissionValidation:
+    """Validate a generated submission and repair it when the defects are recoverable.
+
+    @notice: |
+        Guards Kaggle's limited daily submission slots against malformed uploads.
+
+    @dev: |
+        Returns an invalid result when the file is missing so callers can fall
+        back to the next candidate solution. Repairs are attempted once, and the
+        post-repair validation is what the caller acts on.
+    """
+    if not submission_path.exists():
+        logfire.warning("submission_validation_missing_file", stage=stage, path=str(submission_path))
+        return SubmissionValidation(is_valid=False, row_count=0, errors=("submission file not found",))
+
+    validation = validate_submission(
+        submission_path, sample_path, id_column=schema.id_column, target_columns=schema.target_columns
+    )
+    if validation.is_valid:
+        logfire.info(
+            "submission_validation_passed",
+            stage=stage,
+            row_count=validation.row_count,
+            warnings=list(validation.warnings),
+        )
+        return validation
+
+    logfire.warning("submission_validation_failed", stage=stage, errors=list(validation.errors))
+    repaired = repair_submission(
+        submission_path, sample_path, id_column=schema.id_column, target_columns=schema.target_columns
+    )
+    logfire.info(
+        "submission_repair_attempted",
+        stage=stage,
+        repaired=repaired.is_valid,
+        repairs=list(repaired.repairs),
+        errors=list(repaired.errors),
+    )
+    return repaired
 
 
 def _write_fallback_submission(

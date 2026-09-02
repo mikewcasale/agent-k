@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "``errors`` block an upload, ``warnings`` are informational, and\n``repairs`` records the fixes applied by :func:`repair_submission`.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.submission:SubmissionValidation",
+  "line": 66,
+  "notice": "Outcome of validating a submission file against a sample submission.",
+  "pattern": {
+    "name": "output-model",
+    "rationale": "Stable schema for submission validation reporting.",
+    "violations": "Bare booleans hide why an upload was rejected."
+  },
+  "similar": null,
+  "source": "agent_k/core/submission.py",
+  "summary": "Outcome of validating a submission file against a sample submission.",
+  "type": "class"
+}

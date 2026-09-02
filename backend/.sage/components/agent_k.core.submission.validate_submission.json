@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Column expectations come from the inferred schema; per-column value\nexpectations (numeric vs categorical) are learned from the sample file\nso probability, regression, and label submissions all validate.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.submission:validate_submission",
+  "line": 100,
+  "notice": "Checks columns, row identity, and value finiteness without mutating files.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/submission.py",
+  "summary": "Validate a submission file against the competition sample submission.",
+  "type": "function"
+}

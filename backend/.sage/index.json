@@ -1,5 +1,5 @@
 {
-  "component_count": 59,
+  "component_count": 60,
   "components": [
     {
       "consumes": [],
@@ -326,6 +326,18 @@
         "agent_k.core.strategy"
       ],
       "source": "agent_k/core/strategy.py"
+    },
+    {
+      "consumes": [],
+      "id": "agent_k.core.submission",
+      "line": 1,
+      "pattern": "validation",
+      "provides": [
+        "agent_k.core.submission:SubmissionValidation",
+        "agent_k.core.submission:validate_submission",
+        "agent_k.core.submission:repair_submission"
+      ],
+      "source": "agent_k/core/submission.py"
     },
     {
       "consumes": [],
@@ -705,7 +717,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-09-02T00:11:28.539745+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -733,6 +745,7 @@
     "agent_k/core/settings.py",
     "agent_k/core/solution.py",
     "agent_k/core/strategy.py",
+    "agent_k/core/submission.py",
     "agent_k/core/tracking.py",
     "agent_k/core/types.py",
     "agent_k/embeddings/__init__.py",
@@ -767,7 +780,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1104,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -4493,6 +4506,80 @@
         "value": "Policy injection is disabled to allow evolutionary search to handle\ndata preparation generically. Returns (code, []) unchanged."
       }
     ],
+    "agent_k/core/submission.py": [
+      {
+        "component": "agent_k.core.submission",
+        "line": 3,
+        "name": "notice",
+        "value": "Structural validation and best-effort repair of generated submission files."
+      },
+      {
+        "component": "agent_k.core.submission",
+        "line": 6,
+        "name": "dev",
+        "value": "Kaggle competitions cap the number of daily submissions, so uploading a\nstructurally broken ``submission.csv`` wastes a scarce slot and ends the\nmission with a rejection instead of a score. These help"
+      },
+      {
+        "component": "agent_k.core.submission",
+        "line": 18,
+        "name": "graph",
+        "value": "{\"id\": \"agent_k.core.submission\", \"provides\": [\"agent_k.core.submission:SubmissionValidation\", \"agent_k.core.submission:validate_submission\", \"agent_k.core.submission:repair_submission\"], \"pattern\": \""
+      },
+      {
+        "component": "agent_k.core.submission",
+        "line": 26,
+        "name": "agent_guidance",
+        "value": "{\"do\": [\"Use agent_k.core.submission before uploading any submission file.\", \"Derive column expectations from CompetitionSchema and the sample file.\"], \"do_not\": [\"Create parallel modules without upda"
+      },
+      {
+        "component": "agent_k.core.submission",
+        "line": 34,
+        "name": "human_review",
+        "value": "{\"last_verified\": \"2026-09-02\", \"owners\": [\"agent-k-core\"]}"
+      },
+      {
+        "component": "agent_k.core.submission:SubmissionValidation",
+        "line": 68,
+        "name": "notice",
+        "value": "Outcome of validating a submission file against a sample submission."
+      },
+      {
+        "component": "agent_k.core.submission:SubmissionValidation",
+        "line": 71,
+        "name": "dev",
+        "value": "``errors`` block an upload, ``warnings`` are informational, and\n``repairs`` records the fixes applied by :func:`repair_submission`."
+      },
+      {
+        "component": "agent_k.core.submission:SubmissionValidation",
+        "line": 75,
+        "name": "pattern",
+        "value": "{\"name\": \"output-model\", \"rationale\": \"Stable schema for submission validation reporting.\", \"violations\": \"Bare booleans hide why an upload was rejected.\"}"
+      },
+      {
+        "component": "agent_k.core.submission:validate_submission",
+        "line": 102,
+        "name": "notice",
+        "value": "Checks columns, row identity, and value finiteness without mutating files."
+      },
+      {
+        "component": "agent_k.core.submission:validate_submission",
+        "line": 105,
+        "name": "dev",
+        "value": "Column expectations come from the inferred schema; per-column value\nexpectations (numeric vs categorical) are learned from the sample file\nso probability, regression, and label submissions all validat"
+      },
+      {
+        "component": "agent_k.core.submission:repair_submission",
+        "line": 168,
+        "name": "notice",
+        "value": "Fixes column layout, row identity, and non-finite values where possible."
+      },
+      {
+        "component": "agent_k.core.submission:repair_submission",
+        "line": 171,
+        "name": "dev",
+        "value": "Repairs never invent predictions beyond a bounded back-fill: rows absent\nfrom the submission are taken from the sample file only while they stay\nunder ``max_fill_ratio`` of the expected rows. Non-fini"
+      }
+    ],
     "agent_k/core/tracking.py": [
       {
         "component": "agent_k.core.tracking",
@@ -6150,183 +6237,195 @@
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 123,
+        "line": 124,
         "name": "notice",
         "value": "Discovery phase node."
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 126,
+        "line": 127,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 129,
+        "line": 130,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates discovery phase logic in the mission graph.\", \"violations\": \"Discovery logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 134,
+        "line": 135,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.lobbyist:LobbyistAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifec"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 144,
+        "line": 145,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 149,
+        "line": 150,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 281,
+        "line": 282,
         "name": "notice",
         "value": "Research phase node."
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 284,
+        "line": 285,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 287,
+        "line": 288,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates research phase logic in the mission graph.\", \"violations\": \"Research logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 292,
+        "line": 293,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.scientist:ScientistAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lif"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 302,
+        "line": 303,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 307,
+        "line": 308,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 427,
+        "line": 428,
         "name": "notice",
         "value": "Prototype phase node."
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 430,
+        "line": 431,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 433,
+        "line": 434,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates prototype phase logic in the mission graph.\", \"violations\": \"Prototype logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 438,
+        "line": 439,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.solution:execute_solution\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 447,
+        "line": 448,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 452,
+        "line": 453,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 908,
+        "line": 909,
         "name": "notice",
         "value": "Evolution phase node."
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 911,
+        "line": 912,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 914,
+        "line": 915,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates evolution phase logic in the mission graph.\", \"violations\": \"Evolution logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 919,
+        "line": 920,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.evolver:EvolverAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated pe"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 928,
+        "line": 929,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 933,
+        "line": 934,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1610,
+        "line": 1611,
         "name": "notice",
         "value": "Submission phase node."
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1613,
+        "line": 1614,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1616,
+        "line": 1617,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates submission phase logic in the mission graph.\", \"violations\": \"Submission logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1621,
+        "line": 1622,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.agents.evolver:EvolverAgent\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated pe"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1630,
+        "line": 1631,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1635,
+        "line": 1636,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
+      },
+      {
+        "component": "agent_k.mission.nodes:_check_submission",
+        "line": 2299,
+        "name": "notice",
+        "value": "Guards Kaggle's limited daily submission slots against malformed uploads."
+      },
+      {
+        "component": "agent_k.mission.nodes:_check_submission",
+        "line": 2302,
+        "name": "dev",
+        "value": "Returns an invalid result when the file is missing so callers can fall\nback to the next candidate solution. Repairs are attempted once, and the\npost-repair validation is what the caller acts on."
       }
     ],
     "agent_k/mission/persistence.py": [

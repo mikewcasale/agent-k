@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.mission.nodes:SubmissionNode.run",
-  "line": 1643,
+  "id": "agent_k.core.submission:SubmissionValidation.summary",
+  "line": 89,
   "notice": null,
   "pattern": null,
   "similar": null,
-  "source": "agent_k/mission/nodes.py",
-  "summary": "Execute submission phase.",
+  "source": "agent_k/core/submission.py",
+  "summary": "Return a single-line summary of the blocking errors.",
   "type": "method"
 }

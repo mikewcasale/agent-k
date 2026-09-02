@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Repairs never invent predictions beyond a bounded back-fill: rows absent\nfrom the submission are taken from the sample file only while they stay\nunder ``max_fill_ratio`` of the expected rows. Non-finite or blank cells\nare replaced by the column's median (numeric) or modal (categorical)\nvalue so a single bad row cannot void an otherwise usable submission.\nReturns the validation of the rewritten file.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.submission:repair_submission",
+  "line": 166,
+  "notice": "Fixes column layout, row identity, and non-finite values where possible.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/submission.py",
+  "summary": "Repair recoverable submission defects and rewrite the file atomically.",
+  "type": "function"
+}

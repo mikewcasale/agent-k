@@ -1,0 +1,39 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.core.submission before uploading any submission file.",
+      "Derive column expectations from CompetitionSchema and the sample file."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph.",
+      "Add competition-specific column or value rules."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Kaggle competitions cap the number of daily submissions, so uploading a\nstructurally broken ``submission.csv`` wastes a scarce slot and ends the\nmission with a rejection instead of a score. These helpers compare a\ngenerated submission against the competition's ``sample_submission.csv``\n(the authoritative shape contract) and repair the mismatches that are\nrecoverable without inventing predictions.\n\nAll checks are generic across ML problem types: column identity comes from\nthe inferred schema and value expectations come from the sample file, so no\ncompetition-specific knowledge is encoded here.",
+  "graph": {
+    "id": "agent_k.core.submission",
+    "pattern": "validation",
+    "provides": [
+      "agent_k.core.submission:SubmissionValidation",
+      "agent_k.core.submission:validate_submission",
+      "agent_k.core.submission:repair_submission"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-09-02",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.core.submission",
+  "line": 1,
+  "notice": "Structural validation and best-effort repair of generated submission files.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/submission.py",
+  "summary": "Submission file validation and repair for AGENT-K.",
+  "type": "module"
+}

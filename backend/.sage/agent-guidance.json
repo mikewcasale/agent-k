@@ -1,5 +1,5 @@
 {
-  "count": 59,
+  "count": 60,
   "entries": [
     {
       "component": "agent_k",
@@ -286,6 +286,19 @@
       ],
       "line": 1,
       "source": "agent_k/core/strategy.py"
+    },
+    {
+      "component": "agent_k.core.submission",
+      "do": [
+        "Use agent_k.core.submission before uploading any submission file.",
+        "Derive column expectations from CompetitionSchema and the sample file."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph.",
+        "Add competition-specific column or value rules."
+      ],
+      "line": 1,
+      "source": "agent_k/core/submission.py"
     },
     {
       "component": "agent_k.core.tracking",
@@ -651,6 +664,6 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831787+00:00",
+  "generated": "2026-09-02T00:11:28.540443+00:00",
   "version": "1.3.6"
 }

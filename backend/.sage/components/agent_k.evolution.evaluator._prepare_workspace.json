@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The input set is pinned by the first candidate of a run and persisted\nto a manifest inside the pristine cache, so files a candidate creates\nare never mistaken for competition inputs and the pinned set survives\nhowever OpenEvolve chooses to process candidates. The snapshot is\ncapped at ``_MAX_PRISTINE_BYTES``; inputs beyond the cap are still\nfingerprinted (so mutation is reported) but cannot be restored.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.evaluator:_prepare_workspace",
+  "line": 196,
+  "notice": "Every candidate program runs in the same shared working directory, so\na stale ``submission.csv`` from an earlier candidate would make a\ncandidate that never writes one look valid. This removes that file and\nreturns the fingerprints of the staged inputs so a candidate that\noverwrites them can be rolled back before the next candidate runs.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/evaluator.py",
+  "summary": "Reset per-candidate artifacts and return the staged-input fingerprints.",
+  "type": "function"
+}

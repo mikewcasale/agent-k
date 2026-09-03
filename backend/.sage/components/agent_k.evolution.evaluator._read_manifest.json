@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.evolution.evaluator:_truncate",
-  "line": 411,
+  "id": "agent_k.evolution.evaluator:_read_manifest",
+  "line": 182,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/evolution/evaluator.py",
-  "summary": "Truncate text to maximum length.",
+  "summary": "Load a previously written input manifest, or ``None`` when unusable.",
   "type": "function"
 }

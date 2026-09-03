@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "A file with no snapshot (deleted or skipped by the size cap) is still\nreported, so callers can invalidate the candidate even when rollback\nis impossible.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.evaluator:_restore_mutated_inputs",
+  "line": 228,
+  "notice": "Returns the relative paths of the input files whose content changed\nduring the candidate run, after restoring each one from the pristine\nsnapshot so later candidates evaluate against the original data.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/evaluator.py",
+  "summary": "Restore staged inputs a candidate modified and return their names.",
+  "type": "function"
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Hidden directories (including the pristine cache) and the temporary\ndirectories created by other evaluators are excluded so only real\ncompetition inputs are tracked.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.evaluator:_iter_input_files",
+  "line": 128,
+  "notice": "Walks the shared evolution working directory and yields every staged\ndata file, skipping per-candidate run artifacts and OpenEvolve's own\nbookkeeping directories.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/evaluator.py",
+  "summary": "Yield the staged competition input files under ``work_dir``.",
+  "type": "function"
+}

@@ -45,6 +45,8 @@ import logfire
 from openevolve.evaluation_result import EvaluationResult
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from agent_k.core.hints import PreprocessingHint
 
 __all__ = ("evaluate", "evaluate_stage1", "evaluate_stage2")
@@ -60,6 +62,18 @@ _DEFAULT_VALIDATION_SPLIT: Final[float] = 0.2
 _STAGE1_TIMEOUT: Final[int] = 5
 _STAGE2_TIMEOUT: Final[int] = 30
 _STAGE2_DATA_ROWS: Final[int] = 1000
+_SUBMISSION_FILENAME: Final[str] = "submission.csv"
+_PRISTINE_DIR_NAME: Final[str] = ".agent_k_pristine"
+_MANIFEST_FILENAME: Final[str] = "inputs.json"
+_MAX_PRISTINE_BYTES: Final[int] = 512 * 1024 * 1024
+_RUN_ARTIFACT_NAMES: Final[frozenset[str]] = frozenset({_SUBMISSION_FILENAME, "solution.py", "initial_program.py"})
+_EXCLUDED_DIR_NAMES: Final[frozenset[str]] = frozenset({_PRISTINE_DIR_NAME, "openevolve_output", "__pycache__"})
+_MUTATED_INPUT_HINT: Final[str] = (
+    "MUTATION HINT [MutatedInput]: The solution overwrote a staged competition data file "
+    "({files}). Input files are shared by every candidate and must stay read-only:\n"
+    "- Read with `pd.read_csv('train.csv')` and keep derived frames in memory\n"
+    "- Write derived data under a new name (e.g. `features.csv`), never back over train/test/sample files"
+)
 _MODEL_FAMILY_PATTERNS: Final[tuple[tuple[float, re.Pattern[str]], ...]] = (
     (3.0, re.compile(r"\b(Stacking|Voting|Bagging|AdaBoost)(?:Regressor|Classifier)?\b")),
     (2.0, re.compile(r"\bKNeighbors(?:Regressor|Classifier)\b")),
@@ -108,6 +122,136 @@ def _load_hints(hints_data: list[dict[str, Any]]) -> list[Any]:
         if isinstance(hint_dict, dict):
             hints.append(PreprocessingHint(**hint_dict))
     return hints
+
+
+def _iter_input_files(work_dir: Path) -> Iterator[Path]:
+    """Yield the staged competition input files under ``work_dir``.
+
+    @notice: |
+        Walks the shared evolution working directory and yields every staged
+        data file, skipping per-candidate run artifacts and OpenEvolve's own
+        bookkeeping directories.
+
+    @dev: |
+        Hidden directories (including the pristine cache) and the temporary
+        directories created by other evaluators are excluded so only real
+        competition inputs are tracked.
+    """
+    for dir_path, dir_names, file_names in os.walk(work_dir):
+        dir_names[:] = sorted(
+            name for name in dir_names if name not in _EXCLUDED_DIR_NAMES and not name.startswith(".")
+        )
+        current = Path(dir_path)
+        is_root = current.relative_to(work_dir) == Path()
+        for file_name in sorted(file_names):
+            if is_root and file_name in _RUN_ARTIFACT_NAMES:
+                continue
+            path = current / file_name
+            if path.is_file():
+                yield path
+
+
+def _fingerprint(path: Path) -> tuple[int, int]:
+    """Return a cheap (size, mtime) fingerprint for ``path``."""
+    stat_result = path.stat()
+    return stat_result.st_size, stat_result.st_mtime_ns
+
+
+def _snapshot_inputs(work_dir: Path) -> dict[str, tuple[int, int]]:
+    """Copy the staged inputs into the pristine cache and fingerprint them."""
+    pristine_dir = work_dir / _PRISTINE_DIR_NAME
+    fingerprints: dict[str, tuple[int, int]] = {}
+    backed_up_bytes = 0
+
+    for path in _iter_input_files(work_dir):
+        relative = path.relative_to(work_dir)
+        fingerprints[relative.as_posix()] = _fingerprint(path)
+        size = path.stat().st_size
+        if backed_up_bytes + size > _MAX_PRISTINE_BYTES:
+            logfire.warning("openevolve_pristine_snapshot_skipped", file=relative.as_posix(), size=size)
+            continue
+        backup = pristine_dir / relative
+        backup.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, backup)
+        backed_up_bytes += size
+
+    return fingerprints
+
+
+def _read_manifest(manifest_path: Path) -> dict[str, tuple[int, int]] | None:
+    """Load a previously written input manifest, or ``None`` when unusable."""
+    try:
+        raw = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(raw, dict):
+        return None
+    try:
+        return {str(name): (int(size), int(mtime)) for name, (size, mtime) in raw.items()}
+    except (TypeError, ValueError):
+        return None
+
+
+def _prepare_workspace(work_dir: Path) -> dict[str, tuple[int, int]]:
+    """Reset per-candidate artifacts and return the staged-input fingerprints.
+
+    @notice: |
+        Every candidate program runs in the same shared working directory, so
+        a stale ``submission.csv`` from an earlier candidate would make a
+        candidate that never writes one look valid. This removes that file and
+        returns the fingerprints of the staged inputs so a candidate that
+        overwrites them can be rolled back before the next candidate runs.
+
+    @dev: |
+        The input set is pinned by the first candidate of a run and persisted
+        to a manifest inside the pristine cache, so files a candidate creates
+        are never mistaken for competition inputs and the pinned set survives
+        however OpenEvolve chooses to process candidates. The snapshot is
+        capped at ``_MAX_PRISTINE_BYTES``; inputs beyond the cap are still
+        fingerprinted (so mutation is reported) but cannot be restored.
+    """
+    stale_submission = work_dir / _SUBMISSION_FILENAME
+    stale_submission.unlink(missing_ok=True)
+
+    manifest_path = work_dir / _PRISTINE_DIR_NAME / _MANIFEST_FILENAME
+    existing = _read_manifest(manifest_path)
+    if existing is not None:
+        return existing
+
+    fingerprints = _snapshot_inputs(work_dir)
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_path.write_text(json.dumps(fingerprints, sort_keys=True), encoding="utf-8")
+    return fingerprints
+
+
+def _restore_mutated_inputs(work_dir: Path, fingerprints: dict[str, tuple[int, int]]) -> list[str]:
+    """Restore staged inputs a candidate modified and return their names.
+
+    @notice: |
+        Returns the relative paths of the input files whose content changed
+        during the candidate run, after restoring each one from the pristine
+        snapshot so later candidates evaluate against the original data.
+
+    @dev: |
+        A file with no snapshot (deleted or skipped by the size cap) is still
+        reported, so callers can invalidate the candidate even when rollback
+        is impossible.
+    """
+    pristine_dir = work_dir / _PRISTINE_DIR_NAME
+    mutated: list[str] = []
+
+    for relative, expected in fingerprints.items():
+        path = work_dir / relative
+        if path.exists() and _fingerprint(path) == expected:
+            continue
+        mutated.append(relative)
+        backup = pristine_dir / relative
+        if not backup.exists():
+            continue
+        path.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(backup, path)
+
+    return mutated
 
 
 def _failure_metrics() -> dict[str, float]:
@@ -341,17 +485,23 @@ def evaluate(program_path: str) -> EvaluationResult:
         return EvaluationResult(metrics=_failure_metrics(), artifacts={"error": str(exc)})
 
     env = {"AGENT_K_VALIDATION_SPLIT": f"{validation_split:.6f}"}
+    input_fingerprints = _prepare_workspace(work_dir)
 
     try:
         result = asyncio.run(execute_solution(code, work_dir, timeout_seconds=timeout, env=env))
     except Exception as exc:
+        _restore_mutated_inputs(work_dir, input_fingerprints)
         logfire.error("openevolve_execution_failed", error=str(exc))
         return EvaluationResult(metrics=_failure_metrics(), artifacts=_error_artifacts(exc))
 
+    mutated_inputs = _restore_mutated_inputs(work_dir, input_fingerprints)
+    if mutated_inputs:
+        logfire.warning("openevolve_inputs_restored", files=mutated_inputs)
+
     cv_score = parse_baseline_score(result.stdout)
     applied_hints = detect_applied_hints(code, hints) if hints else []
-    submission_path = work_dir / "submission.csv"
-    valid = result.returncode == 0 and cv_score is not None and submission_path.exists()
+    submission_path = work_dir / _SUBMISSION_FILENAME
+    valid = result.returncode == 0 and cv_score is not None and submission_path.exists() and not mutated_inputs
 
     fitness = _fitness_from_score(cv_score, metric_direction)
     cv_variance = _compute_cv_variance(result.stdout)
@@ -368,9 +518,12 @@ def evaluate(program_path: str) -> EvaluationResult:
     }
 
     # Build structured error feedback for failed evaluations
-    error_feedback = ""
+    feedback_sections: list[str] = []
+    if mutated_inputs:
+        feedback_sections.append(_MUTATED_INPUT_HINT.format(files=", ".join(mutated_inputs)))
     if result.returncode != 0:
-        error_feedback = _extract_error_feedback(result.stderr, result.stdout)
+        feedback_sections.append(_extract_error_feedback(result.stderr, result.stdout))
+    error_feedback = "\n\n".join(feedback_sections)
 
     artifacts = {
         "stdout": _truncate(result.stdout, 2000),
@@ -378,6 +531,7 @@ def evaluate(program_path: str) -> EvaluationResult:
         "warnings": "\n".join(_extract_warnings(result.stderr)),
         "applied_hints": json.dumps(sorted(applied_hints)),
         "hint_count": str(len(applied_hints)),
+        "mutated_inputs": json.dumps(mutated_inputs),
         "submission_exists": str(submission_path.exists()),
         "error_feedback": error_feedback,
         "execution_status": "success" if valid else "failed",

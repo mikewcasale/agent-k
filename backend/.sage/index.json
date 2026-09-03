@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-09-03T02:20:09.039029+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1096,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -5253,38 +5253,74 @@
         "value": "{\"last_verified\": \"2026-01-26\", \"owners\": [\"agent-k-core\"]}"
       },
       {
+        "component": "agent_k.evolution.evaluator:_iter_input_files",
+        "line": 130,
+        "name": "notice",
+        "value": "Walks the shared evolution working directory and yields every staged\ndata file, skipping per-candidate run artifacts and OpenEvolve's own\nbookkeeping directories."
+      },
+      {
+        "component": "agent_k.evolution.evaluator:_iter_input_files",
+        "line": 135,
+        "name": "dev",
+        "value": "Hidden directories (including the pristine cache) and the temporary\ndirectories created by other evaluators are excluded so only real\ncompetition inputs are tracked."
+      },
+      {
+        "component": "agent_k.evolution.evaluator:_prepare_workspace",
+        "line": 198,
+        "name": "notice",
+        "value": "Every candidate program runs in the same shared working directory, so\na stale ``submission.csv`` from an earlier candidate would make a\ncandidate that never writes one look valid. This removes that fi"
+      },
+      {
+        "component": "agent_k.evolution.evaluator:_prepare_workspace",
+        "line": 205,
+        "name": "dev",
+        "value": "The input set is pinned by the first candidate of a run and persisted\nto a manifest inside the pristine cache, so files a candidate creates\nare never mistaken for competition inputs and the pinned set"
+      },
+      {
+        "component": "agent_k.evolution.evaluator:_restore_mutated_inputs",
+        "line": 230,
+        "name": "notice",
+        "value": "Returns the relative paths of the input files whose content changed\nduring the candidate run, after restoring each one from the pristine\nsnapshot so later candidates evaluate against the original data"
+      },
+      {
+        "component": "agent_k.evolution.evaluator:_restore_mutated_inputs",
+        "line": 235,
+        "name": "dev",
+        "value": "A file with no snapshot (deleted or skipped by the size cap) is still\nreported, so callers can invalidate the candidate even when rollback\nis impossible."
+      },
+      {
         "component": "agent_k.evolution.evaluator:evaluate",
-        "line": 321,
+        "line": 465,
         "name": "notice",
         "value": "Evaluate a program and return metrics and artifacts for OpenEvolve."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate",
-        "line": 324,
+        "line": 468,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage1",
-        "line": 403,
+        "line": 557,
         "name": "notice",
         "value": "Stage 1: Quick syntax and import validation."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage1",
-        "line": 406,
+        "line": 560,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage2",
-        "line": 501,
+        "line": 655,
         "name": "notice",
         "value": "Stage 2: Medium evaluation on subset of data."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage2",
-        "line": 504,
+        "line": 658,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       }

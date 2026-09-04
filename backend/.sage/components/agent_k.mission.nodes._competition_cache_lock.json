@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Locks are cached per (loop, competition) because an asyncio.Lock binds\nto the loop that first awaits it. A stale entry from a closed loop is\nreplaced, and the map is trimmed of idle entries past\n_MAX_CACHE_LOCKS so long-lived processes do not grow it without bound.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:_competition_cache_lock",
+  "line": 1955,
+  "notice": "Serializes competition-cache preparation so two missions running as\nconcurrent tasks never download into, or clear, the same cache\ndirectory at the same time.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Return the running loop's staging lock for a competition.",
+  "type": "function"
+}

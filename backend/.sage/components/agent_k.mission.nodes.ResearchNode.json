@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.mission.nodes:ResearchNode",
-  "line": 273,
+  "line": 277,
   "notice": "Research phase node.",
   "pattern": {
     "name": "graph-node",

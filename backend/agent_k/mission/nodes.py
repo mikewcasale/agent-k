@@ -108,6 +108,10 @@ _BASE_DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = ("xgboost", "catboost")
 _DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = (
     _BASE_DISALLOWED_LIBRARIES if _LIGHTGBM_AVAILABLE else (*_BASE_DISALLOWED_LIBRARIES, "lightgbm")
 )
+_CACHE_METADATA_FILENAME: Final[str] = "metadata.json"
+_CACHE_STAGING_DIR_NAME: Final[str] = ".staging"
+_MAX_CACHE_LOCKS: Final[int] = 64
+_COMPETITION_CACHE_LOCKS: Final[dict[str, tuple[asyncio.AbstractEventLoop, asyncio.Lock]]] = {}
 
 
 @dataclass
@@ -316,7 +320,7 @@ class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
         emitter, http_client, platform_adapter = _require_context(ctx.deps)
         competition = state.selected_competition
         if competition is None:
-            _cleanup_session_data(state.mission_id)
+            await _cleanup_session_data(state.mission_id)
             return End(
                 MissionResult(
                     success=False,
@@ -1688,7 +1692,7 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     await emitter.emit_phase_complete(
                         phase="submission", success=False, duration_ms=self._elapsed_ms(state.phase_started_at)
                     )
-                    _cleanup_session_data(state.mission_id)
+                    await _cleanup_session_data(state.mission_id)
                     return End(
                         MissionResult(
                             success=False,
@@ -1707,7 +1711,7 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     best_code = state.prototype_code
 
                 if not best_code:
-                    _cleanup_session_data(state.mission_id)
+                    await _cleanup_session_data(state.mission_id)
                     return End(
                         MissionResult(
                             success=False,
@@ -1767,7 +1771,7 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                             )
 
                     if not submission_path.exists():
-                        _cleanup_session_data(state.mission_id)
+                        await _cleanup_session_data(state.mission_id)
                         return End(
                             MissionResult(
                                 success=False,
@@ -1870,7 +1874,7 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     phase="submission", success=True, duration_ms=self._elapsed_ms(state.phase_started_at)
                 )
 
-                _cleanup_session_data(state.mission_id)
+                await _cleanup_session_data(state.mission_id)
 
                 # Calculate total duration
                 total_duration_ms = int((datetime.now(UTC) - state.started_at).total_seconds() * 1000)
@@ -1898,7 +1902,7 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 state.errors.append(
                     {"phase": "submission", "error": str(e), "timestamp": datetime.now(UTC).isoformat()}
                 )
-                _cleanup_session_data(state.mission_id)
+                await _cleanup_session_data(state.mission_id)
                 return End(
                     MissionResult(
                         success=False,
@@ -1937,10 +1941,43 @@ def _quick_test_enabled(criteria: MissionCriteria) -> bool:
     return flag in {"1", "true", "yes", "on"}
 
 
+def _get_competition_root() -> Path:
+    return Path.home() / ".agent_k" / "competitions"
+
+
 def _get_competition_cache_dir(competition_id: str) -> Path:
-    cache_dir = Path.home() / ".agent_k" / "competitions" / competition_id
+    cache_dir = _get_competition_root() / competition_id
     cache_dir.mkdir(parents=True, exist_ok=True)
     return cache_dir
+
+
+def _competition_cache_lock(competition_id: str) -> asyncio.Lock:
+    """Return the running loop's staging lock for a competition.
+
+    @notice: |
+        Serializes competition-cache preparation so two missions running as
+        concurrent tasks never download into, or clear, the same cache
+        directory at the same time.
+
+    @dev: |
+        Locks are cached per (loop, competition) because an asyncio.Lock binds
+        to the loop that first awaits it. A stale entry from a closed loop is
+        replaced, and the map is trimmed of idle entries past
+        _MAX_CACHE_LOCKS so long-lived processes do not grow it without bound.
+    """
+    loop = asyncio.get_running_loop()
+    entry = _COMPETITION_CACHE_LOCKS.get(competition_id)
+    if entry is not None and entry[0] is loop:
+        return entry[1]
+
+    if len(_COMPETITION_CACHE_LOCKS) >= _MAX_CACHE_LOCKS:
+        for key, (_entry_loop, entry_lock) in list(_COMPETITION_CACHE_LOCKS.items()):
+            if key != competition_id and not entry_lock.locked():
+                del _COMPETITION_CACHE_LOCKS[key]
+
+    lock = asyncio.Lock()
+    _COMPETITION_CACHE_LOCKS[competition_id] = (loop, lock)
+    return lock
 
 
 def _get_session_root(mission_id: str) -> Path:
@@ -1988,27 +2025,79 @@ def _cache_exists(cache_dir: Path) -> bool:
     return complete
 
 
-async def _download_to_cache(platform_adapter: PlatformAdapter, competition_id: str, cache_dir: Path) -> None:
-    if cache_dir.exists() and not _data_exists(cache_dir):
+def _create_staging_dir(competition_id: str) -> Path:
+    """Create a private download directory beside the competition cache."""
+    staging_root = _get_competition_root() / _CACHE_STAGING_DIR_NAME
+    staging_root.mkdir(parents=True, exist_ok=True)
+    return Path(tempfile.mkdtemp(prefix=f"{competition_id}-", dir=str(staging_root)))
+
+
+def _promote_staging_dir(staging_dir: Path, cache_dir: Path, competition_id: str) -> bool:
+    """Move a completed download into the shared cache directory.
+
+    @notice: |
+        Returns True when this download became the cache, False when another
+        writer had already published a complete cache for the competition.
+
+    @dev: |
+        The rename is atomic, so a concurrent reader sees either the previous
+        cache state or the finished download, never a half-written one. An
+        incomplete cache left by an earlier crash is cleared first; a rename
+        that loses a cross-process race is tolerated when the winner's cache
+        is complete.
+    """
+    if cache_dir.exists():
+        if _data_exists(cache_dir):
+            logfire.info("cache_already_populated", competition_id=competition_id, cache_dir=str(cache_dir))
+            return False
         logfire.info("clearing_incomplete_cache", competition_id=competition_id, cache_dir=str(cache_dir))
-        shutil.rmtree(cache_dir)
-        cache_dir.mkdir(parents=True, exist_ok=True)
-    logfire.info("downloading_to_cache", competition_id=competition_id, cache_dir=str(cache_dir))
-    await platform_adapter.download_data(competition_id, str(cache_dir))
-    if not _data_exists(cache_dir):
-        raise RuntimeError(
-            "Download incomplete for competition data. Expected train.csv, test.csv, and sample_submission.csv."
-        )
-    _write_cache_metadata(cache_dir, competition_id)
+        shutil.rmtree(cache_dir, ignore_errors=True)
+
+    cache_dir.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        os.replace(staging_dir, cache_dir)
+    except OSError as exc:
+        if _data_exists(cache_dir):
+            logfire.info("cache_promotion_lost_race", competition_id=competition_id, error=str(exc))
+            return False
+        raise
+    return True
+
+
+async def _download_to_cache(platform_adapter: PlatformAdapter, competition_id: str, cache_dir: Path) -> None:
+    """Download competition data into a staging directory, then publish it.
+
+    @notice: |
+        Downloads never write directly into the shared cache directory, so a
+        failed or in-flight download can never be picked up as cached data by
+        another mission.
+
+    @dev: |
+        Filesystem work runs in a worker thread: a multi-gigabyte competition
+        would otherwise block the event loop, stalling every other mission's
+        agent turns and SSE stream.
+    """
+    staging_dir = await asyncio.to_thread(_create_staging_dir, competition_id)
+    logfire.info("downloading_to_cache", competition_id=competition_id, staging_dir=str(staging_dir))
+    try:
+        await platform_adapter.download_data(competition_id, str(staging_dir))
+        if not await asyncio.to_thread(_data_exists, staging_dir):
+            raise RuntimeError(
+                "Download incomplete for competition data. Expected train.csv, test.csv, and sample_submission.csv."
+            )
+        await asyncio.to_thread(_write_cache_metadata, staging_dir, competition_id)
+        await asyncio.to_thread(_promote_staging_dir, staging_dir, cache_dir, competition_id)
+    finally:
+        await asyncio.to_thread(shutil.rmtree, staging_dir, True)
 
 
 def _write_cache_metadata(cache_dir: Path, competition_id: str) -> None:
-    metadata_path = cache_dir / "metadata.json"
+    metadata_path = cache_dir / _CACHE_METADATA_FILENAME
     files = []
     for path in cache_dir.rglob("*"):
         if not path.is_file():
             continue
-        if path.name == "metadata.json":
+        if path.name == _CACHE_METADATA_FILENAME:
             continue
         files.append(
             {"path": str(path.relative_to(cache_dir)), "size_bytes": path.stat().st_size, "sha256": _sha256_file(path)}
@@ -2038,32 +2127,57 @@ def _copy_from_cache(cache_dir: Path, session_dir: Path) -> None:
         shutil.copy2(path, destination)
 
 
+async def _ensure_competition_cache(platform_adapter: PlatformAdapter, competition_id: str) -> Path:
+    """Return the populated cache directory for a competition.
+
+    @notice: |
+        Downloads the competition once and reuses it for every later mission.
+
+    @dev: |
+        Holding the per-competition lock across the check and the download
+        keeps concurrent missions from downloading the same competition twice
+        and from clearing a cache another mission is still writing.
+    """
+    cache_dir = await asyncio.to_thread(_get_competition_cache_dir, competition_id)
+    async with _competition_cache_lock(competition_id):
+        if await asyncio.to_thread(_cache_exists, cache_dir):
+            logfire.info("using_cached_competition_data", competition_id=competition_id, cache_dir=str(cache_dir))
+            if not (cache_dir / _CACHE_METADATA_FILENAME).exists():
+                await asyncio.to_thread(_write_cache_metadata, cache_dir, competition_id)
+            return cache_dir
+        await _download_to_cache(platform_adapter, competition_id, cache_dir)
+    return cache_dir
+
+
 async def _prepare_session_data(
     platform_adapter: PlatformAdapter, mission_id: str, competition_id: str
 ) -> tuple[Path, Path, Path]:
-    cache_dir = _get_competition_cache_dir(competition_id)
-    metadata_path = cache_dir / "metadata.json"
-    if _cache_exists(cache_dir):
-        logfire.info("using_cached_competition_data", competition_id=competition_id, cache_dir=str(cache_dir))
-        if not metadata_path.exists():
-            _write_cache_metadata(cache_dir, competition_id)
-    else:
-        await _download_to_cache(platform_adapter, competition_id, cache_dir)
+    """Stage a private copy of the competition data for one mission.
 
-    session_dir = _get_session_data_dir(mission_id)
-    if _data_exists(session_dir):
+    @notice: |
+        Returns the mission-local (train, test, sample_submission) paths.
+
+    @dev: |
+        The session copy is deliberately a copy rather than a hard link:
+        evolved solutions run against these files and may overwrite them, and
+        that must not corrupt the cache every later mission reads from.
+    """
+    cache_dir = await _ensure_competition_cache(platform_adapter, competition_id)
+
+    session_dir = await asyncio.to_thread(_get_session_data_dir, mission_id)
+    if await asyncio.to_thread(_data_exists, session_dir):
         logfire.info("reusing_session_data", competition_id=competition_id, session_dir=str(session_dir))
-        return locate_data_files(_list_data_files(session_dir))
+        return locate_data_files(await asyncio.to_thread(_list_data_files, session_dir))
 
-    _copy_from_cache(cache_dir, session_dir)
-    return locate_data_files(_list_data_files(session_dir))
+    await asyncio.to_thread(_copy_from_cache, cache_dir, session_dir)
+    return locate_data_files(await asyncio.to_thread(_list_data_files, session_dir))
 
 
-def _cleanup_session_data(mission_id: str) -> None:
+async def _cleanup_session_data(mission_id: str) -> None:
     session_root = _get_session_root(mission_id)
     try:
         if session_root.exists():
-            shutil.rmtree(session_root)
+            await asyncio.to_thread(shutil.rmtree, session_root)
             logfire.info("cleaned_session_data", mission_id=mission_id)
     except Exception as exc:
         logfire.warning("session_cleanup_failed", error=str(exc))
@@ -2136,7 +2250,7 @@ async def _emit_phase_failure(
         context=context,
         recovery_strategy=strategy,
     )
-    _cleanup_session_data(state.mission_id)
+    await _cleanup_session_data(state.mission_id)
 
 
 def _load_target_values(train_path: Path, target_column: str) -> tuple[list[float], list[str], dict[str, int] | None]:

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Holding the per-competition lock across the check and the download\nkeeps concurrent missions from downloading the same competition twice\nand from clearing a cache another mission is still writing.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:_ensure_competition_cache",
+  "line": 2131,
+  "notice": "Downloads the competition once and reuses it for every later mission.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Return the populated cache directory for a competition.",
+  "type": "function"
+}

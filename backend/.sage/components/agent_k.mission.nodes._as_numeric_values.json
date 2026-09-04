@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.mission.nodes:EvolutionNode.run",
-  "line": 946,
+  "id": "agent_k.mission.nodes:_as_numeric_values",
+  "line": 2160,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/mission/nodes.py",
-  "summary": "Execute evolution phase.",
-  "type": "method"
+  "summary": "Parse every raw value as a float, or return None when any value is categorical.",
+  "type": "function"
 }

@@ -103,6 +103,12 @@ if TYPE_CHECKING:
 
 __all__ = ("DiscoveryNode", "ResearchNode", "PrototypeNode", "EvolutionNode", "SubmissionNode")
 
+_MISSING_TARGET_TOKENS: Final[frozenset[str]] = frozenset({"na", "n/a", "null", "none", "?", "-", "--"})
+"""Raw target cells treated as missing rather than as a categorical label."""
+
+_PROBABILITY_EPSILON: Final[float] = 1e-15
+"""Floor applied to class priors before taking a logarithm."""
+
 _LIGHTGBM_AVAILABLE: Final[bool] = importlib.util.find_spec("lightgbm") is not None
 _BASE_DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = ("xgboost", "catboost")
 _DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = (
@@ -2139,6 +2145,28 @@ async def _emit_phase_failure(
     _cleanup_session_data(state.mission_id)
 
 
+def _is_missing_target(raw: str) -> bool:
+    """Report whether a raw target cell carries no usable label."""
+    token = raw.strip().lower()
+    if not token or token in _MISSING_TARGET_TOKENS:
+        return True
+    try:
+        return not math.isfinite(float(token))
+    except ValueError:
+        return False
+
+
+def _as_numeric_values(raw_values: list[str]) -> list[float] | None:
+    """Parse every raw value as a float, or return None when any value is categorical."""
+    numeric_values: list[float] = []
+    for raw in raw_values:
+        try:
+            numeric_values.append(float(raw))
+        except ValueError:
+            return None
+    return numeric_values
+
+
 def _load_target_values(train_path: Path, target_column: str) -> tuple[list[float], list[str], dict[str, int] | None]:
     with train_path.open("r", encoding="utf-8", errors="ignore", newline="") as handle:
         reader = csv.DictReader(handle)
@@ -2147,23 +2175,22 @@ def _load_target_values(train_path: Path, target_column: str) -> tuple[list[floa
 
         resolved_column = target_column if target_column in reader.fieldnames else reader.fieldnames[-1]
         raw_values: list[str] = []
-        numeric_values: list[float] = []
-        numeric = True
 
         for row in reader:
-            raw = row.get(resolved_column, "") or ""
+            raw = (row.get(resolved_column, "") or "").strip()
+            if _is_missing_target(raw):
+                continue
             raw_values.append(raw)
-            try:
-                numeric_values.append(float(raw))
-            except (TypeError, ValueError):
-                numeric = False
 
-        if numeric:
-            return numeric_values, raw_values, None
+    if not raw_values:
+        return [], [], None
 
-        mapping = {label: idx for idx, label in enumerate(sorted(set(raw_values)))}
-        numeric_values = [float(mapping.get(value, 0)) for value in raw_values]
-        return numeric_values, raw_values, mapping
+    numeric_values = _as_numeric_values(raw_values)
+    if numeric_values is not None:
+        return numeric_values, raw_values, None
+
+    mapping = {label: idx for idx, label in enumerate(sorted(set(raw_values)))}
+    return [float(mapping[value]) for value in raw_values], raw_values, mapping
 
 
 def _prediction_value(
@@ -2182,6 +2209,11 @@ def _prediction_value(
     }
 
     if metric in proba_metrics:
+        # A label-encoded multiclass mean is not a probability; use the majority-class prior instead.
+        if mapping is not None and len(mapping) > 2 and raw_values:
+            majority_share = Counter(raw_values).most_common(1)[0][1] / len(raw_values)
+            pred_numeric = min(max(majority_share, 1e-3), 1 - 1e-3)
+            return pred_numeric, pred_numeric
         pred_numeric = min(max(mean_value, 1e-3), 1 - 1e-3)
         return pred_numeric, pred_numeric
 
@@ -2212,6 +2244,30 @@ def _score_from_fitness(fitness: float | None, direction: str) -> float | None:
     return fitness
 
 
+def _multiclass_log_loss_constant_prediction(class_counts: Counter[float], total: int) -> float:
+    """Return multiclass log loss for the best constant probability vector.
+
+    The optimal constant prediction is the class prior, so the score reduces to
+    the Shannon entropy of the label distribution. This generalizes the binary
+    branch, which scores a constant probability equal to the positive-class prior.
+    """
+    return -sum((count / total) * math.log(max(count / total, _PROBABILITY_EPSILON)) for count in class_counts.values())
+
+
+def _macro_f1_constant_prediction(class_counts: Counter[float], total: int, prediction: float) -> float:
+    """Return macro-averaged F1 for a constant multiclass prediction.
+
+    Predicting a single class gives that class recall 1.0 and precision equal to
+    its prior; every other class scores 0.0, so the macro average is the
+    predicted class F1 divided by the number of classes.
+    """
+    predicted_count = class_counts.get(prediction, 0)
+    if predicted_count == 0:
+        return 0.0
+    precision = predicted_count / total
+    return (2 * precision / (precision + 1.0)) / len(class_counts)
+
+
 def _evaluate_metric(metric: EvaluationMetric, values: list[float], prediction: float) -> float:
     if not values:
         return 0.0
@@ -2221,6 +2277,9 @@ def _evaluate_metric(metric: EvaluationMetric, values: list[float], prediction: 
         return correct / len(values)
 
     if metric == EvaluationMetric.F1:
+        class_counts = Counter(values)
+        if len(class_counts) > 2:
+            return _macro_f1_constant_prediction(class_counts, len(values), prediction)
         positives = values.count(1)
         negatives = len(values) - positives
         if prediction == 1:
@@ -2243,6 +2302,9 @@ def _evaluate_metric(metric: EvaluationMetric, values: list[float], prediction: 
         return 0.5
 
     if metric == EvaluationMetric.LOG_LOSS:
+        class_counts = Counter(values)
+        if len(class_counts) > 2:
+            return _multiclass_log_loss_constant_prediction(class_counts, len(values))
         prob = min(max(prediction, 1e-6), 1 - 1e-6)
         return -sum(value * math.log(prob) + (1 - value) * math.log(1 - prob) for value in values) / len(values)
     if metric == EvaluationMetric.RMSE:
@@ -2268,12 +2330,23 @@ def _compute_baseline_score(*, train_path: Path, target_columns: list[str], metr
         return 0.0
 
     total_score = 0.0
+    scored_columns = 0
     for column in target_columns:
         numeric_values, raw_values, mapping = _load_target_values(train_path, column)
+        if not numeric_values:
+            # Scoring an empty column yields 0.0, which reads as a perfect score for
+            # minimize metrics; drop it from the average instead.
+            logfire.warning("baseline_target_column_empty", column=column, metric=metric.value)
+            continue
         _, prediction = _prediction_value(metric, numeric_values, raw_values, mapping)
         total_score += _evaluate_metric(metric, numeric_values, prediction)
+        scored_columns += 1
 
-    return total_score / len(target_columns)
+    if scored_columns == 0:
+        logfire.warning("baseline_score_unavailable", target_columns=target_columns, metric=metric.value)
+        return 0.0
+
+    return total_score / scored_columns
 
 
 def _normalize_label(label: Any) -> str:

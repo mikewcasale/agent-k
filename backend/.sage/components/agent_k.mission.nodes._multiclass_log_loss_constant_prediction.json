@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.mission.nodes:EvolutionNode.run",
-  "line": 946,
+  "id": "agent_k.mission.nodes:_multiclass_log_loss_constant_prediction",
+  "line": 2248,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/mission/nodes.py",
-  "summary": "Execute evolution phase.",
-  "type": "method"
+  "summary": "Return multiclass log loss for the best constant probability vector.",
+  "type": "function"
 }

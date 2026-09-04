@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.mission.nodes:EvolutionNode.run",
-  "line": 946,
+  "id": "agent_k.mission.nodes:_macro_f1_constant_prediction",
+  "line": 2258,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/mission/nodes.py",
-  "summary": "Execute evolution phase.",
-  "type": "method"
+  "summary": "Return macro-averaged F1 for a constant multiclass prediction.",
+  "type": "function"
 }

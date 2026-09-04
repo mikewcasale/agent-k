@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.mission.nodes:EvolutionNode.run",
-  "line": 946,
+  "id": "agent_k.mission.nodes:_is_missing_target",
+  "line": 2149,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/mission/nodes.py",
-  "summary": "Execute evolution phase.",
-  "type": "method"
+  "summary": "Report whether a raw target cell carries no usable label.",
+  "type": "function"
 }

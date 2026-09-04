@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.mission.nodes:PrototypeNode.run",
-  "line": 463,
+  "id": "agent_k.mission.nodes:_create_staging_dir",
+  "line": 2029,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/mission/nodes.py",
-  "summary": "Execute prototype phase.",
-  "type": "method"
+  "summary": "Create a private download directory beside the competition cache.",
+  "type": "function"
 }

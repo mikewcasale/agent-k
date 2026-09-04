@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The session copy is deliberately a copy rather than a hard link:\nevolved solutions run against these files and may overwrite them, and\nthat must not corrupt the cache every later mission reads from.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:_prepare_session_data",
+  "line": 2155,
+  "notice": "Returns the mission-local (train, test, sample_submission) paths.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Stage a private copy of the competition data for one mission.",
+  "type": "function"
+}

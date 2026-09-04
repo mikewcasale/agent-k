@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Filesystem work runs in a worker thread: a multi-gigabyte competition\nwould otherwise block the event loop, stalling every other mission's\nagent turns and SSE stream.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:_download_to_cache",
+  "line": 2068,
+  "notice": "Downloads never write directly into the shared cache directory, so a\nfailed or in-flight download can never be picked up as cached data by\nanother mission.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Download competition data into a staging directory, then publish it.",
+  "type": "function"
+}

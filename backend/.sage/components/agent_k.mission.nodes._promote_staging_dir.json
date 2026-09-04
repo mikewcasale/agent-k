@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The rename is atomic, so a concurrent reader sees either the previous\ncache state or the finished download, never a half-written one. An\nincomplete cache left by an earlier crash is cleared first; a rename\nthat loses a cross-process race is tolerated when the winner's cache\nis complete.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:_promote_staging_dir",
+  "line": 2036,
+  "notice": "Returns True when this download became the cache, False when another\nwriter had already published a complete cache for the competition.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Move a completed download into the shared cache directory.",
+  "type": "function"
+}

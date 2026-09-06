@@ -45,6 +45,8 @@ import logfire
 from openevolve.evaluation_result import EvaluationResult
 
 if TYPE_CHECKING:
+    import pandas as pd
+
     from agent_k.core.hints import PreprocessingHint
 
 __all__ = ("evaluate", "evaluate_stage1", "evaluate_stage2")
@@ -60,6 +62,8 @@ _DEFAULT_VALIDATION_SPLIT: Final[float] = 0.2
 _STAGE1_TIMEOUT: Final[int] = 5
 _STAGE2_TIMEOUT: Final[int] = 30
 _STAGE2_DATA_ROWS: Final[int] = 1000
+_SUBSET_ESCALATION_FACTOR: Final[int] = 10
+_SUBSET_MAX_SCAN_ROWS: Final[int] = 200_000
 _MODEL_FAMILY_PATTERNS: Final[tuple[tuple[float, re.Pattern[str]], ...]] = (
     (3.0, re.compile(r"\b(Stacking|Voting|Bagging|AdaBoost)(?:Regressor|Classifier)?\b")),
     (2.0, re.compile(r"\bKNeighbors(?:Regressor|Classifier)\b")),
@@ -577,31 +581,157 @@ def evaluate_stage2(program_path: str) -> EvaluationResult:
 
 
 def _create_subset_data(source_dir: Path, target_dir: Path, max_rows: int) -> None:
-    """Create subset data files in target directory for faster evaluation."""
+    """Create an internally consistent subset of the competition data.
+
+    Stage 2 exists to reject broken candidates cheaply, so the subset it runs
+    against must stay self-consistent: solutions build ``submission.csv`` from
+    ``sample_submission.csv`` and fill it with one prediction per ``test.csv``
+    row, so a truncated test set beside a full-length sample submission makes
+    every candidate fail on a length mismatch. The sample submission is
+    therefore trimmed to exactly the retained test rows, and the train subset
+    is widened when the leading rows collapse the target to a single value
+    (common when the file is grouped or sorted by label).
+    """
+    test_frame = _write_test_and_sample_subsets(source_dir, target_dir, max_rows)
+    test_columns = None if test_frame is None else [str(column) for column in test_frame.columns]
+    _write_train_subset(source_dir, target_dir, max_rows, test_columns=test_columns)
+
+
+def _write_test_and_sample_subsets(source_dir: Path, target_dir: Path, max_rows: int) -> pd.DataFrame | None:
+    """Write aligned ``test.csv`` / ``sample_submission.csv`` subsets.
+
+    Returns the written test subset, or ``None`` when the full files were
+    copied verbatim (missing or unreadable input), in which case the pair is
+    already consistent.
+    """
     import pandas as pd
 
-    # Copy train.csv subset
-    train_path = source_dir / "train.csv"
-    if train_path.exists():
-        try:
-            df = pd.read_csv(train_path, nrows=max_rows)
-            df.to_csv(target_dir / "train.csv", index=False)
-        except Exception as exc:
-            logfire.warning("subset_train_failed", error=str(exc))
-            # Fallback: copy full file
-            shutil.copy2(train_path, target_dir / "train.csv")
-
-    # Copy test.csv subset
     test_path = source_dir / "test.csv"
-    if test_path.exists():
-        try:
-            df = pd.read_csv(test_path, nrows=max_rows)
-            df.to_csv(target_dir / "test.csv", index=False)
-        except Exception as exc:
-            logfire.warning("subset_test_failed", error=str(exc))
-            shutil.copy2(test_path, target_dir / "test.csv")
-
-    # Copy sample_submission.csv (always full file - it's small)
     sample_path = source_dir / "sample_submission.csv"
-    if sample_path.exists():
+
+    if not test_path.exists():
+        if sample_path.exists():
+            shutil.copy2(sample_path, target_dir / "sample_submission.csv")
+        return None
+
+    try:
+        test_frame = pd.read_csv(test_path, nrows=max_rows)
+    except Exception as exc:
+        logfire.warning("subset_test_failed", error=str(exc))
+        shutil.copy2(test_path, target_dir / "test.csv")
+        if sample_path.exists():
+            shutil.copy2(sample_path, target_dir / "sample_submission.csv")
+        return None
+
+    if not sample_path.exists():
+        test_frame.to_csv(target_dir / "test.csv", index=False)
+        return test_frame
+
+    try:
+        sample_frame = pd.read_csv(sample_path)
+    except Exception as exc:
+        logfire.warning("subset_sample_failed", error=str(exc))
+        shutil.copy2(test_path, target_dir / "test.csv")
         shutil.copy2(sample_path, target_dir / "sample_submission.csv")
+        return None
+
+    test_frame, sample_frame = _align_sample_to_test(test_frame, sample_frame)
+    test_frame.to_csv(target_dir / "test.csv", index=False)
+    sample_frame.to_csv(target_dir / "sample_submission.csv", index=False)
+    return test_frame
+
+
+def _align_sample_to_test(test_frame: pd.DataFrame, sample_frame: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Trim a sample submission to the retained test rows, preserving order.
+
+    Alignment prefers the sample submission's identifier column when the test
+    set carries it; otherwise the two frames are matched positionally so the
+    row counts always agree.
+    """
+    if sample_frame.empty or test_frame.empty:
+        return test_frame, sample_frame
+
+    id_column = str(sample_frame.columns[0])
+    if id_column in test_frame.columns:
+        order = {value: index for index, value in enumerate(test_frame[id_column])}
+        matched = sample_frame[sample_frame[id_column].isin(order)]
+        if len(matched) == len(test_frame):
+            matched = matched.iloc[matched[id_column].map(order).argsort(kind="stable")]
+            return test_frame, matched.reset_index(drop=True)
+
+    rows = min(len(test_frame), len(sample_frame))
+    return test_frame.head(rows).reset_index(drop=True), sample_frame.head(rows).reset_index(drop=True)
+
+
+def _write_train_subset(source_dir: Path, target_dir: Path, max_rows: int, *, test_columns: list[str] | None) -> None:
+    """Write a train subset that keeps the target's classes when it is discrete."""
+    import pandas as pd
+
+    train_path = source_dir / "train.csv"
+    if not train_path.exists():
+        return
+
+    destination = target_dir / "train.csv"
+    try:
+        train_frame = pd.read_csv(train_path, nrows=max_rows)
+    except Exception as exc:
+        logfire.warning("subset_train_failed", error=str(exc))
+        shutil.copy2(train_path, destination)
+        return
+
+    target_column = _infer_target_column([str(column) for column in train_frame.columns], test_columns)
+    if target_column is not None and train_frame[target_column].nunique(dropna=False) < 2:
+        widened = _widen_until_target_varies(train_path, target_column, max_rows)
+        if widened is not None:
+            train_frame = widened
+
+    train_frame.to_csv(destination, index=False)
+
+
+def _infer_target_column(train_columns: list[str], test_columns: list[str] | None) -> str | None:
+    """Return the single train-only column, or ``None`` when it is ambiguous."""
+    if not test_columns:
+        return None
+    known = set(test_columns)
+    candidates = [column for column in train_columns if column not in known]
+    if len(candidates) != 1:
+        return None
+    return candidates[0]
+
+
+def _widen_until_target_varies(train_path: Path, target_column: str, max_rows: int) -> pd.DataFrame | None:
+    """Scan progressively larger head windows until the target has ≥2 values.
+
+    Returns a stratified sample of the first window that shows variation, or
+    ``None`` when the scan cap is reached, the file ends, or the read fails —
+    the caller then keeps the plain head subset.
+    """
+    import pandas as pd
+
+    scan_rows = max_rows * _SUBSET_ESCALATION_FACTOR
+    while scan_rows <= _SUBSET_MAX_SCAN_ROWS:
+        try:
+            window = pd.read_csv(train_path, nrows=scan_rows)
+        except Exception as exc:
+            logfire.warning("subset_train_widen_failed", error=str(exc))
+            return None
+        if window[target_column].nunique(dropna=False) >= 2:
+            logfire.info("subset_train_widened", scan_rows=scan_rows, target_column=target_column)
+            return _stratified_head(window, target_column, max_rows)
+        if len(window) < scan_rows:
+            return None
+        scan_rows *= _SUBSET_ESCALATION_FACTOR
+    return None
+
+
+def _stratified_head(frame: pd.DataFrame, target_column: str, max_rows: int) -> pd.DataFrame:
+    """Take up to ``max_rows`` rows with every target value represented."""
+    import pandas as pd
+
+    groups = [group for _key, group in frame.groupby(target_column, sort=False, dropna=False)]
+    if not groups or len(groups) > max_rows:
+        return frame.head(max_rows).reset_index(drop=True)
+
+    per_group = max(1, max_rows // len(groups))
+    sampled = pd.concat([group.head(per_group) for group in groups]).sort_index()
+    return sampled.head(max_rows).reset_index(drop=True)

@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.evolution.evaluator:_resolve_work_dir",
-  "line": 89,
+  "id": "agent_k.evolution.evaluator:_widen_until_target_varies",
+  "line": 703,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/evolution/evaluator.py",
-  "summary": "Resolve working directory from context.",
+  "summary": "Scan progressively larger head windows until the target has \u22652 values.",
   "type": "function"
 }

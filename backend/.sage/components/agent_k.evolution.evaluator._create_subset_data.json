@@ -7,11 +7,11 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.evolution.evaluator:_create_subset_data",
-  "line": 580,
+  "line": 584,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/evolution/evaluator.py",
-  "summary": "Create subset data files in target directory for faster evaluation.",
+  "summary": "Create an internally consistent subset of the competition data.",
   "type": "function"
 }

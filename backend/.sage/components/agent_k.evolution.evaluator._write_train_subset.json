@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.evolution.evaluator:_resolve_work_dir",
-  "line": 89,
+  "id": "agent_k.evolution.evaluator:_write_train_subset",
+  "line": 667,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/evolution/evaluator.py",
-  "summary": "Resolve working directory from context.",
+  "summary": "Write a train subset that keeps the target's classes when it is discrete.",
   "type": "function"
 }

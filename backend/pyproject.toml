@@ -122,6 +122,7 @@ plugins = ["pydantic.mypy"]
 [[tool.mypy.overrides]]
 module = [
     "openevolve.*",
+    "pandas.*",
     "sklearn.*",
 ]
 ignore_missing_imports = true

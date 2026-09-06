@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.evolution.evaluator:_resolve_work_dir",
-  "line": 89,
+  "id": "agent_k.evolution.evaluator:_stratified_head",
+  "line": 728,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/evolution/evaluator.py",
-  "summary": "Resolve working directory from context.",
+  "summary": "Take up to ``max_rows`` rows with every target value represented.",
   "type": "function"
 }

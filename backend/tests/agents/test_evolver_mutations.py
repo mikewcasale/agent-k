@@ -7,8 +7,12 @@ Licensed under the MIT License.
 from __future__ import annotations as _annotations
 
 import re
+from typing import TYPE_CHECKING
 
 import pytest
+
+if TYPE_CHECKING:
+    from agent_k.core.types import MetricDirection
 
 __all__ = ()
 
@@ -29,7 +33,7 @@ class TestFitnessFromScore:
         ("score", "direction", "expected"),
         [(0.25, "maximize", 0.25), (-1.0, "maximize", 0.0), (3.0, "minimize", 0.25), (-2.0, "minimize", 1.0)],
     )
-    def test_fitness_from_score(self, score: float, direction: str, expected: float) -> None:
+    def test_fitness_from_score(self, score: float, direction: MetricDirection, expected: float) -> None:
         """Fitness should reflect metric direction."""
         assert _evolver._fitness_from_score(score, direction) == pytest.approx(expected)
 

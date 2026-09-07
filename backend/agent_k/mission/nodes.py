@@ -85,7 +85,14 @@ from ..core.models import (
     ResearchFindings,
 )
 from ..core.solution import execute_solution, parse_baseline_score
-from ..core.strategy import apply_solution_policy, build_fitness_policy, build_problem_profile, build_technique_policy
+from ..core.strategy import (
+    apply_solution_policy,
+    build_fitness_policy,
+    build_problem_profile,
+    build_technique_policy,
+    fitness_to_score,
+    score_to_fitness,
+)
 from ..core.tracking import (
     ExperimentRecord,
     HintEffectivenessTracker,
@@ -99,6 +106,7 @@ if TYPE_CHECKING:
     from pydantic_ai import Agent
 
     from ..core.protocols import PlatformAdapter
+    from ..core.types import MetricDirection
     from ..ui.agui import EventEmitter
 
 __all__ = ("DiscoveryNode", "ResearchNode", "PrototypeNode", "EvolutionNode", "SubmissionNode")
@@ -2195,21 +2203,16 @@ def _prediction_value(
     return mean_value, mean_value
 
 
-def _fitness_from_score(score: float | None, direction: str) -> float | None:
+def _fitness_from_score(score: float | None, direction: MetricDirection) -> float | None:
     if score is None:
         return None
-    value = max(score, 0.0)
-    return 1.0 / (1.0 + value) if direction == "minimize" else value
+    return score_to_fitness(score, direction)
 
 
-def _score_from_fitness(fitness: float | None, direction: str) -> float | None:
+def _score_from_fitness(fitness: float | None, direction: MetricDirection) -> float | None:
     if fitness is None:
         return None
-    if direction == "minimize":
-        if fitness <= 0:
-            return None
-        return (1.0 / fitness) - 1.0
-    return fitness
+    return fitness_to_score(fitness, direction)
 
 
 def _evaluate_metric(metric: EvaluationMetric, values: list[float], prediction: float) -> float:

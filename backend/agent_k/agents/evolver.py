@@ -93,6 +93,8 @@ from agent_k.core.strategy import (
     build_fitness_policy,
     build_problem_profile,
     build_technique_policy,
+    fitness_to_score,
+    score_to_fitness,
 )
 from agent_k.core.tracking import (
     ExperimentRecord,
@@ -107,6 +109,7 @@ from agent_k.toolsets import code_toolset, create_production_toolset, prepare_co
 if TYPE_CHECKING:
     from agent_k.core.models import Competition
     from agent_k.core.protocols import PlatformAdapter
+    from agent_k.core.types import MetricDirection
     from agent_k.ui.agui import EventEmitter
 
 __all__ = (
@@ -1459,7 +1462,7 @@ class EvolverAgent(MemoryMixin):
             tracker.save()
 
     def _summarize_openevolve_history(
-        self, programs: list[dict[str, Any]], population_size: int, metric_direction: str
+        self, programs: list[dict[str, Any]], population_size: int, metric_direction: MetricDirection
     ) -> tuple[list[dict[str, Any]], int]:
         history: list[dict[str, Any]] = []
         improvement_count = 0
@@ -1541,17 +1544,13 @@ class EvolverAgent(MemoryMixin):
     def _build_execution_env(self, validation_split: float) -> dict[str, str]:
         return {"AGENT_K_VALIDATION_SPLIT": f"{validation_split:.6f}"}
 
-    def _fitness_from_score(self, score: float, direction: str) -> float:
-        return 1.0 / (1.0 + max(score, 0.0)) if direction == "minimize" else max(score, 0.0)
+    def _fitness_from_score(self, score: float, direction: MetricDirection) -> float:
+        return score_to_fitness(score, direction)
 
-    def _score_from_fitness(self, fitness: float | None, direction: str) -> float | None:
+    def _score_from_fitness(self, fitness: float | None, direction: MetricDirection) -> float | None:
         if fitness is None:
             return None
-        if direction == "minimize":
-            if fitness <= 0:
-                return None
-            return (1.0 / fitness) - 1.0
-        return fitness
+        return fitness_to_score(fitness, direction)
 
     def _score_delta(self, before: float, after: float, direction: str) -> float:
         if direction == "minimize":

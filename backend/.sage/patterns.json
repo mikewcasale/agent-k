@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-09-07T22:07:27.680182+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -47,7 +47,7 @@
     "agent-singleton": [
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 556,
+        "line": 559,
         "rationale": "Single instance keeps memory/tool registration consistent.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -76,7 +76,7 @@
     "archive-entry": [
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry",
-        "line": 317,
+        "line": 320,
         "rationale": "Encapsulates elite metadata for sampling.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -134,7 +134,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 436,
+        "line": 439,
         "rationale": "Groups runtime services and evolution state.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -306,7 +306,7 @@
       },
       {
         "component": "agent_k.core.strategy:ProblemType",
-        "line": 68,
+        "line": 70,
         "rationale": "StrEnum for ML problem taxonomy.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -574,7 +574,7 @@
     "fitness-input": [
       {
         "component": "agent_k.core.strategy:FitnessInput",
-        "line": 146,
+        "line": 148,
         "rationale": "Captures evaluation signals for scoring.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -654,7 +654,7 @@
     "graph-node": [
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 115,
+        "line": 123,
         "rationale": "Encapsulates discovery phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -663,7 +663,7 @@
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 273,
+        "line": 281,
         "rationale": "Encapsulates research phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -672,7 +672,7 @@
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 419,
+        "line": 427,
         "rationale": "Encapsulates prototype phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -681,7 +681,7 @@
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 900,
+        "line": 908,
         "rationale": "Encapsulates evolution phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -690,7 +690,7 @@
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1602,
+        "line": 1610,
         "rationale": "Encapsulates submission phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -947,7 +947,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 501,
+        "line": 504,
         "rationale": "Stable schema for successful evolution outputs.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -956,7 +956,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 526,
+        "line": 529,
         "rationale": "Stable schema for failed evolution outputs.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -1055,7 +1055,7 @@
     "policy-model": [
       {
         "component": "agent_k.core.strategy:TechniquePolicy",
-        "line": 119,
+        "line": 121,
         "rationale": "Encodes technique constraints for evolution.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -1064,7 +1064,7 @@
       },
       {
         "component": "agent_k.core.strategy:FitnessPolicy",
-        "line": 170,
+        "line": 172,
         "rationale": "Encodes penalty tuning for fitness scoring.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -1084,7 +1084,7 @@
     "profile-model": [
       {
         "component": "agent_k.core.strategy:ProblemProfile",
-        "line": 93,
+        "line": 95,
         "rationale": "Bundles task metadata for downstream policies.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -1246,7 +1246,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 363,
+        "line": 366,
         "rationale": "Centralizes evolutionary optimization configuration.",
         "source": "agent_k/agents/evolver.py",
         "violations": [

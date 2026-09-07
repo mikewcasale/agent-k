@@ -53,6 +53,8 @@ __all__ = (
     "build_fitness_policy",
     "build_problem_profile",
     "build_technique_policy",
+    "fitness_to_score",
+    "score_to_fitness",
 )
 
 _CLASSIFICATION_METRICS: Final[frozenset[EvaluationMetric]] = frozenset(
@@ -292,6 +294,44 @@ def build_fitness_policy(
     )
 
 
+def score_to_fitness(score: float, direction: MetricDirection) -> float:
+    """Convert a competition metric score into the canonical fitness scale.
+
+    @notice: |
+        Maps a metric score onto the shared, non-negative, higher-is-better fitness scale.
+
+    @dev: |
+        This is the single source of truth for the fitness convention: every
+        producer of a fitness value (the OpenEvolve evaluator, the Evolver
+        agent, the mission graph) must route through it so values stay
+        comparable across process boundaries.
+
+        Minimized metrics map to ``1 / (1 + score)`` so that lower scores rank
+        higher while staying inside ``(0, 1]``; maximized metrics pass through
+        clamped at zero. Fitness is never negative, which keeps a failed
+        evaluation (fitness ``0.0``) below every scored candidate.
+    """
+    value = max(score, 0.0)
+    return 1.0 / (1.0 + value) if direction == "minimize" else value
+
+
+def fitness_to_score(fitness: float, direction: MetricDirection) -> float | None:
+    """Recover the metric score from a canonical fitness value.
+
+    @notice: |
+        Inverts ``score_to_fitness`` back into the competition's metric scale.
+
+    @dev: |
+        Returns ``None`` for a non-positive minimized fitness because such a
+        value carries no score (it marks a failed or unscored candidate).
+    """
+    if direction != "minimize":
+        return fitness
+    if fitness <= 0.0:
+        return None
+    return (1.0 / fitness) - 1.0
+
+
 def build_fitness_function(policy: FitnessPolicy) -> FitnessFunction:
     """Build a fitness function from policy.
 
@@ -307,7 +347,7 @@ def build_fitness_function(policy: FitnessPolicy) -> FitnessFunction:
         if not input_data.valid:
             return 0.0
 
-        base = _score_to_fitness(input_data.cv_score, policy.metric_direction)
+        base = score_to_fitness(input_data.cv_score, policy.metric_direction)
         if policy.runtime_ms_threshold and input_data.runtime_ms > policy.runtime_ms_threshold:
             base *= max(0.0, 1.0 - policy.penalty_weight)
         if policy.complexity_threshold and input_data.complexity > policy.complexity_threshold:
@@ -330,9 +370,3 @@ def apply_solution_policy(code: str, policy: TechniquePolicy) -> tuple[str, list
         data preparation generically. Returns (code, []) unchanged.
     """
     return code, []
-
-
-def _score_to_fitness(score: float, direction: MetricDirection) -> float:
-    if direction == "minimize":
-        return 1.0 / (1.0 + max(score, 0.0))
-    return max(score, 0.0)

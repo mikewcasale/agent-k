@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "This is the single source of truth for the fitness convention: every\nproducer of a fitness value (the OpenEvolve evaluator, the Evolver\nagent, the mission graph) must route through it so values stay\ncomparable across process boundaries.\n\nMinimized metrics map to ``1 / (1 + score)`` so that lower scores rank\nhigher while staying inside ``(0, 1]``; maximized metrics pass through\nclamped at zero. Fitness is never negative, which keeps a failed\nevaluation (fitness ``0.0``) below every scored candidate.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.strategy:score_to_fitness",
+  "line": 298,
+  "notice": "Maps a metric score onto the shared, non-negative, higher-is-better fitness scale.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/strategy.py",
+  "summary": "Convert a competition metric score into the canonical fitness scale.",
+  "type": "function"
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Returns ``None`` for a non-positive minimized fitness because such a\nvalue carries no score (it marks a failed or unscored candidate).",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.strategy:fitness_to_score",
+  "line": 319,
+  "notice": "Inverts ``score_to_fitness`` back into the competition's metric scale.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/strategy.py",
+  "summary": "Recover the metric score from a canonical fitness value.",
+  "type": "function"
+}

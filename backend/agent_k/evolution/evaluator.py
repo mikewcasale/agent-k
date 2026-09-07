@@ -46,6 +46,7 @@ from openevolve.evaluation_result import EvaluationResult
 
 if TYPE_CHECKING:
     from agent_k.core.hints import PreprocessingHint
+    from agent_k.core.types import MetricDirection
 
 __all__ = ("evaluate", "evaluate_stage1", "evaluate_stage2")
 
@@ -60,6 +61,7 @@ _DEFAULT_VALIDATION_SPLIT: Final[float] = 0.2
 _STAGE1_TIMEOUT: Final[int] = 5
 _STAGE2_TIMEOUT: Final[int] = 30
 _STAGE2_DATA_ROWS: Final[int] = 1000
+_STAGE2_PASS_SCORE: Final[float] = 0.65
 _MODEL_FAMILY_PATTERNS: Final[tuple[tuple[float, re.Pattern[str]], ...]] = (
     (3.0, re.compile(r"\b(Stacking|Voting|Bagging|AdaBoost)(?:Regressor|Classifier)?\b")),
     (2.0, re.compile(r"\bKNeighbors(?:Regressor|Classifier)\b")),
@@ -305,14 +307,20 @@ def _model_family_score(code: str) -> float:
 
 
 def _fitness_from_score(cv_score: float | None, metric_direction: str) -> float:
-    """Convert CV score to fitness (higher is better)."""
+    """Convert CV score to fitness on the canonical scale (higher is better).
+
+    Delegates to ``agent_k.core.strategy.score_to_fitness`` so the values this
+    evaluator hands back to OpenEvolve use the same convention as the Evolver
+    agent and the mission graph: non-negative, higher-is-better, and ``0.0``
+    for an unscored candidate.
+    """
+    from agent_k.core.strategy import score_to_fitness
+
     if cv_score is None:
         return 0.0
 
-    if metric_direction == "maximize":
-        return float(cv_score)
-    else:
-        return -float(cv_score)
+    direction: MetricDirection = "maximize" if metric_direction == "maximize" else "minimize"
+    return score_to_fitness(float(cv_score), direction)
 
 
 def evaluate(program_path: str) -> EvaluationResult:
@@ -353,7 +361,9 @@ def evaluate(program_path: str) -> EvaluationResult:
     submission_path = work_dir / "submission.csv"
     valid = result.returncode == 0 and cv_score is not None and submission_path.exists()
 
-    fitness = _fitness_from_score(cv_score, metric_direction)
+    # A candidate that printed a score but never wrote a submission cannot be
+    # submitted, so it must not outrank one that did.
+    fitness = _fitness_from_score(cv_score, metric_direction) if valid else 0.0
     cv_variance = _compute_cv_variance(result.stdout)
     metrics = {
         "combined_score": fitness,
@@ -547,18 +557,17 @@ def evaluate_stage2(program_path: str) -> EvaluationResult:
                 },
             )
 
-        # Calculate preliminary fitness
+        # Stage 2 is a validity gate, not a ranking step: the subset score is
+        # not comparable to the full-data score, and metric scales differ per
+        # competition, so a candidate that ran and scored on the subset passes
+        # at a fixed conservative score. Its fitness is reported separately.
         fitness = _fitness_from_score(cv_score, metric_direction)
 
-        # Scale fitness to be conservative (stage2 threshold is 0.6)
-        # If it looks promising on subset, give it 0.65 to pass to full eval
-        scaled_fitness = min(0.65, fitness) if fitness > 0.4 else 0.0
-
-        logfire.info("stage2_passed", fitness=scaled_fitness, cv_score=cv_score)
+        logfire.info("stage2_passed", fitness=fitness, cv_score=cv_score)
         return EvaluationResult(
             metrics={
-                "combined_score": scaled_fitness,
-                "fitness": scaled_fitness,
+                "combined_score": _STAGE2_PASS_SCORE,
+                "fitness": fitness,
                 "cv_score": float(cv_score) if cv_score is not None else 0.0,
                 "valid": 1.0,
             },

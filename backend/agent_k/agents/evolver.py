@@ -81,6 +81,7 @@ from agent_k.core.constants import (
 )
 from agent_k.core.data import CompetitionSchema, stage_competition_data
 from agent_k.core.hints import DatasetProfile, PreprocessingHint, compute_hint_priority, detect_applied_hints
+from agent_k.core.metrics import describe_metric
 from agent_k.core.sage import Doc, Range
 from agent_k.core.solution import execute_solution
 from agent_k.core.strategy import (
@@ -1129,7 +1130,7 @@ class EvolverAgent(MemoryMixin):
                 "COMPETITION CONTEXT:\n"
                 f"- ID: {comp.id}\n"
                 f"- Title: {comp.title}\n"
-                f"- Metric: {comp.metric.value} ({comp.metric_direction})\n"
+                f"- Metric: {describe_metric(comp.metric, comp.metric_direction, comp.metric_name)}\n"
                 f"- Target Score: {deps.target_score}"
             ),
             (

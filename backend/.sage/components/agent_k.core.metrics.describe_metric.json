@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The platform name is appended only when it carries information the enum\nvalue does not, so agents can optimise metrics the taxonomy approximates.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.metrics:describe_metric",
+  "line": 253,
+  "notice": "Formats metric, direction, and the platform-reported name for prompts.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/metrics.py",
+  "summary": "Render a metric for agent prompts, preserving the platform name.",
+  "type": "function"
+}

@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.models:MemoryState",
-  "line": 613,
+  "line": 619,
   "notice": "Overall memory state.",
   "pattern": {
     "name": "immutable-entity",

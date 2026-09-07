@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Single source of truth for optimisation direction and prediction shape.\nConsumers read these flags instead of re-declaring inline metric sets.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.metrics:MetricSpec",
+  "line": 62,
+  "notice": "Behavioural profile of a supported evaluation metric.",
+  "pattern": {
+    "name": "taxonomy-entry",
+    "rationale": "Bundles direction and prediction shape per metric.",
+    "violations": "Duplicated metric sets drift between modules."
+  },
+  "similar": null,
+  "source": "agent_k/core/metrics.py",
+  "summary": "Behavioural profile of a supported evaluation metric.",
+  "type": "class"
+}

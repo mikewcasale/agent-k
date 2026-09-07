@@ -58,7 +58,8 @@ from agent_k.core.exceptions import (
     RateLimitError,
     SubmissionError,
 )
-from agent_k.core.models import Competition, CompetitionType, EvaluationMetric, LeaderboardEntry, Submission
+from agent_k.core.metrics import resolve_metric
+from agent_k.core.models import Competition, CompetitionType, LeaderboardEntry, Submission
 from agent_k.core.protocols import PlatformAdapter
 
 if TYPE_CHECKING:
@@ -470,43 +471,17 @@ class KaggleAdapter(PlatformAdapter):
             "Community": CompetitionType.COMMUNITY,
         }
 
-        # Map Kaggle metric to our enum
-        metric_map = {
-            "accuracy": EvaluationMetric.ACCURACY,
-            "auc": EvaluationMetric.AUC,
-            "logloss": EvaluationMetric.LOG_LOSS,
-            "rmse": EvaluationMetric.RMSE,
-            "mae": EvaluationMetric.MAE,
-            "rmsle": EvaluationMetric.RMSLE,
-        }
-        metric_raw = str(data.get("evaluationMetric", "accuracy")).strip()
-        metric_key = metric_raw.lower()
-        metric = metric_map.get(metric_key)
-        if metric is None:
-            if "logarithmic" in metric_key or "rmsle" in metric_key:
-                metric = EvaluationMetric.RMSLE
-            elif "mean squared" in metric_key or "rmse" in metric_key:
-                metric = EvaluationMetric.RMSE
-            elif "mean absolute" in metric_key or "mae" in metric_key:
-                metric = EvaluationMetric.MAE
-            elif "log loss" in metric_key or "logloss" in metric_key:
-                metric = EvaluationMetric.LOG_LOSS
-            elif "auc" in metric_key:
-                metric = EvaluationMetric.AUC
-            else:
-                metric = EvaluationMetric.ACCURACY
-        metric_direction_map = {
-            EvaluationMetric.ACCURACY: "maximize",
-            EvaluationMetric.AUC: "maximize",
-            EvaluationMetric.F1: "maximize",
-            EvaluationMetric.LOG_LOSS: "minimize",
-            EvaluationMetric.RMSE: "minimize",
-            EvaluationMetric.MAE: "minimize",
-            EvaluationMetric.RMSLE: "minimize",
-            EvaluationMetric.MAP: "maximize",
-            EvaluationMetric.NDCG: "maximize",
-        }
-        metric_direction = metric_direction_map.get(metric, "maximize")
+        # Map the platform metric name onto the supported taxonomy.
+        metric_raw = str(data.get("evaluationMetric", "")).strip()
+        resolved = resolve_metric(metric_raw)
+        if not resolved.recognized and metric_raw:
+            logfire.warning(
+                "kaggle.metric_unrecognized",
+                competition=data.get("ref") or data.get("title"),
+                metric_raw=metric_raw,
+                metric=resolved.metric.value,
+                metric_direction=resolved.direction,
+            )
 
         # Parse tags - they may be strings or dicts with 'name' key
         raw_tags = data.get("tags", [])
@@ -547,8 +522,9 @@ class KaggleAdapter(PlatformAdapter):
             title=data.get("title", ""),
             description=data.get("description"),
             competition_type=category_map.get(data.get("category", ""), CompetitionType.COMMUNITY),
-            metric=metric,
-            metric_direction=metric_direction,
+            metric=resolved.metric,
+            metric_name=metric_raw or None,
+            metric_direction=resolved.direction,
             deadline=datetime.fromisoformat(data.get("deadline", "2099-12-31T23:59:59+00:00").replace("Z", "+00:00")),
             prize_pool=prize_pool,
             max_team_size=data.get("maxTeamSize", 1),

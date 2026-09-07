@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.evolver:EvolverAgent.__init__",
-  "line": 598,
+  "line": 599,
   "notice": "Builds the agent singleton and registers tools.",
   "pattern": null,
   "similar": null,

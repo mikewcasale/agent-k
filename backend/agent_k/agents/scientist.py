@@ -67,6 +67,7 @@ from agent_k.agents.prompts import SCIENTIST_SYSTEM_PROMPT
 from agent_k.core.constants import DEFAULT_MODEL
 from agent_k.core.data import locate_data_files
 from agent_k.core.hints import DatasetProfile, build_dataset_profile, generate_preprocessing_hints
+from agent_k.core.metrics import describe_metric
 from agent_k.core.sage import Doc, Range
 from agent_k.infra.providers import get_model
 from agent_k.toolsets import (
@@ -725,7 +726,7 @@ class ScientistAgent(MemoryMixin):
             f"- ID: {comp.id}\n"
             f"- Title: {comp.title}\n"
             f"- Type: {comp.competition_type.value}\n"
-            f"- Metric: {comp.metric.value} ({comp.metric_direction})\n"
+            f"- Metric: {describe_metric(comp.metric, comp.metric_direction, comp.metric_name)}\n"
             f"- Days Remaining: {comp.days_remaining}\n"
             f"- Prize Pool: {prize}\n"
             f"- Tags: {tags}"

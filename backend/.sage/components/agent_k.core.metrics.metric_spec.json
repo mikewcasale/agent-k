@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Unknown enum members fall back to the accuracy spec so callers never\nneed a None branch; every member of EvaluationMetric is covered today.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.metrics:metric_spec",
+  "line": 192,
+  "notice": "Looks up direction and prediction shape for a supported metric.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/metrics.py",
+  "summary": "Return the behavioural spec for a metric.",
+  "type": "function"
+}

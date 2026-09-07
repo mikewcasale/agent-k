@@ -76,6 +76,7 @@ from ..core.constants import (
 from ..core.data import infer_competition_schema, locate_data_files, stage_competition_data
 from ..core.exceptions import classify_error
 from ..core.hints import DatasetProfile, PreprocessingHint, build_dataset_profile, generate_preprocessing_hints
+from ..core.metrics import is_classification_metric, uses_probability
 from ..core.models import (
     EvaluationMetric,
     EvolutionState,
@@ -630,13 +631,8 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         strategy_text = " ".join(strategy_items)
         strategy_lower = strategy_text.lower()
 
-        is_classification = metric_key in {
-            EvaluationMetric.ACCURACY,
-            EvaluationMetric.AUC,
-            EvaluationMetric.LOG_LOSS,
-            EvaluationMetric.F1,
-        }
-        uses_proba = metric_key in {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
+        is_classification = is_classification_metric(metric_key)
+        uses_proba = uses_probability(metric_key)
 
         if "lightgbm" in strategy_lower or "lgbm" in strategy_lower:
             model_class = "LGBMClassifier" if is_classification else "LGBMRegressor"
@@ -2173,19 +2169,12 @@ def _prediction_value(
         return 0.0, 0.0
 
     mean_value = sum(numeric_values) / len(numeric_values)
-    proba_metrics = {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
-    classification_metrics = {
-        EvaluationMetric.ACCURACY,
-        EvaluationMetric.AUC,
-        EvaluationMetric.LOG_LOSS,
-        EvaluationMetric.F1,
-    }
 
-    if metric in proba_metrics:
+    if uses_probability(metric):
         pred_numeric = min(max(mean_value, 1e-3), 1 - 1e-3)
         return pred_numeric, pred_numeric
 
-    if metric in classification_metrics:
+    if is_classification_metric(metric):
         if mapping:
             majority = Counter(raw_values).most_common(1)[0][0]
             return majority, float(mapping.get(majority, 0))
@@ -2259,6 +2248,14 @@ def _evaluate_metric(metric: EvaluationMetric, values: list[float], prediction: 
             return 0.0
         mse = sum((math.log1p(value) - math.log1p(pred)) ** 2 for value in valid_values) / len(valid_values)
         return math.sqrt(mse)
+
+    if metric == EvaluationMetric.R2:
+        mean_value = sum(values) / len(values)
+        ss_tot = sum((value - mean_value) ** 2 for value in values)
+        if ss_tot == 0.0:
+            return 0.0
+        ss_res = sum((value - prediction) ** 2 for value in values)
+        return 1.0 - ss_res / ss_tot
 
     return 0.0
 

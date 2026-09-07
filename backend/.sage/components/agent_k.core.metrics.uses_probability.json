@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "AUC and log loss require predict_proba output; hard labels score badly.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.metrics:uses_probability",
+  "line": 217,
+  "notice": "Reports whether submissions must contain probabilities.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/metrics.py",
+  "summary": "Whether the metric scores probability estimates rather than labels.",
+  "type": "function"
+}

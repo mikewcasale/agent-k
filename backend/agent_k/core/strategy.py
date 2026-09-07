@@ -35,6 +35,7 @@ from enum import StrEnum
 from typing import TYPE_CHECKING, Final
 
 from .data import CompetitionSchema
+from .metrics import is_classification_metric, uses_probability
 from .models import Competition, EvaluationMetric, MissionCriteria
 from .types import MetricDirection
 
@@ -55,9 +56,6 @@ __all__ = (
     "build_technique_policy",
 )
 
-_CLASSIFICATION_METRICS: Final[frozenset[EvaluationMetric]] = frozenset(
-    {EvaluationMetric.ACCURACY, EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS, EvaluationMetric.F1}
-)
 _VISION_TAGS: Final[frozenset[str]] = frozenset({"vision", "computer vision", "image", "images"})
 _TEXT_TAGS: Final[frozenset[str]] = frozenset({"nlp", "text", "language"})
 
@@ -199,8 +197,8 @@ def build_problem_profile(competition: Competition, schema: CompetitionSchema) -
         from competition tags and evaluation metric.
     """
     metric = competition.metric
-    is_classification = metric in _CLASSIFICATION_METRICS
-    uses_proba = metric in {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
+    is_classification = is_classification_metric(metric)
+    uses_proba = uses_probability(metric)
 
     tags = {tag.lower() for tag in competition.tags}
     if tags & _VISION_TAGS:

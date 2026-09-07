@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "``recognized`` is False when the raw name matched no taxonomy rule and\nthe metric/direction were inferred lexically; callers may log that.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.metrics:ResolvedMetric",
+  "line": 84,
+  "notice": "Outcome of resolving a platform-reported metric name.",
+  "pattern": {
+    "name": "resolution-result",
+    "rationale": "Keeps provenance of the metric decision inspectable.",
+    "violations": "Silent fallbacks hide wrong optimisation directions."
+  },
+  "similar": null,
+  "source": "agent_k/core/metrics.py",
+  "summary": "Outcome of resolving a platform-reported metric name.",
+  "type": "class"
+}

@@ -431,6 +431,11 @@
       "type": "provides"
     },
     {
+      "source": "agent_k.core.metrics",
+      "target": "agent_k.core.metrics",
+      "type": "provides"
+    },
+    {
       "source": "agent_k.core.models",
       "target": "agent_k.core.models",
       "type": "provides"
@@ -921,7 +926,7 @@
       "type": "similar"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831739+00:00",
+  "generated": "2026-09-07T03:13:11.762152+00:00",
   "nodes": [
     {
       "id": "agent_k",
@@ -1042,6 +1047,12 @@
       "label": "hints",
       "pattern": "analysis-hints",
       "source": "agent_k/core/hints.py"
+    },
+    {
+      "id": "agent_k.core.metrics",
+      "label": "metrics",
+      "pattern": "taxonomy",
+      "source": "agent_k/core/metrics.py"
     },
     {
       "id": "agent_k.core.models",

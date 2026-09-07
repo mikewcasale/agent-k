@@ -1,0 +1,38 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.core.metrics as the canonical home for this capability.",
+      "Resolve platform metric strings with resolve_metric instead of ad-hoc substring checks.",
+      "Read classification/probability behaviour from METRIC_SPECS instead of inline metric sets."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph.",
+      "Add competition-specific metric handling; rules must stay generic per ML problem family."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Kaggle reports ``evaluationMetric`` as a free-form identifier that is\nusually CamelCase and unpunctuated (``RootMeanSquaredError``,\n``QuadraticWeightedKappa``). Substring checks against spaced phrases miss\nthose, so this module normalises the raw name before matching and falls\nback to lexical direction/family detection for metrics outside the\nsupported taxonomy.",
+  "graph": {
+    "id": "agent_k.core.metrics",
+    "pattern": "taxonomy",
+    "provides": [
+      "agent_k.core.metrics"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-09-07",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.core.metrics",
+  "line": 1,
+  "notice": "Evaluation metric taxonomy and platform metric-name resolution for AGENT-K.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/metrics.py",
+  "summary": "Evaluation metric taxonomy and platform metric-name resolution for AGENT-K.",
+  "type": "module"
+}

@@ -78,6 +78,17 @@ from .exceptions import (
     SubmissionError,
     ToolExecutionError,
 )
+from .metrics import (
+    METRIC_SPECS,
+    MetricSpec,
+    ResolvedMetric,
+    describe_metric,
+    is_classification_metric,
+    metric_spec,
+    normalize_metric_name,
+    resolve_metric,
+    uses_probability,
+)
 from .models import (
     Checkpoint,
     CodeExecutorCall,
@@ -136,6 +147,7 @@ from .types import (
 
 __all__ = (
     "CHECKPOINT_INTERVAL_GENERATIONS",
+    "METRIC_SPECS",
     "CONVERGENCE_THRESHOLD_GENERATIONS",
     "DEFAULT_KAGGLE_MCP_URL",
     "DEFAULT_MODEL",
@@ -158,6 +170,14 @@ __all__ = (
     "SUBMISSION_TIMEOUT_SECONDS",
     "VALID_COMPETITION_TYPES",
     "AdapterError",
+    "MetricSpec",
+    "ResolvedMetric",
+    "describe_metric",
+    "is_classification_metric",
+    "metric_spec",
+    "normalize_metric_name",
+    "resolve_metric",
+    "uses_probability",
     "AgentError",
     "AgentExecutionError",
     "AgentKError",

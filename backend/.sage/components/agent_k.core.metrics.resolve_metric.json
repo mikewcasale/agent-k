@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Matches normalised text against ordered taxonomy rules. Unmatched names\nare assigned a proxy metric from lexical direction and family cues so\nthe optimisation direction stays correct even for metrics outside the\ntaxonomy; ``recognized`` is False in that case.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.metrics:resolve_metric",
+  "line": 229,
+  "notice": "Maps a free-form platform metric name onto the supported taxonomy.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/metrics.py",
+  "summary": "Resolve a platform metric name into a supported metric and direction.",
+  "type": "function"
+}

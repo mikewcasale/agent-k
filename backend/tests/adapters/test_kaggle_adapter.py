@@ -12,6 +12,7 @@ import httpx
 import pytest
 
 from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
+from agent_k.core.models import Competition, EvaluationMetric
 
 __all__ = ()
 
@@ -76,6 +77,55 @@ class TestKaggleAdapter:
         adapter = KaggleAdapter(config)
 
         assert adapter is not None
+
+
+class TestKaggleAdapterCompetitionParsing:
+    """Tests for mapping Kaggle payloads onto the Competition model."""
+
+    @staticmethod
+    def _parse(evaluation_metric: str) -> Competition:
+        adapter = KaggleAdapter(KaggleSettings(username="user", api_key="key"))
+        return adapter._parse_competition(
+            {
+                "ref": "https://www.kaggle.com/competitions/sample",
+                "title": "Sample",
+                "category": "Playground",
+                "deadline": "2030-01-01T00:00:00Z",
+                "evaluationMetric": evaluation_metric,
+            }
+        )
+
+    @pytest.mark.parametrize(
+        ("evaluation_metric", "metric", "direction"),
+        [
+            ("RootMeanSquaredError", EvaluationMetric.RMSE, "minimize"),
+            ("RootMeanSquaredLogarithmicError", EvaluationMetric.RMSLE, "minimize"),
+            ("MulticlassLoss", EvaluationMetric.LOG_LOSS, "minimize"),
+            ("AreaUnderReceiverOperatingCharacteristicCurve", EvaluationMetric.AUC, "maximize"),
+            ("CategorizationAccuracy", EvaluationMetric.ACCURACY, "maximize"),
+            ("R2", EvaluationMetric.R2, "maximize"),
+        ],
+    )
+    def test_parses_camel_case_metric_names(
+        self, evaluation_metric: str, metric: EvaluationMetric, direction: str
+    ) -> None:
+        """Ensure Kaggle's unpunctuated metric identifiers resolve correctly."""
+        competition = self._parse(evaluation_metric)
+
+        assert competition.metric is metric
+        assert competition.metric_direction == direction
+        assert competition.metric_name == evaluation_metric
+
+    def test_missing_metric_defaults_to_accuracy(self) -> None:
+        """Ensure competitions without metric metadata keep the historical default."""
+        adapter = KaggleAdapter(KaggleSettings(username="user", api_key="key"))
+        competition = adapter._parse_competition(
+            {"ref": "sample", "title": "Sample", "category": "Playground", "deadline": "2030-01-01T00:00:00Z"}
+        )
+
+        assert competition.metric is EvaluationMetric.ACCURACY
+        assert competition.metric_direction == "maximize"
+        assert competition.metric_name is None
 
 
 class TestKaggleAdapterFromEnv:

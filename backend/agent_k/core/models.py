@@ -160,6 +160,7 @@ class EvaluationMetric(StrEnum):
     RMSE = "rmse"
     MAE = "mae"
     RMSLE = "rmsle"
+    R2 = "r2"
 
     # Ranking
     MAP = "map"
@@ -196,6 +197,11 @@ class Competition(BaseModel):
     description: str | None = Field(default=None, max_length=10000, description="Competition description")
     competition_type: CompetitionType = Field(..., description="Category of competition")
     metric: EvaluationMetric = Field(..., description="Primary evaluation metric")
+    metric_name: str | None = Field(
+        default=None,
+        max_length=200,
+        description="Metric name exactly as reported by the platform, retained when the taxonomy approximates it",
+    )
     metric_direction: MetricDirection = Field(
         default="maximize", description="Whether higher or lower metric values are better"
     )

@@ -32,9 +32,10 @@ from __future__ import annotations as _annotations
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING, Final, Literal
 
 from .data import CompetitionSchema
+from .modality import DataModality
 from .models import Competition, EvaluationMetric, MissionCriteria
 from .types import MetricDirection
 
@@ -52,6 +53,7 @@ __all__ = (
     "build_fitness_function",
     "build_fitness_policy",
     "build_problem_profile",
+    "build_technique_guidance",
     "build_technique_policy",
 )
 
@@ -60,8 +62,17 @@ _CLASSIFICATION_METRICS: Final[frozenset[EvaluationMetric]] = frozenset(
 )
 _VISION_TAGS: Final[frozenset[str]] = frozenset({"vision", "computer vision", "image", "images"})
 _TEXT_TAGS: Final[frozenset[str]] = frozenset({"nlp", "text", "language"})
+_VISION_MEDIA_KINDS: Final[frozenset[str]] = frozenset({"image", "video"})
+_TABULAR_GUIDANCE: Final[tuple[str, ...]] = (
+    "Consider KNeighborsRegressor variants with tuned n_neighbors, weights, metric, p, leaf_size, "
+    "algorithm, and scaling choices (StandardScaler/MinMax/Robust) for distance sensitivity.",
+    'For categorical features, consider sklearn preprocessing (SimpleImputer + OneHotEncoder(handle_unknown="ignore")) '
+    "or pandas.get_dummies on a DataFrame; avoid mixing get_dummies output inside a ColumnTransformer.",
+)
 
 type FitnessFunction = Callable[["FitnessInput"], float]
+
+type _ProblemFamily = Literal["tabular", "text", "vision"]
 
 
 class ProblemType(StrEnum):
@@ -88,6 +99,13 @@ class ProblemType(StrEnum):
     UNKNOWN = "unknown"
 
 
+_PROBLEM_TYPES: Final[dict[_ProblemFamily, dict[bool, ProblemType]]] = {
+    "tabular": {False: ProblemType.TABULAR_REGRESSION, True: ProblemType.TABULAR_CLASSIFICATION},
+    "text": {False: ProblemType.TEXT_REGRESSION, True: ProblemType.TEXT_CLASSIFICATION},
+    "vision": {False: ProblemType.VISION_REGRESSION, True: ProblemType.VISION_CLASSIFICATION},
+}
+
+
 @dataclass(frozen=True, slots=True)
 class ProblemProfile:
     """Profile describing the ML task for a competition.
@@ -112,6 +130,9 @@ class ProblemProfile:
     id_column: str
     uses_proba: bool
     is_classification: bool
+    text_feature_columns: tuple[str, ...] = ()
+    file_reference_columns: tuple[str, ...] = ()
+    has_tabular_features: bool = True
 
 
 @dataclass(frozen=True, slots=True)
@@ -188,27 +209,26 @@ class FitnessPolicy:
     stage_weights: dict[str, float] = field(default_factory=dict)
 
 
-def build_problem_profile(competition: Competition, schema: CompetitionSchema) -> ProblemProfile:
-    """Infer a generic ML task profile from competition metadata and schema.
+def build_problem_profile(
+    competition: Competition, schema: CompetitionSchema, modality: DataModality | None = None
+) -> ProblemProfile:
+    """Infer a generic ML task profile from competition metadata, schema and data.
 
     @notice: |
-        Creates a ProblemProfile from competition metadata and data schema.
+        Creates a ProblemProfile from competition metadata, data schema and feature modality.
 
     @dev: |
-        Infers problem type (tabular/vision/text, classification/regression)
-        from competition tags and evaluation metric.
+        Infers problem type (tabular/vision/text, classification/regression) from
+        competition tags and evaluation metric. Platform tags win when present;
+        when they are absent or ambiguous the inferred feature modality decides,
+        so competitions without usable tags no longer fall back to tabular.
     """
     metric = competition.metric
     is_classification = metric in _CLASSIFICATION_METRICS
     uses_proba = metric in {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
 
-    tags = {tag.lower() for tag in competition.tags}
-    if tags & _VISION_TAGS:
-        problem_type = ProblemType.VISION_CLASSIFICATION if is_classification else ProblemType.VISION_REGRESSION
-    elif tags & _TEXT_TAGS:
-        problem_type = ProblemType.TEXT_CLASSIFICATION if is_classification else ProblemType.TEXT_REGRESSION
-    else:
-        problem_type = ProblemType.TABULAR_CLASSIFICATION if is_classification else ProblemType.TABULAR_REGRESSION
+    family = _resolve_problem_family(competition, modality)
+    problem_type = _PROBLEM_TYPES[family][is_classification]
 
     return ProblemProfile(
         problem_type=problem_type,
@@ -219,7 +239,57 @@ def build_problem_profile(competition: Competition, schema: CompetitionSchema) -
         id_column=schema.id_column,
         uses_proba=uses_proba,
         is_classification=is_classification,
+        text_feature_columns=modality.text_columns if modality is not None else (),
+        file_reference_columns=modality.file_reference_columns if modality is not None else (),
+        has_tabular_features=modality.has_tabular_features if modality is not None else True,
     )
+
+
+def build_technique_guidance(profile: ProblemProfile) -> tuple[str, ...]:
+    """Build generic modelling guidance for the profile's problem family.
+
+    @notice: |
+        Returns technique guidance lines matching the problem family and feature modality.
+
+    @dev: |
+        Guidance stays generic per ML problem type and is grounded in the runtime
+        stack (numpy, pandas, scikit-learn, LightGBM), so every suggested technique
+        is runnable. Text columns get vectoriser guidance instead of one-hot
+        encoding, which otherwise explodes into one column per document.
+    """
+    guidance: list[str] = []
+
+    if profile.text_feature_columns:
+        columns = ", ".join(profile.text_feature_columns)
+        guidance.append(
+            f"Free-text feature columns detected ({columns}). Vectorise them with sklearn "
+            "TfidfVectorizer or HashingVectorizer (word and char_wb n-grams) instead of one-hot "
+            "encoding, which would create one column per document."
+        )
+        guidance.append(
+            "Fit every vectoriser on the training split only and transform the validation and test "
+            "splits with the same fitted object, then combine the sparse text matrix with the "
+            "remaining numeric columns via scipy.sparse.hstack before fitting the model."
+        )
+
+    if profile.file_reference_columns:
+        columns = ", ".join(profile.file_reference_columns)
+        guidance.append(
+            f"Feature columns holding media file references detected ({columns}). The runtime "
+            "provides only numpy, pandas, scikit-learn and LightGBM, so raw media decoding is "
+            "unavailable; drop the raw paths and model the remaining columns."
+        )
+        if not profile.has_tabular_features:
+            guidance.append(
+                "No numeric, categorical or datetime feature columns remain, so predict the training "
+                "target prior (mean for regression, class frequencies for probability metrics) and "
+                "spend the remaining budget on calibrating that prior rather than on model search."
+            )
+
+    if profile.has_tabular_features:
+        guidance.extend(_TABULAR_GUIDANCE)
+
+    return tuple(guidance)
 
 
 def build_technique_policy(profile: ProblemProfile, criteria: MissionCriteria | None = None) -> TechniquePolicy:
@@ -330,6 +400,21 @@ def apply_solution_policy(code: str, policy: TechniquePolicy) -> tuple[str, list
         data preparation generically. Returns (code, []) unchanged.
     """
     return code, []
+
+
+def _resolve_problem_family(competition: Competition, modality: DataModality | None) -> _ProblemFamily:
+    tags = {tag.lower() for tag in competition.tags}
+    if tags & _VISION_TAGS:
+        return "vision"
+    if tags & _TEXT_TAGS:
+        return "text"
+    if modality is None:
+        return "tabular"
+    if modality.media_kinds & _VISION_MEDIA_KINDS:
+        return "vision"
+    if modality.text_columns:
+        return "text"
+    return "tabular"
 
 
 def _score_to_fitness(score: float, direction: MetricDirection) -> float:

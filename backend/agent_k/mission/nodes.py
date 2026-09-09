@@ -73,9 +73,10 @@ from ..core.constants import (
     RESEARCH_TIMEOUT_SECONDS,
     SUBMISSION_TIMEOUT_SECONDS,
 )
-from ..core.data import infer_competition_schema, locate_data_files, stage_competition_data
+from ..core.data import CompetitionSchema, infer_competition_schema, locate_data_files, stage_competition_data
 from ..core.exceptions import classify_error
 from ..core.hints import DatasetProfile, PreprocessingHint, build_dataset_profile, generate_preprocessing_hints
+from ..core.modality import infer_data_modality
 from ..core.models import (
     EvaluationMetric,
     EvolutionState,
@@ -85,7 +86,14 @@ from ..core.models import (
     ResearchFindings,
 )
 from ..core.solution import execute_solution, parse_baseline_score
-from ..core.strategy import apply_solution_policy, build_fitness_policy, build_problem_profile, build_technique_policy
+from ..core.strategy import (
+    ProblemProfile,
+    apply_solution_policy,
+    build_fitness_policy,
+    build_problem_profile,
+    build_technique_guidance,
+    build_technique_policy,
+)
 from ..core.tracking import (
     ExperimentRecord,
     HintEffectivenessTracker,
@@ -495,7 +503,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         train_path, test_path, sample_path, work_path, competition_id=competition_id
                     )
                     schema = infer_competition_schema(staged["train"], staged["test"], staged["sample"])
-                    profile = build_problem_profile(competition, schema)
+                    profile = _profile_from_staged_data(competition, schema, staged["train"])
                     technique_policy = build_technique_policy(profile, state.criteria)
 
                     prototype_code = self._generate_prototype(
@@ -1079,7 +1087,7 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
 
             population_size = evolver_settings.population_size
             solution_timeout = evolver_settings.solution_timeout
-            profile = build_problem_profile(competition, schema)
+            profile = _profile_from_staged_data(competition, schema, staged["train"])
             technique_policy = build_technique_policy(profile, criteria)
             population_size = max(population_size, technique_policy.min_population_size)
             if max_rounds <= 5:
@@ -1111,6 +1119,7 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 "Avoid XGBoost and CatBoost unless explicitly enabled for the mission; "
                 "prefer LightGBM for tree-based boosting."
             )
+            technique_guidance = "\n                    ".join(build_technique_guidance(profile))
             base_prompt = f"""
                     Evolve solution for {competition.title}.
                     Target: Top {criteria.target_leaderboard_percentile * 100:.0f}% on leaderboard.
@@ -1120,10 +1129,7 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     Maintain diversity using model families and solution complexity bins.
                     Use sample_elites to pull top and diverse candidates.
                     Use cascade evaluation in evaluate_fitness to skip full runs when quick checks fail.
-                    Consider KNeighborsRegressor variants with tuned n_neighbors, weights, metric, p, leaf_size,
-                    algorithm, and scaling choices (StandardScaler/MinMax/Robust) for distance sensitivity.
-                    For categorical features, consider sklearn preprocessing (SimpleImputer + OneHotEncoder(handle_unknown="ignore"))
-                    or pandas.get_dummies on a DataFrame; avoid mixing get_dummies output inside a ColumnTransformer.
+                    {technique_guidance}
                     {lightgbm_guidance}
                     {avoid_library_guidance}
                     If research mentions disallowed libraries, ignore those suggestions and stay within the allowed stack.
@@ -1728,7 +1734,7 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         train_path, test_path, sample_path, work_path, competition_id=competition_id
                     )
                     schema = infer_competition_schema(staged["train"], staged["test"], staged["sample"])
-                    profile = build_problem_profile(competition, schema)
+                    profile = _profile_from_staged_data(competition, schema, staged["train"])
                     technique_policy = build_technique_policy(profile, state.criteria)
                     best_code, notes = apply_solution_policy(best_code, technique_policy)
                     if notes:
@@ -2261,6 +2267,30 @@ def _evaluate_metric(metric: EvaluationMetric, values: list[float], prediction: 
         return math.sqrt(mse)
 
     return 0.0
+
+
+def _profile_from_staged_data(competition: Any, schema: CompetitionSchema, train_path: Path) -> ProblemProfile:
+    """Build a problem profile using the modality inferred from the staged training data.
+
+    @notice: |
+        Combines competition metadata with detected feature modality into a ProblemProfile.
+
+    @dev: |
+        Identifier and target columns are excluded so only model inputs are classified.
+    """
+    modality = infer_data_modality(
+        train_path, exclude_columns=(schema.id_column, *schema.train_target_columns, *schema.target_columns)
+    )
+    profile = build_problem_profile(competition, schema, modality)
+    logfire.info(
+        "problem_modality_inferred",
+        problem_type=profile.problem_type.value,
+        sampled_rows=modality.sampled_rows,
+        text_columns=list(profile.text_feature_columns),
+        file_reference_columns=list(profile.file_reference_columns),
+        has_tabular_features=profile.has_tabular_features,
+    )
+    return profile
 
 
 def _compute_baseline_score(*, train_path: Path, target_columns: list[str], metric: EvaluationMetric) -> float:

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Identifier and target columns are excluded so only model inputs are classified.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:_profile_from_staged_data",
+  "line": 2273,
+  "notice": "Combines competition metadata with detected feature modality into a ProblemProfile.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Build a problem profile using the modality inferred from the staged training data.",
+  "type": "function"
+}

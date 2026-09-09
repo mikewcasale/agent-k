@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Reads at most sample_rows data rows so the cost stays bounded for large\ncompetition files. Identifier and target columns are excluded so only\nmodel inputs are classified. Missing or headerless files yield an empty\nDataModality rather than raising, because detection is advisory.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.modality:infer_data_modality",
+  "line": 178,
+  "notice": "Samples the head of a CSV and returns a modality verdict per feature column.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/modality.py",
+  "summary": "Classify the feature columns of a training file into generic modalities.",
+  "type": "function"
+}

@@ -1,0 +1,37 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.core.modality as the canonical home for this capability.",
+      "Classify feature columns with infer_data_modality instead of ad-hoc header heuristics."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph.",
+      "Add competition-specific column names; detection must stay generic by ML problem family."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Samples the head of a training CSV and classifies every feature column into a\ngeneric modality (numeric, categorical, free text, media file reference or\ndatetime). Downstream policy code uses the result to pick a problem family\nwithout relying on platform tags, which are frequently absent.",
+  "graph": {
+    "id": "agent_k.core.modality",
+    "pattern": "data-access",
+    "provides": [
+      "agent_k.core.modality"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-09-09",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.core.modality",
+  "line": 1,
+  "notice": "Feature modality inference for competition datasets.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/modality.py",
+  "summary": "Feature modality inference for competition datasets.",
+  "type": "module"
+}

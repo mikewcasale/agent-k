@@ -9,6 +9,7 @@ from __future__ import annotations as _annotations
 from datetime import UTC, datetime
 
 from agent_k.core.data import CompetitionSchema
+from agent_k.core.modality import ColumnModality, DataModality, FeatureModality
 from agent_k.core.models import Competition, CompetitionType, EvaluationMetric
 from agent_k.core.strategy import (
     FitnessInput,
@@ -18,10 +19,11 @@ from agent_k.core.strategy import (
     build_fitness_function,
     build_fitness_policy,
     build_problem_profile,
+    build_technique_guidance,
 )
 
 
-def _competition(metric: EvaluationMetric) -> Competition:
+def _competition(metric: EvaluationMetric, tags: frozenset[str] = frozenset({"tabular"})) -> Competition:
     return Competition(
         id="sample-competition",
         title="Sample Competition",
@@ -33,8 +35,24 @@ def _competition(metric: EvaluationMetric) -> Competition:
         prize_pool=None,
         max_team_size=1,
         max_daily_submissions=5,
-        tags=frozenset({"tabular"}),
+        tags=tags,
         url=None,
+    )
+
+
+def _schema() -> CompetitionSchema:
+    return CompetitionSchema(id_column="id", target_columns=["target"], train_target_columns=["target"])
+
+
+def _modality(*entries: tuple[str, FeatureModality, str | None]) -> DataModality:
+    return DataModality(
+        columns=tuple(
+            ColumnModality(
+                column=column, modality=modality, distinct_ratio=1.0, mean_token_count=8.0, media_kind=media_kind
+            )
+            for column, modality, media_kind in entries
+        ),
+        sampled_rows=len(entries),
     )
 
 
@@ -90,3 +108,68 @@ def test_apply_solution_policy_is_noop() -> None:
     updated_again, notes_again = apply_solution_policy(updated, policy)
     assert updated_again == updated
     assert not notes_again
+
+
+def test_build_problem_profile_uses_modality_when_tags_are_untagged() -> None:
+    """Free-text feature columns select the text family when tags do not decide."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.AUC, tags=frozenset()),
+        _schema(),
+        _modality(("comment", FeatureModality.TEXT, None)),
+    )
+    assert profile.problem_type == ProblemType.TEXT_CLASSIFICATION
+    assert profile.text_feature_columns == ("comment",)
+    assert profile.has_tabular_features is False
+
+
+def test_build_problem_profile_detects_media_references() -> None:
+    """Image file references select the vision family when tags do not decide."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.RMSE, tags=frozenset()),
+        _schema(),
+        _modality(("image_path", FeatureModality.FILE_REFERENCE, "image")),
+    )
+    assert profile.problem_type == ProblemType.VISION_REGRESSION
+    assert profile.file_reference_columns == ("image_path",)
+
+
+def test_build_problem_profile_keeps_platform_tags_authoritative() -> None:
+    """Explicit platform tags win over inferred modality."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.AUC, tags=frozenset({"nlp"})),
+        _schema(),
+        _modality(("age", FeatureModality.NUMERIC, None)),
+    )
+    assert profile.problem_type == ProblemType.TEXT_CLASSIFICATION
+
+
+def test_build_technique_guidance_steers_text_columns_away_from_one_hot() -> None:
+    """Text columns get vectoriser guidance and drop tabular-only advice."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.AUC, tags=frozenset()),
+        _schema(),
+        _modality(("comment", FeatureModality.TEXT, None)),
+    )
+    guidance = " ".join(build_technique_guidance(profile))
+    assert "TfidfVectorizer" in guidance
+    assert "get_dummies" not in guidance
+
+
+def test_build_technique_guidance_flags_undecodable_media_only_features() -> None:
+    """Media-only datasets are told to fall back to the training target prior."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.RMSE, tags=frozenset()),
+        _schema(),
+        _modality(("image_path", FeatureModality.FILE_REFERENCE, "image")),
+    )
+    guidance = " ".join(build_technique_guidance(profile))
+    assert "raw media decoding is unavailable" in guidance
+    assert "target prior" in guidance
+
+
+def test_build_technique_guidance_defaults_to_tabular_advice() -> None:
+    """Profiles without modality evidence keep the existing tabular guidance."""
+    profile = build_problem_profile(_competition(EvaluationMetric.RMSE), _schema())
+    guidance = " ".join(build_technique_guidance(profile))
+    assert "KNeighborsRegressor" in guidance
+    assert "get_dummies" in guidance

@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.mission.nodes:PrototypeNode.run",
-  "line": 467,
+  "id": "agent_k.core.modality:DataModality.file_reference_columns",
+  "line": 160,
   "notice": null,
   "pattern": null,
   "similar": null,
-  "source": "agent_k/mission/nodes.py",
-  "summary": "Execute prototype phase.",
+  "source": "agent_k/core/modality.py",
+  "summary": "Return the feature columns holding media file references.",
   "type": "method"
 }

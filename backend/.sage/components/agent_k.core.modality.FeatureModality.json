@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.modality:FeatureModality",
+  "line": 85,
+  "notice": "Generic modality of a single feature column.",
+  "pattern": {
+    "name": "enumeration",
+    "rationale": "StrEnum for the feature modality taxonomy.",
+    "violations": "String literals drift across detection and policy logic."
+  },
+  "similar": null,
+  "source": "agent_k/core/modality.py",
+  "summary": "Generic modality of a single feature column.",
+  "type": "class"
+}

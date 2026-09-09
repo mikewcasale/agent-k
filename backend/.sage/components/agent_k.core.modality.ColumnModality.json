@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.modality:ColumnModality",
+  "line": 109,
+  "notice": "Modality verdict for one feature column.",
+  "pattern": {
+    "name": "profile-model",
+    "rationale": "Bundles the detection evidence alongside the verdict.",
+    "violations": "Bare enums hide why a column was classified."
+  },
+  "similar": null,
+  "source": "agent_k/core/modality.py",
+  "summary": "Modality verdict for one feature column.",
+  "type": "class"
+}

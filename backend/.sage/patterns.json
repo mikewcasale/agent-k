@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-09-09T00:12:35.288688+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -284,6 +284,15 @@
         "violations": []
       },
       {
+        "component": "agent_k.core.modality:FeatureModality",
+        "line": 85,
+        "rationale": "StrEnum for the feature modality taxonomy.",
+        "source": "agent_k/core/modality.py",
+        "violations": [
+          "String literals drift across detection and policy logic."
+        ]
+      },
+      {
         "component": "agent_k.core.models:CompetitionType",
         "line": 94,
         "rationale": "StrEnum for string-serializable competition categories.",
@@ -306,7 +315,7 @@
       },
       {
         "component": "agent_k.core.strategy:ProblemType",
-        "line": 68,
+        "line": 79,
         "rationale": "StrEnum for ML problem taxonomy.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -574,7 +583,7 @@
     "fitness-input": [
       {
         "component": "agent_k.core.strategy:FitnessInput",
-        "line": 146,
+        "line": 167,
         "rationale": "Captures evaluation signals for scoring.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -654,7 +663,7 @@
     "graph-node": [
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 115,
+        "line": 123,
         "rationale": "Encapsulates discovery phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -663,7 +672,7 @@
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 273,
+        "line": 281,
         "rationale": "Encapsulates research phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -672,7 +681,7 @@
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 419,
+        "line": 427,
         "rationale": "Encapsulates prototype phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -681,7 +690,7 @@
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 900,
+        "line": 908,
         "rationale": "Encapsulates evolution phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -690,7 +699,7 @@
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1602,
+        "line": 1608,
         "rationale": "Encapsulates submission phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -1055,7 +1064,7 @@
     "policy-model": [
       {
         "component": "agent_k.core.strategy:TechniquePolicy",
-        "line": 119,
+        "line": 140,
         "rationale": "Encodes technique constraints for evolution.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -1064,7 +1073,7 @@
       },
       {
         "component": "agent_k.core.strategy:FitnessPolicy",
-        "line": 170,
+        "line": 191,
         "rationale": "Encodes penalty tuning for fitness scoring.",
         "source": "agent_k/core/strategy.py",
         "violations": [
@@ -1083,8 +1092,26 @@
     ],
     "profile-model": [
       {
+        "component": "agent_k.core.modality:ColumnModality",
+        "line": 109,
+        "rationale": "Bundles the detection evidence alongside the verdict.",
+        "source": "agent_k/core/modality.py",
+        "violations": [
+          "Bare enums hide why a column was classified."
+        ]
+      },
+      {
+        "component": "agent_k.core.modality:DataModality",
+        "line": 132,
+        "rationale": "Aggregates per-column verdicts for policy selection.",
+        "source": "agent_k/core/modality.py",
+        "violations": [
+          "Ad-hoc dicts drift from the detection taxonomy."
+        ]
+      },
+      {
         "component": "agent_k.core.strategy:ProblemProfile",
-        "line": 93,
+        "line": 111,
         "rationale": "Bundles task metadata for downstream policies.",
         "source": "agent_k/core/strategy.py",
         "violations": [

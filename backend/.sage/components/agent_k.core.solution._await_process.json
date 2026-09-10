@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Draining runs concurrently with the wait so a solution that writes more than the OS pipe\nbuffer cannot deadlock. Returns whether the timeout fired.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.solution:_await_process",
+  "line": 315,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/solution.py",
+  "summary": "Wait for a solution subprocess while draining both pipes into bounded captures.",
+  "type": "function"
+}

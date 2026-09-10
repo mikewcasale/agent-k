@@ -3,11 +3,11 @@
   "anti_patterns": null,
   "canonical_home": null,
   "custom": null,
-  "dev": "See module for implementation details and extension points.",
+  "dev": "``stdout``/``stderr`` hold the captured excerpt, which is bounded by the capture budget.\n``stdout_bytes``/``stderr_bytes`` report how much the process actually wrote, and\n``output_truncated`` is set when either stream exceeded the budget.",
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.solution:ExecutionResult",
-  "line": 82,
+  "line": 179,
   "notice": "Result of executing a solution script.",
   "pattern": {
     "name": "execution-result",

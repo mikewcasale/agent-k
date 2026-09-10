@@ -178,6 +178,8 @@ _ERROR_HINT_PATTERNS: Final[tuple[tuple[re.Pattern[str], str, str], ...]] = (
 )
 _ERROR_FEEDBACK_MAX_CHARS: Final[int] = 800
 _FAILURE_SUMMARY_LIMIT: Final[int] = 3
+_STDERR_REPORT_MAX_CHARS: Final[int] = 2_000
+# Evaluation results are tool outputs fed back to the model, so raw stderr has to stay bounded.
 _HYPERPARAM_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
     "n_estimators": re.compile(r"(n_estimators\s*=\s*)(\d+)", re.IGNORECASE),
     "learning_rate": re.compile(r"(learning_rate\s*=\s*)([\d\.]+)", re.IGNORECASE),
@@ -1941,7 +1943,7 @@ class EvolverAgent(MemoryMixin):
         error_feedback = ""
         execution_status = "success"
         stderr_text = execution.stderr or ""
-        stderr_trimmed = stderr_text.strip()
+        stderr_trimmed = _truncate_text(stderr_text.strip(), max_chars=_STDERR_REPORT_MAX_CHARS)
         if error is not None:
             error_category, error_feedback = _build_error_feedback(
                 stderr=stderr_text, error=error, timed_out=execution.timed_out, returncode=execution.returncode

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Captures are mutated in place, so cancelling a straggling reader still preserves whatever\nit managed to collect. A reader can outlive the process when a grandchild inherited the\npipe and escaped termination.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.solution:_finish_drains",
+  "line": 351,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/solution.py",
+  "summary": "Let the pipe readers reach EOF, then cancel any that outlive the grace period.",
+  "type": "function"
+}

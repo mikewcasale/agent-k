@@ -1,6 +1,6 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
-  "pattern_count": 57,
+  "generated": "2026-09-10T02:18:07.847924+00:00",
+  "pattern_count": 58,
   "patterns": {
     "adapter": [
       {
@@ -47,7 +47,7 @@
     "agent-singleton": [
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 556,
+        "line": 558,
         "rationale": "Single instance keeps memory/tool registration consistent.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -76,7 +76,7 @@
     "archive-entry": [
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry",
-        "line": 317,
+        "line": 319,
         "rationale": "Encapsulates elite metadata for sampling.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -134,7 +134,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 436,
+        "line": 438,
         "rationale": "Groups runtime services and evolution state.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -563,7 +563,7 @@
     "execution-result": [
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 82,
+        "line": 179,
         "rationale": "Standardizes subprocess outputs for solution runs.",
         "source": "agent_k/core/solution.py",
         "violations": [
@@ -947,7 +947,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 501,
+        "line": 503,
         "rationale": "Stable schema for successful evolution outputs.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -956,7 +956,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 526,
+        "line": 528,
         "rationale": "Stable schema for failed evolution outputs.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -1196,6 +1196,17 @@
         ]
       }
     ],
+    "ring-buffer": [
+      {
+        "component": "agent_k.core.solution:_BoundedCapture",
+        "line": 100,
+        "rationale": "Caps parent memory for solutions that write unbounded output.",
+        "source": "agent_k/core/solution.py",
+        "violations": [
+          "Reading a whole pipe into memory lets one candidate exhaust the host."
+        ]
+      }
+    ],
     "schema-model": [
       {
         "component": "agent_k.core.data:CompetitionSchema",
@@ -1246,7 +1257,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 363,
+        "line": 365,
         "rationale": "Centralizes evolutionary optimization configuration.",
         "source": "agent_k/agents/evolver.py",
         "violations": [

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Keeps remote code-execution output bounded so both execution paths report byte counts and\ntruncation the same way.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.solution:_bounded_result",
+  "line": 493,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/solution.py",
+  "summary": "Build an execution result from strings under the same capture budget as the local runner.",
+  "type": "function"
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Only the OpenAI Responses API exposes `code_interpreter`. A plain\n`openai:` spec resolves to `OpenAIChatModel`, which rejects\n`CodeExecutionTool` with a `UserError`, so gating on it made every\nremote attempt raise after inlining the competition data.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.solution:_supports_code_execution",
+  "line": 395,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/solution.py",
+  "summary": "Report whether a model spec resolves to a provider with a builtin code runner.",
+  "type": "function"
+}

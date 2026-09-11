@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Callers treat `timed_out` as the single signal for a budget overrun, so\nremote timeouts must be shaped exactly like local subprocess timeouts.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.solution:_timed_out_result",
+  "line": 276,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/solution.py",
+  "summary": "Build the ExecutionResult used for every exhausted execution budget.",
+  "type": "function"
+}

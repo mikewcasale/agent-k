@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-09-11T23:16:48.220891+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1092,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -4270,45 +4270,57 @@
       },
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 84,
+        "line": 85,
         "name": "notice",
         "value": "Result of executing a solution script."
       },
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 87,
+        "line": 88,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 90,
+        "line": 91,
         "name": "pattern",
         "value": "{\"name\": \"execution-result\", \"rationale\": \"Standardizes subprocess outputs for solution runs.\", \"violations\": \"Tuple returns drop context for debugging.\"}"
       },
       {
         "component": "agent_k.core.solution:execute_solution",
-        "line": 115,
+        "line": 116,
         "name": "notice",
         "value": "Runs Python code in an isolated subprocess with timeout support."
       },
       {
         "component": "agent_k.core.solution:execute_solution",
-        "line": 118,
+        "line": 119,
         "name": "dev",
-        "value": "Normalizes Kaggle paths, sanitizes environment, and captures output.\nSupports builtin code execution tool or local subprocess execution."
+        "value": "Normalizes Kaggle paths, sanitizes environment, and captures output.\nSupports builtin code execution tool or local subprocess execution.\n`timeout_seconds` bounds the whole call: time spent on an unsuc"
       },
       {
         "component": "agent_k.core.solution:parse_baseline_score",
-        "line": 136,
+        "line": 159,
         "name": "notice",
         "value": "Extracts numeric score from \"Baseline ... score: X.XX\" pattern."
       },
       {
         "component": "agent_k.core.solution:parse_baseline_score",
-        "line": 139,
+        "line": 162,
         "name": "dev",
         "value": "Returns None if pattern not found or value cannot be parsed."
+      },
+      {
+        "component": "agent_k.core.solution:_timed_out_result",
+        "line": 278,
+        "name": "dev",
+        "value": "Callers treat `timed_out` as the single signal for a budget overrun, so\nremote timeouts must be shaped exactly like local subprocess timeouts."
+      },
+      {
+        "component": "agent_k.core.solution:_supports_code_execution",
+        "line": 397,
+        "name": "dev",
+        "value": "Only the OpenAI Responses API exposes `code_interpreter`. A plain\n`openai:` spec resolves to `OpenAIChatModel`, which rejects\n`CodeExecutionTool` with a `UserError`, so gating on it made every\nremote "
       }
     ],
     "agent_k/core/strategy.py": [

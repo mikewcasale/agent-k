@@ -60,6 +60,7 @@ _CODE_EXECUTION_SYSTEM_PROMPT: Final[str] = (
 _DEFAULT_MAX_INLINE_DATA_BYTES: Final[int] = 100_000
 _EXECUTION_DATA_FILES: Final[tuple[str, ...]] = ("train.csv", "test.csv", "sample_submission.csv")
 _KAGGLE_INPUT_PREFIX: Final[str] = "/kaggle/input"
+_CODE_EXECUTION_MODEL_PREFIXES: Final[tuple[str, ...]] = ("openai-responses:",)
 _SENSITIVE_ENV_TOKENS: Final[tuple[str, ...]] = (
     "KEY",
     "TOKEN",
@@ -118,16 +119,38 @@ async def execute_solution(
     @dev: |
         Normalizes Kaggle paths, sanitizes environment, and captures output.
         Supports builtin code execution tool or local subprocess execution.
+        `timeout_seconds` bounds the whole call: time spent on an unsuccessful
+        remote attempt is deducted from the local fallback's budget so a single
+        evaluation cannot consume twice its allowance.
     """
     normalized_code = _normalize_kaggle_paths(code)
+    remaining_seconds = timeout_seconds
     if use_builtin_code_execution:
+        started = time.perf_counter()
         tool_result = await _execute_with_builtin_tool(
-            normalized_code, work_path, env=env, model_spec=model_spec, max_inline_data_bytes=max_inline_data_bytes
+            normalized_code,
+            work_path,
+            env=env,
+            model_spec=model_spec,
+            max_inline_data_bytes=max_inline_data_bytes,
+            timeout_seconds=timeout_seconds,
         )
         if tool_result is not None:
             return tool_result
 
-    return await _execute_solution_local(normalized_code, work_path, timeout_seconds=timeout_seconds, env=env)
+        if timeout_seconds is not None:
+            elapsed_seconds = time.perf_counter() - started
+            remaining_seconds = timeout_seconds - elapsed_seconds
+            if remaining_seconds <= 0.0:
+                logfire.warning(
+                    "solution_execution_budget_exhausted", timeout_seconds=timeout_seconds, model_spec=model_spec
+                )
+                return _timed_out_result(
+                    stderr=f"Execution budget of {timeout_seconds}s exhausted by the remote attempt",
+                    runtime_ms=int(elapsed_seconds * 1000),
+                )
+
+    return await _execute_solution_local(normalized_code, work_path, timeout_seconds=remaining_seconds, env=env)
 
 
 def parse_baseline_score(output: str) -> float | None:
@@ -196,7 +219,13 @@ async def _execute_solution_local(
 
 
 async def _execute_with_builtin_tool(
-    code: str, work_path: Path, *, env: dict[str, str] | None, model_spec: str | None, max_inline_data_bytes: int
+    code: str,
+    work_path: Path,
+    *,
+    env: dict[str, str] | None,
+    model_spec: str | None,
+    max_inline_data_bytes: int,
+    timeout_seconds: float | None,
 ) -> ExecutionResult | None:
     if model_spec is None:
         return None
@@ -212,15 +241,45 @@ async def _execute_with_builtin_tool(
 
     start_time = time.perf_counter()
     try:
-        run_result = await agent.run(script)
-    except Exception:
+        if timeout_seconds is None:
+            run_result = await agent.run(script)
+        else:
+            run_result = await asyncio.wait_for(agent.run(script), timeout=timeout_seconds)
+    except TimeoutError:
+        runtime_ms = int((time.perf_counter() - start_time) * 1000)
+        logfire.warning(
+            "remote_code_execution_timeout",
+            timeout_seconds=timeout_seconds,
+            model_spec=model_spec,
+            runtime_ms=runtime_ms,
+        )
+        return _timed_out_result(
+            stderr=f"Remote code execution timed out after {timeout_seconds}s", runtime_ms=runtime_ms
+        )
+    except Exception as exc:
+        # A provider or transport failure falls back to local execution; without this
+        # log the fallback is invisible and a misconfigured remote runner looks healthy.
+        logfire.warning(
+            "remote_code_execution_failed", model_spec=model_spec, error_type=type(exc).__name__, error=str(exc)
+        )
         return None
 
     runtime_ms = int((time.perf_counter() - start_time) * 1000)
     tool_content = _extract_code_execution_result(run_result.all_messages())
     if tool_content is None:
+        logfire.warning("remote_code_execution_missing_result", model_spec=model_spec, runtime_ms=runtime_ms)
         return None
     return _parse_code_execution_result(tool_content, runtime_ms)
+
+
+def _timed_out_result(*, stderr: str, runtime_ms: int) -> ExecutionResult:
+    """Build the ExecutionResult used for every exhausted execution budget.
+
+    @dev: |
+        Callers treat `timed_out` as the single signal for a budget overrun, so
+        remote timeouts must be shaped exactly like local subprocess timeouts.
+    """
+    return ExecutionResult(returncode=1, stdout="", stderr=stderr, runtime_ms=runtime_ms, timed_out=True)
 
 
 def _get_code_execution_agent(model_spec: str) -> Agent[None, str]:
@@ -333,7 +392,15 @@ def _is_sensitive_env_key(key: str) -> bool:
 
 
 def _supports_code_execution(model_spec: str) -> bool:
-    return model_spec.startswith("openai:")
+    """Report whether a model spec resolves to a provider with a builtin code runner.
+
+    @dev: |
+        Only the OpenAI Responses API exposes `code_interpreter`. A plain
+        `openai:` spec resolves to `OpenAIChatModel`, which rejects
+        `CodeExecutionTool` with a `UserError`, so gating on it made every
+        remote attempt raise after inlining the competition data.
+    """
+    return model_spec.startswith(_CODE_EXECUTION_MODEL_PREFIXES)
 
 
 async def _safe_communicate(

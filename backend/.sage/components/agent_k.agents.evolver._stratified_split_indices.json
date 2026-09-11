@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Each class contributes at least one validation and one train row whenever it has\ntwo or more members; singleton classes stay in train so scoring never sees an\nunseen label.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_stratified_split_indices",
+  "line": 2611,
+  "notice": "Produces stratified train/validation positions from label codes.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Split row positions per class so every class keeps rows on both sides of the split.",
+  "type": "function"
+}

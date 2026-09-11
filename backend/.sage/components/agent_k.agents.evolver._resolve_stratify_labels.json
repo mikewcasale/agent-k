@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Only single-target frames with a low-cardinality target qualify. Missing values\nform their own class so rows are never silently dropped from the split.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_resolve_stratify_labels",
+  "line": 2586,
+  "notice": "Resolves the label codes used to stratify a train/validation split.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Return integer class codes for a single discrete target, or None when stratification cannot apply.",
+  "type": "function"
+}

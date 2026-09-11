@@ -310,6 +310,10 @@ _HINT_COMMENT_PREFIX: Final[str] = "# Applied hint: "
 _ENCODING_HINT_IDS: Final[frozenset[str]] = frozenset(
     {"onehot_low_cardinality", "target_encode_high_cardinality", "frequency_encode_high_cardinality", "ordinal_encode"}
 )
+_VALIDATION_SPLIT_SEED: Final[int] = 42
+_MAX_STRATIFY_CLASSES: Final[int] = 100
+_SMALL_RUN_GENERATIONS: Final[int] = 5
+_SMALL_RUN_MAX_ROWS: Final[int] = 800
 
 
 @dataclass(frozen=True, slots=True)
@@ -1884,22 +1888,22 @@ class EvolverAgent(MemoryMixin):
     ) -> dict[str, Any]:
         with tempfile.TemporaryDirectory(dir=str(ctx.deps.data_dir)) as run_dir:
             run_path = Path(run_dir)
+            target_columns = list(ctx.deps.train_target_columns or ctx.deps.target_columns)
+            stratify = self._resolve_problem_profile(ctx.deps).is_classification
             train_df, val_features, y_val, id_column = _prepare_validation_split(
                 train_path=ctx.deps.train_path,
                 id_column=ctx.deps.id_column,
-                target_columns=list(ctx.deps.train_target_columns or ctx.deps.target_columns),
+                target_columns=target_columns,
                 validation_split=validation_split,
+                stratify=stratify,
             )
-            if max_rows is not None and max_rows > 0:
-                train_df = train_df.head(max_rows).copy()
-                val_features = val_features.head(max_rows).copy()
-                y_val = y_val.head(max_rows).copy()
-            elif ctx.deps.max_generations <= 5:
-                train_df = train_df.head(800).copy()
-                val_features = val_features.head(800).copy()
-                y_val = y_val.head(800).copy()
-
-            target_columns = list(ctx.deps.train_target_columns or ctx.deps.target_columns)
+            row_limit = max_rows if max_rows is not None and max_rows > 0 else None
+            if row_limit is None and ctx.deps.max_generations <= _SMALL_RUN_GENERATIONS:
+                row_limit = _SMALL_RUN_MAX_ROWS
+            if row_limit is not None:
+                train_df, val_features, y_val = _shrink_split(
+                    train_df, val_features, y_val, target_columns=target_columns, max_rows=row_limit, stratify=stratify
+                )
             train_df.to_csv(run_path / "train.csv", index=False)
             val_features.to_csv(run_path / "test.csv", index=False)
             sample_submission = pd.DataFrame({id_column: val_features[id_column].values})
@@ -2578,8 +2582,133 @@ def _truncate_csv(path: Path, *, max_rows: int) -> None:
     temp_path.replace(path)
 
 
+def _resolve_stratify_labels(frame: pd.DataFrame, target_columns: list[str]) -> np.ndarray | None:
+    """Return integer class codes for a single discrete target, or None when stratification cannot apply.
+
+    @notice: |
+        Resolves the label codes used to stratify a train/validation split.
+
+    @dev: |
+        Only single-target frames with a low-cardinality target qualify. Missing values
+        form their own class so rows are never silently dropped from the split.
+    """
+    if len(target_columns) != 1:
+        return None
+    column = target_columns[0]
+    if column not in frame.columns or frame.empty:
+        return None
+
+    codes, uniques = pd.factorize(frame[column], use_na_sentinel=False)
+    class_count = len(uniques)
+    if class_count < 2 or class_count > min(_MAX_STRATIFY_CLASSES, max(2, len(frame) // 2)):
+        return None
+    return np.asarray(codes, dtype=np.int64)
+
+
+def _stratified_split_indices(
+    labels: np.ndarray, *, validation_split: float, rng: np.random.Generator
+) -> tuple[np.ndarray, np.ndarray]:
+    """Split row positions per class so every class keeps rows on both sides of the split.
+
+    @notice: |
+        Produces stratified train/validation positions from label codes.
+
+    @dev: |
+        Each class contributes at least one validation and one train row whenever it has
+        two or more members; singleton classes stay in train so scoring never sees an
+        unseen label.
+    """
+    train_parts: list[np.ndarray] = []
+    val_parts: list[np.ndarray] = []
+    for code in np.unique(labels):
+        positions = np.flatnonzero(labels == code)
+        rng.shuffle(positions)
+        count = len(positions)
+        if count == 1:
+            train_parts.append(positions)
+            continue
+        val_size = min(max(int(round(count * validation_split)), 1), count - 1)
+        val_parts.append(positions[:val_size])
+        train_parts.append(positions[val_size:])
+
+    train_idx = np.concatenate(train_parts) if train_parts else np.empty(0, dtype=np.int64)
+    val_idx = np.concatenate(val_parts) if val_parts else np.empty(0, dtype=np.int64)
+    rng.shuffle(train_idx)
+    rng.shuffle(val_idx)
+    return train_idx, val_idx
+
+
+def _subsample_indices(
+    labels: np.ndarray | None, *, row_count: int, max_rows: int, rng: np.random.Generator
+) -> np.ndarray:
+    """Pick at most max_rows row positions, preserving class proportions when labels are known.
+
+    @notice: |
+        Selects a bounded row subset for cheap candidate evaluation.
+
+    @dev: |
+        Without labels this keeps the leading rows, matching the previous head() behaviour.
+        With labels the smallest classes are allocated first so rare classes survive the cut.
+    """
+    if max_rows <= 0 or max_rows >= row_count:
+        return np.arange(row_count, dtype=np.int64)
+    if labels is None:
+        return np.arange(max_rows, dtype=np.int64)
+
+    ratio = max_rows / row_count
+    groups = [np.flatnonzero(labels == code) for code in np.unique(labels)]
+    for positions in groups:
+        rng.shuffle(positions)
+    groups.sort(key=len)
+
+    selected: list[np.ndarray] = []
+    remaining = max_rows
+    for offset, positions in enumerate(groups):
+        budget = max(0, remaining - (len(groups) - offset - 1))
+        keep = min(len(positions), max(1, int(round(len(positions) * ratio))), budget)
+        selected.append(positions[:keep])
+        remaining -= keep
+
+    indices = np.concatenate(selected) if selected else np.empty(0, dtype=np.int64)
+    indices.sort()
+    return indices
+
+
+def _shrink_split(
+    train_df: pd.DataFrame,
+    val_features: pd.DataFrame,
+    y_val: pd.DataFrame,
+    *,
+    target_columns: list[str],
+    max_rows: int,
+    stratify: bool,
+    seed: int = _VALIDATION_SPLIT_SEED,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Shrink a prepared split to max_rows per side, keeping class balance for classification.
+
+    @notice: |
+        Bounds train and validation size for cheap evaluation stages.
+
+    @dev: |
+        Validation features and labels share positional indices, so both are sliced with the
+        same selection to stay aligned.
+    """
+    rng = np.random.default_rng(seed)
+    train_labels = _resolve_stratify_labels(train_df, target_columns) if stratify else None
+    train_idx = _subsample_indices(train_labels, row_count=len(train_df), max_rows=max_rows, rng=rng)
+    val_labels = _resolve_stratify_labels(y_val, target_columns) if stratify else None
+    val_idx = _subsample_indices(val_labels, row_count=len(y_val), max_rows=max_rows, rng=rng)
+    return train_df.iloc[train_idx].copy(), val_features.iloc[val_idx].copy(), y_val.iloc[val_idx].copy()
+
+
 def _prepare_validation_split(
-    *, train_path: Path, id_column: str | None, target_columns: list[str], validation_split: float, seed: int = 42
+    *,
+    train_path: Path,
+    id_column: str | None,
+    target_columns: list[str],
+    validation_split: float,
+    stratify: bool = False,
+    seed: int = _VALIDATION_SPLIT_SEED,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, str]:
     """Create a deterministic train/validation split and return train, val-features, y_val, id column."""
     if not target_columns:
@@ -2598,11 +2727,17 @@ def _prepare_validation_split(
             raise ValueError(f"Missing target column: {col}")
 
     rng = np.random.default_rng(seed)
-    indices = np.arange(len(frame))
-    rng.shuffle(indices)
-    split = int(round(len(indices) * (1.0 - validation_split)))
-    train_idx = indices[:split]
-    val_idx = indices[split:]
+    labels = _resolve_stratify_labels(frame, target_columns) if stratify else None
+    if labels is not None:
+        train_idx, val_idx = _stratified_split_indices(labels, validation_split=validation_split, rng=rng)
+    else:
+        if stratify:
+            logfire.debug("validation_split_stratify_skipped", target_columns=target_columns, row_count=len(frame))
+        indices = np.arange(len(frame))
+        rng.shuffle(indices)
+        split = int(round(len(indices) * (1.0 - validation_split)))
+        train_idx = indices[:split]
+        val_idx = indices[split:]
     if len(val_idx) == 0 or len(train_idx) == 0:
         raise ValueError("validation_split produced empty split")
 

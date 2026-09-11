@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Validation features and labels share positional indices, so both are sliced with the\nsame selection to stay aligned.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_shrink_split",
+  "line": 2687,
+  "notice": "Bounds train and validation size for cheap evaluation stages.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Shrink a prepared split to max_rows per side, keeping class balance for classification.",
+  "type": "function"
+}

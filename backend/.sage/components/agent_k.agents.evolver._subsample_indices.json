@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Without labels this keeps the leading rows, matching the previous head() behaviour.\nWith labels the smallest classes are allocated first so rare classes survive the cut.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_subsample_indices",
+  "line": 2644,
+  "notice": "Selects a bounded row subset for cheap candidate evaluation.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Pick at most max_rows row positions, preserving class proportions when labels are known.",
+  "type": "function"
+}

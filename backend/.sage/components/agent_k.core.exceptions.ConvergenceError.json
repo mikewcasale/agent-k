@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.exceptions:ConvergenceError",
-  "line": 378,
+  "line": 402,
   "notice": "Raised when evolution fails to converge within limits.",
   "pattern": {
     "name": "exception-specific",

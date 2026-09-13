@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Complements rate-limit detection: a rate-limited model recovers on its own, while a\nretired slug, a revoked key or a rejected request stays broken for the whole mission.\nCallers use this to drop one model from a rotation pool instead of aborting.\n\nAccepts an exception or a message so callers can classify structured agent failures\n(which carry the provider text as a string) with the same rules.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.exceptions:is_model_unavailable_error",
+  "line": 618,
+  "notice": "Detects provider errors that no amount of retrying against the same model can fix.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/exceptions.py",
+  "summary": "Report whether an error means a model is permanently unusable for this run.",
+  "type": "function"
+}

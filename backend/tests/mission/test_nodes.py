@@ -18,6 +18,7 @@ from agent_k.mission.nodes import (
     ResearchNode,
     SubmissionNode,
     _evaluate_metric,
+    _pool_exhaustion_reason,
 )
 
 __all__ = ()
@@ -77,3 +78,20 @@ class TestEvaluateMetric:
         """RMSLE should ignore negative targets in the denominator."""
         score = _evaluate_metric(EvaluationMetric.RMSLE, [1.0, -1.0], prediction=0.0)
         assert score == pytest.approx(math.log1p(1.0))
+
+
+class TestPoolExhaustionReason:
+    """Tests for naming why a model rotation pool emptied."""
+
+    def test_single_reason_is_reported_verbatim(self) -> None:
+        """A pool lost entirely to dead models should not be reported as rate limiting."""
+        assert _pool_exhaustion_reason({"model_unavailable"}) == "model_unavailable"
+        assert _pool_exhaustion_reason({"rate_limit"}) == "rate_limit"
+
+    def test_mixed_reasons_collapse_to_generic_label(self) -> None:
+        """Mixed causes get a neutral label instead of arbitrarily picking one."""
+        assert _pool_exhaustion_reason({"rate_limit", "model_unavailable"}) == "model_pool_exhausted"
+
+    def test_empty_reasons_fall_back_to_generic_label(self) -> None:
+        """An empty pool with no recorded retirement still reports a reason."""
+        assert _pool_exhaustion_reason(set()) == "model_pool_exhausted"

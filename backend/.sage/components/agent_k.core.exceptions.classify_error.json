@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.exceptions:classify_error",
-  "line": 573,
+  "line": 597,
   "notice": "Maps exceptions to error categories and recovery strategies.",
   "pattern": null,
   "similar": null,

@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.exceptions:CheckpointError",
-  "line": 464,
+  "line": 488,
   "notice": "Raised when checkpoint operations fail.",
   "pattern": {
     "name": "exception-specific",

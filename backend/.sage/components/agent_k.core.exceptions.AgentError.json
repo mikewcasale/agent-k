@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.exceptions:AgentError",
-  "line": 94,
+  "line": 118,
   "notice": "Base exception for agent-related errors.",
   "pattern": {
     "name": "exception-category",

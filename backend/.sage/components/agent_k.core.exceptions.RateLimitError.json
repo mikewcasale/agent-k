@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.exceptions:RateLimitError",
-  "line": 233,
+  "line": 257,
   "notice": "Raised when platform rate limit is exceeded.",
   "pattern": {
     "name": "exception-specific",

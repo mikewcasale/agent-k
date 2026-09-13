@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-09-13T01:17:03.873968+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -389,7 +389,7 @@
     "exception-base": [
       {
         "component": "agent_k.core.exceptions:AgentKError",
-        "line": 67,
+        "line": 91,
         "rationale": "Root exception with context and recoverability metadata.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
@@ -398,42 +398,42 @@
     "exception-category": [
       {
         "component": "agent_k.core.exceptions:AgentError",
-        "line": 94,
+        "line": 118,
         "rationale": "Category base for agent execution errors.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:AdapterError",
-        "line": 180,
+        "line": 204,
         "rationale": "Category base for platform adapter errors.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:CompetitionError",
-        "line": 256,
+        "line": 280,
         "rationale": "Category base for Kaggle competition errors.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:EvolutionError",
-        "line": 363,
+        "line": 387,
         "rationale": "Category base for evolutionary algorithm errors.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:MemoryError",
-        "line": 449,
+        "line": 473,
         "rationale": "Category base for memory and checkpoint errors.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:GraphError",
-        "line": 510,
+        "line": 534,
         "rationale": "Category base for state machine errors.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
@@ -442,119 +442,119 @@
     "exception-specific": [
       {
         "component": "agent_k.core.exceptions:AgentExecutionError",
-        "line": 109,
+        "line": 133,
         "rationale": "Captures agent name and cause for debugging.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:ToolExecutionError",
-        "line": 135,
+        "line": 159,
         "rationale": "Captures tool name and arguments for debugging.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:OutputValidationError",
-        "line": 157,
+        "line": 181,
         "rationale": "Captures validation errors for structured output failures.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:PlatformConnectionError",
-        "line": 195,
+        "line": 219,
         "rationale": "Captures platform name for connection failures.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:AuthenticationError",
-        "line": 214,
+        "line": 238,
         "rationale": "Non-recoverable authentication failure.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:RateLimitError",
-        "line": 233,
+        "line": 257,
         "rationale": "Recoverable with retry_after hint for backoff.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:CompetitionNotFoundError",
-        "line": 271,
+        "line": 295,
         "rationale": "Non-recoverable missing competition.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:CompetitionRulesNotAcceptedError",
-        "line": 292,
+        "line": 316,
         "rationale": "Non-recoverable until user accepts rules manually.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:SubmissionError",
-        "line": 316,
+        "line": 340,
         "rationale": "Captures submission context for retry logic.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:DeadlinePassedError",
-        "line": 339,
+        "line": 363,
         "rationale": "Non-recoverable deadline expiration.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:ConvergenceError",
-        "line": 378,
+        "line": 402,
         "rationale": "Captures evolution progress for analysis.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:PopulationExtinctError",
-        "line": 402,
+        "line": 426,
         "rationale": "Non-recoverable population extinction.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:FitnessEvaluationError",
-        "line": 426,
+        "line": 450,
         "rationale": "Captures solution and execution context for debugging.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:CheckpointError",
-        "line": 464,
+        "line": 488,
         "rationale": "Captures checkpoint name and operation for debugging.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:MemoryCapacityError",
-        "line": 487,
+        "line": 511,
         "rationale": "Captures size metrics for capacity planning.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:StateTransitionError",
-        "line": 525,
+        "line": 549,
         "rationale": "Captures transition context for state machine debugging.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:PhaseTimeoutError",
-        "line": 549,
+        "line": 573,
         "rationale": "Captures timing metrics for timeout analysis.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
@@ -654,7 +654,7 @@
     "graph-node": [
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 115,
+        "line": 116,
         "rationale": "Encapsulates discovery phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -663,7 +663,7 @@
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 273,
+        "line": 274,
         "rationale": "Encapsulates research phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -672,7 +672,7 @@
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 419,
+        "line": 420,
         "rationale": "Encapsulates prototype phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -681,7 +681,7 @@
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 900,
+        "line": 901,
         "rationale": "Encapsulates evolution phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -690,7 +690,7 @@
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1602,
+        "line": 1678,
         "rationale": "Encapsulates submission phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [

@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.mission.nodes:EvolutionNode._calculate_target_score",
-  "line": 1661,
+  "id": "agent_k.mission.nodes:_pool_exhaustion_reason",
+  "line": 2184,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/mission/nodes.py",
-  "summary": "Calculate target score from research findings.",
-  "type": "method"
+  "summary": "Name the convergence reason for a model rotation pool that ran out of models.",
+  "type": "function"
 }

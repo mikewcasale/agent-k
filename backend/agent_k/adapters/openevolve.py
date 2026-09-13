@@ -214,7 +214,7 @@ class OpenEvolveSolution(BaseModel):
 _OPENEVOLVE_CONTEXT_ENV: Final[str] = "AGENT_K_OPENEVOLVE_CONTEXT"
 _OPENROUTER_API_BASE: Final[str] = "https://openrouter.ai/api/v1"
 _OPENAI_API_BASE: Final[str] = "https://api.openai.com/v1"
-_DEFAULT_OPENEVOLVE_MODEL: Final[str] = OPENROUTER_FREE_MODELS["devstral"]
+_DEFAULT_OPENEVOLVE_MODEL: Final[str] = OPENROUTER_FREE_MODELS["gpt_oss_120b"]
 _DEFAULT_VALIDATION_SPLIT: Final[float] = 0.2
 
 

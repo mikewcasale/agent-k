@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.exceptions:PhaseTimeoutError",
-  "line": 549,
+  "line": 573,
   "notice": "Raised when a phase exceeds its timeout.",
   "pattern": {
     "name": "exception-specific",

@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.exceptions:GraphError",
-  "line": 510,
+  "line": 534,
   "notice": "Base exception for graph-related errors.",
   "pattern": {
     "name": "exception-category",

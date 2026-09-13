@@ -14,7 +14,7 @@ llm:
   retries: 3
   retry_delay: 5
   models:
-    - name: "mistralai/devstral-2512:free"
+    - name: "openai/gpt-oss-120b:free"
       weight: 1.0
 
 prompt:

@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.exceptions:CompetitionRulesNotAcceptedError",
-  "line": 292,
+  "line": 316,
   "notice": "Raised when competition rules have not been accepted.",
   "pattern": {
     "name": "exception-specific",

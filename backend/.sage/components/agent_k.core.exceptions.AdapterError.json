@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.exceptions:AdapterError",
-  "line": 180,
+  "line": 204,
   "notice": "Base exception for adapter-related errors.",
   "pattern": {
     "name": "exception-category",

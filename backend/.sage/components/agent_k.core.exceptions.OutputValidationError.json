@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.exceptions:OutputValidationError",
-  "line": 157,
+  "line": 181,
   "notice": "Raised when agent output fails validation.",
   "pattern": {
     "name": "exception-specific",

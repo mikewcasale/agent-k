@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.exceptions:PlatformConnectionError",
-  "line": 195,
+  "line": 219,
   "notice": "Raised when connection to platform fails.",
   "pattern": {
     "name": "exception-specific",

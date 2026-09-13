@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.exceptions:PopulationExtinctError",
-  "line": 402,
+  "line": 426,
   "notice": "Raised when all population members fail fitness evaluation.",
   "pattern": {
     "name": "exception-specific",

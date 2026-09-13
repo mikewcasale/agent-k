@@ -53,6 +53,7 @@ import shutil
 import tempfile
 import traceback
 from collections import Counter
+from collections.abc import Set as AbstractSet
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -74,7 +75,7 @@ from ..core.constants import (
     SUBMISSION_TIMEOUT_SECONDS,
 )
 from ..core.data import infer_competition_schema, locate_data_files, stage_competition_data
-from ..core.exceptions import classify_error
+from ..core.exceptions import classify_error, is_model_unavailable_error
 from ..core.hints import DatasetProfile, PreprocessingHint, build_dataset_profile, generate_preprocessing_hints
 from ..core.models import (
     EvaluationMetric,
@@ -1205,6 +1206,26 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     convergence_detected = True
                     convergence_reason = "rate_limit"
 
+            def _apply_model_unavailable(
+                error_message: str,
+                *,
+                model_spec: str | None,
+                error_type: str | None,
+                deps: EvolverDeps | None,
+                mark_convergence: bool,
+            ) -> None:
+                nonlocal combined_history, improvement_count, convergence_detected, convergence_reason
+                _append_error(error_message, error_type or "model_unavailable")
+                logfire.warning(
+                    "evolution_model_unavailable", model=model_spec or evolver_settings.model, error=error_message
+                )
+                if deps is not None:
+                    combined_history = deps.generation_history
+                    improvement_count = deps.improvement_count
+                if mark_convergence:
+                    convergence_detected = True
+                    convergence_reason = "model_unavailable"
+
             async def _emit_failure(result: EvolutionFailure) -> End[MissionResult]:
                 _append_error(result.error_message, result.error_type)
                 await emitter.emit_phase_error(
@@ -1329,6 +1350,14 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                             deps=deps_instance,
                             mark_convergence=True,
                         )
+                    elif is_model_unavailable_error(exc):
+                        _apply_model_unavailable(
+                            str(exc),
+                            model_spec=None,
+                            error_type=getattr(exc, "code", None),
+                            deps=deps_instance,
+                            mark_convergence=True,
+                        )
                     else:
                         raise
                 else:
@@ -1362,6 +1391,14 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                             deps=deps_instance,
                             mark_convergence=True,
                         )
+                    elif is_model_unavailable_error(exc):
+                        _apply_model_unavailable(
+                            str(exc),
+                            model_spec=None,
+                            error_type=getattr(exc, "code", None),
+                            deps=deps_instance,
+                            mark_convergence=True,
+                        )
                     else:
                         raise
                 else:
@@ -1371,6 +1408,18 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                             if result.partial_solution:
                                 best_solution = result.partial_solution
                             _apply_rate_limit(
+                                result.error_message,
+                                model_spec=None,
+                                error_type=result.error_type,
+                                deps=deps_instance,
+                                mark_convergence=True,
+                            )
+                        elif is_model_unavailable_error(result.error_message) or is_model_unavailable_error(
+                            result.error_type
+                        ):
+                            if result.partial_solution:
+                                best_solution = result.partial_solution
+                            _apply_model_unavailable(
                                 result.error_message,
                                 model_spec=None,
                                 error_type=result.error_type,
@@ -1401,6 +1450,17 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 available_models = [model for model in evolution_models if model]
                 segment_index = 0
                 model_index = 0
+                retirement_reasons: set[str] = set()
+
+                def _retire_model(spec: str, *, reason: str) -> None:
+                    """Drop one model from the rotation pool and converge when the pool empties."""
+                    nonlocal available_models, convergence_detected, convergence_reason
+                    agents_by_model.pop(spec, None)
+                    available_models = [model for model in available_models if model != spec]
+                    retirement_reasons.add(reason)
+                    if not available_models:
+                        convergence_detected = True
+                        convergence_reason = _pool_exhaustion_reason(retirement_reasons)
 
                 while remaining_generations > 0 and available_models:
                     segment_index += 1
@@ -1445,11 +1505,17 @@ Model rotation segment {segment_index} using {model_spec}."""
                                 deps=segment_deps,
                                 mark_convergence=False,
                             )
-                            agents_by_model.pop(model_spec, None)
-                            available_models = [model for model in available_models if model != model_spec]
-                            if not available_models:
-                                convergence_detected = True
-                                convergence_reason = "rate_limit"
+                            _retire_model(model_spec, reason="rate_limit")
+                            continue
+                        if is_model_unavailable_error(exc):
+                            _apply_model_unavailable(
+                                str(exc),
+                                model_spec=model_spec,
+                                error_type=getattr(exc, "code", None),
+                                deps=segment_deps,
+                                mark_convergence=False,
+                            )
+                            _retire_model(model_spec, reason="model_unavailable")
                             continue
                         raise
 
@@ -1465,11 +1531,21 @@ Model rotation segment {segment_index} using {model_spec}."""
                                 deps=segment_deps,
                                 mark_convergence=False,
                             )
-                            agents_by_model.pop(model_spec, None)
-                            available_models = [model for model in available_models if model != model_spec]
-                            if not available_models:
-                                convergence_detected = True
-                                convergence_reason = "rate_limit"
+                            _retire_model(model_spec, reason="rate_limit")
+                            continue
+                        if is_model_unavailable_error(result.error_message) or is_model_unavailable_error(
+                            result.error_type
+                        ):
+                            if result.partial_solution:
+                                best_solution = result.partial_solution
+                            _apply_model_unavailable(
+                                result.error_message,
+                                model_spec=model_spec,
+                                error_type=result.error_type,
+                                deps=segment_deps,
+                                mark_convergence=False,
+                            )
+                            _retire_model(model_spec, reason="model_unavailable")
                             continue
                         if _is_constraints_failure(result.error_message):
                             await _apply_fallback(
@@ -1520,7 +1596,7 @@ Model rotation segment {segment_index} using {model_spec}."""
 
                 if not available_models and remaining_generations > 0:
                     convergence_detected = True
-                    convergence_reason = "rate_limit"
+                    convergence_reason = _pool_exhaustion_reason(retirement_reasons)
 
         return (
             best_solution,
@@ -2102,6 +2178,13 @@ def _is_rate_limit_error(error: Exception | str | None) -> bool:
         "500",
     )
     return any(trigger in message for trigger in triggers)
+
+
+def _pool_exhaustion_reason(reasons: AbstractSet[str]) -> str:
+    """Name the convergence reason for a model rotation pool that ran out of models."""
+    if len(reasons) == 1:
+        return next(iter(reasons))
+    return "model_pool_exhausted"
 
 
 def _filter_disallowed_recommendations(recommendations: list[str]) -> list[str]:

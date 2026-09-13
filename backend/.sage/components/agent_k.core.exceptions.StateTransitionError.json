@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.exceptions:StateTransitionError",
-  "line": 525,
+  "line": 549,
   "notice": "Raised when state transition is invalid.",
   "pattern": {
     "name": "exception-specific",

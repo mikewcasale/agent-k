@@ -29,7 +29,7 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Final
 
 if TYPE_CHECKING:
     from .types import ErrorCategory, RecoveryStrategy
@@ -60,7 +60,31 @@ __all__ = (
     "StateTransitionError",
     "PhaseTimeoutError",
     "classify_error",
+    "is_model_unavailable_error",
 )
+
+_UNAVAILABLE_STATUS_CODES: Final[frozenset[int]] = frozenset({400, 401, 403, 404})
+"""HTTP status codes that mean a specific model cannot serve requests at all."""
+
+_UNAVAILABLE_MESSAGE_TRIGGERS: Final[tuple[str, ...]] = (
+    "no endpoints found",
+    "no allowed providers",
+    "no auth credentials",
+    "model not found",
+    "model_not_found",
+    "unknown model",
+    "invalid model",
+    "unsupported model",
+    "model is no longer available",
+    "invalid api key",
+    "incorrect api key",
+)
+"""Provider phrasings that identify a permanently unusable model or credential.
+
+Kept narrow on purpose: agent failure messages carry solution stderr and filesystem text, so
+generic wording ("does not exist", "is not available") would retire a healthy model. Retired
+model slugs are still caught by the status codes above.
+"""
 
 
 class AgentKError(Exception):
@@ -588,3 +612,36 @@ def classify_error(exc: Exception) -> tuple[ErrorCategory, RecoveryStrategy]:
     if isinstance(exc, AgentKError):
         return ("recoverable", "retry") if exc.recoverable else ("fatal", "abort")
     return "transient", "retry"
+
+
+def is_model_unavailable_error(error: Exception | str | None) -> bool:
+    """Report whether an error means a model is permanently unusable for this run.
+
+    @notice: |
+        Detects provider errors that no amount of retrying against the same model can fix.
+
+    @dev: |
+        Complements rate-limit detection: a rate-limited model recovers on its own, while a
+        retired slug, a revoked key or a rejected request stays broken for the whole mission.
+        Callers use this to drop one model from a rotation pool instead of aborting.
+
+        Accepts an exception or a message so callers can classify structured agent failures
+        (which carry the provider text as a string) with the same rules.
+    """
+    if not error:
+        return False
+
+    if isinstance(error, Exception):
+        if isinstance(error, AuthenticationError):
+            return True
+        response = getattr(error, "response", None)
+        codes = (getattr(error, "status_code", None), getattr(response, "status_code", None))
+        if any(isinstance(code, int) and code in _UNAVAILABLE_STATUS_CODES for code in codes):
+            return True
+
+    message = str(error).lower()
+    if any(trigger in message for trigger in _UNAVAILABLE_MESSAGE_TRIGGERS):
+        return True
+    return any(
+        f"status_code: {code}" in message or f"status code: {code}" in message for code in _UNAVAILABLE_STATUS_CODES
+    )

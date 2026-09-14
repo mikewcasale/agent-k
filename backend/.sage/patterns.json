@@ -1,6 +1,6 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
-  "pattern_count": 57,
+  "generated": "2026-09-14T22:13:04.942851+00:00",
+  "pattern_count": 58,
   "patterns": {
     "adapter": [
       {
@@ -65,7 +65,7 @@
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 319,
+        "line": 320,
         "rationale": "Single instance keeps memory/tool registration consistent.",
         "source": "agent_k/agents/scientist.py",
         "violations": [
@@ -161,7 +161,7 @@
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps",
-        "line": 195,
+        "line": 196,
         "rationale": "Groups runtime services for research tools.",
         "source": "agent_k/agents/scientist.py",
         "violations": [
@@ -193,6 +193,17 @@
         "source": "agent_k/mission/state.py",
         "violations": [
           "Hidden globals make graph runs brittle."
+        ]
+      }
+    ],
+    "detection-model": [
+      {
+        "component": "agent_k.core.data:TabularSource",
+        "line": 110,
+        "rationale": "Bundles format, delimiter, and compression for readers.",
+        "source": "agent_k/core/data.py",
+        "violations": [
+          "Loose tuples make reader selection ambiguous."
         ]
       }
     ],
@@ -256,29 +267,38 @@
         ]
       },
       {
+        "component": "agent_k.core.data:TabularFormat",
+        "line": 88,
+        "rationale": "StrEnum keeps format handling explicit across readers.",
+        "source": "agent_k/core/data.py",
+        "violations": [
+          "Suffix string checks drift between call sites."
+        ]
+      },
+      {
         "component": "agent_k.core.hints:ColumnType",
-        "line": 94,
+        "line": 95,
         "rationale": "StrEnum for semantic column type classification.",
         "source": "agent_k/core/hints.py",
         "violations": []
       },
       {
         "component": "agent_k.core.hints:MissingPattern",
-        "line": 123,
+        "line": 124,
         "rationale": "StrEnum for MCAR/MAR/MNAR classification.",
         "source": "agent_k/core/hints.py",
         "violations": []
       },
       {
         "component": "agent_k.core.hints:HintCategory",
-        "line": 142,
+        "line": 143,
         "rationale": "StrEnum for grouping preprocessing hints by category.",
         "source": "agent_k/core/hints.py",
         "violations": []
       },
       {
         "component": "agent_k.core.hints:HintResult",
-        "line": 174,
+        "line": 175,
         "rationale": "StrEnum for hint outcome tracking.",
         "source": "agent_k/core/hints.py",
         "violations": []
@@ -983,7 +1003,7 @@
       },
       {
         "component": "agent_k.agents.scientist:ResearchFinding",
-        "line": 241,
+        "line": 242,
         "rationale": "Consistent schema for research findings.",
         "source": "agent_k/agents/scientist.py",
         "violations": [
@@ -992,7 +1012,7 @@
       },
       {
         "component": "agent_k.agents.scientist:LeaderboardAnalysis",
-        "line": 265,
+        "line": 266,
         "rationale": "Stable schema for leaderboard summaries.",
         "source": "agent_k/agents/scientist.py",
         "violations": [
@@ -1001,7 +1021,7 @@
       },
       {
         "component": "agent_k.agents.scientist:ResearchReport",
-        "line": 289,
+        "line": 290,
         "rationale": "Aggregates research findings into a stable schema.",
         "source": "agent_k/agents/scientist.py",
         "violations": [
@@ -1199,7 +1219,7 @@
     "schema-model": [
       {
         "component": "agent_k.core.data:CompetitionSchema",
-        "line": 48,
+        "line": 132,
         "rationale": "Captures inferred column layout for downstream steps.",
         "source": "agent_k/core/data.py",
         "violations": [
@@ -1273,7 +1293,7 @@
       },
       {
         "component": "agent_k.agents.scientist:ScientistSettings",
-        "line": 164,
+        "line": 165,
         "rationale": "Centralizes research agent configuration.",
         "source": "agent_k/agents/scientist.py",
         "violations": [
@@ -1390,28 +1410,28 @@
       },
       {
         "component": "agent_k.core.hints:ColumnProfile",
-        "line": 194,
+        "line": 195,
         "rationale": "Frozen dataclass for immutable column statistics.",
         "source": "agent_k/core/hints.py",
         "violations": []
       },
       {
         "component": "agent_k.core.hints:DistributionStats",
-        "line": 242,
+        "line": 243,
         "rationale": "Frozen dataclass for immutable distribution stats.",
         "source": "agent_k/core/hints.py",
         "violations": []
       },
       {
         "component": "agent_k.core.hints:DatasetProfile",
-        "line": 280,
+        "line": 281,
         "rationale": "Frozen dataclass for immutable dataset profile.",
         "source": "agent_k/core/hints.py",
         "violations": []
       },
       {
         "component": "agent_k.core.hints:PreprocessingHint",
-        "line": 389,
+        "line": 390,
         "rationale": "Mutable dataclass for hint tracking with state.",
         "source": "agent_k/core/hints.py",
         "violations": []

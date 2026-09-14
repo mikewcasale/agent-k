@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Parquet row counts come from footer metadata, so no data pages are read.\nUncompressed delimited files are counted by line to avoid a full parse.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.data:count_tabular_rows",
+  "line": 235,
+  "notice": "Returns the number of rows excluding any header row.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/data.py",
+  "summary": "Count the data rows of a competition data file.",
+  "type": "function"
+}

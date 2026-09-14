@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Parquet reads honor `nrows` through Arrow record batches so that\nprofiling a multi-gigabyte file never materializes the whole table.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.data:read_tabular",
+  "line": 183,
+  "notice": "Loads delimited text, Parquet, or Feather files into a DataFrame.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/data.py",
+  "summary": "Read a competition data file regardless of its on-disk format.",
+  "type": "function"
+}

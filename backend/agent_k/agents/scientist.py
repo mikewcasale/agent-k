@@ -65,7 +65,7 @@ from agent_k.agents import register_agent
 from agent_k.agents.base import MemoryMixin, universal_tool_preparation
 from agent_k.agents.prompts import SCIENTIST_SYSTEM_PROMPT
 from agent_k.core.constants import DEFAULT_MODEL
-from agent_k.core.data import locate_data_files
+from agent_k.core.data import TabularFormat, count_tabular_rows, detect_tabular_source, locate_data_files, read_tabular
 from agent_k.core.hints import DatasetProfile, build_dataset_profile, generate_preprocessing_hints
 from agent_k.core.sage import Doc, Range
 from agent_k.infra.providers import get_model
@@ -158,6 +158,7 @@ _KERNEL_TECHNIQUE_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
     "cross_validation": re.compile(r"\b(KFold|StratifiedKFold|cross_val_score|cross_validate)\b", re.IGNORECASE),
 }
 _MISSING_VALUE_TOKENS: Final[frozenset[str]] = frozenset({"", "na", "nan", "null", "none"})
+_SUMMARY_SAMPLE_ROWS: Final[int] = 100
 
 
 class ScientistSettings(BaseSettings):
@@ -844,11 +845,29 @@ class ScientistAgent(MemoryMixin):
             summary["total_size_mb"] += file_info["size_mb"]
             if path.suffix.lower() == ".csv":
                 file_info.update(self._summarize_csv(path))
+            elif detect_tabular_source(path).format is not TabularFormat.UNKNOWN:
+                file_info.update(self._summarize_tabular(path))
 
             summary["files"].append(file_info)
 
         summary["total_size_mb"] = round(summary["total_size_mb"], 2)
         return summary
+
+    def _summarize_tabular(self, path: Path) -> dict[str, Any]:
+        try:
+            frame = read_tabular(path, nrows=_SUMMARY_SAMPLE_ROWS)
+            row_count = count_tabular_rows(path)
+        except (OSError, ValueError) as exc:
+            logfire.warning("dataset_summary_failed", error=str(exc), path=str(path))
+            return {}
+
+        missing_counts = {str(column): int(frame[column].isna().sum()) for column in frame.columns}
+        return {
+            "row_count": row_count,
+            "column_count": len(frame.columns),
+            "columns": [str(column) for column in frame.columns],
+            "missing_values": {column: count for column, count in missing_counts.items() if count > 0},
+        }
 
     def _summarize_csv(self, path: Path) -> dict[str, Any]:
         with path.open("r", encoding="utf-8", newline="") as handle:

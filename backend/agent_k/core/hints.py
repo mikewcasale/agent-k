@@ -29,7 +29,6 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
-import csv
 import math
 import re
 from dataclasses import dataclass
@@ -41,6 +40,8 @@ from typing import TYPE_CHECKING, Any, Final
 import logfire
 import numpy as np
 import pandas as pd
+
+from agent_k.core.data import count_tabular_rows, read_tabular, read_tabular_header
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -1116,7 +1117,7 @@ def _infer_target_columns(
 def _read_profile_dataframe(path: Path, *, max_rows: int) -> pd.DataFrame:
     with logfire.span("hints.read_profile_dataframe", path=str(path), max_rows=max_rows):
         try:
-            return pd.read_csv(path, nrows=max_rows, low_memory=False)
+            return read_tabular(path, nrows=max_rows)
         except Exception as exc:
             logfire.warning("hints_read_failed", error=str(exc), path=str(path))
             return pd.DataFrame()
@@ -1132,18 +1133,15 @@ def _read_header(path: Path | None) -> list[str]:
     if path is None:
         return []
     try:
-        with path.open("r", encoding="utf-8", errors="ignore", newline="") as handle:
-            reader = csv.reader(handle)
-            return next(reader, [])
-    except FileNotFoundError:
+        return read_tabular_header(path)
+    except (OSError, ValueError):
         return []
 
 
 def _count_rows(path: Path) -> int:
     try:
-        with path.open("r", encoding="utf-8", errors="ignore") as handle:
-            return max(sum(1 for _ in handle) - 1, 0)
-    except FileNotFoundError:
+        return count_tabular_rows(path)
+    except (OSError, ValueError):
         return 0
 
 

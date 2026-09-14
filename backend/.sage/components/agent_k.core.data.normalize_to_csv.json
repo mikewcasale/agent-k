@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Returns True when a conversion was performed. Nested Parquet values\n(lists and structs) are serialized with their pandas string form.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.data:normalize_to_csv",
+  "line": 258,
+  "notice": "Links plain CSV sources and converts every other supported format.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/data.py",
+  "summary": "Materialize a competition data file as comma-delimited CSV.",
+  "type": "function"
+}

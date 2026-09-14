@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Content magic bytes win over the file suffix, because Kaggle archives\nroutinely ship compressed or columnar payloads under a `.csv` name.\nThe suffix only supplies the delimiter and a fallback classification.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.data:detect_tabular_source",
+  "line": 152,
+  "notice": "Classifies a file as delimited text, Parquet, or Feather.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/data.py",
+  "summary": "Detect the tabular format of a competition data file.",
+  "type": "function"
+}

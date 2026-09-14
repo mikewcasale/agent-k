@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Parquet headers come from Arrow file metadata; delimited files are\nread one row at a time.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.data:read_tabular_header",
+  "line": 210,
+  "notice": "Returns column names without materializing the full table.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/data.py",
+  "summary": "Read the column names of a competition data file.",
+  "type": "function"
+}

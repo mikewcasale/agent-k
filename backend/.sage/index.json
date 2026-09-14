@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-09-14T22:13:04.942005+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1111,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -2266,289 +2266,289 @@
       },
       {
         "component": "agent_k.agents.scientist:ScientistSettings",
-        "line": 166,
+        "line": 167,
         "name": "notice",
         "value": "Configuration for the Scientist agent."
       },
       {
         "component": "agent_k.agents.scientist:ScientistSettings",
-        "line": 169,
+        "line": 170,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.scientist:ScientistSettings",
-        "line": 172,
+        "line": 173,
         "name": "pattern",
         "value": "{\"name\": \"settings\", \"rationale\": \"Centralizes research agent configuration.\", \"violations\": \"Per-run overrides lead to inconsistent outputs.\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps",
-        "line": 197,
+        "line": 198,
         "name": "notice",
         "value": "Dependencies for the Scientist agent."
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps",
-        "line": 200,
+        "line": 201,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps",
-        "line": 203,
+        "line": 204,
         "name": "pattern",
         "value": "{\"name\": \"dependency-container\", \"rationale\": \"Groups runtime services for research tools.\", \"violations\": \"Hidden globals make research runs nondeterministic.\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps",
-        "line": 208,
+        "line": 209,
         "name": "collaborators",
         "value": "{\"required\": [\"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\", \"agent_k.core.models:Competition\"], \"optional\": [\"agent_k.core.models:LeaderboardEntry\"], \"injection\": \"constructor\", \"life"
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps.refresh_leaderboard",
-        "line": 228,
+        "line": 229,
         "name": "notice",
         "value": "Updates the cached leaderboard in-place."
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps.refresh_leaderboard",
-        "line": 231,
+        "line": 232,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"], \"state\": [\"self.leaderboard\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ResearchFinding",
-        "line": 243,
+        "line": 244,
         "name": "notice",
         "value": "Individual research finding."
       },
       {
         "component": "agent_k.agents.scientist:ResearchFinding",
-        "line": 246,
+        "line": 247,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.scientist:ResearchFinding",
-        "line": 249,
+        "line": 250,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Consistent schema for research findings.\", \"violations\": \"Ad-hoc dicts are hard to validate.\"}"
       },
       {
         "component": "agent_k.agents.scientist:LeaderboardAnalysis",
-        "line": 267,
+        "line": 268,
         "name": "notice",
         "value": "Analysis of competition leaderboard."
       },
       {
         "component": "agent_k.agents.scientist:LeaderboardAnalysis",
-        "line": 270,
+        "line": 271,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.scientist:LeaderboardAnalysis",
-        "line": 273,
+        "line": 274,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Stable schema for leaderboard summaries.\", \"violations\": \"Inconsistent shapes break downstream synthesis.\"}"
       },
       {
         "component": "agent_k.agents.scientist:ResearchReport",
-        "line": 291,
+        "line": 292,
         "name": "notice",
         "value": "Complete research report for a competition."
       },
       {
         "component": "agent_k.agents.scientist:ResearchReport",
-        "line": 294,
+        "line": 295,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.scientist:ResearchReport",
-        "line": 297,
+        "line": 298,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Aggregates research findings into a stable schema.\", \"violations\": \"Free-form outputs hinder automation.\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 321,
+        "line": 322,
         "name": "notice",
         "value": "Performs leaderboard, literature, and notebook analysis.\nUse the module-level scientist_agent or agent registry."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 325,
+        "line": 326,
         "name": "dev",
         "value": "Registers research tools and synthesizes outputs into ResearchReport."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 328,
+        "line": 329,
         "name": "pattern",
         "value": "{\"name\": \"agent-singleton\", \"rationale\": \"Single instance keeps memory/tool registration consistent.\", \"violations\": \"Multiple instances duplicate tool registrations.\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 333,
+        "line": 334,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.core.models:Competition\"], \"optional\": [\"httpx:AsyncClient\"], \"injection\": \"deps via RunContext\", \"lifecycle\": \"Module-level singleton "
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 342,
+        "line": 343,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates internal caches and tool registration.\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 347,
+        "line": 348,
         "name": "invariants",
         "value": "[\"self._agent is initialized after __init__ completes.\", \"self._toolset registers research tools exactly once.\"]"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.__init__",
-        "line": 357,
+        "line": 358,
         "name": "notice",
         "value": "Builds the agent singleton and registers tools."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.__init__",
-        "line": 360,
+        "line": 361,
         "name": "dev",
         "value": "Initializes memory backend, toolset, and pydantic-ai Agent."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.__init__",
-        "line": 363,
+        "line": 364,
         "name": "state_changes",
         "value": "[\"self._settings\", \"self._toolset\", \"self._agent\"]"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_leaderboard",
-        "line": 393,
+        "line": 394,
         "name": "notice",
         "value": "Computes distribution stats and common approaches from leaderboard entries."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_leaderboard",
-        "line": 396,
+        "line": 397,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request (optional)\"], \"state\": [\"ctx.deps.leaderboard\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.get_kaggle_notebooks",
-        "line": 428,
+        "line": 429,
         "name": "notice",
         "value": "Retrieves competition notebooks ordered by vote count or freshness."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.get_kaggle_notebooks",
-        "line": 431,
+        "line": 432,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_top_kernels",
-        "line": 459,
+        "line": 460,
         "name": "notice",
         "value": "Downloads and summarizes kernel code to identify techniques."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_top_kernels",
-        "line": 462,
+        "line": 463,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.extract_techniques",
-        "line": 497,
+        "line": 498,
         "name": "notice",
         "value": "Scans code for common ML techniques and feature engineering patterns."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.extract_techniques",
-        "line": 500,
+        "line": 501,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.synthesize_strategy",
-        "line": 516,
+        "line": 517,
         "name": "notice",
         "value": "Aggregates extracted techniques into prioritized action items."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.synthesize_strategy",
-        "line": 519,
+        "line": 520,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_data_characteristics",
-        "line": 575,
+        "line": 576,
         "name": "notice",
         "value": "Profiles datasets and derives preprocessing hints."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.analyze_data_characteristics",
-        "line": 578,
+        "line": 579,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\", \"local filesystem access\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.check_external_data_rules",
-        "line": 619,
+        "line": 620,
         "name": "notice",
         "value": "Fetches rules and infers external data policy."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.check_external_data_rules",
-        "line": 622,
+        "line": 623,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.compute_baseline_estimate",
-        "line": 639,
+        "line": 640,
         "name": "notice",
         "value": "Uses leaderboard median and a difficulty multiplier."
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent.compute_baseline_estimate",
-        "line": 642,
+        "line": 643,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent._create_agent",
-        "line": 658,
+        "line": 659,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.agents.scientist:ScientistAgent\", \"rationale\": \"Centralizes agent wiring and toolset preparation.\", \"singleton\": true, \"cache_key\": \"module\"}"
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent._create_agent",
-        "line": 664,
+        "line": 665,
         "name": "canonical_home",
         "value": "{\"for\": [\"scientist agent construction\"], \"notes\": \"Use ScientistAgent() or module singleton.\"}"
       },
       {
         "component": "agent_k.agents.scientist:get_external_data_policy",
-        "line": 889,
+        "line": 908,
         "name": "notice",
         "value": "Retrieves competition rules and infers external data allowance."
       },
       {
         "component": "agent_k.agents.scientist:get_external_data_policy",
-        "line": 892,
+        "line": 911,
         "name": "dev",
         "value": "Uses simple heuristics and caches results when provided."
       },
       {
         "component": "agent_k.agents.scientist:get_external_data_policy",
-        "line": 895,
+        "line": 914,
         "name": "effects",
         "value": "{\"io\": [\"Kaggle API request\"], \"state\": [\"cache (optional)\"]}"
       }
@@ -2649,58 +2649,184 @@
         "value": "{\"last_verified\": \"2026-01-26\", \"owners\": [\"agent-k-core\"]}"
       },
       {
+        "component": "agent_k.core.data:TabularFormat",
+        "line": 90,
+        "name": "notice",
+        "value": "Tabular file formats recognized in competition downloads."
+      },
+      {
+        "component": "agent_k.core.data:TabularFormat",
+        "line": 93,
+        "name": "dev",
+        "value": "See module for implementation details and extension points."
+      },
+      {
+        "component": "agent_k.core.data:TabularFormat",
+        "line": 96,
+        "name": "pattern",
+        "value": "{\"name\": \"enumeration\", \"rationale\": \"StrEnum keeps format handling explicit across readers.\", \"violations\": \"Suffix string checks drift between call sites.\"}"
+      },
+      {
+        "component": "agent_k.core.data:TabularSource",
+        "line": 112,
+        "name": "notice",
+        "value": "Detected format details for a competition data file."
+      },
+      {
+        "component": "agent_k.core.data:TabularSource",
+        "line": 115,
+        "name": "dev",
+        "value": "See module for implementation details and extension points."
+      },
+      {
+        "component": "agent_k.core.data:TabularSource",
+        "line": 118,
+        "name": "pattern",
+        "value": "{\"name\": \"detection-model\", \"rationale\": \"Bundles format, delimiter, and compression for readers.\", \"violations\": \"Loose tuples make reader selection ambiguous.\"}"
+      },
+      {
         "component": "agent_k.core.data:CompetitionSchema",
-        "line": 50,
+        "line": 134,
         "name": "notice",
         "value": "Schema details inferred from competition data files."
       },
       {
         "component": "agent_k.core.data:CompetitionSchema",
-        "line": 53,
+        "line": 137,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.data:CompetitionSchema",
-        "line": 56,
+        "line": 140,
         "name": "pattern",
         "value": "{\"name\": \"schema-model\", \"rationale\": \"Captures inferred column layout for downstream steps.\", \"violations\": \"Ad-hoc dicts drift from actual data shape.\"}"
       },
       {
-        "component": "agent_k.core.data:infer_competition_schema",
-        "line": 70,
+        "component": "agent_k.core.data:detect_tabular_source",
+        "line": 154,
         "name": "notice",
-        "value": "Analyzes CSV headers to determine ID column and target columns."
+        "value": "Classifies a file as delimited text, Parquet, or Feather."
+      },
+      {
+        "component": "agent_k.core.data:detect_tabular_source",
+        "line": 157,
+        "name": "dev",
+        "value": "Content magic bytes win over the file suffix, because Kaggle archives\nroutinely ship compressed or columnar payloads under a `.csv` name.\nThe suffix only supplies the delimiter and a fallback classifi"
+      },
+      {
+        "component": "agent_k.core.data:read_tabular",
+        "line": 185,
+        "name": "notice",
+        "value": "Loads delimited text, Parquet, or Feather files into a DataFrame."
+      },
+      {
+        "component": "agent_k.core.data:read_tabular",
+        "line": 188,
+        "name": "dev",
+        "value": "Parquet reads honor `nrows` through Arrow record batches so that\nprofiling a multi-gigabyte file never materializes the whole table."
+      },
+      {
+        "component": "agent_k.core.data:read_tabular",
+        "line": 192,
+        "name": "errors",
+        "value": "{\"terminal\": [\"ValueError\"]}"
+      },
+      {
+        "component": "agent_k.core.data:read_tabular_header",
+        "line": 212,
+        "name": "notice",
+        "value": "Returns column names without materializing the full table."
+      },
+      {
+        "component": "agent_k.core.data:read_tabular_header",
+        "line": 215,
+        "name": "dev",
+        "value": "Parquet headers come from Arrow file metadata; delimited files are\nread one row at a time."
+      },
+      {
+        "component": "agent_k.core.data:read_tabular_header",
+        "line": 219,
+        "name": "errors",
+        "value": "{\"terminal\": [\"ValueError\"]}"
+      },
+      {
+        "component": "agent_k.core.data:count_tabular_rows",
+        "line": 237,
+        "name": "notice",
+        "value": "Returns the number of rows excluding any header row."
+      },
+      {
+        "component": "agent_k.core.data:count_tabular_rows",
+        "line": 240,
+        "name": "dev",
+        "value": "Parquet row counts come from footer metadata, so no data pages are read.\nUncompressed delimited files are counted by line to avoid a full parse."
+      },
+      {
+        "component": "agent_k.core.data:normalize_to_csv",
+        "line": 260,
+        "name": "notice",
+        "value": "Links plain CSV sources and converts every other supported format."
+      },
+      {
+        "component": "agent_k.core.data:normalize_to_csv",
+        "line": 263,
+        "name": "dev",
+        "value": "Returns True when a conversion was performed. Nested Parquet values\n(lists and structs) are serialized with their pandas string form."
+      },
+      {
+        "component": "agent_k.core.data:normalize_to_csv",
+        "line": 267,
+        "name": "effects",
+        "value": "{\"io\": [\"local filesystem writes\"]}"
+      },
+      {
+        "component": "agent_k.core.data:normalize_to_csv",
+        "line": 271,
+        "name": "errors",
+        "value": "{\"terminal\": [\"ValueError\"]}"
       },
       {
         "component": "agent_k.core.data:infer_competition_schema",
-        "line": 73,
+        "line": 300,
+        "name": "notice",
+        "value": "Analyzes data headers to determine ID column and target columns."
+      },
+      {
+        "component": "agent_k.core.data:infer_competition_schema",
+        "line": 303,
         "name": "dev",
         "value": "Compares train vs test headers to identify target columns.\nFalls back to sample submission columns if no difference found."
       },
       {
         "component": "agent_k.core.data:locate_data_files",
-        "line": 99,
+        "line": 329,
         "name": "notice",
         "value": "Finds train, test, and sample submission files from a list of paths."
       },
       {
         "component": "agent_k.core.data:locate_data_files",
-        "line": 102,
+        "line": 332,
         "name": "dev",
         "value": "Automatically extracts ZIP files and searches for files by name pattern.\nRaises FileNotFoundError if required files are not found."
       },
       {
         "component": "agent_k.core.data:stage_competition_data",
-        "line": 135,
+        "line": 365,
         "name": "notice",
         "value": "Copies or links data files to a destination with standardized names."
       },
       {
         "component": "agent_k.core.data:stage_competition_data",
-        "line": 138,
+        "line": 368,
         "name": "dev",
-        "value": "Creates train.csv, test.csv, sample_submission.csv in destination.\nUses hard links when possible to save disk space."
+        "value": "Creates train.csv, test.csv, sample_submission.csv in destination.\nPlain CSV sources are hard linked when possible to save disk space;\nParquet, Feather, tab-separated, and compressed sources are conve"
+      },
+      {
+        "component": "agent_k.core.data:stage_competition_data",
+        "line": 374,
+        "name": "errors",
+        "value": "{\"terminal\": [\"ValueError\"]}"
       }
     ],
     "agent_k/core/deps.py": [
@@ -3378,193 +3504,193 @@
       },
       {
         "component": "agent_k.core.hints:ColumnType",
-        "line": 96,
+        "line": 97,
         "name": "notice",
         "value": "Detected column semantic type."
       },
       {
         "component": "agent_k.core.hints:ColumnType",
-        "line": 99,
+        "line": 100,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.hints:ColumnType",
-        "line": 102,
+        "line": 103,
         "name": "pattern",
         "value": "{\"name\": \"enumeration\", \"rationale\": \"StrEnum for semantic column type classification.\"}"
       },
       {
         "component": "agent_k.core.hints:MissingPattern",
-        "line": 125,
+        "line": 126,
         "name": "notice",
         "value": "Missingness pattern classification."
       },
       {
         "component": "agent_k.core.hints:MissingPattern",
-        "line": 128,
+        "line": 129,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.hints:MissingPattern",
-        "line": 131,
+        "line": 132,
         "name": "pattern",
         "value": "{\"name\": \"enumeration\", \"rationale\": \"StrEnum for MCAR/MAR/MNAR classification.\"}"
       },
       {
         "component": "agent_k.core.hints:HintCategory",
-        "line": 144,
+        "line": 145,
         "name": "notice",
         "value": "Hint category tags for prompt grouping."
       },
       {
         "component": "agent_k.core.hints:HintCategory",
-        "line": 147,
+        "line": 148,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.hints:HintCategory",
-        "line": 150,
+        "line": 151,
         "name": "pattern",
         "value": "{\"name\": \"enumeration\", \"rationale\": \"StrEnum for grouping preprocessing hints by category.\"}"
       },
       {
         "component": "agent_k.core.hints:HintResult",
-        "line": 176,
+        "line": 177,
         "name": "notice",
         "value": "Result classification for a hint attempt."
       },
       {
         "component": "agent_k.core.hints:HintResult",
-        "line": 179,
+        "line": 180,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.hints:HintResult",
-        "line": 182,
+        "line": 183,
         "name": "pattern",
         "value": "{\"name\": \"enumeration\", \"rationale\": \"StrEnum for hint outcome tracking.\"}"
       },
       {
         "component": "agent_k.core.hints:ColumnProfile",
-        "line": 196,
+        "line": 197,
         "name": "notice",
         "value": "Profile statistics for a single column."
       },
       {
         "component": "agent_k.core.hints:ColumnProfile",
-        "line": 199,
+        "line": 200,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.hints:ColumnProfile",
-        "line": 202,
+        "line": 203,
         "name": "pattern",
         "value": "{\"name\": \"value-object\", \"rationale\": \"Frozen dataclass for immutable column statistics.\"}"
       },
       {
         "component": "agent_k.core.hints:DistributionStats",
-        "line": 244,
+        "line": 245,
         "name": "notice",
         "value": "Distribution statistics for a numeric column."
       },
       {
         "component": "agent_k.core.hints:DistributionStats",
-        "line": 247,
+        "line": 248,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.hints:DistributionStats",
-        "line": 250,
+        "line": 251,
         "name": "pattern",
         "value": "{\"name\": \"value-object\", \"rationale\": \"Frozen dataclass for immutable distribution stats.\"}"
       },
       {
         "component": "agent_k.core.hints:DatasetProfile",
-        "line": 282,
+        "line": 283,
         "name": "notice",
         "value": "Comprehensive dataset analysis for hint generation."
       },
       {
         "component": "agent_k.core.hints:DatasetProfile",
-        "line": 285,
+        "line": 286,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.hints:DatasetProfile",
-        "line": 288,
+        "line": 289,
         "name": "pattern",
         "value": "{\"name\": \"value-object\", \"rationale\": \"Frozen dataclass for immutable dataset profile.\"}"
       },
       {
         "component": "agent_k.core.hints:PreprocessingHint",
-        "line": 391,
+        "line": 392,
         "name": "notice",
         "value": "Single preprocessing recommendation."
       },
       {
         "component": "agent_k.core.hints:PreprocessingHint",
-        "line": 394,
+        "line": 395,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.hints:PreprocessingHint",
-        "line": 397,
+        "line": 398,
         "name": "pattern",
         "value": "{\"name\": \"value-object\", \"rationale\": \"Mutable dataclass for hint tracking with state.\"}"
       },
       {
         "component": "agent_k.core.hints:build_dataset_profile",
-        "line": 467,
+        "line": 468,
         "name": "notice",
         "value": "Builds a comprehensive profile of dataset columns for hint generation."
       },
       {
         "component": "agent_k.core.hints:build_dataset_profile",
-        "line": 470,
+        "line": 471,
         "name": "dev",
         "value": "Samples up to MAX_PROFILE_ROWS, infers column types, detects missing\npatterns, and computes target correlations."
       },
       {
         "component": "agent_k.core.hints:generate_preprocessing_hints",
-        "line": 517,
+        "line": 518,
         "name": "notice",
         "value": "Returns a list of actionable preprocessing hints based on column profiles."
       },
       {
         "component": "agent_k.core.hints:generate_preprocessing_hints",
-        "line": 520,
+        "line": 521,
         "name": "dev",
         "value": "Analyzes column types, missing patterns, and data characteristics to\ngenerate encoding, imputation, transformation, and model selection hints."
       },
       {
         "component": "agent_k.core.hints:compute_hint_priority",
-        "line": 953,
+        "line": 954,
         "name": "notice",
         "value": "Adjusts hint priority using success rates and recency from the tracker."
       },
       {
         "component": "agent_k.core.hints:compute_hint_priority",
-        "line": 956,
+        "line": 957,
         "name": "dev",
         "value": "Applies success boost, recency penalty, and amplification factors.\nReturns 0.0 if hint is suppressed."
       },
       {
         "component": "agent_k.core.hints:detect_applied_hints",
-        "line": 978,
+        "line": 979,
         "name": "notice",
         "value": "Returns hint IDs that appear to be applied in the given code."
       },
       {
         "component": "agent_k.core.hints:detect_applied_hints",
-        "line": 981,
+        "line": 982,
         "name": "dev",
         "value": "Matches explicit hint comments, code snippet signatures, and\npattern-based detection for each hint type."
       }

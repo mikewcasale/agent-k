@@ -30,17 +30,48 @@ Licensed under the MIT License.
 from __future__ import annotations as _annotations
 
 import csv
+import gzip
 import os
 import shutil
 import zipfile
+from collections import deque
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
+
+import logfire
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
 __all__ = ("CompetitionSchema", "infer_competition_schema", "locate_data_files", "stage_competition_data")
+
+_ARCHIVE_SUFFIXES: Final[frozenset[str]] = frozenset({".zip", ".gz", ".bz2", ".xz", ".tar", ".tgz", ".7z", ".rar"})
+"""Suffixes treated as containers rather than readable data files."""
+
+_TABULAR_SUFFIXES: Final[frozenset[str]] = frozenset({".csv", ".tsv", ".parquet", ".feather", ".txt"})
+"""Suffixes that can carry a tabular competition dataset."""
+
+_MAX_ARCHIVE_DEPTH: Final[int] = 3
+"""Maximum nesting level expanded when unpacking competition archives."""
+
+_ROLE_TOKENS: Final[tuple[tuple[str, tuple[str, ...]], ...]] = (
+    ("train", ("train", "training")),
+    ("test", ("test",)),
+    ("sample", ("sample_submission", "samplesubmission", "sample-submission", "submission", "sample")),
+)
+"""Role name to filename tokens, most specific token first."""
+
+_SEPARATORS: Final[tuple[str, ...]] = ("_", "-", ".")
+"""Characters that delimit tokens inside dataset filenames."""
+
+_EXACT_SCORE: Final[int] = 100
+_PREFIX_SCORE: Final[int] = 70
+_SUFFIX_SCORE: Final[int] = 60
+_CONTAINS_SCORE: Final[int] = 40
+_TOKEN_RANK_PENALTY: Final[int] = 5
+_TABULAR_BONUS: Final[int] = 8
+_CSV_BONUS: Final[int] = 4
 
 
 @dataclass(frozen=True, slots=True)
@@ -100,31 +131,43 @@ def locate_data_files(paths: Iterable[str | Path]) -> tuple[Path, Path, Path]:
         Finds train, test, and sample submission files from a list of paths.
 
     @dev: |
-        Automatically extracts ZIP files and searches for files by name pattern.
-        Raises FileNotFoundError if required files are not found.
+        Expands archives (nested ZIP members and single-file gzip payloads) and
+        scores every readable candidate per role, so the canonical ``train.csv``
+        outranks companions such as ``train_labels.csv`` regardless of the order
+        in which the filesystem yielded the paths. Archives are never returned as
+        data files. Raises FileNotFoundError if a role cannot be filled.
+
+    @effects:
+        io:
+            - local filesystem access
     """
-    files: list[Path] = []
+    candidates = _expand_candidates(paths)
+    tabular = [path for path in candidates if _data_suffix(path) in _TABULAR_SUFFIXES]
 
-    for path_value in paths:
-        path = Path(path_value)
-        files.append(path)
-        if path.suffix.lower() == ".zip" and path.exists():
-            files.extend(_safe_extract_zip(path, path.parent))
+    resolved: dict[str, Path] = {}
+    claimed: set[Path] = set()
+    for role, tokens in _ROLE_TOKENS:
+        choice = _best_candidate(tabular, tokens, claimed) or _best_candidate(candidates, tokens, claimed)
+        if choice is None:
+            continue
+        resolved[role] = choice
+        claimed.add(choice)
 
-    def pick(token: str) -> Path | None:
-        for path in files:
-            if token in path.name.lower():
-                return path
-        return None
+    missing = [role for role, _ in _ROLE_TOKENS if role not in resolved]
+    if missing:
+        raise FileNotFoundError(
+            f"Required competition data files not found: {', '.join(missing)} "
+            f"(inspected {len(candidates)} candidate files)"
+        )
 
-    train_path = pick("train")
-    test_path = pick("test")
-    sample_path = pick("sample_submission") or pick("submission")
-
-    if not train_path or not test_path or not sample_path:
-        raise FileNotFoundError("Required competition data files not found")
-
-    return train_path, test_path, sample_path
+    logfire.debug(
+        "competition_data_located",
+        train=str(resolved["train"]),
+        test=str(resolved["test"]),
+        sample=str(resolved["sample"]),
+        candidate_count=len(candidates),
+    )
+    return resolved["train"], resolved["test"], resolved["sample"]
 
 
 def stage_competition_data(
@@ -161,10 +204,134 @@ def stage_competition_data(
     return staged
 
 
+def _expand_candidates(paths: Iterable[str | Path]) -> list[Path]:
+    """Unpack archives and return every readable data file, deduplicated."""
+    pending: deque[tuple[Path, int]] = deque((Path(value), 0) for value in paths)
+    seen: set[Path] = set()
+    candidates: list[Path] = []
+
+    while pending:
+        path, depth = pending.popleft()
+        if not path.is_file():
+            continue
+        key = path.resolve()
+        if key in seen:
+            continue
+        seen.add(key)
+
+        if path.suffix.lower() not in _ARCHIVE_SUFFIXES:
+            candidates.append(path)
+            continue
+        if depth >= _MAX_ARCHIVE_DEPTH:
+            continue
+        pending.extend((member, depth + 1) for member in _unpack(path))
+
+    return candidates
+
+
+def _unpack(archive_path: Path) -> list[Path]:
+    """Expand one archive, returning the files it produced."""
+    suffix = archive_path.suffix.lower()
+    try:
+        if suffix == ".zip":
+            return _safe_extract_zip(archive_path, archive_path.parent)
+        if suffix == ".gz":
+            return _extract_gzip(archive_path)
+    except (OSError, ValueError, zipfile.BadZipFile) as exc:
+        logfire.warning("archive_extraction_failed", archive=str(archive_path), error=str(exc))
+    return []
+
+
+def _best_candidate(candidates: list[Path], tokens: tuple[str, ...], claimed: set[Path]) -> Path | None:
+    """Return the highest scoring unclaimed candidate for a role."""
+    scored = [
+        (-score, len(path.parts), len(path.name), str(path), path)
+        for path in candidates
+        if path not in claimed and (score := _score_candidate(path, tokens)) > 0
+    ]
+    if not scored:
+        return None
+    return min(scored)[4]
+
+
+def _score_candidate(path: Path, tokens: tuple[str, ...]) -> int:
+    """Score how strongly a filename identifies a role, 0 when it does not.
+
+    Depth is deliberately excluded here and applied as a tie-break instead, so a
+    nested exact match never loses to a shallow partial one.
+    """
+    stem = _data_stem(path)
+    best = 0
+    for rank, token in enumerate(tokens):
+        match = _token_score(stem, token)
+        if match == 0:
+            continue
+        best = max(best, match - rank * _TOKEN_RANK_PENALTY)
+
+    if best == 0:
+        return 0
+
+    suffix = _data_suffix(path)
+    if suffix in _TABULAR_SUFFIXES:
+        best += _TABULAR_BONUS
+    if suffix == ".csv":
+        best += _CSV_BONUS
+    return best
+
+
+def _token_score(stem: str, token: str) -> int:
+    if stem == token:
+        return _EXACT_SCORE
+    if any(stem.startswith(f"{token}{separator}") for separator in _SEPARATORS):
+        return _PREFIX_SCORE
+    if any(stem.endswith(f"{separator}{token}") for separator in _SEPARATORS):
+        return _SUFFIX_SCORE
+    if token in stem:
+        return _CONTAINS_SCORE
+    return 0
+
+
+def _data_suffix(path: Path) -> str:
+    """Return the data suffix, looking past any archive suffix."""
+    suffixes = [suffix.lower() for suffix in path.suffixes]
+    while suffixes and suffixes[-1] in _ARCHIVE_SUFFIXES:
+        suffixes.pop()
+    return suffixes[-1] if suffixes else ""
+
+
+def _data_stem(path: Path) -> str:
+    """Return the filename with archive and data suffixes removed."""
+    stem = path.name.lower()
+    while True:
+        base, separator, suffix = stem.rpartition(".")
+        if not separator or f".{suffix}" not in _ARCHIVE_SUFFIXES | _TABULAR_SUFFIXES:
+            return stem
+        stem = base
+
+
+def _extract_gzip(archive_path: Path) -> list[Path]:
+    """Decompress a single-file gzip payload next to its archive."""
+    if _data_suffix(archive_path) not in _TABULAR_SUFFIXES:
+        return []
+    target = archive_path.with_suffix("")
+    if target.exists():
+        return [target]
+    with gzip.open(archive_path, "rb") as source, target.open("wb") as handle:
+        shutil.copyfileobj(source, handle)
+    return [target]
+
+
 def _read_header(path: Path) -> list[str]:
     with path.open("r", encoding="utf-8", errors="ignore", newline="") as handle:
         reader = csv.reader(handle)
-        return next(reader, [])
+        header = next(reader, [])
+    if any(_has_control_characters(column) for column in header):
+        raise ValueError(f"Header of {path.name} is not readable text; the file is likely binary or compressed")
+    return header
+
+
+def _has_control_characters(value: str) -> bool:
+    return any(character < " " and character not in "\t" for character in value)
 
 
 def _safe_extract_zip(archive_path: Path, destination: Path) -> list[Path]:

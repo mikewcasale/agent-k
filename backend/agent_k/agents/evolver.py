@@ -49,6 +49,7 @@ from __future__ import annotations as _annotations
 import ast
 import csv
 import hashlib
+import importlib.util
 import json
 import random
 import re
@@ -257,19 +258,68 @@ _CATEGORICAL_HYPERPARAMS: Final[dict[str, tuple[str, ...]]] = {
     "objective": ("regression", "regression_l1", "huber", "quantile"),
 }
 _KNN_PARAM_KEYS: Final[frozenset[str]] = frozenset({"n_neighbors", "weights", "metric", "p", "leaf_size", "algorithm"})
-_MODEL_SWAPS: Final[dict[str, str]] = {
-    "RandomForestClassifier": "GradientBoostingClassifier",
-    "RandomForestRegressor": "GradientBoostingRegressor",
-    "GradientBoostingClassifier": "RandomForestClassifier",
-    "GradientBoostingRegressor": "RandomForestRegressor",
-    "ExtraTreesClassifier": "RandomForestClassifier",
-    "ExtraTreesRegressor": "RandomForestRegressor",
-    "HistGradientBoostingClassifier": "GradientBoostingClassifier",
-    "HistGradientBoostingRegressor": "GradientBoostingRegressor",
-    "LogisticRegression": "LinearSVC",
-    "LinearRegression": "Ridge",
-    "KNeighborsRegressor": "GradientBoostingRegressor",
+_MODEL_ALLOWED_KNN_PARAMS: Final[dict[str, frozenset[str]]] = {
+    # LightGBM accepts ``metric`` as a first-class estimator argument, so seeing it
+    # on an LGBM call is not a sign that KNN parameters leaked into another model.
+    "LGBMClassifier": frozenset({"metric"}),
+    "LGBMRegressor": frozenset({"metric"}),
 }
+_LIGHTGBM_AVAILABLE: Final[bool] = importlib.util.find_spec("lightgbm") is not None
+# Estimators the evaluator scores in its best model family (zero complexity penalty).
+# LightGBM leads each tuple because it is the preferred tree-based learner.
+_TREE_CLASSIFIERS: Final[tuple[str, ...]] = (
+    "LGBMClassifier",
+    "HistGradientBoostingClassifier",
+    "RandomForestClassifier",
+    "ExtraTreesClassifier",
+    "GradientBoostingClassifier",
+    "DecisionTreeClassifier",
+)
+_TREE_REGRESSORS: Final[tuple[str, ...]] = (
+    "LGBMRegressor",
+    "HistGradientBoostingRegressor",
+    "RandomForestRegressor",
+    "ExtraTreesRegressor",
+    "GradientBoostingRegressor",
+    "DecisionTreeRegressor",
+)
+# Estimators the evaluator penalises; structural mutation steers them into the
+# tree family for the matching task rather than shuffling them among themselves.
+_PENALISED_CLASSIFIERS: Final[tuple[str, ...]] = (
+    "LogisticRegression",
+    "SGDClassifier",
+    "KNeighborsClassifier",
+    "GaussianNB",
+    "LinearSVC",
+)
+_PENALISED_REGRESSORS: Final[tuple[str, ...]] = (
+    "LinearRegression",
+    "Ridge",
+    "Lasso",
+    "ElasticNet",
+    "SGDRegressor",
+    "KNeighborsRegressor",
+)
+# Classifiers that expose no ``predict_proba`` (SGDClassifier only gains it under a
+# log_loss/modified_huber loss). They may be mutated away from but are never a swap
+# target, so a structural mutation cannot break a probability-metric solution.
+_NO_PREDICT_PROBA: Final[frozenset[str]] = frozenset({"LinearSVC", "SGDClassifier"})
+
+
+def _build_model_swaps() -> dict[str, tuple[str, ...]]:
+    """Map every known estimator to the alternatives structural mutation may pick."""
+    swaps: dict[str, tuple[str, ...]] = {}
+    for family in (_TREE_CLASSIFIERS, _TREE_REGRESSORS):
+        for source in family:
+            swaps[source] = tuple(target for target in family if target != source)
+    for source in _PENALISED_CLASSIFIERS:
+        swaps[source] = _TREE_CLASSIFIERS
+    for source in _PENALISED_REGRESSORS:
+        swaps[source] = _TREE_REGRESSORS
+    return swaps
+
+
+_MODEL_SWAPS: Final[dict[str, tuple[str, ...]]] = _build_model_swaps()
 _MODEL_IMPORTS: Final[dict[str, str]] = {
     "RandomForestClassifier": "sklearn.ensemble",
     "RandomForestRegressor": "sklearn.ensemble",
@@ -279,12 +329,37 @@ _MODEL_IMPORTS: Final[dict[str, str]] = {
     "ExtraTreesRegressor": "sklearn.ensemble",
     "HistGradientBoostingClassifier": "sklearn.ensemble",
     "HistGradientBoostingRegressor": "sklearn.ensemble",
+    "DecisionTreeClassifier": "sklearn.tree",
+    "DecisionTreeRegressor": "sklearn.tree",
+    "LGBMClassifier": "lightgbm",
+    "LGBMRegressor": "lightgbm",
+    "KNeighborsClassifier": "sklearn.neighbors",
     "KNeighborsRegressor": "sklearn.neighbors",
     "LogisticRegression": "sklearn.linear_model",
     "LinearRegression": "sklearn.linear_model",
+    "SGDClassifier": "sklearn.linear_model",
+    "SGDRegressor": "sklearn.linear_model",
+    "GaussianNB": "sklearn.naive_bayes",
     "LinearSVC": "sklearn.svm",
     "Ridge": "sklearn.linear_model",
+    "Lasso": "sklearn.linear_model",
+    "ElasticNet": "sklearn.linear_model",
 }
+
+
+def _is_importable_model(model: str) -> bool:
+    """Report whether the runtime can import the module a model lives in.
+
+    @dev: |
+        Only third-party estimators can be missing; scikit-learn is a hard
+        dependency. Guarding here keeps a structural mutation from emitting a
+        solution that fails at import time.
+    """
+    if _MODEL_IMPORTS.get(model) != "lightgbm":
+        return True
+    return _LIGHTGBM_AVAILABLE
+
+
 _MODEL_FAMILY_PATTERNS: Final[tuple[tuple[str, re.Pattern[str]], ...]] = (
     ("random_forest", re.compile(r"\b(RandomForestClassifier|RandomForestRegressor)\b")),
     ("extra_trees", re.compile(r"\b(ExtraTreesClassifier|ExtraTreesRegressor)\b")),
@@ -1604,8 +1679,9 @@ class EvolverAgent(MemoryMixin):
                 continue
             if name not in _MODEL_IMPORTS:
                 continue
+            allowed = _MODEL_ALLOWED_KNN_PARAMS.get(name, frozenset())
             for keyword in node.keywords:
-                if keyword.arg in _KNN_PARAM_KEYS:
+                if keyword.arg in _KNN_PARAM_KEYS and keyword.arg not in allowed:
                     return True
         return False
 
@@ -2191,13 +2267,20 @@ class EvolverAgent(MemoryMixin):
             return "\n".join([*merged_imports, "", *body])
         return "\n".join(body)
 
-    def _swap_model_family(self, code: str) -> str:
+    def _swap_model_family(self, code: str, params: dict[str, Any]) -> str:
         ordered_swaps = sorted(_MODEL_SWAPS.items(), key=lambda item: len(item[0]), reverse=True)
-        for source, target in ordered_swaps:
+        rng = self._seeded_rng(code, params, "model_swap")
+        for source, targets in ordered_swaps:
             pattern = re.compile(rf"\b{re.escape(source)}\b")
             if not pattern.search(code):
                 continue
-            updated = pattern.sub(target, code)
+            eligible = [target for target in targets if _is_importable_model(target)]
+            if not eligible:
+                continue
+            target = rng.choice(eligible)
+            # Substitution also rewrites the source model's own import line, which would
+            # leave the target imported from the wrong module; re-route it before adding.
+            updated = self._normalize_model_imports(pattern.sub(target, code))
             module = _MODEL_IMPORTS.get(target)
             if module:
                 updated = self._ensure_import(updated, module, target)
@@ -2425,8 +2508,9 @@ class EvolverAgent(MemoryMixin):
         return self._mutate_numbers(code, rng, max_changes=max_changes, magnitude=magnitude)
 
     def _apply_structural_mutation(self, code: str, params: dict[str, Any]) -> str:
+        if (swapped := self._swap_model_family(code, params)) != code:
+            return swapped
         for mutate in (
-            self._swap_model_family,
             self._swap_scaler,
             self._inject_scaler,
             self._inject_feature_engineering,

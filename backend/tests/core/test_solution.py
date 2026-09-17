@@ -10,7 +10,14 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from agent_k.core.solution import _is_sensitive_env_key, _sanitize_env, execute_solution, parse_baseline_score
+from agent_k.core.solution import (
+    SOLUTION_SIGNATURE_LENGTH,
+    _is_sensitive_env_key,
+    _sanitize_env,
+    execute_solution,
+    parse_baseline_score,
+    solution_signature,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -42,6 +49,61 @@ class TestParseBaselineScore:
             assert result is None
         else:
             assert result == pytest.approx(expected)
+
+
+class TestSolutionSignature:
+    """Tests for formatting-insensitive solution signatures."""
+
+    _BASE = (
+        "import pandas as pd\n"
+        "import lightgbm as lgb\n"
+        "\n"
+        "train = pd.read_csv('./train.csv')\n"
+        "params = {'objective': 'regression', 'learning_rate': 0.05}\n"
+        "model = lgb.train(params, lgb.Dataset(train.drop(columns=['y']), train['y']))\n"
+    )
+
+    def test_signature_is_short_hex(self) -> None:
+        """Signatures keep the stored 12-character hex shape."""
+        signature = solution_signature(self._BASE)
+
+        assert len(signature) == SOLUTION_SIGNATURE_LENGTH
+        assert all(char in "0123456789abcdef" for char in signature)
+
+    @pytest.mark.parametrize(
+        "variant",
+        [
+            pytest.param(_BASE + "\n\n", id="trailing-blank-lines"),
+            pytest.param(_BASE.replace("'./train.csv'", '"./train.csv"'), id="quote-style"),
+            pytest.param("# tuned learning rate\n" + _BASE, id="added-comment"),
+            pytest.param(_BASE.replace("\n\n", "\n\n\n"), id="extra-blank-line"),
+            pytest.param(_BASE.replace("0.05", "(0.05)"), id="redundant-parentheses"),
+            pytest.param(_BASE.replace("./train.csv", "/kaggle/input/train.csv"), id="kaggle-input-prefix"),
+        ],
+    )
+    def test_cosmetic_edits_share_a_signature(self, variant: str) -> None:
+        """Edits that cannot change execution must not miss the evaluation cache."""
+        assert solution_signature(variant) == solution_signature(self._BASE)
+
+    @pytest.mark.parametrize(
+        "variant",
+        [
+            pytest.param(_BASE.replace("0.05", "0.01"), id="hyperparameter"),
+            pytest.param(_BASE.replace("'regression'", "'binary'"), id="objective"),
+            pytest.param(_BASE + "model.save_model('model.txt')\n", id="added-statement"),
+            pytest.param('"""Docstring."""\n' + _BASE, id="added-docstring"),
+        ],
+    )
+    def test_semantic_edits_get_distinct_signatures(self, variant: str) -> None:
+        """Anything that can change execution must be evaluated on its own."""
+        assert solution_signature(variant) != solution_signature(self._BASE)
+
+    def test_unparsable_code_still_gets_a_stable_signature(self) -> None:
+        """Malformed candidates fall back to whitespace normalization."""
+        broken = "def f(:\n    return 1\n"
+
+        assert solution_signature(broken) == solution_signature(broken + "\n\n")
+        assert solution_signature(broken) != solution_signature("def g(:\n    return 1\n")
 
 
 class TestEnvSanitization:

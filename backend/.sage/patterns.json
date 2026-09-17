@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-09-17T02:14:56.069614+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -563,7 +563,7 @@
     "execution-result": [
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 82,
+        "line": 92,
         "rationale": "Standardizes subprocess outputs for solution runs.",
         "source": "agent_k/core/solution.py",
         "violations": [
@@ -1354,7 +1354,7 @@
     "tracking-service": [
       {
         "component": "agent_k.core.tracking:HintEffectivenessTracker",
-        "line": 728,
+        "line": 746,
         "rationale": "Centralizes hint success tracking and suppression.",
         "source": "agent_k/core/tracking.py",
         "violations": [

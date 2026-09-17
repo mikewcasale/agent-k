@@ -84,7 +84,7 @@ from ..core.models import (
     MissionCriteria,
     ResearchFindings,
 )
-from ..core.solution import execute_solution, parse_baseline_score
+from ..core.solution import execute_solution, parse_baseline_score, solution_signature
 from ..core.strategy import apply_solution_policy, build_fitness_policy, build_problem_profile, build_technique_policy
 from ..core.tracking import (
     ExperimentRecord,
@@ -572,7 +572,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                                 "returncode": execution.returncode,
                             },
                             cv_score=baseline_score,
-                            code_signature=hashlib.sha256(prototype_code.encode()).hexdigest()[:12],
+                            code_signature=solution_signature(prototype_code),
                             dataset_fingerprint=competition_id,
                         )
                     )
@@ -1845,7 +1845,7 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         public_score=state.final_score,
                         submission_id=submission.id,
                         rank=state.final_rank,
-                        code_signature=hashlib.sha256(best_code.encode()).hexdigest()[:12],
+                        code_signature=solution_signature(best_code),
                         dataset_fingerprint=competition_id,
                     )
                 )

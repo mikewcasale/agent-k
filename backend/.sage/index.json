@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-09-17T02:14:56.069025+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1094,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -4270,45 +4270,57 @@
       },
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 84,
+        "line": 94,
         "name": "notice",
         "value": "Result of executing a solution script."
       },
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 87,
+        "line": 97,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 90,
+        "line": 100,
         "name": "pattern",
         "value": "{\"name\": \"execution-result\", \"rationale\": \"Standardizes subprocess outputs for solution runs.\", \"violations\": \"Tuple returns drop context for debugging.\"}"
       },
       {
         "component": "agent_k.core.solution:execute_solution",
-        "line": 115,
+        "line": 125,
         "name": "notice",
         "value": "Runs Python code in an isolated subprocess with timeout support."
       },
       {
         "component": "agent_k.core.solution:execute_solution",
-        "line": 118,
+        "line": 128,
         "name": "dev",
         "value": "Normalizes Kaggle paths, sanitizes environment, and captures output.\nSupports builtin code execution tool or local subprocess execution."
       },
       {
         "component": "agent_k.core.solution:parse_baseline_score",
-        "line": 136,
+        "line": 146,
         "name": "notice",
         "value": "Extracts numeric score from \"Baseline ... score: X.XX\" pattern."
       },
       {
         "component": "agent_k.core.solution:parse_baseline_score",
-        "line": 139,
+        "line": 149,
         "name": "dev",
         "value": "Returns None if pattern not found or value cannot be parsed."
+      },
+      {
+        "component": "agent_k.core.solution:solution_signature",
+        "line": 163,
+        "name": "notice",
+        "value": "Hashes the canonical form of solution code so that two programs which\nexecute identically share one signature."
+      },
+      {
+        "component": "agent_k.core.solution:solution_signature",
+        "line": 167,
+        "name": "dev",
+        "value": "Callers use this as the experiment-tracker cache key, so the signature\nmust collapse exactly the differences that do not change execution:\ncomments, blank lines, indentation width, quote style, redund"
       }
     ],
     "agent_k/core/strategy.py": [
@@ -4645,56 +4657,68 @@
         "value": "[\"Database schema is initialized before writes.\"]"
       },
       {
+        "component": "agent_k.core.tracking:ExperimentTracker.find_latest_by_code_signature",
+        "line": 570,
+        "name": "notice",
+        "value": "Returns the newest record matching the signature, optionally\nrestricted to a single mission phase."
+      },
+      {
+        "component": "agent_k.core.tracking:ExperimentTracker.find_latest_by_code_signature",
+        "line": 574,
+        "name": "dev",
+        "value": "The same code is recorded by several phases, and only some of them\ncarry evaluation metrics. Callers that need those metrics pass\n``phase`` so a later metric-free row (a submission, say) cannot\nshadow"
+      },
+      {
         "component": "agent_k.core.tracking:HintEffectivenessTracker",
-        "line": 730,
+        "line": 748,
         "name": "notice",
         "value": "Track and aggregate hint performance across generations."
       },
       {
         "component": "agent_k.core.tracking:HintEffectivenessTracker",
-        "line": 733,
+        "line": 751,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.tracking:HintEffectivenessTracker",
-        "line": 736,
+        "line": 754,
         "name": "pattern",
         "value": "{\"name\": \"tracking-service\", \"rationale\": \"Centralizes hint success tracking and suppression.\", \"violations\": \"Distributed tracking makes suppression inconsistent.\"}"
       },
       {
         "component": "agent_k.core.tracking:create_experiment_tracker",
-        "line": 862,
+        "line": 880,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.core.tracking:create_experiment_tracker",
-        "line": 865,
+        "line": 883,
         "name": "notice",
         "value": "Returns a tracker configured with the default database path."
       },
       {
         "component": "agent_k.core.tracking:create_experiment_tracker",
-        "line": 868,
+        "line": 886,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.core.tracking:ExperimentTracker\", \"rationale\": \"Centralizes tracker defaults and storage path.\", \"singleton\": false, \"cache_key\": \"db_path\"}"
       },
       {
         "component": "agent_k.core.tracking:create_experiment_tracker",
-        "line": 874,
+        "line": 892,
         "name": "canonical_home",
         "value": "{\"for\": [\"experiment tracker construction\"], \"notes\": \"Use create_experiment_tracker to ensure defaults.\"}"
       },
       {
         "component": "agent_k.core.tracking:extract_solution_metadata",
-        "line": 885,
+        "line": 903,
         "name": "notice",
         "value": "Extract model and feature metadata from solution code."
       },
       {
         "component": "agent_k.core.tracking:extract_solution_metadata",
-        "line": 888,
+        "line": 906,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       }

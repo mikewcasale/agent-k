@@ -82,7 +82,7 @@ from agent_k.core.constants import (
 from agent_k.core.data import CompetitionSchema, stage_competition_data
 from agent_k.core.hints import DatasetProfile, PreprocessingHint, compute_hint_priority, detect_applied_hints
 from agent_k.core.sage import Doc, Range
-from agent_k.core.solution import execute_solution
+from agent_k.core.solution import execute_solution, solution_signature
 from agent_k.core.strategy import (
     FitnessInput,
     FitnessPolicy,
@@ -1574,7 +1574,7 @@ class EvolverAgent(MemoryMixin):
         return "unknown"
 
     def _solution_signature(self, code: str) -> str:
-        return hashlib.sha256(code.encode()).hexdigest()[:12]
+        return solution_signature(code)
 
     def _is_valid_python(self, code: str) -> bool:
         try:
@@ -1811,7 +1811,7 @@ class EvolverAgent(MemoryMixin):
         code_signature = self._solution_signature(solution_code)
         tracker = ctx.deps.experiment_tracker
         if tracker is not None:
-            cached = tracker.find_latest_by_code_signature(ctx.deps.competition.id, code_signature)
+            cached = tracker.find_latest_by_code_signature(ctx.deps.competition.id, code_signature, phase="evolution")
             if cached is not None:
                 cached_stage = cached.metrics.get("stage")
                 if cached_stage in {"full", "cached"} and (

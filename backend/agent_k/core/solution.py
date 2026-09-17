@@ -29,8 +29,10 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
+import ast
 import asyncio
 import base64
+import hashlib
 import os
 import re
 import signal
@@ -49,9 +51,17 @@ from agent_k.infra.providers import get_model
 if TYPE_CHECKING:
     from pathlib import Path
 
-__all__ = ("BASELINE_SCORE_PATTERN", "ExecutionResult", "execute_solution", "parse_baseline_score")
+__all__ = (
+    "BASELINE_SCORE_PATTERN",
+    "SOLUTION_SIGNATURE_LENGTH",
+    "ExecutionResult",
+    "execute_solution",
+    "parse_baseline_score",
+    "solution_signature",
+)
 
 BASELINE_SCORE_PATTERN: Final[re.Pattern[str]] = re.compile(r"Baseline .*? score:\s*(-?[0-9.]+)", re.IGNORECASE)
+SOLUTION_SIGNATURE_LENGTH: Final[int] = 12
 _CODE_EXECUTION_SYSTEM_PROMPT: Final[str] = (
     "You are a code execution runner. Always call the code_execution tool with the exact "
     "Python code provided by the user message, without modification. After the tool "
@@ -145,6 +155,39 @@ def parse_baseline_score(output: str) -> float | None:
         except ValueError:
             pass
     return None
+
+
+def solution_signature(code: str) -> str:
+    """Return a stable identity for solution code that ignores cosmetic edits.
+
+    @notice: |
+        Hashes the canonical form of solution code so that two programs which
+        execute identically share one signature.
+
+    @dev: |
+        Callers use this as the experiment-tracker cache key, so the signature
+        must collapse exactly the differences that do not change execution:
+        comments, blank lines, indentation width, quote style, redundant
+        parentheses, and the Kaggle path rewrite that ``execute_solution``
+        applies before running the script. Docstrings are preserved because
+        they survive into the running module.
+
+        The canonical form is ``ast.unparse(ast.parse(...))``, which is stable
+        within a CPython release but may shift across interpreter upgrades. A
+        shift only invalidates previously cached signatures (a cache miss and a
+        re-evaluation), never produces a wrong hit. Code that does not parse
+        falls back to whitespace normalization so malformed candidates still
+        get a usable key.
+    """
+    return hashlib.sha256(_canonical_source(code).encode("utf-8")).hexdigest()[:SOLUTION_SIGNATURE_LENGTH]
+
+
+def _canonical_source(code: str) -> str:
+    normalized = _normalize_kaggle_paths(code)
+    try:
+        return ast.unparse(ast.parse(normalized))
+    except (SyntaxError, ValueError, RecursionError, MemoryError):
+        return "\n".join(line.rstrip() for line in normalized.splitlines() if line.strip())
 
 
 def _normalize_kaggle_paths(code: str) -> str:

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Callers use this as the experiment-tracker cache key, so the signature\nmust collapse exactly the differences that do not change execution:\ncomments, blank lines, indentation width, quote style, redundant\nparentheses, and the Kaggle path rewrite that ``execute_solution``\napplies before running the script. Docstrings are preserved because\nthey survive into the running module.\n\nThe canonical form is ``ast.unparse(ast.parse(...))``, which is stable\nwithin a CPython release but may shift across interpreter upgrades. A\nshift only invalidates previously cached signatures (a cache miss and a\nre-evaluation), never produces a wrong hit. Code that does not parse\nfalls back to whitespace normalization so malformed candidates still\nget a usable key.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.solution:solution_signature",
+  "line": 161,
+  "notice": "Hashes the canonical form of solution code so that two programs which\nexecute identically share one signature.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/solution.py",
+  "summary": "Return a stable identity for solution code that ignores cosmetic edits.",
+  "type": "function"
+}

@@ -562,17 +562,35 @@ class ExperimentTracker:
             "recommendations": recommendations,
         }
 
-    def find_latest_by_code_signature(self, competition_id: str, code_signature: str) -> ExperimentRecord | None:
-        """Return the most recent record for a code signature."""
+    def find_latest_by_code_signature(
+        self, competition_id: str, code_signature: str, *, phase: str | None = None
+    ) -> ExperimentRecord | None:
+        """Return the most recent record for a code signature.
+
+        @notice: |
+            Returns the newest record matching the signature, optionally
+            restricted to a single mission phase.
+
+        @dev: |
+            The same code is recorded by several phases, and only some of them
+            carry evaluation metrics. Callers that need those metrics pass
+            ``phase`` so a later metric-free row (a submission, say) cannot
+            shadow the evaluation row they are looking for.
+        """
+        clauses = "competition_id = ? AND code_signature = ?"
+        params: list[str] = [competition_id, code_signature]
+        if phase is not None:
+            clauses += " AND phase = ?"
+            params.append(phase)
         with self._connect() as conn:
             row = conn.execute(
                 f"""
                 SELECT * FROM {self._table_name}
-                WHERE competition_id = ? AND code_signature = ?
+                WHERE {clauses}
                 ORDER BY created_at DESC
                 LIMIT 1
                 """,
-                (competition_id, code_signature),
+                tuple(params),
             ).fetchone()
         return _row_to_record(row) if row else None
 

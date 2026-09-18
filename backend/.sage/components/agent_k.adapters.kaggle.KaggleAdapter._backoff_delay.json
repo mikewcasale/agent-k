@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.adapters.kaggle:KaggleAdapter.search_competitions",
-  "line": 215,
+  "id": "agent_k.adapters.kaggle:KaggleAdapter._backoff_delay",
+  "line": 562,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/adapters/kaggle.py",
-  "summary": "Search Kaggle competitions.",
+  "summary": "Compute a jittered exponential backoff delay bounded by max_retry_delay.",
   "type": "method"
 }

@@ -40,6 +40,8 @@ import os
 import re
 import time
 import uuid
+from collections import deque
+from contextlib import aclosing
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Annotated, Any, Final, Literal
@@ -61,7 +63,7 @@ from agent_k.infra.providers import get_model
 from agent_k.mission.persistence import CHECKPOINT_DIR, MissionPersistence, create_persistence
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterator
+    from collections.abc import AsyncGenerator, AsyncIterator
 
     from agent_k.mission.state import MissionResult, MissionState
 
@@ -117,6 +119,12 @@ _ANTI_KEYWORDS: Final[tuple[str, ...]] = ("what is", "explain", "how does", "tel
 _PRIZE_PATTERN: Final[re.Pattern[str]] = re.compile(r"\$([\d,]+(?:\.\d+)?)\s*(k|m|thousand|million)?\b")
 _DAYS_PATTERN: Final[re.Pattern[str]] = re.compile(r"(\d+)\s*(days?|weeks?)")
 _PERCENTILE_PATTERN: Final[re.Pattern[str]] = re.compile(r"top\s+(\d+)%")
+_EVENT_HISTORY_LIMIT: Final[int] = 512
+# Recent events retained for replay when an SSE client connects or reconnects.
+_SUBSCRIBER_QUEUE_LIMIT: Final[int] = 2048
+# Per-subscriber backlog before the oldest pending events are dropped.
+_STREAM_HEARTBEAT_SECONDS: Final[float] = 30.0
+# Idle interval after which an SSE comment keeps the connection alive.
 
 INTENT_SYSTEM_PROMPT: Final[
     str
@@ -327,12 +335,64 @@ intent_agent: Final[Agent[None, MissionIntentOutput]] = Agent(
 )
 
 
+@dataclass(slots=True, eq=False)
+class _Subscriber:
+    """Per-client delivery queue for the SSE fan-out.
+
+    @notice: |
+        Per-client delivery queue for the SSE fan-out.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: subscriber-queue
+            rationale: "Gives every SSE client an independent bounded backlog."
+            violations: "A shared queue lets one client consume another client's events."
+
+        @invariants:
+            - "queue never exceeds _SUBSCRIBER_QUEUE_LIMIT entries."
+    """
+
+    queue: asyncio.Queue[AgentKEvent | None] = field(
+        default_factory=lambda: asyncio.Queue(maxsize=_SUBSCRIBER_QUEUE_LIMIT)
+    )
+    dropped: int = 0
+
+    def offer(self, item: Annotated[AgentKEvent | None, Doc("Event to deliver, or None to end the stream.")]) -> None:
+        """Enqueue an item, evicting the oldest entry when the backlog is full.
+
+        @notice: |
+            Enqueues without blocking, dropping the oldest event under backpressure.
+
+        @dev: |
+            Producers must never await a slow SSE client, so a full queue evicts
+            its oldest entry instead of applying backpressure to the mission.
+
+        @effects:
+            state:
+                - subscriber queue
+                - dropped counter
+        """
+        while True:
+            try:
+                self.queue.put_nowait(item)
+                return
+            except asyncio.QueueFull:
+                try:
+                    self.queue.get_nowait()
+                except asyncio.QueueEmpty:  # pragma: no cover - concurrent drain
+                    continue
+                self.dropped += 1
+
+
 @dataclass(slots=True)
 class EventEmitter:
     """Emitter for AG-UI events.
 
         Provides methods for emitting various event types during mission execution.
-        Events are queued and streamed to the frontend via SSE.
+        Events are broadcast to every connected SSE client and retained in a
+        bounded history buffer so a reconnecting client can replay recent activity.
 
         Per spec Section 8, all emissions are traced via Logfire.
 
@@ -350,13 +410,16 @@ class EventEmitter:
         @concurrency:
             model: asyncio
             safe: false
-            reason: "Mutates internal queue and closed state."
+            reason: "Mutates the subscriber set, history buffer and closed state."
 
         @invariants:
             - "Events are only enqueued when not closed."
+            - "History never exceeds _EVENT_HISTORY_LIMIT entries."
+            - "Emission never blocks on a slow or absent SSE client."
     """
 
-    _queue: asyncio.Queue[AgentKEvent] = field(default_factory=asyncio.Queue)
+    _history: deque[AgentKEvent] = field(default_factory=lambda: deque(maxlen=_EVENT_HISTORY_LIMIT))
+    _subscribers: set[_Subscriber] = field(default_factory=set)
     _closed: bool = False
 
     async def emit(
@@ -367,7 +430,16 @@ class EventEmitter:
         """Emit an event to the stream.
 
         @notice: |
-            Enqueues an event for SSE streaming.
+            Broadcasts an event to every connected SSE client.
+
+        @dev: |
+            Retains the event in the bounded history buffer so late subscribers
+            replay recent activity, then fans out without awaiting any client.
+
+        @effects:
+            state:
+                - event history
+                - subscriber queues
         """
         if self._closed:
             return
@@ -377,25 +449,86 @@ class EventEmitter:
         # Log event emission
         logfire.debug("event_emitted", event_type=event_type, data_keys=list(data.keys()))
 
-        await self._queue.put(event)
+        self._history.append(event)
+        for subscriber in tuple(self._subscribers):
+            subscriber.offer(event)
 
-    async def stream(self) -> AsyncIterator[str]:
+    async def stream(self) -> AsyncGenerator[str, None]:
         """Stream events as SSE.
 
         Yields:
             SSE-formatted event strings.
+
+        @notice: |
+            Yields buffered history followed by live events until the emitter closes.
+
+        @dev: |
+            Each caller gets its own bounded queue, so concurrent clients receive
+            the same events instead of competing for a shared queue. Subscription
+            happens on first advance and is always released afterwards, so a
+            disconnected client stops accumulating events for the rest of the
+            mission. Events emitted before the first advance are still delivered
+            from the retained history.
+
+        @effects:
+            state:
+                - subscriber registration
         """
-        while not self._closed:
-            try:
-                event = await asyncio.wait_for(self._queue.get(), timeout=30)
-                yield event.to_sse()
-            except TimeoutError:
-                # Send heartbeat to keep connection alive
-                yield ": heartbeat\n\n"
+        subscriber = self._subscribe()
+        try:
+            while True:
+                try:
+                    item = await asyncio.wait_for(subscriber.queue.get(), timeout=_STREAM_HEARTBEAT_SECONDS)
+                except TimeoutError:
+                    if self._closed:
+                        return
+                    # Send heartbeat to keep connection alive
+                    yield ": heartbeat\n\n"
+                    continue
+
+                if item is None:
+                    return
+                yield item.to_sse()
+        finally:
+            self._unsubscribe(subscriber)
 
     def close(self) -> None:
-        """Close the event stream."""
+        """Close the event stream.
+
+        @notice: |
+            Stops further emissions and lets subscribers drain pending events.
+
+        @dev: |
+            A sentinel is appended to every subscriber queue so terminal events
+            such as mission-complete are delivered before the stream ends.
+
+        @effects:
+            state:
+                - closed flag
+                - subscriber queues
+        """
+        if self._closed:
+            return
         self._closed = True
+        for subscriber in tuple(self._subscribers):
+            subscriber.offer(None)
+
+    def _subscribe(self) -> _Subscriber:
+        """Register a subscriber pre-loaded with the retained event history."""
+        subscriber = _Subscriber()
+        for event in self._history:
+            subscriber.offer(event)
+        if self._closed:
+            subscriber.offer(None)
+        else:
+            self._subscribers.add(subscriber)
+        return subscriber
+
+    def _unsubscribe(self, subscriber: Annotated[_Subscriber, Doc("Subscriber to release.")]) -> None:
+        """Release a subscriber and report any events it missed."""
+        self._subscribers.discard(subscriber)
+        if subscriber.dropped:
+            logfire.warning("event_stream_backlog_dropped", dropped=subscriber.dropped)
 
     async def emit_phase_start(self, phase: str, objectives: list[str]) -> None:
         """Emit phase start event."""
@@ -896,34 +1029,35 @@ async def transform_to_vercel_stream(emitter: EventEmitter) -> AsyncIterator[str
         See module for behavior details and invariants.
     """
     try:
-        async for event_str in emitter.stream():
-            # Parse the SSE formatted event
-            # Event comes as "data: {json}\n\n"
-            if not event_str.startswith("data: "):
-                continue
+        async with aclosing(emitter.stream()) as events:
+            async for event_str in events:
+                # Parse the SSE formatted event
+                # Event comes as "data: {json}\n\n"
+                if not event_str.startswith("data: "):
+                    continue
 
-            json_str = event_str[6:].strip()
-            if not json_str:
-                continue
+                json_str = event_str[6:].strip()
+                if not json_str:
+                    continue
 
-            try:
-                event_data = json.loads(json_str)
-                event_type = event_data.get("type")
+                try:
+                    event_data = json.loads(json_str)
+                    event_type = event_data.get("type")
 
-                if event_type in AGENT_K_EVENT_TYPES:
-                    # Transform to Vercel AI data event format
-                    data_part = json.dumps(
-                        {
-                            "type": event_type,
-                            "data": event_data.get("data", {}),
-                            "timestamp": event_data.get("timestamp"),
-                        }
-                    )
-                    yield f"8:{data_part}\n"
+                    if event_type in AGENT_K_EVENT_TYPES:
+                        # Transform to Vercel AI data event format
+                        data_part = json.dumps(
+                            {
+                                "type": event_type,
+                                "data": event_data.get("data", {}),
+                                "timestamp": event_data.get("timestamp"),
+                            }
+                        )
+                        yield f"8:{data_part}\n"
 
-            except json.JSONDecodeError:
-                # Skip malformed events
-                continue
+                except json.JSONDecodeError:
+                    # Skip malformed events
+                    continue
 
     except Exception as exc:
         logfire.error("vercel_stream_transform_failed", error=str(exc))
@@ -1311,10 +1445,11 @@ def create_app() -> FastAPI:
         emitter = missions[mission_id]["emitter"]
 
         async def event_generator() -> AsyncIterator[str]:
-            async for event in emitter.stream():
-                if await request.is_disconnected():
-                    break
-                yield event
+            async with aclosing(emitter.stream()) as events:
+                async for event in events:
+                    if await request.is_disconnected():
+                        break
+                    yield event
 
         return StreamingResponse(
             event_generator(),

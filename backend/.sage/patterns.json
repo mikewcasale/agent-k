@@ -1,6 +1,6 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
-  "pattern_count": 57,
+  "generated": "2026-09-18T04:12:02.547387+00:00",
+  "pattern_count": 58,
   "patterns": {
     "adapter": [
       {
@@ -96,7 +96,7 @@
     "classifier": [
       {
         "component": "agent_k.ui.agui:IntentClassifier",
-        "line": 612,
+        "line": 745,
         "rationale": "Dataclass for LLM-backed intent classification.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -116,7 +116,7 @@
     "context-model": [
       {
         "component": "agent_k.ui.agui:TaskEmissionContext",
-        "line": 546,
+        "line": 679,
         "rationale": "Async context manager for task lifecycle events.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -346,7 +346,7 @@
     "event-emitter": [
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 332,
+        "line": 391,
         "rationale": "Centralizes event streaming for the UI.",
         "source": "agent_k/ui/agui.py",
         "violations": [
@@ -357,7 +357,7 @@
     "event-model": [
       {
         "component": "agent_k.ui.agui:AgentKEvent",
-        "line": 283,
+        "line": 291,
         "rationale": "Frozen Pydantic model for SSE event streaming.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -701,7 +701,7 @@
     "handler": [
       {
         "component": "agent_k.ui.agui:ChatHandler",
-        "line": 699,
+        "line": 832,
         "rationale": "Dataclass coordinating intent classification and parsing.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -1037,7 +1037,7 @@
       },
       {
         "component": "agent_k.ui.agui:MissionIntentOutput",
-        "line": 308,
+        "line": 316,
         "rationale": "Frozen Pydantic model for agent structured output.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -1046,7 +1046,7 @@
     "parser": [
       {
         "component": "agent_k.ui.agui:MissionCriteriaParser",
-        "line": 667,
+        "line": 800,
         "rationale": "Dataclass for extracting mission criteria from intent.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -1156,21 +1156,21 @@
     "request-model": [
       {
         "component": "agent_k.ui.agui:MissionRequest",
-        "line": 218,
+        "line": 226,
         "rationale": "Frozen Pydantic model for mission start requests.",
         "source": "agent_k/ui/agui.py",
         "violations": []
       },
       {
         "component": "agent_k.ui.agui:CompetitionSearchRequest",
-        "line": 243,
+        "line": 251,
         "rationale": "Frozen Pydantic model for competition search requests.",
         "source": "agent_k/ui/agui.py",
         "violations": []
       },
       {
         "component": "agent_k.ui.agui:CompetitionFetchRequest",
-        "line": 265,
+        "line": 273,
         "rationale": "Frozen Pydantic model for competition fetch requests.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -1179,7 +1179,7 @@
     "result-model": [
       {
         "component": "agent_k.ui.agui:MissionIntentResult",
-        "line": 593,
+        "line": 726,
         "rationale": "Dataclass for intent classification result.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -1339,6 +1339,17 @@
         "source": "agent_k/mission/persistence.py",
         "violations": [
           "Ad-hoc persistence complicates recovery."
+        ]
+      }
+    ],
+    "subscriber-queue": [
+      {
+        "component": "agent_k.ui.agui:_Subscriber",
+        "line": 340,
+        "rationale": "Gives every SSE client an independent bounded backlog.",
+        "source": "agent_k/ui/agui.py",
+        "violations": [
+          "A shared queue lets one client consume another client's events."
         ]
       }
     ],

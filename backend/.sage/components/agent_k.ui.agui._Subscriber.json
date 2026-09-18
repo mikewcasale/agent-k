@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:_Subscriber",
+  "line": 340,
+  "notice": "Per-client delivery queue for the SSE fan-out.",
+  "pattern": {
+    "name": "subscriber-queue",
+    "rationale": "Gives every SSE client an independent bounded backlog.",
+    "violations": "A shared queue lets one client consume another client's events."
+  },
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Per-client delivery queue for the SSE fan-out.",
+  "type": "class"
+}

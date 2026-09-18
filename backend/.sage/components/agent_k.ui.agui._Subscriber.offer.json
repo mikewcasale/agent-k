@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Producers must never await a slow SSE client, so a full queue evicts\nits oldest entry instead of applying backpressure to the mission.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:_Subscriber.offer",
+  "line": 363,
+  "notice": "Enqueues without blocking, dropping the oldest event under backpressure.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Enqueue an item, evicting the oldest entry when the backlog is full.",
+  "type": "method"
+}

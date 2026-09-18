@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.ui.agui:create_app.abort_mission",
-  "line": 1501,
+  "id": "agent_k.ui.agui:EventEmitter._subscribe",
+  "line": 517,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/ui/agui.py",
-  "summary": "Abort an active mission.",
-  "type": "function"
+  "summary": "Register a subscriber pre-loaded with the retained event history.",
+  "type": "method"
 }

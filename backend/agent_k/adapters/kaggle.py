@@ -36,11 +36,16 @@ from __future__ import annotations as _annotations
 
 import asyncio
 import csv
+import hashlib
 import io
+import math
+import os
+import random
 import re
 import zipfile
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
 from urllib.parse import quote
@@ -68,6 +73,15 @@ __all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
+_IDEMPOTENT_METHODS: Final[frozenset[str]] = frozenset({"GET", "HEAD", "OPTIONS"})
+_RETRYABLE_STATUS_CODES: Final[frozenset[int]] = frozenset({500, 502, 503, 504})
+_TOO_MANY_REQUESTS: Final[int] = 429
+_FORBIDDEN: Final[int] = 403
+_CLIENT_ERROR_FLOOR: Final[int] = 400
+_DEFAULT_RETRY_AFTER_SECONDS: Final[float] = 60.0
+_PARTIAL_PREFIX: Final[str] = ".dl-"
+_PARTIAL_SUFFIX: Final[str] = ".part"
+_IDENTITY_ENCODINGS: Final[frozenset[str]] = frozenset({"", "identity"})
 
 
 class KaggleSettings(BaseSettings):
@@ -105,7 +119,8 @@ class KaggleSettings(BaseSettings):
     base_url: str = Field(default="https://www.kaggle.com/api/v1", description="Base URL for Kaggle API")
     timeout: int = Field(default=30, ge=1, description="HTTP timeout in seconds")
     max_retries: int = Field(default=3, ge=0, description="Maximum retry attempts for failed requests")
-    rate_limit_delay: float = Field(default=1.0, ge=0.0, description="Delay between rate-limited requests (seconds)")
+    rate_limit_delay: float = Field(default=1.0, ge=0.0, description="Base backoff delay between retries (seconds)")
+    max_retry_delay: float = Field(default=60.0, ge=0.0, description="Upper bound for a single retry sleep (seconds)")
     dry_run: bool = Field(default=False, description="Skip Kaggle submissions when enabled")
 
 
@@ -421,39 +436,153 @@ class KaggleAdapter(PlatformAdapter):
                 if not file_url:
                     file_url = f"/competitions/data/download/{competition_id}/{quote(file_name)}"
 
-                file_path = dest_path / file_name
-                async with self._client.stream("GET", file_url, follow_redirects=True) as file_response:
-                    self._raise_rules_not_accepted(file_response, competition_id)
-                    file_response.raise_for_status()
-                    with file_path.open("wb") as handle:
-                        async for chunk in file_response.aiter_bytes():
-                            handle.write(chunk)
+                file_path = _resolve_download_path(dest_path, file_name)
+                await self._download_file(file_url, file_path, competition_id)
                 downloaded.append(str(file_path))
 
             return downloaded
 
-    async def _request(self, method: str, path: str, **kwargs: Any) -> httpx.Response:
-        """Make rate-limited request to Kaggle API."""
+    async def _download_file(self, file_url: str, destination: Path, competition_id: str) -> None:
+        """Download one competition file, retrying transport failures and truncated bodies.
+
+        Bytes land in a hidden sibling file and are only promoted to the final name once the
+        body is complete, so a failed transfer can never be mistaken for usable competition data.
+        The staging name is derived from a digest so a leftover partial from a crashed run
+        cannot satisfy a ``train``/``test``/``submission`` name check either.
+        """
+        attempts = self.config.max_retries + 1
+        partial = _partial_path(destination)
+
+        for attempt in range(attempts):
+            final_attempt = attempt == attempts - 1
+            try:
+                written, expected = await self._stream_to_file(file_url, partial, competition_id)
+            except RateLimitError as exc:
+                partial.unlink(missing_ok=True)
+                retry_after = float(exc.retry_after or _DEFAULT_RETRY_AFTER_SECONDS)
+                if final_attempt or retry_after > self.config.max_retry_delay:
+                    raise
+                logfire.warning("kaggle_download_rate_limited", file=destination.name, retry_after=retry_after)
+                await asyncio.sleep(max(retry_after, self._backoff_delay(attempt)))
+                continue
+            except httpx.HTTPError as exc:
+                partial.unlink(missing_ok=True)
+                if final_attempt:
+                    raise PlatformConnectionError("kaggle", f"Download failed for {destination.name}: {exc}") from exc
+                logfire.warning("kaggle_download_retry", file=destination.name, attempt=attempt + 1, error=str(exc))
+                await asyncio.sleep(self._backoff_delay(attempt))
+                continue
+
+            if expected is not None and written != expected:
+                partial.unlink(missing_ok=True)
+                message = f"Truncated download for {destination.name}: {written} of {expected} bytes"
+                if final_attempt:
+                    raise PlatformConnectionError("kaggle", message)
+                logfire.warning(
+                    "kaggle_download_truncated",
+                    file=destination.name,
+                    written=written,
+                    expected=expected,
+                    attempt=attempt + 1,
+                )
+                await asyncio.sleep(self._backoff_delay(attempt))
+                continue
+
+            os.replace(partial, destination)
+            return
+
+        raise PlatformConnectionError("kaggle", f"Download failed for {destination.name}")
+
+    async def _stream_to_file(self, file_url: str, partial: Path, competition_id: str) -> tuple[int, int | None]:
+        """Stream a single response body into ``partial`` and report written/expected byte counts."""
+        written = 0
         async with self._rate_limit_semaphore:
-            for attempt in range(self.config.max_retries):
-                try:
-                    response = await self._client.request(method, path, **kwargs)
+            async with self._client.stream("GET", file_url, follow_redirects=True) as response:
+                if response.status_code >= _CLIENT_ERROR_FLOOR:
+                    await response.aread()
+                    self._raise_rules_not_accepted(response, competition_id)
+                    if response.status_code == _TOO_MANY_REQUESTS:
+                        retry_after = self._retry_after_seconds(response)
+                        raise RateLimitError("kaggle", "Rate limit exceeded", retry_after=math.ceil(retry_after))
+                    response.raise_for_status()
 
-                    if response.status_code == 429:
-                        retry_after = int(response.headers.get("Retry-After", 60))
-                        raise RateLimitError("kaggle", "Rate limit exceeded", retry_after=retry_after)
+                with partial.open("wb") as handle:
+                    async for chunk in response.aiter_bytes():
+                        handle.write(chunk)
+                        written += len(chunk)
 
-                    return response
+                return written, _expected_content_length(response)
 
-                except httpx.HTTPError as exc:
-                    if attempt == self.config.max_retries - 1:
-                        raise PlatformConnectionError("kaggle", f"Kaggle API error: {exc}") from exc
-                    await asyncio.sleep(self.config.rate_limit_delay * (attempt + 1))
+    async def _request(self, method: str, path: str, **kwargs: Any) -> httpx.Response:
+        """Make a rate-limited Kaggle API request with bounded retries."""
+        async with self._rate_limit_semaphore:
+            return await self._request_with_retries(method, path, **kwargs)
 
-            raise PlatformConnectionError("kaggle", "Max retries exceeded")
+    async def _request_with_retries(self, method: str, path: str, **kwargs: Any) -> httpx.Response:
+        """Issue a request, retrying transient failures within the configured budget.
+
+        Transport errors and 5xx responses are only retried for idempotent methods so a
+        submission POST is never replayed. A 429 is retried for any method because the
+        request was rejected before it was processed.
+        """
+        attempts = self.config.max_retries + 1
+        idempotent = method.upper() in _IDEMPOTENT_METHODS
+
+        for attempt in range(attempts):
+            final_attempt = attempt == attempts - 1
+            try:
+                response = await self._client.request(method, path, **kwargs)
+            except httpx.HTTPError as exc:
+                if final_attempt or not idempotent:
+                    raise PlatformConnectionError("kaggle", f"Kaggle API error: {exc}") from exc
+                logfire.warning("kaggle_request_retry", method=method, path=path, attempt=attempt + 1, error=str(exc))
+                await asyncio.sleep(self._backoff_delay(attempt))
+                continue
+
+            if response.status_code == _TOO_MANY_REQUESTS:
+                retry_after = self._retry_after_seconds(response)
+                if final_attempt or retry_after > self.config.max_retry_delay:
+                    raise RateLimitError("kaggle", "Rate limit exceeded", retry_after=math.ceil(retry_after))
+                logfire.warning("kaggle_rate_limited", path=path, retry_after=retry_after, attempt=attempt + 1)
+                await asyncio.sleep(max(retry_after, self._backoff_delay(attempt)))
+                continue
+
+            if idempotent and not final_attempt and response.status_code in _RETRYABLE_STATUS_CODES:
+                logfire.warning(
+                    "kaggle_server_error_retry", path=path, status_code=response.status_code, attempt=attempt + 1
+                )
+                await asyncio.sleep(self._backoff_delay(attempt))
+                continue
+
+            return response
+
+        raise PlatformConnectionError("kaggle", "Max retries exceeded")
+
+    def _backoff_delay(self, attempt: int) -> float:
+        """Compute a jittered exponential backoff delay bounded by max_retry_delay."""
+        base = self.config.rate_limit_delay * float(2**attempt)
+        jitter = random.uniform(0.0, self.config.rate_limit_delay)
+        return min(base + jitter, self.config.max_retry_delay)
+
+    @staticmethod
+    def _retry_after_seconds(response: httpx.Response) -> float:
+        """Parse a Retry-After header expressed as seconds or as an HTTP date."""
+        raw = response.headers.get("Retry-After", "").strip()
+        if not raw:
+            return _DEFAULT_RETRY_AFTER_SECONDS
+        if raw.isdigit():
+            return float(raw)
+        try:
+            retry_at = parsedate_to_datetime(raw)
+        except (TypeError, ValueError):
+            return _DEFAULT_RETRY_AFTER_SECONDS
+        if retry_at.tzinfo is None:
+            retry_at = retry_at.replace(tzinfo=UTC)
+        remaining: float = (retry_at - datetime.now(UTC)).total_seconds()
+        return max(0.0, remaining)
 
     def _raise_rules_not_accepted(self, response: httpx.Response, competition_id: str) -> None:
-        if response.status_code != 403:
+        if response.status_code != _FORBIDDEN:
             return
         text = response.text.lower()
         if "accept" in text and "rules" in text:
@@ -556,3 +685,38 @@ class KaggleAdapter(PlatformAdapter):
             tags=tags,
             url=data.get("url"),
         )
+
+
+def _resolve_download_path(dest_path: Path, file_name: str) -> Path:
+    """Resolve a download target inside the destination directory.
+
+    Kaggle file listings supply the file name, so reject any entry that would resolve
+    outside the destination before opening a handle on it.
+    """
+    root = dest_path.resolve()
+    candidate = (root / file_name).resolve()
+    if not candidate.is_relative_to(root):
+        raise ValueError(f"Download entry escapes destination: {file_name}")
+    candidate.parent.mkdir(parents=True, exist_ok=True)
+    return candidate
+
+
+def _partial_path(destination: Path) -> Path:
+    """Build the hidden staging path used while a download is still in flight."""
+    digest = hashlib.sha256(destination.name.encode("utf-8")).hexdigest()[:16]
+    return destination.with_name(f"{_PARTIAL_PREFIX}{digest}{_PARTIAL_SUFFIX}")
+
+
+def _expected_content_length(response: httpx.Response) -> int | None:
+    """Return the advertised body length when it is comparable to the bytes written.
+
+    A transfer-encoded or content-encoded body is decoded on the fly, so its decoded size
+    does not match Content-Length and cannot be used as a completeness check.
+    """
+    encoding = response.headers.get("Content-Encoding", "").strip().lower()
+    if encoding not in _IDENTITY_ENCODINGS:
+        return None
+    raw = response.headers.get("Content-Length", "").strip()
+    if not raw.isdigit():
+        return None
+    return int(raw)

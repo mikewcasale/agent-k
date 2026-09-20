@@ -71,6 +71,9 @@ MISSING_VALUE_TOKENS: Final[tuple[str, ...]] = ("", "na", "nan", "null", "none")
 MISSING_RATE_THRESHOLD: Final[float] = 0.05
 SKEWNESS_THRESHOLD: Final[float] = 1.0
 MISSING_PATTERN_CORR_THRESHOLD: Final[float] = 0.2
+MIN_CUSTOM_OBJECTIVE_HESSIAN: Final[float] = 1e-6
+FOCAL_LOSS_ALPHA: Final[float] = 0.25
+FOCAL_LOSS_GAMMA: Final[float] = 2.0
 
 _GEO_LAT_TOKENS: Final[tuple[str, ...]] = ("lat", "latitude")
 _GEO_LON_TOKENS: Final[tuple[str, ...]] = ("lon", "lng", "longitude")
@@ -1365,6 +1368,19 @@ def _infer_problem_kind(profile: DatasetProfile) -> str:
     return "regression"
 
 
+def _count_target_classes(profile: DatasetProfile) -> int:
+    """Return the distinct class count of the target, or 0 when it is not categorical."""
+    target_name = next(iter(profile.target_columns), None)
+    if not target_name:
+        return 0
+    target_profile = profile.columns.get(target_name)
+    if target_profile is None:
+        return 0
+    if target_profile.column_type is ColumnType.BINARY:
+        return 2
+    return target_profile.unique_count
+
+
 def _detect_geo_named_columns(columns: dict[str, ColumnProfile]) -> dict[str, list[str]]:
     detected: dict[str, set[str]] = {key: set() for key in _GEO_NAME_PATTERNS}
     for name, profile in columns.items():
@@ -1596,22 +1612,88 @@ def _generate_model_selection_hints(profile: DatasetProfile) -> list[Preprocessi
                 code_snippet=(
                     "import lightgbm as lgb\n"
                     "import numpy as np\n"
+                    f"MIN_HESSIAN = {MIN_CUSTOM_OBJECTIVE_HESSIAN}\n"
                     "def rmsle_objective(y_pred, train_data):\n"
-                    "    y_true = train_data.get_label()\n"
-                    "    preds = np.maximum(y_pred, 0)\n"
-                    "    grad = (np.log1p(preds) - np.log1p(y_true)) / (preds + 1)\n"
-                    "    hess = (1 - np.log1p(preds) + np.log1p(y_true)) / (preds + 1) ** 2\n"
-                    "    return grad, hess\n"
+                    "    y_true = np.maximum(train_data.get_label(), 0.0)\n"
+                    "    preds = np.maximum(y_pred, 0.0)\n"
+                    "    log_diff = np.log1p(preds) - np.log1p(y_true)\n"
+                    "    grad = log_diff / (preds + 1.0)\n"
+                    "    hess = (1.0 - log_diff) / (preds + 1.0) ** 2\n"
+                    "    return grad, np.maximum(hess, MIN_HESSIAN)\n"
+                    "def rmsle_eval(y_pred, eval_data):\n"
+                    "    y_true = np.maximum(eval_data.get_label(), 0.0)\n"
+                    "    preds = np.maximum(y_pred, 0.0)\n"
+                    '    return "rmsle", float(np.sqrt(np.mean((np.log1p(preds) - np.log1p(y_true)) ** 2))), False\n'
                     "train_data = lgb.Dataset(X_train, label=y_train)\n"
                     "params = {\n"
-                    '    "objective": "regression",\n'
+                    '    "objective": rmsle_objective,\n'
                     '    "learning_rate": 0.01,\n'
                     '    "num_leaves": 31,\n'
                     '    "feature_fraction": 0.8,\n'
                     '    "bagging_fraction": 0.8,\n'
                     '    "bagging_freq": 5,\n'
+                    '    "verbose": -1,\n'
                     "}\n"
-                    "model = lgb.train(params, train_data, num_boost_round=2000, fobj=rmsle_objective)"
+                    "model = lgb.train(params, train_data, num_boost_round=2000, feval=rmsle_eval)"
+                ),
+                success_rate=0.0,
+                last_attempted=None,
+                last_result=None,
+            )
+        )
+
+    if problem_kind == "classification" and _count_target_classes(profile) == 2:
+        hints.append(
+            PreprocessingHint(
+                id="lightgbm_custom_focal",
+                category=HintCategory.MODEL_OPTIMIZATION,
+                priority=0.9,
+                applicable_columns=[],
+                description=(
+                    "Use a custom focal-loss LightGBM objective; evolve alpha and gamma to focus "
+                    "capacity on hard or minority examples."
+                ),
+                code_snippet=(
+                    "import lightgbm as lgb\n"
+                    "import numpy as np\n"
+                    f"MIN_HESSIAN = {MIN_CUSTOM_OBJECTIVE_HESSIAN}\n"
+                    f"FOCAL_ALPHA = {FOCAL_LOSS_ALPHA}\n"
+                    f"FOCAL_GAMMA = {FOCAL_LOSS_GAMMA}\n"
+                    "def _focal_terms(y_pred, labels):\n"
+                    "    prob = 1.0 / (1.0 + np.exp(-y_pred))\n"
+                    "    p_t = np.clip(np.where(labels == 1, prob, 1.0 - prob), 1e-9, 1.0 - 1e-9)\n"
+                    "    alpha_t = np.where(labels == 1, FOCAL_ALPHA, 1.0 - FOCAL_ALPHA)\n"
+                    "    return p_t, alpha_t\n"
+                    "def focal_objective(y_pred, train_data):\n"
+                    "    labels = train_data.get_label()\n"
+                    "    p_t, alpha_t = _focal_terms(y_pred, labels)\n"
+                    "    sign = np.where(labels == 1, 1.0, -1.0)\n"
+                    "    gamma, resid, log_pt = FOCAL_GAMMA, 1.0 - p_t, np.log(p_t)\n"
+                    "    grad = alpha_t * sign * (gamma * p_t * resid**gamma * log_pt - resid ** (gamma + 1.0))\n"
+                    "    hess = alpha_t * p_t * resid * (\n"
+                    "        gamma * resid**gamma * log_pt\n"
+                    "        - gamma**2 * p_t * resid ** (gamma - 1.0) * log_pt\n"
+                    "        + (2.0 * gamma + 1.0) * resid**gamma\n"
+                    "    )\n"
+                    "    return grad, np.maximum(hess, MIN_HESSIAN)\n"
+                    "def focal_eval(y_pred, eval_data):\n"
+                    "    p_t, alpha_t = _focal_terms(y_pred, eval_data.get_label())\n"
+                    "    loss = float(np.mean(-alpha_t * (1.0 - p_t) ** FOCAL_GAMMA * np.log(p_t)))\n"
+                    '    return "focal_loss", loss, False\n'
+                    "train_data = lgb.Dataset(X_train, label=y_train)\n"
+                    "params = {\n"
+                    '    "objective": focal_objective,\n'
+                    '    "learning_rate": 0.05,\n'
+                    '    "num_leaves": 31,\n'
+                    '    "feature_fraction": 0.8,\n'
+                    '    "bagging_fraction": 0.8,\n'
+                    '    "bagging_freq": 5,\n'
+                    '    "verbose": -1,\n'
+                    "}\n"
+                    "model = lgb.train(params, train_data, num_boost_round=1000, feval=focal_eval)\n"
+                    "def focal_predict_proba(booster, features):\n"
+                    "    return 1.0 / (1.0 + np.exp(-booster.predict(features)))\n"
+                    "focal_train_proba = focal_predict_proba(model, X_train)"
                 ),
                 success_rate=0.0,
                 last_attempted=None,

@@ -158,7 +158,7 @@ class TestRegressionCustomObjective:
         epsilon = 1e-5
 
         def loss(values: np.ndarray) -> np.ndarray:
-            return 0.5 * (np.log1p(np.maximum(values, 0.0)) - np.log1p(targets)) ** 2
+            return np.asarray(0.5 * (np.log1p(np.maximum(values, 0.0)) - np.log1p(targets)) ** 2)
 
         numeric_gradient = (loss(raw + epsilon) - loss(raw - epsilon)) / (2 * epsilon)
         gradient, hessian = objective(raw, dataset)
@@ -206,14 +206,14 @@ class TestBinaryClassificationCustomObjective:
             prob = 1.0 / (1.0 + np.exp(-values))
             p_t = np.clip(np.where(labels == 1, prob, 1.0 - prob), 1e-9, 1.0 - 1e-9)
             alpha_t = np.where(labels == 1, alpha, 1.0 - alpha)
-            return -alpha_t * (1.0 - p_t) ** gamma * np.log(p_t)
+            return np.asarray(-alpha_t * (1.0 - p_t) ** gamma * np.log(p_t))
 
         numeric_gradient = (loss(raw + epsilon) - loss(raw - epsilon)) / (2 * epsilon)
         gradient, hessian = objective(raw, dataset)
         assert np.abs(gradient - numeric_gradient).max() < 1e-5
 
         def analytic_gradient(values: np.ndarray) -> np.ndarray:
-            return objective(values, dataset)[0]
+            return np.asarray(objective(values, dataset)[0])
 
         step = 1e-4
         numeric_hessian = (analytic_gradient(raw + step) - analytic_gradient(raw - step)) / (2 * step)

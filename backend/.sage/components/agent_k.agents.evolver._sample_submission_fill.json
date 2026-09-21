@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Numeric targets keep the historical 0.0 placeholder. Categorical targets\nget their most frequent training label instead, because a float 0.0 in a\nstring-labelled column tells the candidate to emit numbers and produces a\nsubmission that no label metric can score.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_sample_submission_fill",
+  "line": 2640,
+  "notice": "Returns a constant that matches the dtype of the training labels, so the\ntemplate handed to a candidate advertises the expected output format.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Choose the placeholder value for one sample_submission target column.",
+  "type": "function"
+}

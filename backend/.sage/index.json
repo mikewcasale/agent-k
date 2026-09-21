@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-09-21T03:12:11.581064+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1110,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -1514,255 +1514,375 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry",
-        "line": 319,
+        "line": 342,
         "name": "pattern",
         "value": "{\"name\": \"archive-entry\", \"rationale\": \"Encapsulates elite metadata for sampling.\", \"violations\": \"Unstructured elites make selection brittle.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry.to_payload",
-        "line": 338,
+        "line": 361,
         "name": "notice",
         "value": "Converts the archive entry into a JSON-serializable payload."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry.to_payload",
-        "line": 341,
+        "line": 364,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 365,
+        "line": 388,
         "name": "notice",
         "value": "Configuration for the Evolver agent."
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 368,
+        "line": 391,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 371,
+        "line": 394,
         "name": "pattern",
         "value": "{\"name\": \"settings\", \"rationale\": \"Centralizes evolutionary optimization configuration.\", \"violations\": \"Ad-hoc overrides lead to unstable evolution runs.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 438,
+        "line": 461,
         "name": "notice",
         "value": "Dependencies for the Evolver agent."
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 441,
+        "line": 464,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 444,
+        "line": 467,
         "name": "pattern",
         "value": "{\"name\": \"dependency-container\", \"rationale\": \"Groups runtime services and evolution state.\", \"violations\": \"Scattered state makes evolution hard to resume.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 449,
+        "line": 472,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\", \"agent_k.core.models:Competition\"], \"optional\": [\"agent_k.core.tracking:ExperimentTracker\", \"agent_k.core.hints:"
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 460,
+        "line": 483,
         "name": "invariants",
         "value": "[\"population_size >= 1\", \"max_generations >= min_generations\"]"
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 503,
+        "line": 526,
         "name": "notice",
         "value": "Result of evolution process."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 506,
+        "line": 529,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 509,
+        "line": 532,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Stable schema for successful evolution outputs.\", \"violations\": \"Free-form outputs hinder submission automation.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 528,
+        "line": 551,
         "name": "notice",
         "value": "Failure result for evolution process."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 531,
+        "line": 554,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 534,
+        "line": 557,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Stable schema for failed evolution outputs.\", \"violations\": \"Opaque errors make recovery harder.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 561,
+        "line": 584,
         "name": "notice",
         "value": "Optimizes prototype solutions via evolutionary search.\nUse the module-level evolver_agent or agent registry."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 565,
+        "line": 588,
         "name": "dev",
         "value": "Registers evolution tools and coordinates mutation/evaluation cycles."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 568,
+        "line": 591,
         "name": "pattern",
         "value": "{\"name\": \"agent-singleton\", \"rationale\": \"Single instance keeps memory/tool registration consistent.\", \"violations\": \"Multiple instances duplicate tool registrations.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 573,
+        "line": 596,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.adapters.openevolve:OpenEvolveRunner\"], \"injection\": \"deps via RunContext\", \"lifecycle\": "
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 582,
+        "line": 605,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates evolution state and caches.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 587,
+        "line": 610,
         "name": "invariants",
         "value": "[\"self._agent is initialized after __init__ completes.\", \"self._toolset registers evolution tools exactly once.\"]"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.__init__",
-        "line": 600,
+        "line": 623,
         "name": "notice",
         "value": "Builds the agent singleton and registers tools."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.__init__",
-        "line": 603,
+        "line": 626,
         "name": "dev",
         "value": "Initializes memory backend, toolset, and pydantic-ai Agent."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.__init__",
-        "line": 606,
+        "line": 629,
         "name": "state_changes",
         "value": "[\"self._settings\", \"self._toolset\", \"self._agent\"]"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.run_openevolve",
-        "line": 639,
+        "line": 662,
         "name": "notice",
         "value": "Delegates mutation and evaluation to OpenEvolve when enabled."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.run_openevolve",
-        "line": 642,
+        "line": 665,
         "name": "effects",
         "value": "{\"io\": [\"OpenEvolve API requests\"], \"state\": [\"deps.best_solution\", \"deps.best_fitness\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.mutate_solution",
-        "line": 724,
+        "line": 747,
         "name": "notice",
         "value": "Applies a mutation strategy and returns the mutated code."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.mutate_solution",
-        "line": 727,
+        "line": 750,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.evaluate_fitness",
-        "line": 773,
+        "line": 796,
         "name": "notice",
         "value": "Runs evaluation and emits fitness telemetry."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.evaluate_fitness",
-        "line": 776,
+        "line": 799,
         "name": "effects",
         "value": "{\"io\": [\"local execution\"], \"state\": [\"ctx.deps.best_fitness\", \"ctx.deps.best_solution\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.record_generation",
-        "line": 882,
+        "line": 905,
         "name": "notice",
         "value": "Appends generation metrics and emits telemetry."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.record_generation",
-        "line": 885,
+        "line": 908,
         "name": "effects",
         "value": "{\"state\": [\"ctx.deps.generation_history\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.check_convergence",
-        "line": 920,
+        "line": 943,
         "name": "notice",
         "value": "Determines whether fitness has plateaued or target score reached."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.check_convergence",
-        "line": 923,
+        "line": 946,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.sample_elites",
-        "line": 989,
+        "line": 1012,
         "name": "notice",
         "value": "Selects top and diverse elites from the archive."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.sample_elites",
-        "line": 992,
+        "line": 1015,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.submit_to_kaggle",
-        "line": 1011,
+        "line": 1034,
         "name": "notice",
         "value": "Writes a submission file and triggers adapter submission."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.submit_to_kaggle",
-        "line": 1014,
+        "line": 1037,
         "name": "effects",
         "value": "{\"io\": [\"local filesystem access\", \"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent._create_agent",
-        "line": 1054,
+        "line": 1077,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.agents.evolver:EvolverAgent\", \"rationale\": \"Centralizes agent wiring and toolset preparation.\", \"singleton\": true, \"cache_key\": \"module\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent._create_agent",
-        "line": 1060,
+        "line": 1083,
         "name": "canonical_home",
         "value": "{\"for\": [\"evolver agent construction\"], \"notes\": \"Use EvolverAgent() or module singleton.\"}"
+      },
+      {
+        "component": "agent_k.agents.evolver:_sample_submission_fill",
+        "line": 2642,
+        "name": "notice",
+        "value": "Returns a constant that matches the dtype of the training labels, so the\ntemplate handed to a candidate advertises the expected output format."
+      },
+      {
+        "component": "agent_k.agents.evolver:_sample_submission_fill",
+        "line": 2646,
+        "name": "dev",
+        "value": "Numeric targets keep the historical 0.0 placeholder. Categorical targets\nget their most frequent training label instead, because a float 0.0 in a\nstring-labelled column tells the candidate to emit num"
+      },
+      {
+        "component": "agent_k.agents.evolver:_normalise_metric_key",
+        "line": 2663,
+        "name": "notice",
+        "value": "Lowercases a metric name and strips separators so that platform spellings\nsuch as \"Log Loss\", \"log_loss\", and \"logLoss\" resolve to one key."
+      },
+      {
+        "component": "agent_k.agents.evolver:_normalise_metric_key",
+        "line": 2667,
+        "name": "dev",
+        "value": "Kept in sync with the METRIC_KEY expression the prototype node embeds in\ngenerated baseline code, so evolution and prototype score the same way."
+      },
+      {
+        "component": "agent_k.agents.evolver:_align_label_pair",
+        "line": 2677,
+        "name": "notice",
+        "value": "Returns (y_true, y_pred) as numpy arrays that compare correctly for\nlabel metrics, whether the competition labels are numeric or strings."
+      },
+      {
+        "component": "agent_k.agents.evolver:_align_label_pair",
+        "line": 2681,
+        "name": "dev",
+        "value": "CSV round-trips lose the original dtype: an integer label read back from\nsubmission.csv may arrive as float (1 vs 1.0) or as text (\"1\"). When both\ncolumns parse as numbers the comparison is numeric, s"
+      },
+      {
+        "component": "agent_k.agents.evolver:_score_label_column",
+        "line": 2699,
+        "name": "notice",
+        "value": "Computes accuracy or F1 for a single target column, choosing the F1\naveraging mode from the number of observed classes."
+      },
+      {
+        "component": "agent_k.agents.evolver:_score_label_column",
+        "line": 2703,
+        "name": "dev",
+        "value": "Binary problems use average=\"binary\" with the higher sorted class as the\npositive label, matching the model.classes_[1] convention the prototype\nnode uses. Problems with more than two classes use weig"
+      },
+      {
+        "component": "agent_k.agents.evolver:_looks_continuous",
+        "line": 2723,
+        "name": "notice",
+        "value": "Returns True for a numeric column carrying at least one non-integral\nvalue, which is how a probability column differs from a label column."
+      },
+      {
+        "component": "agent_k.agents.evolver:_looks_continuous",
+        "line": 2727,
+        "name": "dev",
+        "value": "Used to tell a mis-formatted submission (probabilities emitted for a\nlabel metric) apart from a merely inaccurate one. A wrong-but-discrete\nprediction should score zero, not raise."
+      },
+      {
+        "component": "agent_k.agents.evolver:_score_label_metric",
+        "line": 2741,
+        "name": "notice",
+        "value": "Computes accuracy or F1 per target column and returns the mean, so\nmulti-target problems collapse to a single fitness signal."
+      },
+      {
+        "component": "agent_k.agents.evolver:_score_label_metric",
+        "line": 2745,
+        "name": "dev",
+        "value": "Raises when a column shares no label at all with the ground truth. That\nis a submission-format error (most often continuous scores emitted for a\nlabel metric), and the raised message reaches the evolv"
+      },
+      {
+        "component": "agent_k.agents.evolver:_binarise_targets",
+        "line": 2766,
+        "name": "notice",
+        "value": "Returns 0/1 indicators for a binary label column, treating the higher\nsorted class as the positive label."
+      },
+      {
+        "component": "agent_k.agents.evolver:_binarise_targets",
+        "line": 2770,
+        "name": "dev",
+        "value": "Numeric columns already in {0, 1} pass through unchanged. Anything with\na class count other than two is rejected, because a single predicted\nprobability column cannot express a multiclass distribution"
+      },
+      {
+        "component": "agent_k.agents.evolver:_score_probability_metric",
+        "line": 2784,
+        "name": "notice",
+        "value": "Computes AUC or log loss for a single-target problem from the predicted\nprobability column."
+      },
+      {
+        "component": "agent_k.agents.evolver:_score_probability_metric",
+        "line": 2788,
+        "name": "dev",
+        "value": "Labels are binarised rather than float-coerced, so categorical targets\nscore instead of raising. Non-finite predictions are neutralised to 0.5\n(an uninformative probability) rather than 0.0, which wou"
+      },
+      {
+        "component": "agent_k.agents.evolver:_score_regression_metric",
+        "line": 2817,
+        "name": "notice",
+        "value": "Computes RMSE, MAE, or RMSLE across every target column."
+      },
+      {
+        "component": "agent_k.agents.evolver:_score_regression_metric",
+        "line": 2820,
+        "name": "dev",
+        "value": "Non-finite predictions are neutralised before scoring, and RMSLE clips\npredictions at zero because log1p is undefined for values below -1."
+      },
+      {
+        "component": "agent_k.agents.evolver:_score_submission",
+        "line": 2841,
+        "name": "notice",
+        "value": "Merges a candidate's submission.csv onto the held-out labels and returns\nthe competition metric, dispatching on whether the metric consumes class\nlabels, probabilities, or continuous predictions."
+      },
+      {
+        "component": "agent_k.agents.evolver:_score_submission",
+        "line": 2846,
+        "name": "dev",
+        "value": "Metric family, not problem type, decides how the columns are coerced.\nFloat coercion is applied only for the families that need it, so\ncategorical labels survive. Ranking metrics (map, ndcg) are rejec"
       }
     ],
     "agent_k/agents/lobbyist.py": [

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "CSV round-trips lose the original dtype: an integer label read back from\nsubmission.csv may arrive as float (1 vs 1.0) or as text (\"1\"). When both\ncolumns parse as numbers the comparison is numeric, so those spellings\nagree. Otherwise both sides fall back to stripped strings, which keeps\ncategorical labels (for example \"cat\"/\"dog\") comparable without the float\ncoercion that regression metrics need.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_align_label_pair",
+  "line": 2675,
+  "notice": "Returns (y_true, y_pred) as numpy arrays that compare correctly for\nlabel metrics, whether the competition labels are numeric or strings.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Align a true/predicted label column pair onto a comparable dtype.",
+  "type": "function"
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Raises when a column shares no label at all with the ground truth. That\nis a submission-format error (most often continuous scores emitted for a\nlabel metric), and the raised message reaches the evolver as tool\nfeedback, which is far more actionable than a silent score of zero.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_score_label_metric",
+  "line": 2739,
+  "notice": "Computes accuracy or F1 per target column and returns the mean, so\nmulti-target problems collapse to a single fitness signal.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Score a submission with a hard-label metric, averaging across targets.",
+  "type": "function"
+}

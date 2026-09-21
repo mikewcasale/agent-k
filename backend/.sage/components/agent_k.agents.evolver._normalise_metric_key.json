@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Kept in sync with the METRIC_KEY expression the prototype node embeds in\ngenerated baseline code, so evolution and prototype score the same way.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_normalise_metric_key",
+  "line": 2661,
+  "notice": "Lowercases a metric name and strips separators so that platform spellings\nsuch as \"Log Loss\", \"log_loss\", and \"logLoss\" resolve to one key.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Normalise a platform metric name into a lookup key.",
+  "type": "function"
+}

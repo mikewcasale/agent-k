@@ -66,7 +66,15 @@ from pydantic_ai import Agent, DeferredToolRequests, ModelRetry, ModelSettings, 
 from pydantic_ai.builtin_tools import MCPServerTool
 from pydantic_ai.toolsets import FunctionToolset
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from sklearn.metrics import log_loss, mean_absolute_error, mean_squared_error, mean_squared_log_error, roc_auc_score
+from sklearn.metrics import (
+    accuracy_score,
+    f1_score,
+    log_loss,
+    mean_absolute_error,
+    mean_squared_error,
+    mean_squared_log_error,
+    roc_auc_score,
+)
 
 from agent_k.adapters.openevolve import OpenEvolveRunner
 from agent_k.agents import register_agent
@@ -177,6 +185,21 @@ _ERROR_HINT_PATTERNS: Final[tuple[tuple[re.Pattern[str], str, str], ...]] = (
     (re.compile(r"ValueError", re.IGNORECASE), "value_error", "Check data types and preprocessing consistency."),
 )
 _ERROR_FEEDBACK_MAX_CHARS: Final[int] = 800
+_LABEL_METRICS: Final[frozenset[str]] = frozenset({"accuracy", "f1"})
+"""Metrics scored against hard class labels rather than continuous predictions."""
+
+_PROBABILITY_METRICS: Final[frozenset[str]] = frozenset({"auc", "logloss"})
+"""Metrics scored against predicted class probabilities."""
+
+_REGRESSION_METRICS: Final[frozenset[str]] = frozenset({"rmse", "mae", "rmsle"})
+"""Metrics scored against continuous predictions."""
+
+_SUPPORTED_METRICS: Final[tuple[str, ...]] = tuple(sorted(_LABEL_METRICS | _PROBABILITY_METRICS | _REGRESSION_METRICS))
+"""Metric keys `_score_submission` can evaluate, for error messages."""
+
+_PROBABILITY_EPSILON: Final[float] = 1e-6
+"""Clip bound keeping probabilities inside the open unit interval for log loss."""
+
 _FAILURE_SUMMARY_LIMIT: Final[int] = 3
 _HYPERPARAM_PATTERNS: Final[dict[str, re.Pattern[str]]] = {
     "n_estimators": re.compile(r"(n_estimators\s*=\s*)(\d+)", re.IGNORECASE),
@@ -1904,7 +1927,7 @@ class EvolverAgent(MemoryMixin):
             val_features.to_csv(run_path / "test.csv", index=False)
             sample_submission = pd.DataFrame({id_column: val_features[id_column].values})
             for col in target_columns:
-                sample_submission[col] = 0.0
+                sample_submission[col] = _sample_submission_fill(train_df[col])
             sample_submission.to_csv(run_path / "sample_submission.csv", index=False)
 
             execution = await execute_solution(
@@ -2613,10 +2636,219 @@ def _prepare_validation_split(
     return train_df, val_features, y_val, resolved_id
 
 
+def _sample_submission_fill(train_targets: pd.Series) -> Any:
+    """Choose the placeholder value for one sample_submission target column.
+
+    @notice: |
+        Returns a constant that matches the dtype of the training labels, so the
+        template handed to a candidate advertises the expected output format.
+
+    @dev: |
+        Numeric targets keep the historical 0.0 placeholder. Categorical targets
+        get their most frequent training label instead, because a float 0.0 in a
+        string-labelled column tells the candidate to emit numbers and produces a
+        submission that no label metric can score.
+    """
+    if pd.api.types.is_numeric_dtype(train_targets):
+        return 0.0
+    modes = train_targets.mode(dropna=True)
+    if modes.empty:
+        return ""
+    return modes.iloc[0]
+
+
+def _normalise_metric_key(metric: str) -> str:
+    """Normalise a platform metric name into a lookup key.
+
+    @notice: |
+        Lowercases a metric name and strips separators so that platform spellings
+        such as "Log Loss", "log_loss", and "logLoss" resolve to one key.
+
+    @dev: |
+        Kept in sync with the METRIC_KEY expression the prototype node embeds in
+        generated baseline code, so evolution and prototype score the same way.
+    """
+    return metric.lower().replace("_", "").replace(" ", "").replace("-", "")
+
+
+def _align_label_pair(true_values: pd.Series, pred_values: pd.Series) -> tuple[np.ndarray, np.ndarray]:
+    """Align a true/predicted label column pair onto a comparable dtype.
+
+    @notice: |
+        Returns (y_true, y_pred) as numpy arrays that compare correctly for
+        label metrics, whether the competition labels are numeric or strings.
+
+    @dev: |
+        CSV round-trips lose the original dtype: an integer label read back from
+        submission.csv may arrive as float (1 vs 1.0) or as text ("1"). When both
+        columns parse as numbers the comparison is numeric, so those spellings
+        agree. Otherwise both sides fall back to stripped strings, which keeps
+        categorical labels (for example "cat"/"dog") comparable without the float
+        coercion that regression metrics need.
+    """
+    true_numeric = pd.to_numeric(true_values, errors="coerce")
+    pred_numeric = pd.to_numeric(pred_values, errors="coerce")
+    if bool(true_numeric.notna().all()) and bool(pred_numeric.notna().all()):
+        return true_numeric.to_numpy(), pred_numeric.to_numpy()
+    return (true_values.astype(str).str.strip().to_numpy(), pred_values.astype(str).str.strip().to_numpy())
+
+
+def _score_label_column(key: str, y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    """Score one target column with a hard-label metric.
+
+    @notice: |
+        Computes accuracy or F1 for a single target column, choosing the F1
+        averaging mode from the number of observed classes.
+
+    @dev: |
+        Binary problems use average="binary" with the higher sorted class as the
+        positive label, matching the model.classes_[1] convention the prototype
+        node uses. Problems with more than two classes use weighted averaging;
+        degenerate single-class columns use micro averaging, which equals
+        accuracy and avoids sklearn's binary pos_label requirement.
+    """
+    if key == "accuracy":
+        return float(accuracy_score(y_true, y_pred))
+
+    classes = np.unique(y_true)
+    if classes.size == 2:
+        return float(f1_score(y_true, y_pred, average="binary", pos_label=classes[1], zero_division=0))
+    average = "weighted" if classes.size > 2 else "micro"
+    return float(f1_score(y_true, y_pred, average=average, zero_division=0))
+
+
+def _looks_continuous(values: np.ndarray) -> bool:
+    """Report whether a prediction column holds continuous scores.
+
+    @notice: |
+        Returns True for a numeric column carrying at least one non-integral
+        value, which is how a probability column differs from a label column.
+
+    @dev: |
+        Used to tell a mis-formatted submission (probabilities emitted for a
+        label metric) apart from a merely inaccurate one. A wrong-but-discrete
+        prediction should score zero, not raise.
+    """
+    if not np.issubdtype(values.dtype, np.number):
+        return False
+    finite = values[np.isfinite(values)]
+    return finite.size > 0 and not bool(np.all(np.mod(finite, 1) == 0))
+
+
+def _score_label_metric(key: str, merged: pd.DataFrame, target_columns: list[str]) -> float:
+    """Score a submission with a hard-label metric, averaging across targets.
+
+    @notice: |
+        Computes accuracy or F1 per target column and returns the mean, so
+        multi-target problems collapse to a single fitness signal.
+
+    @dev: |
+        Raises when a column shares no label at all with the ground truth. That
+        is a submission-format error (most often continuous scores emitted for a
+        label metric), and the raised message reaches the evolver as tool
+        feedback, which is far more actionable than a silent score of zero.
+    """
+    scores: list[float] = []
+    for col in target_columns:
+        y_true, y_pred = _align_label_pair(merged[f"{col}_true"], merged[f"{col}_pred"])
+        if _looks_continuous(y_pred) and not np.isin(y_pred, np.unique(y_true)).any():
+            raise ValueError(
+                f"Column '{col}' holds continuous scores that match no label in the ground truth; "
+                f"metric '{key}' needs class labels such as {np.unique(y_true)[:5].tolist()}"
+            )
+        scores.append(_score_label_column(key, y_true, y_pred))
+    return float(np.mean(scores))
+
+
+def _binarise_targets(y_true: np.ndarray) -> np.ndarray:
+    """Map a single-target label column onto {0, 1} for probability metrics.
+
+    @notice: |
+        Returns 0/1 indicators for a binary label column, treating the higher
+        sorted class as the positive label.
+
+    @dev: |
+        Numeric columns already in {0, 1} pass through unchanged. Anything with
+        a class count other than two is rejected, because a single predicted
+        probability column cannot express a multiclass distribution.
+    """
+    classes = np.unique(y_true)
+    if classes.size != 2:
+        raise ValueError(f"Probability metrics need exactly 2 classes, found {classes.size}")
+    return np.asarray(y_true == classes[1], dtype=int)
+
+
+def _score_probability_metric(key: str, merged: pd.DataFrame, target_columns: list[str]) -> float:
+    """Score a submission with a predicted-probability metric.
+
+    @notice: |
+        Computes AUC or log loss for a single-target problem from the predicted
+        probability column.
+
+    @dev: |
+        Labels are binarised rather than float-coerced, so categorical targets
+        score instead of raising. Non-finite predictions are neutralised to 0.5
+        (an uninformative probability) rather than 0.0, which would otherwise be
+        scored as a confident prediction of the negative class.
+    """
+    if len(target_columns) != 1:
+        raise ValueError(f"{key} only supported for single-target problems")
+
+    col = target_columns[0]
+    true_numeric = pd.to_numeric(merged[f"{col}_true"], errors="coerce")
+    raw_true = (
+        true_numeric.to_numpy()
+        if bool(true_numeric.notna().all())
+        else merged[f"{col}_true"].astype(str).str.strip().to_numpy()
+    )
+    y_true = _binarise_targets(raw_true)
+
+    y_pred = pd.to_numeric(merged[f"{col}_pred"], errors="coerce").to_numpy(dtype=float)
+    y_pred = np.nan_to_num(y_pred, nan=0.5, posinf=1.0, neginf=0.0)
+
+    if key == "logloss":
+        return float(log_loss(y_true, np.clip(y_pred, _PROBABILITY_EPSILON, 1.0 - _PROBABILITY_EPSILON), labels=[0, 1]))
+    return float(roc_auc_score(y_true, y_pred))
+
+
+def _score_regression_metric(key: str, merged: pd.DataFrame, target_columns: list[str]) -> float:
+    """Score a submission with a continuous-target metric.
+
+    @notice: |
+        Computes RMSE, MAE, or RMSLE across every target column.
+
+    @dev: |
+        Non-finite predictions are neutralised before scoring, and RMSLE clips
+        predictions at zero because log1p is undefined for values below -1.
+    """
+    y_true = merged[[f"{col}_true" for col in target_columns]].to_numpy(dtype=float)
+    y_pred = merged[[f"{col}_pred" for col in target_columns]].to_numpy(dtype=float)
+    if not np.isfinite(y_pred).all():
+        y_pred = np.nan_to_num(y_pred, nan=0.0, posinf=0.0, neginf=0.0)
+
+    if key == "rmsle":
+        return float(np.sqrt(mean_squared_log_error(y_true, np.clip(y_pred, 0.0, None))))
+    if key == "mae":
+        return float(mean_absolute_error(y_true, y_pred))
+    return float(np.sqrt(mean_squared_error(y_true, y_pred)))
+
+
 def _score_submission(
     *, submission_path: Path, metric: str, id_column: str, target_columns: list[str], y_val: pd.DataFrame
 ) -> float:
-    """Score a submission.csv against y_val using the competition metric."""
+    """Score a submission.csv against y_val using the competition metric.
+
+    @notice: |
+        Merges a candidate's submission.csv onto the held-out labels and returns
+        the competition metric, dispatching on whether the metric consumes class
+        labels, probabilities, or continuous predictions.
+
+    @dev: |
+        Metric family, not problem type, decides how the columns are coerced.
+        Float coercion is applied only for the families that need it, so
+        categorical labels survive. Ranking metrics (map, ndcg) are rejected:
+        they need per-query group structure the held-out split does not carry.
+    """
     submission = pd.read_csv(submission_path)
     if id_column not in submission.columns:
         raise ValueError(f"submission.csv missing id column '{id_column}'")
@@ -2630,30 +2862,15 @@ def _score_submission(
     if merged.empty:
         raise ValueError("No rows to score after merge")
 
-    y_true = merged[[f"{col}_true" for col in target_columns]].to_numpy(dtype=float)
-    y_pred = merged[[f"{col}_pred" for col in target_columns]].to_numpy(dtype=float)
-    if not np.isfinite(y_pred).all():
-        y_pred = np.nan_to_num(y_pred, nan=0.0, posinf=0.0, neginf=0.0)
+    key = _normalise_metric_key(metric)
+    if key in _LABEL_METRICS:
+        return _score_label_metric(key, merged, target_columns)
+    if key in _PROBABILITY_METRICS:
+        return _score_probability_metric(key, merged, target_columns)
+    if key in _REGRESSION_METRICS:
+        return _score_regression_metric(key, merged, target_columns)
 
-    key = metric.lower().replace("_", "").replace(" ", "")
-    if key in {"rmsle"}:
-        y_pred = np.clip(y_pred, 0.0, None)
-        return float(np.sqrt(mean_squared_log_error(y_true, y_pred)))
-    if key in {"rmse"}:
-        return float(np.sqrt(mean_squared_error(y_true, y_pred)))
-    if key in {"mae"}:
-        return float(mean_absolute_error(y_true, y_pred))
-    if key in {"logloss"}:
-        if y_true.shape[1] != 1:
-            raise ValueError("logloss only supported for single-target problems")
-        y_pred = np.clip(y_pred, 1e-6, 1 - 1e-6)
-        return float(log_loss(y_true[:, 0], y_pred[:, 0]))
-    if key in {"auc"}:
-        if y_true.shape[1] != 1:
-            raise ValueError("auc only supported for single-target problems")
-        return float(roc_auc_score(y_true[:, 0], y_pred[:, 0]))
-
-    raise ValueError(f"Unsupported metric: {metric}")
+    raise ValueError(f"Unsupported metric: {metric} (supported: {', '.join(_SUPPORTED_METRICS)})")
 
 
 # Module-level singleton for backward compatibility

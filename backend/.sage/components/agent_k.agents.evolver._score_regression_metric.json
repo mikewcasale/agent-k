@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Non-finite predictions are neutralised before scoring, and RMSLE clips\npredictions at zero because log1p is undefined for values below -1.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_score_regression_metric",
+  "line": 2815,
+  "notice": "Computes RMSE, MAE, or RMSLE across every target column.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Score a submission with a continuous-target metric.",
+  "type": "function"
+}

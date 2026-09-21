@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Labels are binarised rather than float-coerced, so categorical targets\nscore instead of raising. Non-finite predictions are neutralised to 0.5\n(an uninformative probability) rather than 0.0, which would otherwise be\nscored as a confident prediction of the negative class.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_score_probability_metric",
+  "line": 2782,
+  "notice": "Computes AUC or log loss for a single-target problem from the predicted\nprobability column.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Score a submission with a predicted-probability metric.",
+  "type": "function"
+}

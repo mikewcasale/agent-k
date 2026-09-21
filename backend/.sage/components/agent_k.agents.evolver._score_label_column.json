@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Binary problems use average=\"binary\" with the higher sorted class as the\npositive label, matching the model.classes_[1] convention the prototype\nnode uses. Problems with more than two classes use weighted averaging;\ndegenerate single-class columns use micro averaging, which equals\naccuracy and avoids sklearn's binary pos_label requirement.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_score_label_column",
+  "line": 2697,
+  "notice": "Computes accuracy or F1 for a single target column, choosing the F1\naveraging mode from the number of observed classes.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Score one target column with a hard-label metric.",
+  "type": "function"
+}

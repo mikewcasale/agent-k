@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Numeric columns already in {0, 1} pass through unchanged. Anything with\na class count other than two is rejected, because a single predicted\nprobability column cannot express a multiclass distribution.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_binarise_targets",
+  "line": 2764,
+  "notice": "Returns 0/1 indicators for a binary label column, treating the higher\nsorted class as the positive label.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Map a single-target label column onto {0, 1} for probability metrics.",
+  "type": "function"
+}

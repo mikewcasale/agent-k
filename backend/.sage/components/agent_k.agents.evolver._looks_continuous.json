@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Used to tell a mis-formatted submission (probabilities emitted for a\nlabel metric) apart from a merely inaccurate one. A wrong-but-discrete\nprediction should score zero, not raise.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_looks_continuous",
+  "line": 2721,
+  "notice": "Returns True for a numeric column carrying at least one non-integral\nvalue, which is how a probability column differs from a label column.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Report whether a prediction column holds continuous scores.",
+  "type": "function"
+}

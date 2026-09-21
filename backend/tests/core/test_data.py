@@ -100,3 +100,79 @@ def test_stage_competition_data(tmp_path: Path) -> None:
     assert staged["train"].exists()
     assert staged["test"].exists()
     assert staged["sample"].exists()
+
+
+def test_infer_competition_schema_detects_time_column(tmp_path: Path) -> None:
+    """A date column shared by train and test becomes the time index."""
+    train_path = tmp_path / "train.csv"
+    test_path = tmp_path / "test.csv"
+    sample_path = tmp_path / "sample_submission.csv"
+
+    _write_csv(
+        train_path,
+        ["id", "date", "store", "sales"],
+        [[str(index), f"2021-01-{index + 1:02d}", "a", str(index)] for index in range(10)],
+    )
+    _write_csv(
+        test_path, ["id", "date", "store"], [[str(index), f"2021-02-{index + 1:02d}", "a"] for index in range(10)]
+    )
+    _write_csv(sample_path, ["id", "sales"], [["0", "0"]])
+
+    schema = infer_competition_schema(train_path, test_path, sample_path)
+
+    assert schema.time_column == "date"
+
+
+def test_infer_competition_schema_prefers_most_specific_time_column(tmp_path: Path) -> None:
+    """A timestamp column outranks a coarser month column."""
+    train_path = tmp_path / "train.csv"
+    test_path = tmp_path / "test.csv"
+    sample_path = tmp_path / "sample_submission.csv"
+
+    header = ["id", "month_start", "timestamp", "target"]
+    rows = [
+        [str(index), f"2021-{index + 1:02d}-01", f"2021-01-{index + 1:02d} 08:30:00", str(index)] for index in range(9)
+    ]
+    _write_csv(train_path, header, rows)
+    _write_csv(test_path, header[:-1], [row[:-1] for row in rows])
+    _write_csv(sample_path, ["id", "target"], [["0", "0"]])
+
+    schema = infer_competition_schema(train_path, test_path, sample_path)
+
+    assert schema.time_column == "timestamp"
+
+
+def test_infer_competition_schema_ignores_integer_time_named_columns(tmp_path: Path) -> None:
+    """Integer features named after time units are not treated as a time index."""
+    train_path = tmp_path / "train.csv"
+    test_path = tmp_path / "test.csv"
+    sample_path = tmp_path / "sample_submission.csv"
+
+    header = ["id", "day_of_week", "year_built", "target"]
+    rows = [[str(index), str(index % 7), str(1990 + index), str(index)] for index in range(10)]
+    _write_csv(train_path, header, rows)
+    _write_csv(test_path, header[:-1], [row[:-1] for row in rows])
+    _write_csv(sample_path, ["id", "target"], [["0", "0"]])
+
+    schema = infer_competition_schema(train_path, test_path, sample_path)
+
+    assert schema.time_column is None
+
+
+def test_infer_competition_schema_ignores_train_only_time_column(tmp_path: Path) -> None:
+    """A date column missing from the test set cannot order predictions."""
+    train_path = tmp_path / "train.csv"
+    test_path = tmp_path / "test.csv"
+    sample_path = tmp_path / "sample_submission.csv"
+
+    _write_csv(
+        train_path,
+        ["id", "date", "target"],
+        [[str(index), f"2021-01-{index + 1:02d}", str(index)] for index in range(10)],
+    )
+    _write_csv(test_path, ["id"], [[str(index)] for index in range(10)])
+    _write_csv(sample_path, ["id", "target"], [["0", "0"]])
+
+    schema = infer_competition_schema(train_path, test_path, sample_path)
+
+    assert schema.time_column is None

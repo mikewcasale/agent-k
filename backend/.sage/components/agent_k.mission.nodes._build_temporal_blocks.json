@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Non-temporal competitions keep the stratified random holdout. Temporal\ncompetitions validate on the most recent rows, ordered by the detected\ntime column when there is one and by file order otherwise, and fall back\nto the random split when the chronological slice leaves a single class.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:_build_temporal_blocks",
+  "line": 2423,
+  "notice": "Returns the time-aware template blocks for the prototype solution.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Build the constants, feature expansion, and split blocks for the baseline.",
+  "type": "function"
+}

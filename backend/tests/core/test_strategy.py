@@ -21,7 +21,7 @@ from agent_k.core.strategy import (
 )
 
 
-def _competition(metric: EvaluationMetric) -> Competition:
+def _competition(metric: EvaluationMetric, *, tags: frozenset[str] = frozenset({"tabular"})) -> Competition:
     return Competition(
         id="sample-competition",
         title="Sample Competition",
@@ -33,7 +33,7 @@ def _competition(metric: EvaluationMetric) -> Competition:
         prize_pool=None,
         max_team_size=1,
         max_daily_submissions=5,
-        tags=frozenset({"tabular"}),
+        tags=tags,
         url=None,
     )
 
@@ -90,3 +90,34 @@ def test_apply_solution_policy_is_noop() -> None:
     updated_again, notes_again = apply_solution_policy(updated, policy)
     assert updated_again == updated
     assert not notes_again
+
+
+def test_build_problem_profile_marks_schema_time_column_temporal() -> None:
+    """A schema time column makes the profile time-ordered."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.RMSE),
+        CompetitionSchema(
+            id_column="id", target_columns=["target"], train_target_columns=["target"], time_column="date"
+        ),
+    )
+    assert profile.time_column == "date"
+    assert profile.is_temporal is True
+
+
+def test_build_problem_profile_marks_forecasting_tags_temporal() -> None:
+    """Forecasting tags make the profile time-ordered even without a time column."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.RMSE, tags=frozenset({"tabular", "time series"})),
+        CompetitionSchema(id_column="id", target_columns=["target"], train_target_columns=["target"]),
+    )
+    assert profile.time_column is None
+    assert profile.is_temporal is True
+
+
+def test_build_problem_profile_defaults_to_non_temporal() -> None:
+    """Plain tabular competitions stay on the random validation split."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.RMSE),
+        CompetitionSchema(id_column="id", target_columns=["target"], train_target_columns=["target"]),
+    )
+    assert profile.is_temporal is False

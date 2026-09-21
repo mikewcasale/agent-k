@@ -60,6 +60,9 @@ _CLASSIFICATION_METRICS: Final[frozenset[EvaluationMetric]] = frozenset(
 )
 _VISION_TAGS: Final[frozenset[str]] = frozenset({"vision", "computer vision", "image", "images"})
 _TEXT_TAGS: Final[frozenset[str]] = frozenset({"nlp", "text", "language"})
+_TEMPORAL_TAGS: Final[frozenset[str]] = frozenset(
+    {"time series", "time_series", "timeseries", "forecast", "forecasting", "temporal"}
+)
 
 type FitnessFunction = Callable[["FitnessInput"], float]
 
@@ -112,6 +115,8 @@ class ProblemProfile:
     id_column: str
     uses_proba: bool
     is_classification: bool
+    time_column: str | None = None
+    is_temporal: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -196,7 +201,10 @@ def build_problem_profile(competition: Competition, schema: CompetitionSchema) -
 
     @dev: |
         Infers problem type (tabular/vision/text, classification/regression)
-        from competition tags and evaluation metric.
+        from competition tags and evaluation metric. Marks the task as
+        time-ordered when the schema carries a time column or the competition
+        is tagged as a forecasting task, so downstream code validates
+        chronologically instead of on a random split.
     """
     metric = competition.metric
     is_classification = metric in _CLASSIFICATION_METRICS
@@ -219,6 +227,8 @@ def build_problem_profile(competition: Competition, schema: CompetitionSchema) -
         id_column=schema.id_column,
         uses_proba=uses_proba,
         is_classification=is_classification,
+        time_column=schema.time_column,
+        is_temporal=schema.time_column is not None or bool(tags & _TEMPORAL_TAGS),
     )
 
 

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The prototype template is an f-string that is dedented after\ninterpolation. A multi-line value whose continuation lines start at\ncolumn zero collapses the common prefix, so ``dedent`` becomes a no-op\nand the rendered module is indented at every line. Re-indenting the\ncontinuation lines keeps the prefix intact.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:_align_template_block",
+  "line": 2402,
+  "notice": "Aligns interpolated code blocks with the surrounding code template.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Indent a multi-line block so ``dedent`` keeps the template's common prefix.",
+  "type": "function"
+}

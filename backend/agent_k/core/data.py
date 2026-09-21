@@ -34,13 +34,47 @@ import os
 import shutil
 import zipfile
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
+    from collections.abc import Iterable, Sequence
 
 __all__ = ("CompetitionSchema", "infer_competition_schema", "locate_data_files", "stage_competition_data")
+
+_TIME_COLUMN_TOKENS: Final[tuple[str, ...]] = (
+    "timestamp",
+    "datetime",
+    "date",
+    "time",
+    "period",
+    "month",
+    "week",
+    "year",
+    "day",
+)
+"""Name tokens that make a column a candidate time index."""
+
+_TIME_SAMPLE_ROWS: Final[int] = 500
+_TIME_PARSE_RATIO: Final[float] = 0.9
+_TIME_MIN_LENGTH: Final[int] = 6
+_COMPACT_DATE_LENGTH: Final[int] = 8
+_TIME_SEPARATORS: Final[tuple[str, ...]] = ("-", "/", ":")
+_COMPACT_DATE_MAX_RANK: Final[int] = _TIME_COLUMN_TOKENS.index("date")
+"""Compact ``YYYYMMDD`` values are only trusted for columns named after a full date."""
+
+_TIME_FORMATS: Final[tuple[str, ...]] = (
+    "%d/%m/%Y",
+    "%m/%d/%Y",
+    "%Y/%m/%d",
+    "%d-%m-%Y",
+    "%d/%m/%Y %H:%M",
+    "%m/%d/%Y %H:%M",
+    "%Y/%m/%d %H:%M:%S",
+    "%d/%m/%Y %H:%M:%S",
+    "%m/%d/%Y %H:%M:%S",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,6 +96,7 @@ class CompetitionSchema:
     id_column: str
     target_columns: list[str]
     train_target_columns: list[str]
+    time_column: str | None = None
 
 
 def infer_competition_schema(train_path: Path, test_path: Path, sample_path: Path) -> CompetitionSchema:
@@ -73,6 +108,8 @@ def infer_competition_schema(train_path: Path, test_path: Path, sample_path: Pat
     @dev: |
         Compares train vs test headers to identify target columns.
         Falls back to sample submission columns if no difference found.
+        Also resolves a time index column when train and test share a
+        column whose sampled values parse as dates or timestamps.
     """
     train_header = _read_header(train_path)
     test_header = _read_header(test_path)
@@ -88,8 +125,18 @@ def infer_competition_schema(train_path: Path, test_path: Path, sample_path: Pat
         column for column in train_header if column not in test_header and column != id_column
     ] or list(target_columns)
 
+    time_column = _infer_time_column(
+        train_path,
+        train_header=train_header,
+        test_header=test_header,
+        excluded={id_column, *target_columns, *train_target_columns},
+    )
+
     return CompetitionSchema(
-        id_column=id_column, target_columns=list(target_columns), train_target_columns=train_target_columns
+        id_column=id_column,
+        target_columns=list(target_columns),
+        train_target_columns=train_target_columns,
+        time_column=time_column,
     )
 
 
@@ -159,6 +206,92 @@ def stage_competition_data(
         _link_or_copy(staged["sample"], competition_dir / staged["sample"].name)
 
     return staged
+
+
+def _infer_time_column(
+    train_path: Path, *, train_header: Sequence[str], test_header: Sequence[str], excluded: set[str]
+) -> str | None:
+    """Resolve the column that orders rows in time, when one exists."""
+    test_columns = set(test_header)
+    candidates = [
+        column
+        for column in train_header
+        if column not in excluded and column in test_columns and _time_token_rank(column) < len(_TIME_COLUMN_TOKENS)
+    ]
+    if not candidates:
+        return None
+
+    samples = _sample_columns(train_path, candidates, max_rows=_TIME_SAMPLE_ROWS)
+    temporal = [
+        column
+        for column in candidates
+        if _is_temporal_sample(
+            samples.get(column, []), allow_compact=_time_token_rank(column) <= _COMPACT_DATE_MAX_RANK
+        )
+    ]
+    if not temporal:
+        return None
+
+    return min(temporal, key=_time_token_rank)
+
+
+def _time_token_rank(column: str) -> int:
+    """Rank a column name by how specific its time token is (lower wins, no token ranks last)."""
+    name = column.strip().lower()
+    for rank, token in enumerate(_TIME_COLUMN_TOKENS):
+        if token in name:
+            return rank
+    return len(_TIME_COLUMN_TOKENS)
+
+
+def _sample_columns(path: Path, columns: Sequence[str], *, max_rows: int) -> dict[str, list[str]]:
+    samples: dict[str, list[str]] = {column: [] for column in columns}
+    with path.open("r", encoding="utf-8", errors="ignore", newline="") as handle:
+        reader = csv.DictReader(handle)
+        for index, row in enumerate(reader):
+            if index >= max_rows:
+                break
+            for column in columns:
+                value = row.get(column)
+                if value:
+                    samples[column].append(value)
+    return samples
+
+
+def _is_temporal_sample(values: Sequence[str], *, allow_compact: bool) -> bool:
+    """Report whether sampled values look like an ordered time index."""
+    if len(values) < 2 or len({value.strip() for value in values}) < 2:
+        return False
+    parsed = sum(1 for value in values if _is_datetime_like(value, allow_compact=allow_compact))
+    return parsed / len(values) >= _TIME_PARSE_RATIO
+
+
+def _is_datetime_like(value: str, *, allow_compact: bool) -> bool:
+    """Report whether a single value parses as a date or timestamp.
+
+    Values without a date separator are rejected unless ``allow_compact`` is set
+    and the value is an eight-digit ``YYYYMMDD`` date, so integer features such
+    as ``day_of_week`` or ``year_built`` are never mistaken for a time index.
+    """
+    text = value.strip()
+    if len(text) < _TIME_MIN_LENGTH:
+        return False
+    separated = any(separator in text for separator in _TIME_SEPARATORS)
+    if not separated and not (allow_compact and len(text) == _COMPACT_DATE_LENGTH and text.isdigit()):
+        return False
+    try:
+        datetime.fromisoformat(text)
+    except ValueError:
+        pass
+    else:
+        return True
+    for time_format in _TIME_FORMATS:
+        try:
+            datetime.strptime(text, time_format)
+        except ValueError:
+            continue
+        return True
+    return False
 
 
 def _read_header(path: Path) -> list[str]:

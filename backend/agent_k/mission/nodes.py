@@ -110,6 +110,63 @@ _DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = (
 )
 
 
+_TEMPLATE_INDENT: Final[int] = 8
+"""Indent width of the prototype code template."""
+
+_RANDOM_SPLIT_BLOCK: Final[str] = dedent(
+    """
+    X_train, X_val, y_train, y_val = train_test_split(
+        X,
+        y,
+        test_size=VALIDATION_SPLIT,
+        random_state=42,
+        stratify=y if IS_CLASSIFICATION and len(TRAIN_TARGET_COLUMNS) == 1 else None,
+    )
+    """
+).strip()
+
+_CHRONOLOGICAL_SPLIT_BLOCK: Final[str] = dedent(
+    """
+    _holdout = max(1, min(len(X) - 1, int(round(len(X) * (1.0 - VALIDATION_SPLIT)))))
+    if TIME_ORDER_COLUMN in X.columns:
+        _order = np.argsort(X[TIME_ORDER_COLUMN].to_numpy(), kind="stable")
+    else:
+        _order = np.arange(len(X))
+    X_train = X.iloc[_order[:_holdout]]
+    X_val = X.iloc[_order[_holdout:]]
+    y_train = y.iloc[_order[:_holdout]]
+    y_val = y.iloc[_order[_holdout:]]
+    if IS_CLASSIFICATION and len(TRAIN_TARGET_COLUMNS) == 1 and y_val.nunique() < 2:
+        X_train, X_val, y_train, y_val = train_test_split(
+            X,
+            y,
+            test_size=VALIDATION_SPLIT,
+            random_state=42,
+            stratify=y,
+        )
+    """
+).strip()
+
+_TIME_FEATURE_BLOCK: Final[str] = dedent(
+    """
+    def _expand_time_features(frame):
+        if TIME_COLUMN not in frame.columns:
+            return frame
+        parsed = pd.to_datetime(frame[TIME_COLUMN], errors="coerce")
+        expanded = frame.drop(columns=[TIME_COLUMN])
+        expanded[TIME_ORDER_COLUMN] = (parsed - pd.Timestamp("1970-01-01")).dt.total_seconds()
+        expanded[TIME_COLUMN + "__year"] = parsed.dt.year
+        expanded[TIME_COLUMN + "__month"] = parsed.dt.month
+        expanded[TIME_COLUMN + "__day"] = parsed.dt.day
+        expanded[TIME_COLUMN + "__dayofweek"] = parsed.dt.dayofweek
+        return expanded
+
+    X = _expand_time_features(X)
+    test_df = _expand_time_features(test_df)
+    """
+).strip()
+
+
 @dataclass
 class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
     """Discovery phase node.
@@ -504,6 +561,8 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         target_columns=schema.target_columns,
                         train_target_columns=schema.train_target_columns,
                         id_column=schema.id_column,
+                        time_column=profile.time_column,
+                        is_temporal=profile.is_temporal,
                     )
                     prototype_code, notes = apply_solution_policy(prototype_code, technique_policy)
                     if notes:
@@ -613,8 +672,21 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         target_columns: list[str],
         train_target_columns: list[str],
         id_column: str,
+        time_column: str | None = None,
+        is_temporal: bool = False,
     ) -> str:
-        """Generate prototype solution code."""
+        """Generate prototype solution code.
+
+        @notice: |
+            Renders a runnable baseline solution for the competition schema.
+
+        @dev: |
+            Multi-line template blocks are aligned with ``_align_template_block``
+            so the surrounding ``dedent`` still strips a common prefix. When the
+            task is time-ordered the baseline validates on a chronological
+            holdout and expands the time column into calendar features instead
+            of one-hot encoding raw timestamps.
+        """
         metric = getattr(competition, "metric", None)
         metric_key = metric if isinstance(metric, EvaluationMetric) else EvaluationMetric.ACCURACY
         metric_value = metric_key.value
@@ -676,6 +748,12 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
             model_bootstrap = ""
             model_init = f"base_model = {model_class}(random_state=42)"
 
+        time_constants, time_features_block, split_block = _build_temporal_blocks(
+            time_column=time_column, is_temporal=is_temporal
+        )
+        model_bootstrap = _align_template_block(model_bootstrap)
+        model_init = _align_template_block(model_init)
+
         prototype_code = (
             dedent(
                 f"""
@@ -708,7 +786,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         VALIDATION_SPLIT = float(os.getenv("AGENT_K_VALIDATION_SPLIT", "0.2"))
         IS_CLASSIFICATION = {is_classification}
         USES_PROBA = {uses_proba}
-        USES_LOG_TARGET = False
+        USES_LOG_TARGET = False{time_constants}
         
         train_df = pd.read_csv("train.csv")
         test_df = pd.read_csv("test.csv")
@@ -716,7 +794,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         y = train_df[TRAIN_TARGET_COLUMNS]
         if len(TRAIN_TARGET_COLUMNS) == 1:
             y = train_df[TRAIN_TARGET_COLUMNS[0]]
-        X = train_df.drop(columns=TRAIN_TARGET_COLUMNS)
+        X = train_df.drop(columns=TRAIN_TARGET_COLUMNS){time_features_block}
         
         categorical_cols = X.select_dtypes(include=["object", "category"]).columns
         numeric_cols = X.select_dtypes(exclude=["object", "category"]).columns
@@ -744,13 +822,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 else MultiOutputRegressor(base_model)
             )
         
-        X_train, X_val, y_train, y_val = train_test_split(
-            X,
-            y,
-            test_size=VALIDATION_SPLIT,
-            random_state=42,
-            stratify=y if IS_CLASSIFICATION and len(TRAIN_TARGET_COLUMNS) == 1 else None,
-        )
+        {split_block}
         
         clf = Pipeline(steps=[
             ("preprocessor", preprocessor),
@@ -2324,6 +2396,50 @@ def _write_fallback_submission(
                             target, next(iter(per_column_predictions.values()), 0.0)
                         )
                 writer.writerow(entry)
+
+
+def _align_template_block(block: str, *, indent: int = _TEMPLATE_INDENT) -> str:
+    """Indent a multi-line block so ``dedent`` keeps the template's common prefix.
+
+    @notice: |
+        Aligns interpolated code blocks with the surrounding code template.
+
+    @dev: |
+        The prototype template is an f-string that is dedented after
+        interpolation. A multi-line value whose continuation lines start at
+        column zero collapses the common prefix, so ``dedent`` becomes a no-op
+        and the rendered module is indented at every line. Re-indenting the
+        continuation lines keeps the prefix intact.
+    """
+    if not block:
+        return block
+
+    prefix = " " * indent
+    first, *rest = block.splitlines()
+    return "\n".join([first, *(f"{prefix}{line}" if line.strip() else "" for line in rest)])
+
+
+def _build_temporal_blocks(*, time_column: str | None, is_temporal: bool) -> tuple[str, str, str]:
+    """Build the constants, feature expansion, and split blocks for the baseline.
+
+    @notice: |
+        Returns the time-aware template blocks for the prototype solution.
+
+    @dev: |
+        Non-temporal competitions keep the stratified random holdout. Temporal
+        competitions validate on the most recent rows, ordered by the detected
+        time column when there is one and by file order otherwise, and fall back
+        to the random split when the chronological slice leaves a single class.
+    """
+    if not is_temporal:
+        return "", "", _align_template_block(_RANDOM_SPLIT_BLOCK)
+
+    prefix = "\n" + " " * _TEMPLATE_INDENT
+    constants = prefix + _align_template_block(
+        f'TIME_COLUMN = {time_column!r}\nTIME_ORDER_COLUMN = (TIME_COLUMN or "") + "__ts"'
+    )
+    features = f"\n{prefix}{_align_template_block(_TIME_FEATURE_BLOCK)}" if time_column else ""
+    return constants, features, _align_template_block(_CHRONOLOGICAL_SPLIT_BLOCK)
 
 
 def _generate_fallback_prototype(

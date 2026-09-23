@@ -484,6 +484,7 @@ class EvolverDeps:
     generation_offset: int = 0
     best_solution: str | None = None
     best_fitness: float | None = None
+    best_stage1_fitness: float | None = None
     improvement_count: int = 0
     min_improvements_required: int = 0
     generation_history: list[dict[str, Any]] = field(default_factory=list)
@@ -859,7 +860,16 @@ class EvolverAgent(MemoryMixin):
                 task_id="evolution_evaluate", tool_call_id=tool_call_id, result=result, duration_ms=result["runtime_ms"]
             )
 
-            summary = f"Fitness {result['fitness']:.4f}, CV {result['cv_score']:.4f}, valid={result['valid']}"
+            stage = result.get("stage", "full")
+            summary = (
+                f"Fitness {result['fitness']:.4f}, CV {result['cv_score']:.4f}, valid={result['valid']}, stage={stage}"
+            )
+            if result["valid"] and stage == "stage1":
+                summary = (
+                    f"{summary} (screening run on a {self._settings.cascade_stage1_rows}-row subset; "
+                    "it did not clear the cascade threshold, so this fitness is not comparable "
+                    "with full evaluations and did not update the best solution)"
+                )
             if not result["valid"] and result.get("error_category"):
                 summary = f"{summary}, error={result['error_category']}"
             return ToolReturn(
@@ -1854,14 +1864,19 @@ class EvolverAgent(MemoryMixin):
         if not quick_result["valid"]:
             return self._record_evaluation(ctx, solution_code, code_signature, quick_result)
 
-        threshold = None
-        if ctx.deps.best_fitness is not None:
-            threshold = max(
-                ctx.deps.best_fitness * self._settings.cascade_relative_threshold,
-                self._settings.cascade_floor_threshold,
-            )
-        if threshold is not None and quick_result["fitness"] < threshold:
-            quick_result["stage_threshold"] = threshold
+        threshold = self._stage1_threshold(ctx.deps)
+        quick_result["stage_threshold"] = threshold
+        quick_result["stage1_reference_fitness"] = ctx.deps.best_stage1_fitness
+        promoted = threshold is None or quick_result["fitness"] >= threshold
+        self._update_stage1_reference(ctx.deps, quick_result["fitness"])
+        logfire.info(
+            "cascade_stage1_decision",
+            fitness=quick_result["fitness"],
+            threshold=threshold,
+            reference_fitness=quick_result["stage1_reference_fitness"],
+            promoted=promoted,
+        )
+        if not promoted:
             return self._record_evaluation(ctx, solution_code, code_signature, quick_result)
 
         full_result = await self._evaluate_solution(ctx, solution_code, validation_split=validation_split, stage="full")
@@ -1869,8 +1884,29 @@ class EvolverAgent(MemoryMixin):
         full_result["stage1_fitness"] = quick_result["fitness"]
         full_result["stage1_cv_score"] = quick_result["cv_score"]
         full_result["stage1_runtime_ms"] = quick_result["runtime_ms"]
+        full_result["stage1_threshold"] = threshold
+        full_result["stage1_reference_fitness"] = quick_result["stage1_reference_fitness"]
         full_result["runtime_ms"] += quick_result["runtime_ms"]
         return self._record_evaluation(ctx, solution_code, code_signature, full_result)
+
+    def _stage1_threshold(self, deps: EvolverDeps) -> float | None:
+        """Return the stage-1 fitness a candidate must reach to earn a full evaluation.
+
+        Stage 1 trains and scores on a truncated subset, so its fitness is not comparable
+        with the full-fidelity ``best_fitness``. The relative gate is therefore anchored on
+        the best stage-1 fitness observed so far, and only the absolute floor applies until
+        a stage-1 reference exists.
+        """
+        floor = self._settings.cascade_floor_threshold
+        reference = deps.best_stage1_fitness
+        if reference is None:
+            return floor if floor > 0.0 else None
+        return max(reference * self._settings.cascade_relative_threshold, floor)
+
+    def _update_stage1_reference(self, deps: EvolverDeps, fitness: float) -> None:
+        """Record the best stage-1 fitness seen so far for like-for-like screening."""
+        if deps.best_stage1_fitness is None or fitness > deps.best_stage1_fitness:
+            deps.best_stage1_fitness = fitness
 
     async def _evaluate_solution(
         self,

@@ -717,6 +717,11 @@
     },
     {
       "source": "agent_k.mission.persistence",
+      "target": "agent_k.mission.persistence:CHECKPOINT_TIMESTAMP_FORMAT",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.mission.persistence",
       "target": "agent_k.core.tracking",
       "type": "similar"
     },
@@ -921,7 +926,7 @@
       "type": "similar"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831739+00:00",
+  "generated": "2026-09-24T02:15:34.563015+00:00",
   "nodes": [
     {
       "id": "agent_k",

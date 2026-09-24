@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.mission.persistence:MissionPersistence.has_snapshots",
-  "line": 108,
+  "id": "agent_k.mission.persistence:MissionPersistence._write_checkpoint",
+  "line": 196,
   "notice": null,
   "pattern": null,
   "similar": null,
   "source": "agent_k/mission/persistence.py",
-  "summary": "Return whether persistence already has stored snapshots.",
+  "summary": "Write ``payload`` to a fresh checkpoint file, replacing it atomically.",
   "type": "method"
 }

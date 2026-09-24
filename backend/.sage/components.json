@@ -566,7 +566,8 @@
     "provides": [
       "agent_k.mission.persistence:MissionPersistence",
       "agent_k.mission.persistence:create_persistence",
-      "agent_k.mission.persistence:CHECKPOINT_DIR"
+      "agent_k.mission.persistence:CHECKPOINT_DIR",
+      "agent_k.mission.persistence:CHECKPOINT_TIMESTAMP_FORMAT"
     ],
     "source": "agent_k/mission/persistence.py"
   },

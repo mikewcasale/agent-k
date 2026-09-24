@@ -12,6 +12,7 @@
         - agent_k.mission.persistence:MissionPersistence
         - agent_k.mission.persistence:create_persistence
         - agent_k.mission.persistence:CHECKPOINT_DIR
+        - agent_k.mission.persistence:CHECKPOINT_TIMESTAMP_FORMAT
     pattern: state-persistence
 
 @similar:
@@ -35,6 +36,8 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
+import asyncio
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated, Any, Final
@@ -48,10 +51,13 @@ from agent_k.core.sage import Doc, Range
 
 from .state import MissionResult, MissionState
 
-__all__ = ("MissionPersistence", "create_persistence", "CHECKPOINT_DIR")
+__all__ = ("MissionPersistence", "create_persistence", "CHECKPOINT_DIR", "CHECKPOINT_TIMESTAMP_FORMAT")
 
 CHECKPOINT_DIR: Final[Path] = Path("~/.agent_k/checkpoints").expanduser()
 CHECKPOINT_PREFIX: Final[str] = "checkpoint_"
+CHECKPOINT_TIMESTAMP_FORMAT: Final[str] = "%Y%m%d_%H%M%S_%f"
+_TEMP_SUFFIX: Final[str] = ".tmp"
+_STALE_TEMP_SECONDS: Final[float] = 3600.0
 
 
 class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
@@ -81,6 +87,8 @@ class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
 
         @invariants:
             - "mission_dir exists before persistence operations."
+            - "Checkpoint file names sort lexicographically in write order."
+            - "A checkpoint file is either absent or complete; partial writes stay in temp files."
     """
 
     def __init__(
@@ -164,19 +172,77 @@ class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
             self.set_types(MissionState, MissionResult)
 
     async def _save_checkpoint(self, state: MissionState) -> None:
-        """Save state with timestamp and clean up old checkpoints."""
+        """Write a rotated checkpoint without letting disk failures abort the mission."""
         with logfire.span("mission.persistence.save", mission_id=self.mission_id):
-            timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
-            checkpoint_path = self.mission_dir / f"{CHECKPOINT_PREFIX}{timestamp}.json"
-            checkpoint_path.write_text(state.model_dump_json(indent=2), encoding="utf-8")
+            # Serialize on the event loop: the graph mutates state between awaits,
+            # so a thread must never observe it mid-update.
+            payload = state.model_dump_json(indent=2)
+            try:
+                checkpoint_path = await asyncio.to_thread(self._write_checkpoint, payload)
+            except OSError as exc:
+                # The authoritative snapshot is already on disk via the base class;
+                # a rotated checkpoint is auxiliary and must not fail the run.
+                logfire.warning("mission_checkpoint_write_failed", mission_id=self.mission_id, error=str(exc))
+                return
+            logfire.debug("mission_checkpoint_saved", mission_id=self.mission_id, checkpoint=checkpoint_path.name)
             await self._cleanup_old_checkpoints()
 
     async def _cleanup_old_checkpoints(self) -> None:
-        checkpoints = sorted(
-            self.mission_dir.glob(f"{CHECKPOINT_PREFIX}*.json"), key=lambda p: p.stat().st_mtime, reverse=True
-        )
-        for old_checkpoint in checkpoints[self.max_checkpoints :]:
-            old_checkpoint.unlink()
+        removed = await asyncio.to_thread(self._prune_checkpoints)
+        if removed:
+            logfire.debug("mission_checkpoints_pruned", mission_id=self.mission_id, removed=removed)
+
+    def _write_checkpoint(self, payload: str) -> Path:
+        """Write ``payload`` to a fresh checkpoint file, replacing it atomically."""
+        checkpoint_path = self._next_checkpoint_path()
+        temp_path = checkpoint_path.with_name(f".{checkpoint_path.name}{_TEMP_SUFFIX}")
+        try:
+            temp_path.write_text(payload, encoding="utf-8")
+            temp_path.replace(checkpoint_path)
+        except OSError:
+            temp_path.unlink(missing_ok=True)
+            raise
+        return checkpoint_path
+
+    def _next_checkpoint_path(self) -> Path:
+        """Return an unused checkpoint path that sorts after every existing one."""
+        timestamp = datetime.now(UTC).strftime(CHECKPOINT_TIMESTAMP_FORMAT)
+        checkpoint_path = self.mission_dir / f"{CHECKPOINT_PREFIX}{timestamp}.json"
+        collision = 0
+        while checkpoint_path.exists():
+            collision += 1
+            checkpoint_path = self.mission_dir / f"{CHECKPOINT_PREFIX}{timestamp}_{collision:03d}.json"
+        return checkpoint_path
+
+    def _prune_checkpoints(self) -> int:
+        """Drop checkpoints beyond the retention limit and leftover temp files."""
+        try:
+            checkpoints = sorted(self.mission_dir.glob(f"{CHECKPOINT_PREFIX}*.json"), reverse=True)
+            stale_temps = self._stale_temp_files()
+        except OSError as exc:
+            logfire.warning("mission_checkpoint_prune_failed", mission_id=self.mission_id, error=str(exc))
+            return 0
+
+        removed = 0
+        for path in [*checkpoints[self.max_checkpoints :], *stale_temps]:
+            try:
+                path.unlink()
+            except OSError:
+                continue
+            removed += 1
+        return removed
+
+    def _stale_temp_files(self) -> list[Path]:
+        cutoff = time.time() - _STALE_TEMP_SECONDS
+        stale: list[Path] = []
+        for path in self.mission_dir.glob(f".{CHECKPOINT_PREFIX}*.json{_TEMP_SUFFIX}"):
+            try:
+                modified_at = path.stat().st_mtime
+            except OSError:
+                continue
+            if modified_at < cutoff:
+                stale.append(path)
+        return stale
 
 
 def create_persistence(

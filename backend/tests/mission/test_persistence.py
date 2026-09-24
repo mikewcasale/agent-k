@@ -23,6 +23,8 @@ from agent_k.mission.state import MissionState
 if TYPE_CHECKING:
     from pathlib import Path
 
+    from agent_k.core.types import MissionPhase
+
 __all__ = ()
 
 pytestmark = pytest.mark.anyio
@@ -35,8 +37,8 @@ def _persistence(tmp_path: Path, *, max_checkpoints: int = 10) -> MissionPersist
     return MissionPersistence(MISSION_ID, checkpoint_dir=tmp_path, max_checkpoints=max_checkpoints)
 
 
-def _state(phase: str = "discovery") -> MissionState:
-    return MissionState(mission_id=str(uuid4()), current_phase=phase)  # type: ignore[arg-type]
+def _state(phase: MissionPhase = "discovery") -> MissionState:
+    return MissionState(mission_id=str(uuid4()), current_phase=phase)
 
 
 def _checkpoints(persistence: MissionPersistence) -> list[Path]:
@@ -53,7 +55,7 @@ class TestCheckpointWrites:
     async def test_rapid_saves_do_not_overwrite_each_other(self, tmp_path: Path) -> None:
         """Back-to-back saves inside one wall-clock second must produce distinct files."""
         persistence = _persistence(tmp_path)
-        phases = ("discovery", "research", "prototype")
+        phases: tuple[MissionPhase, ...] = ("discovery", "research", "prototype")
 
         started_at = time.monotonic()
         for phase in phases:

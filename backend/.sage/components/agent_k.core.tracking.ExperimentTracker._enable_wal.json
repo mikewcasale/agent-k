@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "``journal_mode`` is persisted in the database header, so this runs once per tracker\nrather than per connection. WAL is unavailable on some network filesystems; the\nrollback journal remains correct there, so a failure is logged and tolerated.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.tracking:ExperimentTracker._enable_wal",
+  "line": 664,
+  "notice": "Enables WAL so readers never block the writer.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/tracking.py",
+  "summary": "Switch the database to write-ahead logging.",
+  "type": "method"
+}

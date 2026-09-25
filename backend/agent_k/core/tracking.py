@@ -40,14 +40,18 @@ import re
 import sqlite3
 import uuid
 from collections import defaultdict
+from contextlib import closing, contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Annotated, Any, Final
+from typing import TYPE_CHECKING, Annotated, Any, Final
 
 import logfire
 from pydantic import BaseModel, ConfigDict, Field
 
 from agent_k.core.sage import Doc
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 __all__ = (
     "ExperimentMetadata",
@@ -57,12 +61,16 @@ __all__ = (
     "HintAttemptRecord",
     "HintEffectivenessTracker",
     "ExperimentTracker",
+    "SQLITE_BUSY_TIMEOUT_MS",
     "create_experiment_tracker",
     "extract_solution_metadata",
 )
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _DEFAULT_EXPERIMENT_DB: Final[Path] = Path("~/.agent_k/experiments/experiments.sqlite").expanduser()
+SQLITE_BUSY_TIMEOUT_MS: Final[int] = 30_000
+"""Milliseconds SQLite waits on a locked database before raising."""
+
 _MODEL_SIGNATURES: Final[tuple[tuple[str, str, re.Pattern[str]], ...]] = (
     ("LGBMRegressor", "lightgbm", re.compile(r"\bLGBMRegressor\b")),
     ("LGBMClassifier", "lightgbm", re.compile(r"\bLGBMClassifier\b")),
@@ -290,10 +298,11 @@ class ExperimentTracker:
         @concurrency:
             model: asyncio
             safe: false
-            reason: "Uses SQLite connections without cross-process locking."
+            reason: "Methods issue blocking SQLite calls; run them off the event loop."
 
         @invariants:
             - "Database schema is initialized before writes."
+            - "Every connection is closed when its unit of work ends."
     """
 
     _table_name: Final[str] = "experiments"
@@ -303,6 +312,8 @@ class ExperimentTracker:
     def __init__(self, db_path: Annotated[Path | None, Doc("SQLite database path override.")] = None) -> None:
         self._db_path = (db_path or _resolve_db_path()).expanduser()
         self._db_path.parent.mkdir(parents=True, exist_ok=True)
+        self._wal_enabled = False
+        self._enable_wal()
         self._initialize_schema()
 
     @property
@@ -318,7 +329,7 @@ class ExperimentTracker:
 
         payload = record.model_dump()
         with logfire.span("experiment.record", competition_id=record.competition_id, phase=record.phase):
-            with self._connect() as conn:
+            with self._session() as conn:
                 conn.execute(
                     f"""
                     INSERT INTO {self._table_name} (
@@ -371,7 +382,7 @@ class ExperimentTracker:
 
     def list_experiments(self, competition_id: str, *, limit: int = 50) -> list[ExperimentRecord]:
         """Return most recent experiment records for a competition."""
-        with self._connect() as conn:
+        with self._session() as conn:
             rows = conn.execute(
                 f"""
                 SELECT * FROM {self._table_name}
@@ -390,7 +401,7 @@ class ExperimentTracker:
 
         payload = record.model_dump()
         with logfire.span("submission.record", competition_id=record.competition_id):
-            with self._connect() as conn:
+            with self._session() as conn:
                 conn.execute(
                     f"""
                     INSERT INTO {self._submission_table_name} (
@@ -424,7 +435,7 @@ class ExperimentTracker:
     def record_hint_attempt(self, record: HintAttemptRecord) -> HintAttemptRecord:
         """Persist a preprocessing hint attempt record."""
         with logfire.span("hint_attempt.record", competition_id=record.competition_id, hint_id=record.hint_id):
-            with self._connect() as conn:
+            with self._session() as conn:
                 conn.execute(
                     f"""
                     INSERT INTO {self._hint_table_name} (
@@ -451,7 +462,7 @@ class ExperimentTracker:
 
     def list_submissions(self, competition_id: str, *, limit: int = 50) -> list[KaggleSubmissionRecord]:
         """Return most recent submission records for a competition."""
-        with self._connect() as conn:
+        with self._session() as conn:
             rows = conn.execute(
                 f"""
                 SELECT * FROM {self._submission_table_name}
@@ -476,7 +487,7 @@ class ExperimentTracker:
             query += " AND feature_set_hash = ?"
             params.append(feature_set_hash)
         query += " ORDER BY created_at DESC LIMIT 1"
-        with self._connect() as conn:
+        with self._session() as conn:
             row = conn.execute(query, params).fetchone()
         return _row_to_submission(row) if row else None
 
@@ -564,7 +575,7 @@ class ExperimentTracker:
 
     def find_latest_by_code_signature(self, competition_id: str, code_signature: str) -> ExperimentRecord | None:
         """Return the most recent record for a code signature."""
-        with self._connect() as conn:
+        with self._session() as conn:
             row = conn.execute(
                 f"""
                 SELECT * FROM {self._table_name}
@@ -578,7 +589,7 @@ class ExperimentTracker:
 
     def find_latest_by_config_signature(self, competition_id: str, config_signature: str) -> ExperimentRecord | None:
         """Return the most recent record for a config signature."""
-        with self._connect() as conn:
+        with self._session() as conn:
             row = conn.execute(
                 f"""
                 SELECT * FROM {self._table_name}
@@ -597,7 +608,7 @@ class ExperimentTracker:
         if metric not in {"public_score", "cv_score"}:
             raise ValueError("metric must be public_score or cv_score")
         order = "DESC" if direction == "maximize" else "ASC"
-        with self._connect() as conn:
+        with self._session() as conn:
             row = conn.execute(
                 f"""
                 SELECT * FROM {self._table_name}
@@ -625,12 +636,51 @@ class ExperimentTracker:
         )
 
     def _connect(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self._db_path)
+        conn = sqlite3.connect(self._db_path, timeout=SQLITE_BUSY_TIMEOUT_MS / 1000)
         conn.row_factory = sqlite3.Row
+        # Per-connection pragmas; they must be re-applied on every connect.
+        conn.execute(f"PRAGMA busy_timeout = {SQLITE_BUSY_TIMEOUT_MS}")
+        if self._wal_enabled:
+            # Safe to relax only under WAL; with a rollback journal this risks corruption.
+            conn.execute("PRAGMA synchronous = NORMAL")
         return conn
 
+    @contextmanager
+    def _session(self) -> Iterator[sqlite3.Connection]:
+        """Yield a connection that commits on success, rolls back on error, and always closes.
+
+        @notice: |
+            Scopes a SQLite connection to a single unit of work.
+
+        @dev: |
+            ``with sqlite3.connect(...) as conn`` only commits; it never closes. Wrapping the
+            connection in ``closing`` releases the file handle as soon as the block exits, which
+            keeps long evolution runs from accumulating one descriptor per query.
+        """
+        with closing(self._connect()) as conn, conn:
+            yield conn
+
+    def _enable_wal(self) -> None:
+        """Switch the database to write-ahead logging.
+
+        @notice: |
+            Enables WAL so readers never block the writer.
+
+        @dev: |
+            ``journal_mode`` is persisted in the database header, so this runs once per tracker
+            rather than per connection. WAL is unavailable on some network filesystems; the
+            rollback journal remains correct there, so a failure is logged and tolerated.
+        """
+        try:
+            with closing(self._connect()) as conn:
+                mode = conn.execute("PRAGMA journal_mode = WAL").fetchone()
+        except sqlite3.OperationalError as exc:
+            logfire.warning("experiment_db_wal_unavailable", db_path=str(self._db_path), error=str(exc))
+            return
+        self._wal_enabled = bool(mode) and str(mode[0]).lower() == "wal"
+
     def _initialize_schema(self) -> None:
-        with self._connect() as conn:
+        with self._session() as conn:
             conn.execute(
                 f"""
                 CREATE TABLE IF NOT EXISTS {self._table_name} (

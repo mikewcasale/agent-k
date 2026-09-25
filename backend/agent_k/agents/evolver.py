@@ -254,8 +254,34 @@ _CATEGORICAL_HYPERPARAMS: Final[dict[str, tuple[str, ...]]] = {
     "weights": ("uniform", "distance"),
     "metric": ("minkowski", "euclidean", "manhattan", "chebyshev"),
     "algorithm": ("auto", "ball_tree", "kd_tree", "brute"),
-    "objective": ("regression", "regression_l1", "huber", "quantile"),
 }
+_OBJECTIVE_FAMILIES: Final[dict[str, tuple[str, ...]]] = {
+    "regression": ("regression", "regression_l1", "huber", "quantile"),
+    "binary": ("binary", "cross_entropy"),
+    "multiclass": ("multiclass", "multiclassova"),
+}
+# Gradient-boosting objectives are only interchangeable inside their own family: swapping a
+# classification objective for a regression one silently destroys ranking quality on binary
+# targets and is a fatal LightGBM error on multiclass targets.
+_OBJECTIVE_TO_FAMILY: Final[dict[str, str]] = {
+    objective: family for family, objectives in _OBJECTIVE_FAMILIES.items() for objective in objectives
+}
+_OBJECTIVE_ALIASES: Final[dict[str, str]] = {
+    "l2": "regression",
+    "mean_squared_error": "regression",
+    "mse": "regression",
+    "rmse": "regression",
+    "l1": "regression_l1",
+    "mean_absolute_error": "regression_l1",
+    "mae": "regression_l1",
+    "binary_logloss": "binary",
+    "xentropy": "cross_entropy",
+    "softmax": "multiclass",
+    "ova": "multiclassova",
+    "multiclass_ova": "multiclassova",
+}
+_CLASSIFIER_PATTERN: Final[re.Pattern[str]] = re.compile(r"\b\w*Classifier\b")
+_REGRESSOR_PATTERN: Final[re.Pattern[str]] = re.compile(r"\b\w*Regressor\b")
 _KNN_PARAM_KEYS: Final[frozenset[str]] = frozenset({"n_neighbors", "weights", "metric", "p", "leaf_size", "algorithm"})
 _MODEL_SWAPS: Final[dict[str, str]] = {
     "RandomForestClassifier": "GradientBoostingClassifier",
@@ -2438,6 +2464,27 @@ class EvolverAgent(MemoryMixin):
                 return result
         return self._apply_point_mutation(code, params)
 
+    def _objective_options(self, code: str, raw_value: str) -> tuple[str, ...]:
+        """Return the objectives interchangeable with the one currently in the code.
+
+        @notice: |
+            Restricts objective mutation to the problem family already implied by the code.
+
+        @dev: |
+            The family is taken from the current objective when it is recognised, otherwise
+            from an unambiguous regressor class name. Anything else yields an empty tuple so
+            the caller skips the mutation rather than guessing: a classifier carrying an
+            unrecognised objective could be binary or multiclass, and crossing families
+            silently degrades binary targets and is fatal on multiclass ones.
+        """
+        current = raw_value.strip().strip("'\"")
+        canonical = _OBJECTIVE_ALIASES.get(current.lower(), current.lower())
+        if family := _OBJECTIVE_TO_FAMILY.get(canonical):
+            return _OBJECTIVE_FAMILIES[family]
+        if _REGRESSOR_PATTERN.search(code) and not _CLASSIFIER_PATTERN.search(code):
+            return _OBJECTIVE_FAMILIES["regression"]
+        return ()
+
     def _apply_hyperparameter_mutation(self, code: str, params: dict[str, Any]) -> str:
         rng = self._seeded_rng(code, params, "hyperparameter")
         magnitude = float(params.get("magnitude", 0.2))
@@ -2447,17 +2494,27 @@ class EvolverAgent(MemoryMixin):
             if (knn_mutated := self._apply_knn_mutation(code, params)) != code:
                 return knn_mutated
 
+        has_knn = bool(_KNN_MODEL_PATTERN.search(code))
         candidates: list[tuple[str, re.Pattern[str], re.Match[str]]] = []
         for name, pattern in _HYPERPARAM_PATTERNS.items():
             if requested and name != requested:
                 continue
+            if name in _KNN_PARAM_KEYS and not has_knn:
+                continue
             if match := pattern.search(code):
+                if name == "objective" and not self._objective_options(code, match.group(2)):
+                    continue
                 candidates.append((name, pattern, match))
 
         if not candidates:
             return self._apply_point_mutation(code, params)
 
         name, pattern, match = rng.choice(candidates)
+        if name == "objective":
+            current = match.group(2).strip().strip("'\"")
+            family_options = self._objective_options(code, match.group(2))
+            objective_choices = [option for option in family_options if option != current] or list(family_options)
+            return pattern.sub(f"{match.group(1)}{json.dumps(rng.choice(objective_choices))}", code, count=1)
         if name in _CATEGORICAL_HYPERPARAMS:
             current = match.group(2).strip().strip("'\"")
             options = list(_CATEGORICAL_HYPERPARAMS[name])

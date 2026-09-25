@@ -13,7 +13,7 @@ import pytest
 __all__ = ()
 
 try:
-    from agent_k.agents.evolver import _MODEL_SWAPS, evolver_agent_instance
+    from agent_k.agents.evolver import _MODEL_SWAPS, _OBJECTIVE_FAMILIES, evolver_agent_instance
 except TypeError as exc:
     if "MCPServerTool" in str(exc):
         pytest.skip(f"MCPServerTool API issue: {exc}", allow_module_level=True)
@@ -121,3 +121,98 @@ class TestCrossover:
         assert "import numpy as np" in import_lines
         assert "from math import sqrt" in import_lines
         assert "def bar():" in merged
+
+
+def _sweep_objectives(code: str, draws: int = 60) -> set[str]:
+    """Return every objective value reachable by repeated objective mutation of ``code``."""
+    values: set[str] = set()
+    for draw in range(draws):
+        mutated = _evolver._apply_hyperparameter_mutation(code, {"param": "objective", "draw": draw})
+        match = re.search(r"objective\s*=\s*\"([^\"]+)\"", mutated)
+        if match:
+            values.add(match.group(1))
+    return values
+
+
+class TestObjectiveMutation:
+    """Objective mutation must stay inside the problem family already implied by the code."""
+
+    @pytest.mark.parametrize(
+        ("current", "family"),
+        [
+            ("regression", "regression"),
+            ("regression_l1", "regression"),
+            ("huber", "regression"),
+            ("binary", "binary"),
+            ("cross_entropy", "binary"),
+            ("multiclass", "multiclass"),
+            ("multiclassova", "multiclass"),
+        ],
+    )
+    def test_objective_stays_within_its_family(self, current: str, family: str) -> None:
+        """Every reachable objective belongs to the family the code started in."""
+        estimator = "LGBMRegressor" if family == "regression" else "LGBMClassifier"
+        code = f'model = {estimator}(objective="{current}", learning_rate=0.05)\n'
+
+        assert _sweep_objectives(code) <= set(_OBJECTIVE_FAMILIES[family])
+
+    @pytest.mark.parametrize("current", ["binary", "cross_entropy"])
+    def test_classification_never_becomes_regression(self, current: str) -> None:
+        """Regression objectives silently destroy probability quality on binary targets."""
+        code = f'model = LGBMClassifier(objective="{current}", learning_rate=0.05)\n'
+
+        assert not _sweep_objectives(code) & set(_OBJECTIVE_FAMILIES["regression"])
+
+    @pytest.mark.parametrize("current", ["multiclass", "multiclassova"])
+    def test_multiclass_never_leaves_its_family(self, current: str) -> None:
+        """Non-multiclass objectives are a fatal LightGBM error on multiclass targets."""
+        code = f'model = LGBMClassifier(objective="{current}", num_class=5)\n'
+        reachable = _sweep_objectives(code)
+
+        assert reachable
+        assert reachable <= set(_OBJECTIVE_FAMILIES["multiclass"])
+
+    @pytest.mark.parametrize(
+        ("alias", "family"), [("l2", "regression"), ("mae", "regression"), ("softmax", "multiclass")]
+    )
+    def test_objective_aliases_resolve_to_their_family(self, alias: str, family: str) -> None:
+        """LightGBM objective aliases map onto the same family as their canonical name."""
+        estimator = "LGBMRegressor" if family == "regression" else "LGBMClassifier"
+        code = f'model = {estimator}(objective="{alias}", num_class=5)\n'
+
+        assert _sweep_objectives(code) <= set(_OBJECTIVE_FAMILIES[family])
+
+    def test_unrecognised_objective_on_a_classifier_is_left_alone(self) -> None:
+        """An ambiguous classifier objective is skipped rather than guessed at."""
+        code = 'model = SomeClassifier(objective="weird_custom", learning_rate=0.05)\n'
+
+        assert _sweep_objectives(code) == {"weird_custom"}
+
+    def test_unrecognised_objective_on_a_regressor_uses_regression_family(self) -> None:
+        """An unambiguous regressor still explores regression objectives."""
+        code = 'model = LGBMRegressor(objective="tweedie", learning_rate=0.05)\n'
+
+        assert _sweep_objectives(code) <= set(_OBJECTIVE_FAMILIES["regression"]) | {"tweedie"}
+
+
+class TestKnnParamScoping:
+    """KNN-only parameters must not be rewritten in code that has no KNN estimator."""
+
+    def test_lightgbm_metric_is_not_replaced_by_a_distance_metric(self) -> None:
+        """``metric`` is a LightGBM parameter too; distance metrics are meaningless there."""
+        code = 'model = LGBMClassifier(metric="auc", learning_rate=0.05)\n'
+
+        for draw in range(60):
+            mutated = _evolver._apply_hyperparameter_mutation(code, {"param": "metric", "draw": draw})
+            assert 'metric="auc"' in mutated
+
+    def test_knn_code_still_mutates_its_metric(self) -> None:
+        """Gating must not disable KNN metric exploration."""
+        code = 'model = KNeighborsRegressor(n_neighbors=5, metric="euclidean", p=2)\n'
+        metrics = set()
+        for draw in range(60):
+            mutated = _evolver._apply_hyperparameter_mutation(code, {"param": "metric", "draw": draw})
+            if match := re.search(r'metric\s*=\s*"([^"]+)"', mutated):
+                metrics.add(match.group(1))
+
+        assert len(metrics) > 1

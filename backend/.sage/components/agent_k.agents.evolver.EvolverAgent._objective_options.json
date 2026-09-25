@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The family is taken from the current objective when it is recognised, otherwise\nfrom an unambiguous regressor class name. Anything else yields an empty tuple so\nthe caller skips the mutation rather than guessing: a classifier carrying an\nunrecognised objective could be binary or multiclass, and crossing families\nsilently degrades binary targets and is fatal on multiclass ones.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:EvolverAgent._objective_options",
+  "line": 2468,
+  "notice": "Restricts objective mutation to the problem family already implied by the code.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Return the objectives interchangeable with the one currently in the code.",
+  "type": "method"
+}

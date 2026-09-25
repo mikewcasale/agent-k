@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Constructing a tracker re-runs schema DDL and opens a connection. Tools are called\nmany times per mission, so the instance is cached for the process lifetime.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.tracking:_tracker",
+  "line": 56,
+  "notice": "Reuses one tracker so schema setup is not repeated per tool call.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/tracking.py",
+  "summary": "Return the process-wide experiment tracker.",
+  "type": "function"
+}

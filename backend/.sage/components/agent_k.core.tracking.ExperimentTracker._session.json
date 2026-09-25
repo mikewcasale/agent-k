@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "``with sqlite3.connect(...) as conn`` only commits; it never closes. Wrapping the\nconnection in ``closing`` releases the file handle as soon as the block exits, which\nkeeps long evolution runs from accumulating one descriptor per query.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.tracking:ExperimentTracker._session",
+  "line": 650,
+  "notice": "Scopes a SQLite connection to a single unit of work.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/tracking.py",
+  "summary": "Yield a connection that commits on success, rolls back on error, and always closes.",
+  "type": "method"
+}

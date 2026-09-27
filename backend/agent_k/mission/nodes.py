@@ -57,7 +57,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from textwrap import dedent
-from typing import TYPE_CHECKING, Any, Final
+from typing import TYPE_CHECKING, Any, Final, TypeVar
 
 import logfire
 from pydantic_graph import BaseNode, End, GraphRunContext
@@ -74,7 +74,7 @@ from ..core.constants import (
     SUBMISSION_TIMEOUT_SECONDS,
 )
 from ..core.data import infer_competition_schema, locate_data_files, stage_competition_data
-from ..core.exceptions import classify_error
+from ..core.exceptions import PhaseTimeoutError, classify_error
 from ..core.hints import DatasetProfile, PreprocessingHint, build_dataset_profile, generate_preprocessing_hints
 from ..core.models import (
     EvaluationMetric,
@@ -95,6 +95,8 @@ from ..core.tracking import (
 from .state import GraphContext, MissionResult, MissionState
 
 if TYPE_CHECKING:
+    from collections.abc import Coroutine
+
     import httpx
     from pydantic_ai import Agent
 
@@ -102,6 +104,8 @@ if TYPE_CHECKING:
     from ..ui.agui import EventEmitter
 
 __all__ = ("DiscoveryNode", "ResearchNode", "PrototypeNode", "EvolutionNode", "SubmissionNode")
+
+PhaseResultT = TypeVar("PhaseResultT")
 
 _LIGHTGBM_AVAILABLE: Final[bool] = importlib.util.find_spec("lightgbm") is not None
 _BASE_DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = ("xgboost", "catboost")
@@ -170,6 +174,7 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
 
             state.current_phase = "discovery"
             state.phase_started_at = datetime.now(UTC)
+            deadline = _phase_deadline(self.timeout)
 
             try:
                 if state.competition_id:
@@ -190,7 +195,13 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
 
                 # Run lobbyist agent
                 lobbyist_agent = _resolve_agent(ctx.deps, "lobbyist")
-                run_result = await lobbyist_agent.run(prompt, deps=deps)
+                run_result = await _await_within_phase(
+                    lobbyist_agent.run(prompt, deps=deps),
+                    phase="discovery",
+                    operation="lobbyist_agent",
+                    deadline=deadline,
+                    timeout_seconds=self.timeout,
+                )
                 result = run_result.output
 
                 # Update state
@@ -339,6 +350,7 @@ class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
 
             state.current_phase = "research"
             state.phase_started_at = datetime.now(UTC)
+            deadline = _phase_deadline(self.timeout)
 
             try:
                 # Research implementation
@@ -348,7 +360,13 @@ class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
 
                 prompt = f"Research competition: {competition.title}"
                 scientist_agent = _resolve_agent(ctx.deps, "scientist")
-                run_result = await scientist_agent.run(prompt, deps=deps)
+                run_result = await _await_within_phase(
+                    scientist_agent.run(prompt, deps=deps),
+                    phase="research",
+                    operation="scientist_agent",
+                    deadline=deadline,
+                    timeout_seconds=self.timeout,
+                )
                 result = run_result.output
 
                 eda_results: dict[str, Any] | None = None
@@ -964,6 +982,7 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
 
             state.current_phase = "evolution"
             state.phase_started_at = datetime.now(UTC)
+            deadline = _phase_deadline(self.timeout)
 
             try:
                 state.evolution_state = EvolutionState(
@@ -980,6 +999,8 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     emitter=emitter,
                     platform_adapter=platform_adapter,
                     competition=competition,
+                    deadline=deadline,
+                    timeout_seconds=self.timeout,
                 )
                 if isinstance(outcome, End):
                     return outcome
@@ -1059,6 +1080,8 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
         emitter: EventEmitter,
         platform_adapter: PlatformAdapter,
         competition: Any,
+        deadline: float,
+        timeout_seconds: int,
     ) -> (
         End[MissionResult] | tuple[str, float | None, list[dict[str, Any]], int, bool, str | None, int, dict[str, int]]
     ):
@@ -1205,6 +1228,22 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     convergence_detected = True
                     convergence_reason = "rate_limit"
 
+            def _apply_timeout(exc: PhaseTimeoutError, *, model_spec: str | None, deps: EvolverDeps | None) -> None:
+                nonlocal combined_history, improvement_count, convergence_detected, convergence_reason
+                _append_error(str(exc), "phase_timeout")
+                logfire.warning(
+                    "evolution_phase_timeout",
+                    model=model_spec or evolver_settings.model,
+                    timeout_seconds=exc.timeout_seconds,
+                    elapsed_seconds=exc.elapsed_seconds,
+                    generations_completed=len(combined_history),
+                )
+                if deps is not None:
+                    combined_history = deps.generation_history
+                    improvement_count = deps.improvement_count
+                convergence_detected = True
+                convergence_reason = "timeout"
+
             async def _emit_failure(result: EvolutionFailure) -> End[MissionResult]:
                 _append_error(result.error_message, result.error_type)
                 await emitter.emit_phase_error(
@@ -1317,9 +1356,19 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 )
                 evolver_instance = EvolverAgent(settings=evolver_settings, register=False)
                 try:
-                    result = await evolver_instance.run_openevolve(
-                        deps_instance, base_prompt=base_prompt, model_specs=evolution_models or [evolver_settings.model]
+                    result = await _await_within_phase(
+                        evolver_instance.run_openevolve(
+                            deps_instance,
+                            base_prompt=base_prompt,
+                            model_specs=evolution_models or [evolver_settings.model],
+                        ),
+                        phase="evolution",
+                        operation="openevolve",
+                        deadline=deadline,
+                        timeout_seconds=timeout_seconds,
                     )
+                except PhaseTimeoutError as exc:
+                    _apply_timeout(exc, model_spec="openevolve", deps=deps_instance)
                 except Exception as exc:
                     if _is_rate_limit_error(exc):
                         _apply_rate_limit(
@@ -1352,7 +1401,15 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 )
                 evolver_agent = _resolve_agent(deps, "evolver")
                 try:
-                    run_result = await evolver_agent.run(base_prompt, deps=deps_instance)
+                    run_result = await _await_within_phase(
+                        evolver_agent.run(base_prompt, deps=deps_instance),
+                        phase="evolution",
+                        operation="evolver_agent",
+                        deadline=deadline,
+                        timeout_seconds=timeout_seconds,
+                    )
+                except PhaseTimeoutError as exc:
+                    _apply_timeout(exc, model_spec=None, deps=deps_instance)
                 except Exception as exc:
                     if _is_rate_limit_error(exc):
                         _apply_rate_limit(
@@ -1435,7 +1492,16 @@ Model rotation segment {segment_index} using {model_spec}."""
                         elite_archive=elite_archive,
                     )
                     try:
-                        run_result = await agent.run(segment_prompt, deps=segment_deps)
+                        run_result = await _await_within_phase(
+                            agent.run(segment_prompt, deps=segment_deps),
+                            phase="evolution",
+                            operation="evolver_agent",
+                            deadline=deadline,
+                            timeout_seconds=timeout_seconds,
+                        )
+                    except PhaseTimeoutError as exc:
+                        _apply_timeout(exc, model_spec=model_spec, deps=segment_deps)
+                        break
                     except Exception as exc:
                         if _is_rate_limit_error(exc):
                             _apply_rate_limit(
@@ -1911,6 +1977,59 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
 
     def _elapsed_ms(self, start: datetime | None) -> int:
         return int((datetime.now(UTC) - start).total_seconds() * 1000) if start else 0
+
+
+def _phase_deadline(timeout_seconds: int) -> float:
+    """Compute the event-loop deadline for a phase budget.
+
+    @notice: |
+        Returns the loop-clock instant at which the phase budget expires.
+
+    @dev: |
+        Uses the running loop clock so the deadline is directly usable with
+        asyncio.timeout_at. Call once per phase, right after the phase starts.
+    """
+    return asyncio.get_running_loop().time() + timeout_seconds
+
+
+async def _await_within_phase(
+    awaitable: Coroutine[Any, Any, PhaseResultT], *, phase: str, operation: str, deadline: float, timeout_seconds: int
+) -> PhaseResultT:
+    """Await an operation, aborting it when the phase budget is exhausted.
+
+    @notice: |
+        Enforces the per-phase timeout around unbounded awaits such as LLM runs.
+
+    @dev: |
+        Raises PhaseTimeoutError when the deadline passes, and re-raises any
+        TimeoutError that did not originate from this guard so inner transport
+        timeouts keep their own semantics. The coroutine is closed without being
+        scheduled when the budget is already spent.
+    """
+    loop = asyncio.get_running_loop()
+    phase_start = deadline - timeout_seconds
+
+    if loop.time() >= deadline:
+        awaitable.close()
+        logfire.warning("phase_budget_exhausted", phase=phase, operation=operation, timeout_seconds=timeout_seconds)
+        raise PhaseTimeoutError(phase, timeout_seconds, loop.time() - phase_start)
+
+    guard = asyncio.timeout_at(deadline)
+    try:
+        async with guard:
+            return await awaitable
+    except TimeoutError:
+        if not guard.expired():
+            raise
+        elapsed_seconds = loop.time() - phase_start
+        logfire.warning(
+            "phase_operation_timed_out",
+            phase=phase,
+            operation=operation,
+            timeout_seconds=timeout_seconds,
+            elapsed_seconds=elapsed_seconds,
+        )
+        raise PhaseTimeoutError(phase, timeout_seconds, elapsed_seconds) from None
 
 
 def _require_context(context: GraphContext) -> tuple[EventEmitter, httpx.AsyncClient, PlatformAdapter]:

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Uses the running loop clock so the deadline is directly usable with\nasyncio.timeout_at. Call once per phase, right after the phase starts.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:_phase_deadline",
+  "line": 1983,
+  "notice": "Returns the loop-clock instant at which the phase budget expires.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Compute the event-loop deadline for a phase budget.",
+  "type": "function"
+}

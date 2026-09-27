@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Raises PhaseTimeoutError when the deadline passes, and re-raises any\nTimeoutError that did not originate from this guard so inner transport\ntimeouts keep their own semantics. The coroutine is closed without being\nscheduled when the budget is already spent.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:_await_within_phase",
+  "line": 1998,
+  "notice": "Enforces the per-phase timeout around unbounded awaits such as LLM runs.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Await an operation, aborting it when the phase budget is exhausted.",
+  "type": "function"
+}

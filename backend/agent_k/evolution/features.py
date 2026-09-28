@@ -237,7 +237,12 @@ class FeatureEvolver:
                 fitness_fn=fitness_fn, mutation_fn=self._mutate, crossover_fn=self._crossover, mutation_rate=0.35
             )
         best = self._population.best()
-        return {"population": self._population, "best": best}
+        return {
+            "population": self._population,
+            "best": best,
+            "evaluations": self._population.fitness_evaluations,
+            "cache_hits": self._population.fitness_cache_hits,
+        }
 
     def _initialize_population(self) -> Population[FeatureGenome]:
         individuals = [Individual(self._random_genome()) for _ in range(self._population_size)]

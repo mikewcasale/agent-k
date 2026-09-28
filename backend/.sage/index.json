@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-09-28T03:16:50.418970+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1094,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -5466,19 +5466,19 @@
       },
       {
         "component": "agent_k.evolution.features:FeatureSelector",
-        "line": 305,
+        "line": 310,
         "name": "notice",
         "value": "Maintain a Pareto front for feature selection trade-offs."
       },
       {
         "component": "agent_k.evolution.features:FeatureSelector",
-        "line": 308,
+        "line": 313,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.features:FeatureSelector",
-        "line": 311,
+        "line": 316,
         "name": "pattern",
         "value": "{\"name\": \"selector\", \"rationale\": \"Pareto-based feature selection with population evolution.\"}"
       }
@@ -5515,128 +5515,152 @@
         "value": "{\"last_verified\": \"2026-01-26\", \"owners\": [\"agent-k-core\"]}"
       },
       {
+        "component": "agent_k.evolution.framework:genome_fingerprint",
+        "line": 78,
+        "name": "notice",
+        "value": "Returns a hashable key that is equal for structurally identical genomes."
+      },
+      {
+        "component": "agent_k.evolution.framework:genome_fingerprint",
+        "line": 81,
+        "name": "dev",
+        "value": "Genomes in this package are dataclasses holding scalars, nested\ndataclasses, lists, and metadata dicts, none of which are hashable on\ntheir own. The fingerprint walks that structure into nested tuples"
+      },
+      {
         "component": "agent_k.evolution.framework:Individual",
-        "line": 69,
+        "line": 125,
         "name": "notice",
         "value": "Evolutionary individual with lineage tracking."
       },
       {
         "component": "agent_k.evolution.framework:Individual",
-        "line": 72,
+        "line": 128,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.framework:Individual",
-        "line": 75,
+        "line": 131,
         "name": "pattern",
         "value": "{\"name\": \"individual-model\", \"rationale\": \"Generic dataclass for evolutionary individuals with lineage.\"}"
       },
       {
         "component": "agent_k.evolution.framework:MapElitesArchive",
-        "line": 96,
+        "line": 152,
         "name": "notice",
         "value": "MAP-Elites archive for diversity-aware preservation."
       },
       {
         "component": "agent_k.evolution.framework:MapElitesArchive",
-        "line": 99,
+        "line": 155,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.framework:MapElitesArchive",
-        "line": 102,
+        "line": 158,
         "name": "pattern",
         "value": "{\"name\": \"archive-model\", \"rationale\": \"Generic archive for MAP-Elites diversity preservation.\"}"
       },
       {
         "component": "agent_k.evolution.framework:Population",
-        "line": 156,
+        "line": 212,
         "name": "notice",
         "value": "Population container with selection, crossover, and mutation helpers."
       },
       {
         "component": "agent_k.evolution.framework:Population",
-        "line": 159,
+        "line": 215,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.framework:Population",
-        "line": 162,
+        "line": 218,
         "name": "pattern",
         "value": "{\"name\": \"population-model\", \"rationale\": \"Generic container for evolutionary population management.\"}"
       },
       {
+        "component": "agent_k.evolution.framework:Population.evaluate",
+        "line": 257,
+        "name": "notice",
+        "value": "Scores unevaluated individuals, reusing cached scores for repeats."
+      },
+      {
+        "component": "agent_k.evolution.framework:Population.evaluate",
+        "line": 260,
+        "name": "dev",
+        "value": "Selection reproduces genomes verbatim all the time: a child skips\nboth crossover and mutation with probability\n``(1 - crossover_rate) * (1 - mutation_rate)``, and elites keep\nre-entering the gene pool"
+      },
+      {
         "component": "agent_k.evolution.framework:HyperparamSpace",
-        "line": 237,
+        "line": 360,
         "name": "notice",
         "value": "Search space definition for hyperparameter evolution."
       },
       {
         "component": "agent_k.evolution.framework:HyperparamSpace",
-        "line": 240,
+        "line": 363,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.framework:HyperparamSpace",
-        "line": 243,
+        "line": 366,
         "name": "pattern",
         "value": "{\"name\": \"search-space\", \"rationale\": \"Dataclass defining continuous, integer, categorical bounds.\"}"
       },
       {
         "component": "agent_k.evolution.framework:HyperparamGenome",
-        "line": 257,
+        "line": 380,
         "name": "notice",
         "value": "Genome wrapper for hyperparameter configurations."
       },
       {
         "component": "agent_k.evolution.framework:HyperparamGenome",
-        "line": 260,
+        "line": 383,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.framework:HyperparamGenome",
-        "line": 263,
+        "line": 386,
         "name": "pattern",
         "value": "{\"name\": \"genome-model\", \"rationale\": \"Dataclass wrapping hyperparameter key-value pairs.\"}"
       },
       {
         "component": "agent_k.evolution.framework:HyperparamEvolver",
-        "line": 274,
+        "line": 397,
         "name": "notice",
         "value": "Evolutionary hyperparameter optimizer with adaptive mutation rates."
       },
       {
         "component": "agent_k.evolution.framework:HyperparamEvolver",
-        "line": 277,
+        "line": 400,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.framework:HyperparamEvolver",
-        "line": 280,
+        "line": 403,
         "name": "pattern",
         "value": "{\"name\": \"evolver\", \"rationale\": \"Coordinates hyperparameter search with adaptive mutation.\"}"
       },
       {
         "component": "agent_k.evolution.framework:EvolutionaryFramework",
-        "line": 382,
+        "line": 511,
         "name": "notice",
         "value": "Coordinator for composing evolution components into a single loop."
       },
       {
         "component": "agent_k.evolution.framework:EvolutionaryFramework",
-        "line": 385,
+        "line": 514,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.framework:EvolutionaryFramework",
-        "line": 388,
+        "line": 517,
         "name": "pattern",
         "value": "{\"name\": \"framework\", \"rationale\": \"Composes multiple evolvers into a unified evolution loop.\"}"
       }
@@ -5710,13 +5734,13 @@
       },
       {
         "component": "agent_k.evolution.loss:build_lightgbm_objective_params",
-        "line": 141,
+        "line": 143,
         "name": "notice",
         "value": "Create LightGBM objective params from a LossGenome."
       },
       {
         "component": "agent_k.evolution.loss:build_lightgbm_objective_params",
-        "line": 144,
+        "line": 146,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       }

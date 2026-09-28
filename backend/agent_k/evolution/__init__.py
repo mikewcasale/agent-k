@@ -48,6 +48,7 @@ from .framework import (
     Individual,
     MapElitesArchive,
     Population,
+    genome_fingerprint,
 )
 from .loss import LossFunctionEvolver, LossGenome, build_lightgbm_objective_params
 
@@ -71,4 +72,5 @@ __all__ = (
     "RatioGene",
     "TransformGene",
     "build_lightgbm_objective_params",
+    "genome_fingerprint",
 )

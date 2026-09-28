@@ -99,6 +99,8 @@ class LossFunctionEvolver:
             "best_genome": best.genome if best else None,
             "best_fitness": best.fitness if best else None,
             "population": self._population,
+            "evaluations": self._population.fitness_evaluations,
+            "cache_hits": self._population.fitness_cache_hits,
         }
 
     def _initialize_population(self) -> Population[LossGenome]:

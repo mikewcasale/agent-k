@@ -32,9 +32,11 @@ from __future__ import annotations as _annotations
 import math
 import random
 import uuid
-from collections.abc import Callable
-from dataclasses import dataclass, field
-from typing import Any, Generic, TypeAliasType, TypeVar
+from collections.abc import Callable, Hashable, Mapping, Sequence, Set
+from dataclasses import dataclass, field, fields, is_dataclass
+from typing import Annotated, Any, Final, Generic, TypeAliasType, TypeVar, cast
+
+from agent_k.core.sage import Doc
 
 GenomeT = TypeVar("GenomeT")
 """Type variable for genomes."""
@@ -51,7 +53,11 @@ CrossoverFn = TypeAliasType("CrossoverFn", Callable[[GenomeT, GenomeT, random.Ra
 DescriptorFn = TypeAliasType("DescriptorFn", Callable[[GenomeT], tuple[int, ...]], type_params=(GenomeT,))
 """Callable signature for MAP-Elites descriptors."""
 
+FingerprintFn = TypeAliasType("FingerprintFn", Callable[[GenomeT], Hashable], type_params=(GenomeT,))
+"""Callable signature for genome fingerprinting."""
+
 __all__ = (
+    "DEFAULT_FITNESS_CACHE_ENTRIES",
     "EvolutionaryFramework",
     "HyperparamEvolver",
     "HyperparamGenome",
@@ -59,7 +65,57 @@ __all__ = (
     "Individual",
     "MapElitesArchive",
     "Population",
+    "genome_fingerprint",
 )
+
+DEFAULT_FITNESS_CACHE_ENTRIES: Final[int] = 4096
+"""Default upper bound on memoized genome fitness entries per population."""
+
+
+def genome_fingerprint(genome: Annotated[Any, Doc("Genome value to fingerprint.")]) -> Hashable:
+    """Build a stable, hashable fingerprint for an arbitrary genome value.
+
+    @notice: |
+        Returns a hashable key that is equal for structurally identical genomes.
+
+    @dev: |
+        Genomes in this package are dataclasses holding scalars, nested
+        dataclasses, lists, and metadata dicts, none of which are hashable on
+        their own. The fingerprint walks that structure into nested tuples so
+        equal genomes collapse onto one cache key. Mappings and sets are
+        ordered by the repr of their canonical form so member order cannot
+        change the key, non-finite floats are normalized through repr so NaN
+        genomes stay comparable, and any value that resists canonicalization
+        falls back to its repr, which is conservative: distinct reprs simply
+        miss the cache instead of colliding. Each container kind carries its
+        own leading tag so a genome that happens to hold a tuple shaped like
+        one of those keys cannot be mistaken for it.
+    """
+    return _canonical(genome)
+
+
+def _canonical(value: Any) -> Hashable:
+    if isinstance(value, str | bytes | int | bool) or value is None:
+        return value
+    if isinstance(value, float):
+        return ("float", repr(value)) if not math.isfinite(value) else value
+    if is_dataclass(value) and not isinstance(value, type):
+        return (
+            "dc",
+            type(value).__qualname__,
+            tuple((entry.name, _canonical(getattr(value, entry.name))) for entry in fields(value)),
+        )
+    if isinstance(value, Mapping):
+        return ("map", tuple(sorted(((_canonical(key), _canonical(item)) for key, item in value.items()), key=repr)))
+    if isinstance(value, Set):
+        return ("set", tuple(sorted((_canonical(item) for item in value), key=repr)))
+    if isinstance(value, Sequence):
+        return ("seq", type(value).__qualname__, tuple(_canonical(item) for item in value))
+    try:
+        hash(value)
+    except TypeError:
+        return ("repr", repr(value))
+    return cast("Hashable", value)
 
 
 @dataclass(slots=True)
@@ -170,19 +226,86 @@ class Population(Generic[GenomeT]):
         *,
         rng: random.Random | None = None,
         archive: MapElitesArchive[GenomeT] | None = None,
+        memoize_fitness: bool = True,
+        fingerprint_fn: FingerprintFn[GenomeT] | None = None,
+        max_fitness_cache_entries: int = DEFAULT_FITNESS_CACHE_ENTRIES,
     ) -> None:
         self.individuals = individuals or []
         self.generation = 0
         self.rng = rng or random.Random()
         self.archive = archive
+        self.memoize_fitness = memoize_fitness
+        self._fingerprint_fn: FingerprintFn[GenomeT] = fingerprint_fn or genome_fingerprint
+        self._max_fitness_cache_entries = max(0, max_fitness_cache_entries)
+        self._fitness_cache: dict[Hashable, float] = {}
+        self._fitness_evaluations = 0
+        self._fitness_cache_hits = 0
+
+    @property
+    def fitness_evaluations(self) -> int:
+        """Return how many times the fitness function has actually been called."""
+        return self._fitness_evaluations
+
+    @property
+    def fitness_cache_hits(self) -> int:
+        """Return how many evaluations were served from the genome fitness cache."""
+        return self._fitness_cache_hits
 
     def evaluate(self, fitness_fn: FitnessFn[GenomeT]) -> None:
-        """Evaluate fitness for all individuals and update archive."""
+        """Evaluate fitness for all individuals and update archive.
+
+        @notice: |
+            Scores unevaluated individuals, reusing cached scores for repeats.
+
+        @dev: |
+            Selection reproduces genomes verbatim all the time: a child skips
+            both crossover and mutation with probability
+            ``(1 - crossover_rate) * (1 - mutation_rate)``, and elites keep
+            re-entering the gene pool, so identical genomes recur across
+            generations. Each of those clones is a fresh ``Individual`` with
+            ``fitness=None``, and evaluating a genome here means training a
+            real model, so without memoization a sizeable slice of every
+            generation's budget is spent re-deriving scores already known.
+            Keyed on the genome fingerprint, repeats become dictionary
+            lookups. Callers whose fitness function is deliberately stochastic
+            (a fresh random split per call, say) can pass
+            ``memoize_fitness=False`` to keep independent estimates.
+        """
         for individual in self.individuals:
             if individual.fitness is None:
-                individual.fitness = fitness_fn(individual.genome)
+                individual.fitness = self._resolve_fitness(individual.genome, fitness_fn)
             if self.archive is not None:
                 self.archive.add(individual)
+
+    def _resolve_fitness(self, genome: GenomeT, fitness_fn: FitnessFn[GenomeT]) -> float:
+        if not self.memoize_fitness or self._max_fitness_cache_entries == 0:
+            self._fitness_evaluations += 1
+            return fitness_fn(genome)
+
+        key = self._fitness_key(genome)
+        if key is not None and key in self._fitness_cache:
+            self._fitness_cache_hits += 1
+            return self._fitness_cache[key]
+
+        self._fitness_evaluations += 1
+        fitness = fitness_fn(genome)
+        if key is not None:
+            self._store_fitness(key, fitness)
+        return fitness
+
+    def _fitness_key(self, genome: GenomeT) -> Hashable | None:
+        """Return the cache key for a genome, or ``None`` when it cannot be keyed."""
+        try:
+            key = self._fingerprint_fn(genome)
+            hash(key)
+        except TypeError:
+            return None
+        return key
+
+    def _store_fitness(self, key: Hashable, fitness: float) -> None:
+        if len(self._fitness_cache) >= self._max_fitness_cache_entries:
+            self._fitness_cache.pop(next(iter(self._fitness_cache)))
+        self._fitness_cache[key] = fitness
 
     def best(self) -> Individual[GenomeT] | None:
         """Return the current best individual."""
@@ -322,7 +445,13 @@ class HyperparamEvolver:
                 mutation_rate=self._mutation_rate,
             )
             self._adjust_mutation_rate(population.best())
-        return {"population": population, "best": population.best(), "status": "ok"}
+        return {
+            "population": population,
+            "best": population.best(),
+            "status": "ok",
+            "evaluations": population.fitness_evaluations,
+            "cache_hits": population.fitness_cache_hits,
+        }
 
     def _random_genome(self) -> HyperparamGenome:
         params: dict[str, Any] = {}

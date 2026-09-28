@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-09-28T22:08:41.111350+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1099,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -2816,447 +2816,477 @@
       },
       {
         "component": "agent_k.core.exceptions:AgentKError",
-        "line": 72,
+        "line": 82,
         "name": "notice",
         "value": "Base exception for all AGENT-K errors."
       },
       {
         "component": "agent_k.core.exceptions:AgentKError",
-        "line": 75,
+        "line": 85,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:AgentKError",
-        "line": 78,
+        "line": 88,
         "name": "pattern",
         "value": "{\"name\": \"exception-base\", \"rationale\": \"Root exception with context and recoverability metadata.\"}"
       },
       {
         "component": "agent_k.core.exceptions:AgentError",
-        "line": 96,
+        "line": 106,
         "name": "notice",
         "value": "Base exception for agent-related errors."
       },
       {
         "component": "agent_k.core.exceptions:AgentError",
-        "line": 99,
+        "line": 109,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:AgentError",
-        "line": 102,
+        "line": 112,
         "name": "pattern",
         "value": "{\"name\": \"exception-category\", \"rationale\": \"Category base for agent execution errors.\"}"
       },
       {
         "component": "agent_k.core.exceptions:AgentExecutionError",
-        "line": 111,
+        "line": 121,
         "name": "notice",
         "value": "Raised when agent execution fails."
       },
       {
         "component": "agent_k.core.exceptions:AgentExecutionError",
-        "line": 114,
+        "line": 124,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:AgentExecutionError",
-        "line": 117,
+        "line": 127,
         "name": "pattern",
         "value": "{\"name\": \"exception-specific\", \"rationale\": \"Captures agent name and cause for debugging.\"}"
       },
       {
         "component": "agent_k.core.exceptions:ToolExecutionError",
-        "line": 137,
+        "line": 147,
         "name": "notice",
         "value": "Raised when a tool execution fails."
       },
       {
         "component": "agent_k.core.exceptions:ToolExecutionError",
-        "line": 140,
+        "line": 150,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:ToolExecutionError",
-        "line": 143,
+        "line": 153,
         "name": "pattern",
         "value": "{\"name\": \"exception-specific\", \"rationale\": \"Captures tool name and arguments for debugging.\"}"
       },
       {
         "component": "agent_k.core.exceptions:OutputValidationError",
-        "line": 159,
+        "line": 169,
         "name": "notice",
         "value": "Raised when agent output fails validation."
       },
       {
         "component": "agent_k.core.exceptions:OutputValidationError",
-        "line": 162,
+        "line": 172,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:OutputValidationError",
-        "line": 165,
+        "line": 175,
         "name": "pattern",
         "value": "{\"name\": \"exception-specific\", \"rationale\": \"Captures validation errors for structured output failures.\"}"
       },
       {
         "component": "agent_k.core.exceptions:AdapterError",
-        "line": 182,
+        "line": 192,
         "name": "notice",
         "value": "Base exception for adapter-related errors."
       },
       {
         "component": "agent_k.core.exceptions:AdapterError",
-        "line": 185,
+        "line": 195,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:AdapterError",
-        "line": 188,
+        "line": 198,
         "name": "pattern",
         "value": "{\"name\": \"exception-category\", \"rationale\": \"Category base for platform adapter errors.\"}"
       },
       {
         "component": "agent_k.core.exceptions:PlatformConnectionError",
-        "line": 197,
+        "line": 207,
         "name": "notice",
         "value": "Raised when connection to platform fails."
       },
       {
         "component": "agent_k.core.exceptions:PlatformConnectionError",
-        "line": 200,
+        "line": 210,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:PlatformConnectionError",
-        "line": 203,
+        "line": 213,
         "name": "pattern",
         "value": "{\"name\": \"exception-specific\", \"rationale\": \"Captures platform name for connection failures.\"}"
       },
       {
         "component": "agent_k.core.exceptions:AuthenticationError",
-        "line": 216,
+        "line": 226,
         "name": "notice",
         "value": "Raised when platform authentication fails."
       },
       {
         "component": "agent_k.core.exceptions:AuthenticationError",
-        "line": 219,
+        "line": 229,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:AuthenticationError",
-        "line": 222,
+        "line": 232,
         "name": "pattern",
         "value": "{\"name\": \"exception-specific\", \"rationale\": \"Non-recoverable authentication failure.\"}"
       },
       {
         "component": "agent_k.core.exceptions:RateLimitError",
-        "line": 235,
+        "line": 245,
         "name": "notice",
         "value": "Raised when platform rate limit is exceeded."
       },
       {
         "component": "agent_k.core.exceptions:RateLimitError",
-        "line": 238,
+        "line": 248,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:RateLimitError",
-        "line": 241,
+        "line": 251,
         "name": "pattern",
         "value": "{\"name\": \"exception-specific\", \"rationale\": \"Recoverable with retry_after hint for backoff.\"}"
       },
       {
         "component": "agent_k.core.exceptions:CompetitionError",
-        "line": 258,
+        "line": 268,
         "name": "notice",
         "value": "Base exception for competition-related errors."
       },
       {
         "component": "agent_k.core.exceptions:CompetitionError",
-        "line": 261,
+        "line": 271,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:CompetitionError",
-        "line": 264,
+        "line": 274,
         "name": "pattern",
         "value": "{\"name\": \"exception-category\", \"rationale\": \"Category base for Kaggle competition errors.\"}"
       },
       {
         "component": "agent_k.core.exceptions:CompetitionNotFoundError",
-        "line": 273,
+        "line": 283,
         "name": "notice",
         "value": "Raised when competition does not exist."
       },
       {
         "component": "agent_k.core.exceptions:CompetitionNotFoundError",
-        "line": 276,
+        "line": 286,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:CompetitionNotFoundError",
-        "line": 279,
+        "line": 289,
         "name": "pattern",
         "value": "{\"name\": \"exception-specific\", \"rationale\": \"Non-recoverable missing competition.\"}"
       },
       {
         "component": "agent_k.core.exceptions:CompetitionRulesNotAcceptedError",
-        "line": 294,
+        "line": 304,
         "name": "notice",
         "value": "Raised when competition rules have not been accepted."
       },
       {
         "component": "agent_k.core.exceptions:CompetitionRulesNotAcceptedError",
-        "line": 297,
+        "line": 307,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:CompetitionRulesNotAcceptedError",
-        "line": 300,
+        "line": 310,
         "name": "pattern",
         "value": "{\"name\": \"exception-specific\", \"rationale\": \"Non-recoverable until user accepts rules manually.\"}"
       },
       {
         "component": "agent_k.core.exceptions:SubmissionError",
-        "line": 318,
+        "line": 328,
         "name": "notice",
         "value": "Raised when submission fails."
       },
       {
         "component": "agent_k.core.exceptions:SubmissionError",
-        "line": 321,
+        "line": 331,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:SubmissionError",
-        "line": 324,
+        "line": 334,
         "name": "pattern",
         "value": "{\"name\": \"exception-specific\", \"rationale\": \"Captures submission context for retry logic.\"}"
       },
       {
         "component": "agent_k.core.exceptions:DeadlinePassedError",
-        "line": 341,
+        "line": 351,
         "name": "notice",
         "value": "Raised when competition deadline has passed."
       },
       {
         "component": "agent_k.core.exceptions:DeadlinePassedError",
-        "line": 344,
+        "line": 354,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:DeadlinePassedError",
-        "line": 347,
+        "line": 357,
         "name": "pattern",
         "value": "{\"name\": \"exception-specific\", \"rationale\": \"Non-recoverable deadline expiration.\"}"
       },
       {
         "component": "agent_k.core.exceptions:EvolutionError",
-        "line": 365,
+        "line": 375,
         "name": "notice",
         "value": "Base exception for evolution-related errors."
       },
       {
         "component": "agent_k.core.exceptions:EvolutionError",
-        "line": 368,
+        "line": 378,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:EvolutionError",
-        "line": 371,
+        "line": 381,
         "name": "pattern",
         "value": "{\"name\": \"exception-category\", \"rationale\": \"Category base for evolutionary algorithm errors.\"}"
       },
       {
         "component": "agent_k.core.exceptions:ConvergenceError",
-        "line": 380,
+        "line": 390,
         "name": "notice",
         "value": "Raised when evolution fails to converge within limits."
       },
       {
         "component": "agent_k.core.exceptions:ConvergenceError",
-        "line": 383,
+        "line": 393,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:ConvergenceError",
-        "line": 386,
+        "line": 396,
         "name": "pattern",
         "value": "{\"name\": \"exception-specific\", \"rationale\": \"Captures evolution progress for analysis.\"}"
       },
       {
         "component": "agent_k.core.exceptions:PopulationExtinctError",
-        "line": 404,
+        "line": 414,
         "name": "notice",
         "value": "Raised when all population members fail fitness evaluation."
       },
       {
         "component": "agent_k.core.exceptions:PopulationExtinctError",
-        "line": 407,
+        "line": 417,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:PopulationExtinctError",
-        "line": 410,
+        "line": 420,
         "name": "pattern",
         "value": "{\"name\": \"exception-specific\", \"rationale\": \"Non-recoverable population extinction.\"}"
       },
       {
         "component": "agent_k.core.exceptions:FitnessEvaluationError",
-        "line": 428,
+        "line": 438,
         "name": "notice",
         "value": "Raised when fitness evaluation fails."
       },
       {
         "component": "agent_k.core.exceptions:FitnessEvaluationError",
-        "line": 431,
+        "line": 441,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:FitnessEvaluationError",
-        "line": 434,
+        "line": 444,
         "name": "pattern",
         "value": "{\"name\": \"exception-specific\", \"rationale\": \"Captures solution and execution context for debugging.\"}"
       },
       {
         "component": "agent_k.core.exceptions:MemoryError",
-        "line": 451,
+        "line": 461,
         "name": "notice",
         "value": "Base exception for memory-related errors."
       },
       {
         "component": "agent_k.core.exceptions:MemoryError",
-        "line": 454,
+        "line": 464,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:MemoryError",
-        "line": 457,
+        "line": 467,
         "name": "pattern",
         "value": "{\"name\": \"exception-category\", \"rationale\": \"Category base for memory and checkpoint errors.\"}"
       },
       {
         "component": "agent_k.core.exceptions:CheckpointError",
-        "line": 466,
+        "line": 476,
         "name": "notice",
         "value": "Raised when checkpoint operations fail."
       },
       {
         "component": "agent_k.core.exceptions:CheckpointError",
-        "line": 469,
+        "line": 479,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:CheckpointError",
-        "line": 472,
+        "line": 482,
         "name": "pattern",
         "value": "{\"name\": \"exception-specific\", \"rationale\": \"Captures checkpoint name and operation for debugging.\"}"
       },
       {
         "component": "agent_k.core.exceptions:MemoryCapacityError",
-        "line": 489,
+        "line": 499,
         "name": "notice",
         "value": "Raised when memory capacity is exceeded."
       },
       {
         "component": "agent_k.core.exceptions:MemoryCapacityError",
-        "line": 492,
+        "line": 502,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:MemoryCapacityError",
-        "line": 495,
+        "line": 505,
         "name": "pattern",
         "value": "{\"name\": \"exception-specific\", \"rationale\": \"Captures size metrics for capacity planning.\"}"
       },
       {
         "component": "agent_k.core.exceptions:GraphError",
-        "line": 512,
+        "line": 522,
         "name": "notice",
         "value": "Base exception for graph-related errors."
       },
       {
         "component": "agent_k.core.exceptions:GraphError",
-        "line": 515,
+        "line": 525,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:GraphError",
-        "line": 518,
+        "line": 528,
         "name": "pattern",
         "value": "{\"name\": \"exception-category\", \"rationale\": \"Category base for state machine errors.\"}"
       },
       {
         "component": "agent_k.core.exceptions:StateTransitionError",
-        "line": 527,
+        "line": 537,
         "name": "notice",
         "value": "Raised when state transition is invalid."
       },
       {
         "component": "agent_k.core.exceptions:StateTransitionError",
-        "line": 530,
+        "line": 540,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:StateTransitionError",
-        "line": 533,
+        "line": 543,
         "name": "pattern",
         "value": "{\"name\": \"exception-specific\", \"rationale\": \"Captures transition context for state machine debugging.\"}"
       },
       {
         "component": "agent_k.core.exceptions:PhaseTimeoutError",
-        "line": 551,
+        "line": 561,
         "name": "notice",
         "value": "Raised when a phase exceeds its timeout."
       },
       {
         "component": "agent_k.core.exceptions:PhaseTimeoutError",
-        "line": 554,
+        "line": 564,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.exceptions:PhaseTimeoutError",
-        "line": 557,
+        "line": 567,
         "name": "pattern",
         "value": "{\"name\": \"exception-specific\", \"rationale\": \"Captures timing metrics for timeout analysis.\"}"
       },
       {
         "component": "agent_k.core.exceptions:classify_error",
-        "line": 575,
+        "line": 585,
         "name": "notice",
         "value": "Maps exceptions to error categories and recovery strategies."
       },
       {
         "component": "agent_k.core.exceptions:classify_error",
-        "line": 578,
+        "line": 588,
         "name": "dev",
         "value": "Used by error handlers to determine retry vs abort behavior.\nReturns (category, strategy) tuple for the exception type."
+      },
+      {
+        "component": "agent_k.core.exceptions:is_recoverable_error",
+        "line": 606,
+        "name": "notice",
+        "value": "Returns True when classify_error selects a retry strategy."
+      },
+      {
+        "component": "agent_k.core.exceptions:is_recoverable_error",
+        "line": 609,
+        "name": "dev",
+        "value": "Canonical retry predicate for the mission runners. Transient failures\nsuch as connection resets and read timeouts are retryable even though\nthey are not AgentKError subclasses, so callers must use thi"
+      },
+      {
+        "component": "agent_k.core.exceptions:recovery_delay_seconds",
+        "line": 630,
+        "name": "notice",
+        "value": "Returns the backoff delay in seconds before retry number `attempt`."
+      },
+      {
+        "component": "agent_k.core.exceptions:recovery_delay_seconds",
+        "line": 633,
+        "name": "dev",
+        "value": "Honours RateLimitError.retry_after when the platform supplies one;\notherwise applies exponential backoff of base_delay * 2 ** (attempt - 1).\n`attempt` is 1-based, so the first retry waits base_delay. "
+      },
+      {
+        "component": "agent_k.core.exceptions:recovery_delay_seconds",
+        "line": 639,
+        "name": "errors",
+        "value": "{\"terminal\": [\"ValueError\"]}"
       }
     ],
     "agent_k/core/feedback.py": [
@@ -7152,277 +7182,301 @@
       },
       {
         "component": "agent_k.ui.agui:MissionRequest",
-        "line": 220,
+        "line": 229,
         "name": "notice",
         "value": "Request to start a new mission."
       },
       {
         "component": "agent_k.ui.agui:MissionRequest",
-        "line": 223,
+        "line": 232,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:MissionRequest",
-        "line": 226,
+        "line": 235,
         "name": "pattern",
         "value": "{\"name\": \"request-model\", \"rationale\": \"Frozen Pydantic model for mission start requests.\"}"
       },
       {
         "component": "agent_k.ui.agui:CompetitionSearchRequest",
-        "line": 245,
+        "line": 254,
         "name": "notice",
         "value": "Request payload for competition search."
       },
       {
         "component": "agent_k.ui.agui:CompetitionSearchRequest",
-        "line": 248,
+        "line": 257,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:CompetitionSearchRequest",
-        "line": 251,
+        "line": 260,
         "name": "pattern",
         "value": "{\"name\": \"request-model\", \"rationale\": \"Frozen Pydantic model for competition search requests.\"}"
       },
       {
         "component": "agent_k.ui.agui:CompetitionFetchRequest",
-        "line": 267,
+        "line": 276,
         "name": "notice",
         "value": "Request payload for fetching competition details by URL."
       },
       {
         "component": "agent_k.ui.agui:CompetitionFetchRequest",
-        "line": 270,
+        "line": 279,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:CompetitionFetchRequest",
-        "line": 273,
+        "line": 282,
         "name": "pattern",
         "value": "{\"name\": \"request-model\", \"rationale\": \"Frozen Pydantic model for competition fetch requests.\"}"
       },
       {
         "component": "agent_k.ui.agui:AgentKEvent",
-        "line": 285,
+        "line": 294,
         "name": "notice",
         "value": "Event to be streamed to the frontend."
       },
       {
         "component": "agent_k.ui.agui:AgentKEvent",
-        "line": 288,
+        "line": 297,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:AgentKEvent",
-        "line": 291,
+        "line": 300,
         "name": "pattern",
         "value": "{\"name\": \"event-model\", \"rationale\": \"Frozen Pydantic model for SSE event streaming.\"}"
       },
       {
         "component": "agent_k.ui.agui:MissionIntentOutput",
-        "line": 310,
+        "line": 319,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Frozen Pydantic model for agent structured output.\"}"
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 339,
+        "line": 348,
         "name": "notice",
         "value": "Emitter for AG-UI events."
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 342,
+        "line": 351,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 345,
+        "line": 354,
         "name": "pattern",
         "value": "{\"name\": \"event-emitter\", \"rationale\": \"Centralizes event streaming for the UI.\", \"violations\": \"Direct SSE writes bypass buffering and tracing.\"}"
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 350,
+        "line": 359,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates internal queue and closed state.\"}"
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 355,
+        "line": 364,
         "name": "invariants",
         "value": "[\"Events are only enqueued when not closed.\"]"
       },
       {
         "component": "agent_k.ui.agui:EventEmitter.emit",
-        "line": 369,
+        "line": 378,
         "name": "notice",
         "value": "Enqueues an event for SSE streaming."
       },
       {
         "component": "agent_k.ui.agui:TaskEmissionContext",
-        "line": 550,
+        "line": 559,
         "name": "notice",
         "value": "Context manager for task-scoped event emission."
       },
       {
         "component": "agent_k.ui.agui:TaskEmissionContext",
-        "line": 553,
+        "line": 562,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:TaskEmissionContext",
-        "line": 556,
+        "line": 565,
         "name": "pattern",
         "value": "{\"name\": \"context-model\", \"rationale\": \"Async context manager for task lifecycle events.\"}"
       },
       {
         "component": "agent_k.ui.agui:MissionIntentResult",
-        "line": 595,
+        "line": 604,
         "name": "notice",
         "value": "Result of mission intent parsing."
       },
       {
         "component": "agent_k.ui.agui:MissionIntentResult",
-        "line": 598,
+        "line": 607,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:MissionIntentResult",
-        "line": 601,
+        "line": 610,
         "name": "pattern",
         "value": "{\"name\": \"result-model\", \"rationale\": \"Dataclass for intent classification result.\"}"
       },
       {
         "component": "agent_k.ui.agui:IntentClassifier",
-        "line": 614,
+        "line": 623,
         "name": "notice",
         "value": "Classify whether a message requests a mission."
       },
       {
         "component": "agent_k.ui.agui:IntentClassifier",
-        "line": 617,
+        "line": 626,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:IntentClassifier",
-        "line": 620,
+        "line": 629,
         "name": "pattern",
         "value": "{\"name\": \"classifier\", \"rationale\": \"Dataclass for LLM-backed intent classification.\"}"
       },
       {
         "component": "agent_k.ui.agui:MissionCriteriaParser",
-        "line": 669,
+        "line": 678,
         "name": "notice",
         "value": "Parse mission criteria from intent output."
       },
       {
         "component": "agent_k.ui.agui:MissionCriteriaParser",
-        "line": 672,
+        "line": 681,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:MissionCriteriaParser",
-        "line": 675,
+        "line": 684,
         "name": "pattern",
         "value": "{\"name\": \"parser\", \"rationale\": \"Dataclass for extracting mission criteria from intent.\"}"
       },
       {
         "component": "agent_k.ui.agui:ChatHandler",
-        "line": 701,
+        "line": 710,
         "name": "notice",
         "value": "Handle chat requests for mission and non-mission modes."
       },
       {
         "component": "agent_k.ui.agui:ChatHandler",
-        "line": 704,
+        "line": 713,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:ChatHandler",
-        "line": 707,
+        "line": 716,
         "name": "pattern",
         "value": "{\"name\": \"handler\", \"rationale\": \"Dataclass coordinating intent classification and parsing.\"}"
       },
       {
+        "component": "agent_k.ui.agui:run_mission_with_recovery",
+        "line": 827,
+        "name": "notice",
+        "value": "Executes `operation`, emitting error/recovery events and retrying\nrecoverable failures after a backoff delay."
+      },
+      {
+        "component": "agent_k.ui.agui:run_mission_with_recovery",
+        "line": 831,
+        "name": "dev",
+        "value": "Retryability comes from agent_k.core.exceptions.is_recoverable_error so\nthat transient third-party failures (connection resets, read timeouts)\nare retried rather than being treated as fatal. The wait "
+      },
+      {
+        "component": "agent_k.ui.agui:run_mission_with_recovery",
+        "line": 839,
+        "name": "effects",
+        "value": "{\"io\": [\"mission execution\", \"SSE event emission\"], \"state\": [\"emitter lifecycle\"]}"
+      },
+      {
+        "component": "agent_k.ui.agui:run_mission_with_recovery",
+        "line": 846,
+        "name": "concurrency",
+        "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Owns the emitter lifecycle for a single mission run.\"}"
+      },
+      {
         "component": "agent_k.ui.agui:parse_mission_intent",
-        "line": 868,
+        "line": 921,
         "name": "notice",
         "value": "Parse chat messages to detect mission intent and extract criteria."
       },
       {
         "component": "agent_k.ui.agui:parse_mission_intent",
-        "line": 871,
+        "line": 924,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.ui.agui:transform_to_vercel_stream",
-        "line": 892,
+        "line": 945,
         "name": "notice",
         "value": "Transform EventEmitter output to Vercel AI Data Stream format."
       },
       {
         "component": "agent_k.ui.agui:transform_to_vercel_stream",
-        "line": 895,
+        "line": 948,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.ui.agui:stream_text_response",
-        "line": 946,
+        "line": 999,
         "name": "notice",
         "value": "Stream a simple text response in Vercel AI format."
       },
       {
         "component": "agent_k.ui.agui:stream_text_response",
-        "line": 949,
+        "line": 1002,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.ui.agui:create_app",
-        "line": 1009,
+        "line": 1062,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.ui.agui:create_app",
-        "line": 1012,
+        "line": 1065,
         "name": "notice",
         "value": "Constructs the FastAPI app with routes and middleware."
       },
       {
         "component": "agent_k.ui.agui:create_app",
-        "line": 1015,
+        "line": 1068,
         "name": "factory_for",
         "value": "{\"id\": \"fastapi:FastAPI\", \"rationale\": \"Centralizes AG-UI app wiring.\", \"singleton\": false, \"cache_key\": \"app\"}"
       },
       {
         "component": "agent_k.ui.agui:create_app",
-        "line": 1021,
+        "line": 1074,
         "name": "canonical_home",
         "value": "{\"for\": [\"AG-UI application construction\"], \"notes\": \"Use create_app to initialize the FastAPI server.\"}"
       },
       {
         "component": "agent_k.ui.agui:main",
-        "line": 1768,
+        "line": 1755,
         "name": "notice",
         "value": "Run the AG-UI server."
       },
       {
         "component": "agent_k.ui.agui:main",
-        "line": 1771,
+        "line": 1758,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       }

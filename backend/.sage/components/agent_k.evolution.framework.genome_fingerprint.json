@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Genomes in this package are dataclasses holding scalars, nested\ndataclasses, lists, and metadata dicts, none of which are hashable on\ntheir own. The fingerprint walks that structure into nested tuples so\nequal genomes collapse onto one cache key. Mappings and sets are\nordered by the repr of their canonical form so member order cannot\nchange the key, non-finite floats are normalized through repr so NaN\ngenomes stay comparable, and any value that resists canonicalization\nfalls back to its repr, which is conservative: distinct reprs simply\nmiss the cache instead of colliding. Each container kind carries its\nown leading tag so a genome that happens to hold a tuple shaped like\none of those keys cannot be mistaken for it.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.framework:genome_fingerprint",
+  "line": 76,
+  "notice": "Returns a hashable key that is equal for structurally identical genomes.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/framework.py",
+  "summary": "Build a stable, hashable fingerprint for an arbitrary genome value.",
+  "type": "function"
+}

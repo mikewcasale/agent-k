@@ -53,7 +53,13 @@ from pydantic_ai import Agent
 
 from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
 from agent_k.core.constants import DEFAULT_MODEL, MISSION_PHASES
-from agent_k.core.exceptions import AgentKError, AuthenticationError, CompetitionNotFoundError, classify_error
+from agent_k.core.exceptions import (
+    AuthenticationError,
+    CompetitionNotFoundError,
+    classify_error,
+    is_recoverable_error,
+    recovery_delay_seconds,
+)
 from agent_k.core.models import Competition, CompetitionType, LeaderboardSubmission, MissionCriteria
 from agent_k.core.sage import Doc
 from agent_k.infra.instrumentation import configure_instrumentation
@@ -61,7 +67,7 @@ from agent_k.infra.providers import get_model
 from agent_k.mission.persistence import CHECKPOINT_DIR, MissionPersistence, create_persistence
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterator
+    from collections.abc import AsyncIterator, Awaitable, Callable
 
     from agent_k.mission.state import MissionResult, MissionState
 
@@ -76,6 +82,7 @@ __all__ = (
     "CompetitionFetchRequest",
     "MissionIntentResult",
     "TaskEmissionContext",
+    "run_mission_with_recovery",
     "app",
     "create_app",
     "main",
@@ -90,6 +97,8 @@ DEFAULT_HOST: Final[str] = "0.0.0.0"
 DEFAULT_PORT: Final[int] = 9000
 APP_MODULE: Final[str] = "agent_k.ui.agui:app"
 MAX_COMPETITION_RESULTS: Final[int] = 25
+MISSION_MAX_ATTEMPTS: Final[int] = 2
+# Total mission attempts (one initial run plus one recovery retry).
 _DOMAIN_KEYWORDS: Final[dict[str, tuple[str, ...]]] = {
     "finance": ("finance", "financial", "trading", "stock", "market"),
     "medical": ("medical", "health", "healthcare", "clinical", "diagnosis"),
@@ -781,56 +790,100 @@ class ChatHandler:
     async def _run_mission(self, *, emitter: EventEmitter, chat_id: str, criteria: MissionCriteria) -> None:
         from agent_k.agents.lycurgus import LycurgusOrchestrator
 
-        error_id = f"mission_{chat_id}"
-        attempt = 0
-        max_attempts = 2
-
-        try:
-            while True:
-                try:
-                    with logfire.span("mission_execution", chat_id=chat_id, attempt=attempt + 1):
-                        async with LycurgusOrchestrator() as orchestrator:
-                            result = await orchestrator.execute_mission(
-                                competition_id=None, criteria=criteria, event_emitter=emitter
-                            )
-                            failure_summary = _extract_failure_summary(orchestrator.state)
-                            await emitter.emit(
-                                "mission-complete",
-                                {
-                                    "success": result.success,
-                                    "final_rank": result.final_rank,
-                                    "final_score": result.final_score,
-                                    "evolution_failure_summary": failure_summary,
-                                },
-                            )
-                    if attempt > 0:
-                        await emitter.emit_recovery_complete(
-                            error_id=error_id, success=True, resolution="mission_completed"
-                        )
-                    break
-                except Exception as exc:
-                    category, strategy = classify_error(exc)
-                    recoverable = isinstance(exc, AgentKError) and exc.recoverable
-                    await emitter.emit_error(
-                        error_id=error_id,
-                        category=category,
-                        error_type=type(exc).__name__,
-                        message=str(exc),
-                        context="mission_execution",
-                        recovery_strategy=strategy,
+        async def attempt_mission(attempt: int) -> None:
+            with logfire.span("mission_execution", chat_id=chat_id, attempt=attempt + 1):
+                async with LycurgusOrchestrator() as orchestrator:
+                    result = await orchestrator.execute_mission(
+                        competition_id=None, criteria=criteria, event_emitter=emitter
                     )
-                    logfire.error("mission_execution_failed", error=str(exc), chat_id=chat_id, recoverable=recoverable)
-                    if not recoverable or attempt >= max_attempts - 1:
-                        if attempt > 0:
-                            await emitter.emit_recovery_complete(
-                                error_id=error_id, success=False, resolution="exhausted"
-                            )
-                        break
-                    attempt += 1
-                    await emitter.emit_recovery_attempt(error_id=error_id, strategy=strategy, attempt=attempt)
-                    logfire.warning("mission_recovery_attempt", chat_id=chat_id, attempt=attempt)
-        finally:
-            emitter.close()
+                    failure_summary = _extract_failure_summary(orchestrator.state)
+                    await emitter.emit(
+                        "mission-complete",
+                        {
+                            "success": result.success,
+                            "final_rank": result.final_rank,
+                            "final_score": result.final_score,
+                            "evolution_failure_summary": failure_summary,
+                        },
+                    )
+
+        await run_mission_with_recovery(
+            attempt_mission, emitter=emitter, error_id=f"mission_{chat_id}", chat_id=chat_id
+        )
+
+
+async def run_mission_with_recovery(
+    operation: Annotated[
+        Callable[[int], Awaitable[None]], Doc("Coroutine factory invoked with the zero-based attempt index.")
+    ],
+    *,
+    emitter: Annotated[EventEmitter, Doc("Emitter used for error and recovery events.")],
+    error_id: Annotated[str, Doc("Stable identifier correlating error and recovery events.")],
+    max_attempts: Annotated[int, Doc("Total attempts, including the initial run.")] = MISSION_MAX_ATTEMPTS,
+    **log_context: Annotated[Any, Doc("Extra key/value pairs attached to logfire records.")],
+) -> None:
+    """Run a mission coroutine, retrying recoverable failures with backoff.
+
+    @notice: |
+        Executes `operation`, emitting error/recovery events and retrying
+        recoverable failures after a backoff delay.
+
+    @dev: |
+        Retryability comes from agent_k.core.exceptions.is_recoverable_error so
+        that transient third-party failures (connection resets, read timeouts)
+        are retried rather than being treated as fatal. The wait between
+        attempts uses recovery_delay_seconds, which honours a platform-supplied
+        RateLimitError.retry_after before falling back to exponential backoff.
+        The emitter is always closed, even when every attempt fails.
+
+    @effects:
+        io:
+            - mission execution
+            - SSE event emission
+        state:
+            - emitter lifecycle
+
+    @concurrency:
+        model: asyncio
+        safe: false
+        reason: "Owns the emitter lifecycle for a single mission run."
+    """
+    attempt = 0
+
+    try:
+        while True:
+            try:
+                await operation(attempt)
+            except Exception as exc:
+                category, strategy = classify_error(exc)
+                recoverable = is_recoverable_error(exc)
+                await emitter.emit_error(
+                    error_id=error_id,
+                    category=category,
+                    error_type=type(exc).__name__,
+                    message=str(exc),
+                    context="mission_execution",
+                    recovery_strategy=strategy,
+                )
+                logfire.error("mission_execution_failed", error=str(exc), recoverable=recoverable, **log_context)
+
+                if not recoverable or attempt >= max_attempts - 1:
+                    if attempt > 0:
+                        await emitter.emit_recovery_complete(error_id=error_id, success=False, resolution="exhausted")
+                    return
+
+                attempt += 1
+                delay = recovery_delay_seconds(exc, attempt)
+                await emitter.emit_recovery_attempt(error_id=error_id, strategy=strategy, attempt=attempt)
+                logfire.warning("mission_recovery_attempt", attempt=attempt, delay_seconds=delay, **log_context)
+                await asyncio.sleep(delay)
+                continue
+
+            if attempt > 0:
+                await emitter.emit_recovery_complete(error_id=error_id, success=True, resolution="mission_completed")
+            return
+    finally:
+        emitter.close()
 
 
 def _extract_latest_user_message(messages: list[dict[str, Any]]) -> str | None:
@@ -1067,65 +1120,32 @@ def create_app() -> FastAPI:
             "competition_id": state.competition_id if state else None,
         }
 
-        async def run_mission() -> None:
-            error_id = f"mission_{mission_id}"
-            attempt = 0
-            max_attempts = 2
+        async def attempt_mission(_attempt: int) -> None:
+            result = await orchestrator.resume_persisted_mission(
+                mission_id, event_emitter=emitter, persistence=persistence
+            )
+            missions[mission_id]["result"] = result
+            failure_summary = _extract_failure_summary(orchestrator.state)
+            await emitter.emit(
+                "mission-complete",
+                {
+                    "success": result.success,
+                    "finalRank": result.final_rank,
+                    "finalScore": result.final_score,
+                    "errorMessage": result.error_message,
+                    "totalSubmissions": result.total_submissions,
+                    "evolutionGenerations": result.evolution_generations,
+                    "evolutionFailureSummary": failure_summary,
+                    "durationMs": result.duration_ms,
+                    "phasesCompleted": list(result.phases_completed),
+                },
+            )
 
-            try:
-                while True:
-                    try:
-                        result = await orchestrator.resume_persisted_mission(
-                            mission_id, event_emitter=emitter, persistence=persistence
-                        )
-                        missions[mission_id]["result"] = result
-                        failure_summary = _extract_failure_summary(orchestrator.state)
-                        await emitter.emit(
-                            "mission-complete",
-                            {
-                                "success": result.success,
-                                "finalRank": result.final_rank,
-                                "finalScore": result.final_score,
-                                "errorMessage": result.error_message,
-                                "totalSubmissions": result.total_submissions,
-                                "evolutionGenerations": result.evolution_generations,
-                                "evolutionFailureSummary": failure_summary,
-                                "durationMs": result.duration_ms,
-                                "phasesCompleted": list(result.phases_completed),
-                            },
-                        )
-                        if attempt > 0:
-                            await emitter.emit_recovery_complete(
-                                error_id=error_id, success=True, resolution="mission_completed"
-                            )
-                        break
-                    except Exception as exc:
-                        category, strategy = classify_error(exc)
-                        recoverable = isinstance(exc, AgentKError) and exc.recoverable
-                        await emitter.emit_error(
-                            error_id=error_id,
-                            category=category,
-                            error_type=type(exc).__name__,
-                            message=str(exc),
-                            context="mission_execution",
-                            recovery_strategy=strategy,
-                        )
-                        logfire.error(
-                            "mission_execution_failed", error=str(exc), mission_id=mission_id, recoverable=recoverable
-                        )
-                        if not recoverable or attempt >= max_attempts - 1:
-                            if attempt > 0:
-                                await emitter.emit_recovery_complete(
-                                    error_id=error_id, success=False, resolution="exhausted"
-                                )
-                            break
-                        attempt += 1
-                        await emitter.emit_recovery_attempt(error_id=error_id, strategy=strategy, attempt=attempt)
-                        logfire.warning("mission_recovery_attempt", mission_id=mission_id, attempt=attempt)
-            finally:
-                emitter.close()
-
-        missions[mission_id]["task"] = asyncio.create_task(run_mission())
+        missions[mission_id]["task"] = asyncio.create_task(
+            run_mission_with_recovery(
+                attempt_mission, emitter=emitter, error_id=f"mission_{mission_id}", mission_id=mission_id
+            )
+        )
 
         logfire.info("mission_resumed", mission_id=mission_id, source=source)
         return None
@@ -1191,65 +1211,32 @@ def create_app() -> FastAPI:
             "competition_id": competition_id,
         }
 
-        async def run_mission() -> None:
-            error_id = f"mission_{mission_id}"
-            attempt = 0
-            max_attempts = 2
+        async def attempt_mission(_attempt: int) -> None:
+            result = await orchestrator.execute_mission(
+                competition_id, mission_id=mission_id, criteria=criteria, event_emitter=emitter
+            )
+            missions[mission_id]["result"] = result
+            failure_summary = _extract_failure_summary(orchestrator.state)
+            await emitter.emit(
+                "mission-complete",
+                {
+                    "success": result.success,
+                    "finalRank": result.final_rank,
+                    "finalScore": result.final_score,
+                    "errorMessage": result.error_message,
+                    "totalSubmissions": result.total_submissions,
+                    "evolutionGenerations": result.evolution_generations,
+                    "evolutionFailureSummary": failure_summary,
+                    "durationMs": result.duration_ms,
+                    "phasesCompleted": list(result.phases_completed),
+                },
+            )
 
-            try:
-                while True:
-                    try:
-                        result = await orchestrator.execute_mission(
-                            competition_id, mission_id=mission_id, criteria=criteria, event_emitter=emitter
-                        )
-                        missions[mission_id]["result"] = result
-                        failure_summary = _extract_failure_summary(orchestrator.state)
-                        await emitter.emit(
-                            "mission-complete",
-                            {
-                                "success": result.success,
-                                "finalRank": result.final_rank,
-                                "finalScore": result.final_score,
-                                "errorMessage": result.error_message,
-                                "totalSubmissions": result.total_submissions,
-                                "evolutionGenerations": result.evolution_generations,
-                                "evolutionFailureSummary": failure_summary,
-                                "durationMs": result.duration_ms,
-                                "phasesCompleted": list(result.phases_completed),
-                            },
-                        )
-                        if attempt > 0:
-                            await emitter.emit_recovery_complete(
-                                error_id=error_id, success=True, resolution="mission_completed"
-                            )
-                        break
-                    except Exception as exc:
-                        category, strategy = classify_error(exc)
-                        recoverable = isinstance(exc, AgentKError) and exc.recoverable
-                        await emitter.emit_error(
-                            error_id=error_id,
-                            category=category,
-                            error_type=type(exc).__name__,
-                            message=str(exc),
-                            context="mission_execution",
-                            recovery_strategy=strategy,
-                        )
-                        logfire.error(
-                            "mission_execution_failed", error=str(exc), mission_id=mission_id, recoverable=recoverable
-                        )
-                        if not recoverable or attempt >= max_attempts - 1:
-                            if attempt > 0:
-                                await emitter.emit_recovery_complete(
-                                    error_id=error_id, success=False, resolution="exhausted"
-                                )
-                            break
-                        attempt += 1
-                        await emitter.emit_recovery_attempt(error_id=error_id, strategy=strategy, attempt=attempt)
-                        logfire.warning("mission_recovery_attempt", mission_id=mission_id, attempt=attempt)
-            finally:
-                emitter.close()
-
-        missions[mission_id]["task"] = asyncio.create_task(run_mission())
+        missions[mission_id]["task"] = asyncio.create_task(
+            run_mission_with_recovery(
+                attempt_mission, emitter=emitter, error_id=f"mission_{mission_id}", mission_id=mission_id
+            )
+        )
 
         logfire.info("mission_started", mission_id=mission_id)
 

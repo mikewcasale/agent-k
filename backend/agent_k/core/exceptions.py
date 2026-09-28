@@ -29,7 +29,7 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Final
 
 if TYPE_CHECKING:
     from .types import ErrorCategory, RecoveryStrategy
@@ -60,7 +60,17 @@ __all__ = (
     "StateTransitionError",
     "PhaseTimeoutError",
     "classify_error",
+    "is_recoverable_error",
+    "recovery_delay_seconds",
+    "DEFAULT_RECOVERY_BASE_DELAY",
+    "MAX_RECOVERY_DELAY",
 )
+
+DEFAULT_RECOVERY_BASE_DELAY: Final[float] = 2.0
+"""Seconds to wait before the first retry when no platform hint is available."""
+
+MAX_RECOVERY_DELAY: Final[float] = 60.0
+"""Upper bound on any single recovery delay, in seconds."""
 
 
 class AgentKError(Exception):
@@ -588,3 +598,52 @@ def classify_error(exc: Exception) -> tuple[ErrorCategory, RecoveryStrategy]:
     if isinstance(exc, AgentKError):
         return ("recoverable", "retry") if exc.recoverable else ("fatal", "abort")
     return "transient", "retry"
+
+
+def is_recoverable_error(exc: Exception) -> bool:
+    """Report whether an operation should be retried after this exception.
+
+    @notice: |
+        Returns True when classify_error selects a retry strategy.
+
+    @dev: |
+        Canonical retry predicate for the mission runners. Transient failures
+        such as connection resets and read timeouts are retryable even though
+        they are not AgentKError subclasses, so callers must use this helper
+        instead of an isinstance(exc, AgentKError) check: the latter treats
+        every third-party exception as fatal while still advertising a "retry"
+        recovery strategy to the UI.
+    """
+    _category, strategy = classify_error(exc)
+    return strategy == "retry"
+
+
+def recovery_delay_seconds(
+    exc: Exception,
+    attempt: int,
+    *,
+    base_delay: float = DEFAULT_RECOVERY_BASE_DELAY,
+    max_delay: float = MAX_RECOVERY_DELAY,
+) -> float:
+    """Compute how long to wait before a retry attempt.
+
+    @notice: |
+        Returns the backoff delay in seconds before retry number `attempt`.
+
+    @dev: |
+        Honours RateLimitError.retry_after when the platform supplies one;
+        otherwise applies exponential backoff of base_delay * 2 ** (attempt - 1).
+        `attempt` is 1-based, so the first retry waits base_delay. Every result
+        is clamped to max_delay.
+
+    @errors:
+        terminal:
+            - ValueError
+    """
+    if attempt < 1:
+        raise ValueError("attempt must be >= 1")
+
+    if isinstance(exc, RateLimitError) and exc.retry_after is not None and exc.retry_after > 0:
+        return min(float(exc.retry_after), max_delay)
+
+    return min(base_delay * 2.0 ** (attempt - 1), max_delay)

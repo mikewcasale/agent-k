@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Honours RateLimitError.retry_after when the platform supplies one;\notherwise applies exponential backoff of base_delay * 2 ** (attempt - 1).\n`attempt` is 1-based, so the first retry waits base_delay. Every result\nis clamped to max_delay.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.exceptions:recovery_delay_seconds",
+  "line": 628,
+  "notice": "Returns the backoff delay in seconds before retry number `attempt`.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/exceptions.py",
+  "summary": "Compute how long to wait before a retry attempt.",
+  "type": "function"
+}

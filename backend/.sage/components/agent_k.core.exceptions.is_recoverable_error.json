@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Canonical retry predicate for the mission runners. Transient failures\nsuch as connection resets and read timeouts are retryable even though\nthey are not AgentKError subclasses, so callers must use this helper\ninstead of an isinstance(exc, AgentKError) check: the latter treats\nevery third-party exception as fatal while still advertising a \"retry\"\nrecovery strategy to the UI.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.exceptions:is_recoverable_error",
+  "line": 604,
+  "notice": "Returns True when classify_error selects a retry strategy.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/exceptions.py",
+  "summary": "Report whether an operation should be retried after this exception.",
+  "type": "function"
+}

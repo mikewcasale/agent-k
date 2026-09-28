@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Retryability comes from agent_k.core.exceptions.is_recoverable_error so\nthat transient third-party failures (connection resets, read timeouts)\nare retried rather than being treated as fatal. The wait between\nattempts uses recovery_delay_seconds, which honours a platform-supplied\nRateLimitError.retry_after before falling back to exponential backoff.\nThe emitter is always closed, even when every attempt fails.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:run_mission_with_recovery",
+  "line": 825,
+  "notice": "Executes `operation`, emitting error/recovery events and retrying\nrecoverable failures after a backoff delay.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Run a mission coroutine, retrying recoverable failures with backoff.",
+  "type": "function"
+}

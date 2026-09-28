@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-09-28T22:08:41.112079+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -96,7 +96,7 @@
     "classifier": [
       {
         "component": "agent_k.ui.agui:IntentClassifier",
-        "line": 612,
+        "line": 621,
         "rationale": "Dataclass for LLM-backed intent classification.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -116,7 +116,7 @@
     "context-model": [
       {
         "component": "agent_k.ui.agui:TaskEmissionContext",
-        "line": 546,
+        "line": 555,
         "rationale": "Async context manager for task lifecycle events.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -346,7 +346,7 @@
     "event-emitter": [
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 332,
+        "line": 341,
         "rationale": "Centralizes event streaming for the UI.",
         "source": "agent_k/ui/agui.py",
         "violations": [
@@ -357,7 +357,7 @@
     "event-model": [
       {
         "component": "agent_k.ui.agui:AgentKEvent",
-        "line": 283,
+        "line": 292,
         "rationale": "Frozen Pydantic model for SSE event streaming.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -389,7 +389,7 @@
     "exception-base": [
       {
         "component": "agent_k.core.exceptions:AgentKError",
-        "line": 67,
+        "line": 77,
         "rationale": "Root exception with context and recoverability metadata.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
@@ -398,42 +398,42 @@
     "exception-category": [
       {
         "component": "agent_k.core.exceptions:AgentError",
-        "line": 94,
+        "line": 104,
         "rationale": "Category base for agent execution errors.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:AdapterError",
-        "line": 180,
+        "line": 190,
         "rationale": "Category base for platform adapter errors.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:CompetitionError",
-        "line": 256,
+        "line": 266,
         "rationale": "Category base for Kaggle competition errors.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:EvolutionError",
-        "line": 363,
+        "line": 373,
         "rationale": "Category base for evolutionary algorithm errors.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:MemoryError",
-        "line": 449,
+        "line": 459,
         "rationale": "Category base for memory and checkpoint errors.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:GraphError",
-        "line": 510,
+        "line": 520,
         "rationale": "Category base for state machine errors.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
@@ -442,119 +442,119 @@
     "exception-specific": [
       {
         "component": "agent_k.core.exceptions:AgentExecutionError",
-        "line": 109,
+        "line": 119,
         "rationale": "Captures agent name and cause for debugging.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:ToolExecutionError",
-        "line": 135,
+        "line": 145,
         "rationale": "Captures tool name and arguments for debugging.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:OutputValidationError",
-        "line": 157,
+        "line": 167,
         "rationale": "Captures validation errors for structured output failures.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:PlatformConnectionError",
-        "line": 195,
+        "line": 205,
         "rationale": "Captures platform name for connection failures.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:AuthenticationError",
-        "line": 214,
+        "line": 224,
         "rationale": "Non-recoverable authentication failure.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:RateLimitError",
-        "line": 233,
+        "line": 243,
         "rationale": "Recoverable with retry_after hint for backoff.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:CompetitionNotFoundError",
-        "line": 271,
+        "line": 281,
         "rationale": "Non-recoverable missing competition.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:CompetitionRulesNotAcceptedError",
-        "line": 292,
+        "line": 302,
         "rationale": "Non-recoverable until user accepts rules manually.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:SubmissionError",
-        "line": 316,
+        "line": 326,
         "rationale": "Captures submission context for retry logic.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:DeadlinePassedError",
-        "line": 339,
+        "line": 349,
         "rationale": "Non-recoverable deadline expiration.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:ConvergenceError",
-        "line": 378,
+        "line": 388,
         "rationale": "Captures evolution progress for analysis.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:PopulationExtinctError",
-        "line": 402,
+        "line": 412,
         "rationale": "Non-recoverable population extinction.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:FitnessEvaluationError",
-        "line": 426,
+        "line": 436,
         "rationale": "Captures solution and execution context for debugging.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:CheckpointError",
-        "line": 464,
+        "line": 474,
         "rationale": "Captures checkpoint name and operation for debugging.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:MemoryCapacityError",
-        "line": 487,
+        "line": 497,
         "rationale": "Captures size metrics for capacity planning.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:StateTransitionError",
-        "line": 525,
+        "line": 535,
         "rationale": "Captures transition context for state machine debugging.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
       },
       {
         "component": "agent_k.core.exceptions:PhaseTimeoutError",
-        "line": 549,
+        "line": 559,
         "rationale": "Captures timing metrics for timeout analysis.",
         "source": "agent_k/core/exceptions.py",
         "violations": []
@@ -701,7 +701,7 @@
     "handler": [
       {
         "component": "agent_k.ui.agui:ChatHandler",
-        "line": 699,
+        "line": 708,
         "rationale": "Dataclass coordinating intent classification and parsing.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -1037,7 +1037,7 @@
       },
       {
         "component": "agent_k.ui.agui:MissionIntentOutput",
-        "line": 308,
+        "line": 317,
         "rationale": "Frozen Pydantic model for agent structured output.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -1046,7 +1046,7 @@
     "parser": [
       {
         "component": "agent_k.ui.agui:MissionCriteriaParser",
-        "line": 667,
+        "line": 676,
         "rationale": "Dataclass for extracting mission criteria from intent.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -1156,21 +1156,21 @@
     "request-model": [
       {
         "component": "agent_k.ui.agui:MissionRequest",
-        "line": 218,
+        "line": 227,
         "rationale": "Frozen Pydantic model for mission start requests.",
         "source": "agent_k/ui/agui.py",
         "violations": []
       },
       {
         "component": "agent_k.ui.agui:CompetitionSearchRequest",
-        "line": 243,
+        "line": 252,
         "rationale": "Frozen Pydantic model for competition search requests.",
         "source": "agent_k/ui/agui.py",
         "violations": []
       },
       {
         "component": "agent_k.ui.agui:CompetitionFetchRequest",
-        "line": 265,
+        "line": 274,
         "rationale": "Frozen Pydantic model for competition fetch requests.",
         "source": "agent_k/ui/agui.py",
         "violations": []
@@ -1179,7 +1179,7 @@
     "result-model": [
       {
         "component": "agent_k.ui.agui:MissionIntentResult",
-        "line": 593,
+        "line": 602,
         "rationale": "Dataclass for intent classification result.",
         "source": "agent_k/ui/agui.py",
         "violations": []

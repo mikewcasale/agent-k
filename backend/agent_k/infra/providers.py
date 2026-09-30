@@ -41,9 +41,11 @@ from __future__ import annotations as _annotations
 import os
 from typing import TYPE_CHECKING, Annotated, Final
 
+from pydantic_ai.models.anthropic import AnthropicModelSettings
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.providers.openrouter import OpenRouterProvider
+from pydantic_ai.settings import ModelSettings
 
 from agent_k.core.sage import Doc
 
@@ -51,6 +53,7 @@ if TYPE_CHECKING:
     from pydantic_ai.models import Model
 
 __all__ = (
+    "build_model_settings",
     "get_model",
     "create_devstral_model",
     "create_openrouter_model",
@@ -183,6 +186,38 @@ def get_model(model_spec: Annotated[str, Doc("Model specification string.")]) ->
     # Return string for standard pydantic-ai model resolution
     # (e.g., 'anthropic:claude-3-haiku-20240307', 'openai:gpt-4o')
     return model_spec
+
+
+def build_model_settings(
+    model_spec: Annotated[str, Doc("Model specification string.")],
+    *,
+    temperature: Annotated[float, Doc("Sampling temperature for the model.")],
+    max_tokens: Annotated[int, Doc("Maximum tokens for model responses.")],
+) -> ModelSettings:
+    """Build model settings that keep the static prompt prefix cacheable.
+
+    @notice: |
+        Returns ModelSettings with provider-side prompt caching enabled when required.
+
+    @dev: |
+        Anthropic only caches blocks that carry an explicit cache_control breakpoint, so
+        instructions and tool definitions are marked cacheable for ``anthropic:`` specs.
+        OpenAI-compatible endpoints (OpenAI, OpenRouter, local LM Studio) cache long
+        prefixes automatically and need no extra settings.
+
+    @canonical-home:
+        for:
+            - "agent model settings construction"
+        notes: "Use build_model_settings from agent settings properties."
+    """
+    if model_spec.startswith("anthropic:"):
+        return AnthropicModelSettings(
+            temperature=temperature,
+            max_tokens=max_tokens,
+            anthropic_cache_instructions=True,
+            anthropic_cache_tool_definitions=True,
+        )
+    return ModelSettings(temperature=temperature, max_tokens=max_tokens)
 
 
 def is_devstral_model(model_spec: Annotated[str, Doc("Model specification string.")]) -> bool:

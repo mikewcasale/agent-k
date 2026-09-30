@@ -6,12 +6,12 @@
   "dev": null,
   "graph": null,
   "human_review": null,
-  "id": "agent_k.agents.lobbyist:LobbyistAgent._add_search_context",
-  "line": 405,
+  "id": "agent_k.agents.evolver:EvolverAgent._build_live_state",
+  "line": 1205,
   "notice": null,
   "pattern": null,
   "similar": null,
-  "source": "agent_k/agents/lobbyist.py",
-  "summary": "Add cached search results to context.",
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Collect mutating evolution state for delivery through tool results.",
   "type": "method"
 }

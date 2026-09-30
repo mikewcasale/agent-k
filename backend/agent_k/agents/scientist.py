@@ -68,7 +68,7 @@ from agent_k.core.constants import DEFAULT_MODEL
 from agent_k.core.data import locate_data_files
 from agent_k.core.hints import DatasetProfile, build_dataset_profile, generate_preprocessing_hints
 from agent_k.core.sage import Doc, Range
-from agent_k.infra.providers import get_model
+from agent_k.infra.providers import build_model_settings, get_model
 from agent_k.toolsets import (
     create_production_toolset,
     kaggle_toolset,
@@ -187,7 +187,7 @@ class ScientistSettings(BaseSettings):
     @property
     def model_settings(self) -> ModelSettings:
         """Build ModelSettings for the configured model."""
-        return ModelSettings(temperature=self.temperature, max_tokens=self.max_tokens)
+        return build_model_settings(self.model, temperature=self.temperature, max_tokens=self.max_tokens)
 
 
 @dataclass

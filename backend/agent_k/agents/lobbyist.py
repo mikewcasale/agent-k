@@ -56,7 +56,7 @@ from agent_k.agents.prompts import LOBBYIST_SYSTEM_PROMPT
 from agent_k.core.constants import DEFAULT_MODEL
 from agent_k.core.models import Competition
 from agent_k.core.sage import Doc, Range
-from agent_k.infra.providers import get_model
+from agent_k.infra.providers import build_model_settings, get_model
 from agent_k.toolsets import create_production_toolset, kaggle_toolset, prepare_memory_tool, prepare_web_search
 
 if TYPE_CHECKING:
@@ -104,7 +104,7 @@ class LobbyistSettings(BaseSettings):
     @property
     def model_settings(self) -> ModelSettings:
         """Build ModelSettings for the configured model."""
-        return ModelSettings(temperature=self.temperature, max_tokens=self.max_tokens)
+        return build_model_settings(self.model, temperature=self.temperature, max_tokens=self.max_tokens)
 
 
 @dataclass
@@ -377,7 +377,6 @@ class LobbyistAgent(MemoryMixin):
         )
 
         agent.output_validator(self._validate_discovery_result)
-        agent.instructions(self._add_search_context)
         return agent
 
     def _register_tools(self) -> None:
@@ -400,10 +399,6 @@ class LobbyistAgent(MemoryMixin):
         if not result.competitions:
             raise ModelRetry("No competitions found. Broaden criteria and try again.")
         return result
-
-    async def _add_search_context(self, ctx: RunContext[LobbyistDeps]) -> str:
-        """Add cached search results to context."""
-        return f"Previously found competitions: {list(ctx.deps.search_cache.keys())}" if ctx.deps.search_cache else ""
 
 
 # Module-level singleton for backward compatibility

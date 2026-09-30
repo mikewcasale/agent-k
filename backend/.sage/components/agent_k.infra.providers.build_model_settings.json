@@ -1,0 +1,22 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": {
+    "for": [
+      "agent model settings construction"
+    ],
+    "notes": "Use build_model_settings from agent settings properties."
+  },
+  "custom": null,
+  "dev": "Anthropic only caches blocks that carry an explicit cache_control breakpoint, so\ninstructions and tool definitions are marked cacheable for ``anthropic:`` specs.\nOpenAI-compatible endpoints (OpenAI, OpenRouter, local LM Studio) cache long\nprefixes automatically and need no extra settings.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.providers:build_model_settings",
+  "line": 197,
+  "notice": "Returns ModelSettings with provider-side prompt caching enabled when required.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/providers.py",
+  "summary": "Build model settings that keep the static prompt prefix cacheable.",
+  "type": "function"
+}

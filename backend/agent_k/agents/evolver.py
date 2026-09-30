@@ -101,7 +101,7 @@ from agent_k.core.tracking import (
     HintEffectivenessTracker,
     extract_solution_metadata,
 )
-from agent_k.infra.providers import get_model
+from agent_k.infra.providers import build_model_settings, get_model
 from agent_k.toolsets import code_toolset, create_production_toolset, prepare_code_execution_tool, prepare_memory_tool
 
 if TYPE_CHECKING:
@@ -422,7 +422,9 @@ class EvolverSettings(BaseSettings):
     @property
     def model_settings(self) -> ModelSettings:
         """Build ModelSettings from configuration."""
-        settings: ModelSettings = {"temperature": self.temperature, "max_tokens": self.max_tokens}
+        settings: ModelSettings = build_model_settings(
+            self.model, temperature=self.temperature, max_tokens=self.max_tokens
+        )
 
         if self.enable_thinking and "anthropic" in self.model:
             logfire.info("evolver_thinking_disabled", model=self.model, reason="anthropic_output_tools_incompatible")
@@ -495,6 +497,7 @@ class EvolverDeps:
     suppressed_hints: set[str] = field(default_factory=set)
     failure_counts: dict[str, int] = field(default_factory=dict)
     last_error_feedback: str | None = None
+    instruction_snapshot: str | None = None
 
 
 class EvolutionResult(BaseModel):
@@ -849,6 +852,9 @@ class EvolverAgent(MemoryMixin):
                     },
                 )
             else:
+                failure_summary = _summarize_failure_counts(ctx.deps.failure_counts, limit=_FAILURE_SUMMARY_LIMIT)
+                if failure_summary:
+                    result["failure_summary"] = failure_summary
                 await ctx.deps.event_emitter.emit_tool_error(
                     task_id="evolution_evaluate",
                     tool_call_id=tool_call_id,
@@ -876,11 +882,15 @@ class EvolverAgent(MemoryMixin):
         mean_fitness: Annotated[float, Doc("Mean fitness in generation.")],
         worst_fitness: Annotated[float, Doc("Worst fitness in generation.")],
         mutations: Annotated[dict[str, int], Doc("Mutation counts for the generation.")],
-    ) -> None:
+    ) -> ToolReturn:
         """Record generation metrics.
 
         @notice: |
-            Appends generation metrics and emits telemetry.
+            Appends generation metrics, emits telemetry, and returns live evolution state.
+
+        @dev: |
+            The live state is returned here instead of being injected into instructions so
+            the cached prompt prefix stays byte-identical across requests in a run.
 
         @effects:
             state:
@@ -908,6 +918,15 @@ class EvolverAgent(MemoryMixin):
         logfire.info(
             "evolution_generation", generation=global_generation, best_fitness=best_fitness, mean_fitness=mean_fitness
         )
+
+        state = self._build_live_state(ctx.deps)
+        state["generation"] = global_generation
+        summary = (
+            f"Generation {global_generation} recorded: best={best_fitness:.4f}, mean={mean_fitness:.4f}, "
+            f"improvements={state['improvements']}, elite_cells={state['elite_cells']}, "
+            f"generations_remaining={state['generations_remaining']}"
+        )
+        return ToolReturn(return_value=state, content=summary)
 
     async def check_convergence(
         self,
@@ -1121,9 +1140,29 @@ class EvolverAgent(MemoryMixin):
         return result
 
     async def _add_evolution_context(self, ctx: RunContext[EvolverDeps]) -> str:
-        """Add evolution-specific context to instructions."""
-        comp = ctx.deps.competition
-        deps = ctx.deps
+        """Add run-invariant evolution context to instructions.
+
+        @notice: |
+            Returns the cached per-run instruction snapshot for this evolution run.
+
+        @dev: |
+            Instructions are re-rendered before every model request and are sent as the
+            system block, so any change invalidates the whole cached prompt prefix. The
+            snapshot is therefore built once per run and mutating state (counters, elite
+            archive, failures, hint priorities) travels in tool results instead, where it
+            lands after the cached prefix.
+
+        @effects:
+            state:
+                - ctx.deps.instruction_snapshot
+        """
+        if ctx.deps.instruction_snapshot is None:
+            ctx.deps.instruction_snapshot = self._build_instruction_snapshot(ctx.deps)
+        return ctx.deps.instruction_snapshot
+
+    def _build_instruction_snapshot(self, deps: EvolverDeps) -> str:
+        """Build the run-invariant instruction text for an evolution run."""
+        comp = deps.competition
         sections = [
             (
                 "COMPETITION CONTEXT:\n"
@@ -1133,35 +1172,17 @@ class EvolverAgent(MemoryMixin):
                 f"- Target Score: {deps.target_score}"
             ),
             (
-                "EVOLUTION STATE:\n"
-                f"- Generations Completed: {len(deps.generation_history)}\n"
+                "EVOLUTION BUDGET:\n"
                 f"- Population Size: {deps.population_size}\n"
                 f"- Max Generations: {deps.max_generations}\n"
                 f"- Minimum Generations: {deps.min_generations}\n"
-                f"- Improvements: {deps.improvement_count}\n"
                 f"- Min Improvements Required: {deps.min_improvements_required}\n"
-                f"- Generation Offset: {deps.generation_offset}"
+                f"- Generation Offset: {deps.generation_offset}\n"
+                "- Live counters (generations completed, improvements, best fitness, elite archive,\n"
+                "  execution failures) are returned by record_generation and evaluate_fitness.\n"
+                "- Use sample_elites to retrieve top + diverse candidates from the elite archive."
             ),
         ]
-        if deps.generation_history:
-            last_gen = deps.generation_history[-1]
-            sections.append(
-                "LAST GENERATION:\n"
-                f"- Best Fitness: {last_gen.get('best_fitness', 'N/A')}\n"
-                f"- Mean Fitness: {last_gen.get('mean_fitness', 'N/A')}"
-            )
-        if deps.best_solution:
-            sections.append(f"BEST SOLUTION AVAILABLE: {len(deps.best_solution)} chars")
-        if deps.elite_archive:
-            families = sorted({entry.model_family for entry in deps.elite_archive.values()})
-            family_preview = ", ".join(families[:6])
-            suffix = "..." if len(families) > 6 else ""
-            sections.append(
-                "ELITE ARCHIVE:\n"
-                f"- Cells: {len(deps.elite_archive)}\n"
-                f"- Families: {family_preview}{suffix}\n"
-                "- Use sample_elites to retrieve top + diverse candidates."
-            )
         policy = self._resolve_technique_policy(deps)
         if policy is not None:
             sections.append(
@@ -1173,25 +1194,44 @@ class EvolverAgent(MemoryMixin):
                 f"- Target Transform: {policy.enable_target_transform}"
             )
 
-        if deps.failure_counts:
-            summary = _summarize_failure_counts(deps.failure_counts, limit=_FAILURE_SUMMARY_LIMIT)
-            if summary:
-                sections.append(
-                    "EXECUTION FAILURES:\n"
-                    f"- Top causes: {summary}\n"
-                    "- Fix execution errors before applying further mutations."
-                )
-        if deps.last_error_feedback:
-            sections.append(f"LAST EXECUTION ERROR:\n{deps.last_error_feedback}")
-
         if deps.preprocessing_hints:
-            prioritized = self._get_prioritized_hints(deps)
-            if prioritized:
-                hint_text = self._build_hint_context(prioritized)
-                if hint_text:
-                    sections.append(hint_text)
+            hint_text = self._build_hint_context(self._get_prioritized_hints(deps))
+            if hint_text:
+                sections.append(hint_text)
 
         return "\n\n".join(sections)
+
+    def _build_live_state(self, deps: EvolverDeps) -> dict[str, Any]:
+        """Collect mutating evolution state for delivery through tool results."""
+        completed_this_run = max(len(deps.generation_history) - deps.generation_offset, 0)
+        families = sorted({entry.model_family for entry in deps.elite_archive.values()})
+        state: dict[str, Any] = {
+            "generations_completed": len(deps.generation_history),
+            "generations_remaining": max(deps.max_generations - completed_this_run, 0),
+            "improvements": deps.improvement_count,
+            "min_improvements_required": deps.min_improvements_required,
+            "best_fitness": deps.best_fitness,
+            "best_solution_chars": len(deps.best_solution or ""),
+            "elite_cells": len(deps.elite_archive),
+            "elite_families": families,
+        }
+        if deps.generation_history:
+            last_gen = deps.generation_history[-1]
+            state["last_generation"] = {
+                "generation": last_gen.get("generation"),
+                "best_fitness": last_gen.get("best_fitness"),
+                "mean_fitness": last_gen.get("mean_fitness"),
+            }
+        failure_summary = _summarize_failure_counts(deps.failure_counts, limit=_FAILURE_SUMMARY_LIMIT)
+        if failure_summary:
+            state["failure_summary"] = failure_summary
+        if deps.last_error_feedback:
+            state["last_error_feedback"] = deps.last_error_feedback
+        if deps.preprocessing_hints:
+            hint_text = self._build_hint_context(self._get_prioritized_hints(deps))
+            if hint_text:
+                state["preprocessing_guidance"] = hint_text
+        return state
 
     def _get_prioritized_hints(self, deps: EvolverDeps) -> list[dict[str, Any]]:
         tracker = deps.hint_tracker

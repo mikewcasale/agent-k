@@ -14,6 +14,7 @@ from pydantic_ai.models.openai import OpenAIChatModel
 from agent_k.infra.providers import (
     DEVSTRAL_BASE_URL,
     DEVSTRAL_MODEL_ID,
+    build_model_settings,
     create_devstral_model,
     create_openrouter_model,
     get_model,
@@ -135,3 +136,26 @@ class TestIsDevstralModel:
     def test_openrouter_not_devstral(self) -> None:
         """OpenRouter models should not be identified as Devstral."""
         assert is_devstral_model("openrouter:mistralai/devstral-small-2505") is False
+
+
+class TestBuildModelSettings:
+    """Tests for prompt-cache aware model settings."""
+
+    def test_anthropic_enables_prompt_caching(self) -> None:
+        """Anthropic specs must mark instructions and tool definitions cacheable."""
+        settings = build_model_settings("anthropic:claude-sonnet-4-20250514", temperature=0.4, max_tokens=1024)
+
+        assert settings["temperature"] == 0.4
+        assert settings["max_tokens"] == 1024
+        assert settings.get("anthropic_cache_instructions") is True
+        assert settings.get("anthropic_cache_tool_definitions") is True
+
+    @pytest.mark.parametrize("model_spec", ["openrouter:openai/gpt-oss-120b:free", "openai:gpt-4o", "devstral:local"])
+    def test_non_anthropic_settings_stay_plain(self, model_spec: str) -> None:
+        """Providers that cache prefixes automatically get no cache settings."""
+        settings = build_model_settings(model_spec, temperature=0.7, max_tokens=2048)
+
+        assert settings["temperature"] == 0.7
+        assert settings["max_tokens"] == 2048
+        assert "anthropic_cache_instructions" not in settings
+        assert "anthropic_cache_tool_definitions" not in settings

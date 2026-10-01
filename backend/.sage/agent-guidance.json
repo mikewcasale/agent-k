@@ -1,5 +1,5 @@
 {
-  "count": 59,
+  "count": 60,
   "entries": [
     {
       "component": "agent_k",
@@ -220,6 +220,19 @@
       ],
       "line": 1,
       "source": "agent_k/core/hints.py"
+    },
+    {
+      "component": "agent_k.core.metrics",
+      "do": [
+        "Use agent_k.core.metrics as the canonical home for this capability.",
+        "Add new metric spellings to the phrase/token tables instead of inline branches."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph.",
+        "Add competition-specific metric names; keep entries generic per problem type."
+      ],
+      "line": 1,
+      "source": "agent_k/core/metrics.py"
     },
     {
       "component": "agent_k.core.models",
@@ -651,6 +664,6 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831787+00:00",
+  "generated": "2026-10-01T02:08:16.825180+00:00",
   "version": "1.3.6"
 }

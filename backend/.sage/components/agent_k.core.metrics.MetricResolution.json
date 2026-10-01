@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Carries the resolved metric, its optimisation direction, the\nnormalised text used for matching, and whether a table entry matched\n(``False`` means the default metric was substituted).",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.metrics:MetricResolution",
+  "line": 165,
+  "notice": "Outcome of resolving a free-text metric name.",
+  "pattern": {
+    "name": "value-object",
+    "rationale": "Keeps resolution provenance alongside the resolved metric.",
+    "violations": "Returning a bare metric hides unrecognised platform strings."
+  },
+  "similar": null,
+  "source": "agent_k/core/metrics.py",
+  "summary": "Outcome of resolving a free-text metric name.",
+  "type": "class"
+}

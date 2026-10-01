@@ -1,0 +1,37 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.core.metrics as the canonical home for this capability.",
+      "Add new metric spellings to the phrase/token tables instead of inline branches."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph.",
+      "Add competition-specific metric names; keep entries generic per problem type."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Maps free-text platform metric names (camelCase slugs, spelled-out\nphrases, parenthesised acronyms) onto EvaluationMetric plus the\noptimisation direction, and owns the canonical classification and\nprobability metric sets shared by policy and codegen logic.",
+  "graph": {
+    "id": "agent_k.core.metrics",
+    "pattern": "resolver",
+    "provides": [
+      "agent_k.core.metrics"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-10-01",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.core.metrics",
+  "line": 1,
+  "notice": "Generic evaluation-metric resolution for AGENT-K.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/metrics.py",
+  "summary": "Generic evaluation-metric resolution for AGENT-K.",
+  "type": "module"
+}

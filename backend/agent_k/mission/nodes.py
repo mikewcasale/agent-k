@@ -76,6 +76,7 @@ from ..core.constants import (
 from ..core.data import infer_competition_schema, locate_data_files, stage_competition_data
 from ..core.exceptions import classify_error
 from ..core.hints import DatasetProfile, PreprocessingHint, build_dataset_profile, generate_preprocessing_hints
+from ..core.metrics import CLASSIFICATION_METRICS, PROBABILITY_METRICS
 from ..core.models import (
     EvaluationMetric,
     EvolutionState,
@@ -630,13 +631,8 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         strategy_text = " ".join(strategy_items)
         strategy_lower = strategy_text.lower()
 
-        is_classification = metric_key in {
-            EvaluationMetric.ACCURACY,
-            EvaluationMetric.AUC,
-            EvaluationMetric.LOG_LOSS,
-            EvaluationMetric.F1,
-        }
-        uses_proba = metric_key in {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
+        is_classification = metric_key in CLASSIFICATION_METRICS
+        uses_proba = metric_key in PROBABILITY_METRICS
 
         if "lightgbm" in strategy_lower or "lgbm" in strategy_lower:
             model_class = "LGBMClassifier" if is_classification else "LGBMRegressor"
@@ -2173,19 +2169,11 @@ def _prediction_value(
         return 0.0, 0.0
 
     mean_value = sum(numeric_values) / len(numeric_values)
-    proba_metrics = {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
-    classification_metrics = {
-        EvaluationMetric.ACCURACY,
-        EvaluationMetric.AUC,
-        EvaluationMetric.LOG_LOSS,
-        EvaluationMetric.F1,
-    }
-
-    if metric in proba_metrics:
+    if metric in PROBABILITY_METRICS:
         pred_numeric = min(max(mean_value, 1e-3), 1 - 1e-3)
         return pred_numeric, pred_numeric
 
-    if metric in classification_metrics:
+    if metric in CLASSIFICATION_METRICS:
         if mapping:
             majority = Counter(raw_values).most_common(1)[0][0]
             return majority, float(mapping.get(majority, 0))

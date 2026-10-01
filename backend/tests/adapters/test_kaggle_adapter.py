@@ -12,6 +12,7 @@ import httpx
 import pytest
 
 from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
+from agent_k.core.models import EvaluationMetric
 
 __all__ = ()
 
@@ -88,3 +89,54 @@ class TestKaggleAdapterFromEnv:
 
         # The from_env method should handle missing credentials
         # Test depends on implementation
+
+
+class TestKaggleCompetitionMetricParsing:
+    """Tests for evaluation-metric parsing in _parse_competition."""
+
+    @staticmethod
+    def _parse(evaluation_metric: str) -> Any:
+        adapter = KaggleAdapter(KaggleSettings(username="user", api_key="key"))
+        return adapter._parse_competition(
+            {
+                "ref": "https://www.kaggle.com/competitions/sample",
+                "title": "Sample",
+                "category": "Featured",
+                "deadline": "2030-01-01T00:00:00Z",
+                "evaluationMetric": evaluation_metric,
+            }
+        )
+
+    @pytest.mark.parametrize(
+        ("evaluation_metric", "expected_metric", "expected_direction"),
+        [
+            ("RootMeanSquaredError", EvaluationMetric.RMSE, "minimize"),
+            ("RootMeanSquaredLogarithmicError", EvaluationMetric.RMSLE, "minimize"),
+            ("AreaUnderRocCurve", EvaluationMetric.AUC, "maximize"),
+            ("Mean F1-Score", EvaluationMetric.F1, "maximize"),
+            ("MeanAbsoluteError", EvaluationMetric.MAE, "minimize"),
+        ],
+    )
+    def test_metric_and_direction(
+        self, evaluation_metric: str, expected_metric: EvaluationMetric, expected_direction: str
+    ) -> None:
+        """Parsed competitions should carry the resolved metric and its direction."""
+        competition = self._parse(evaluation_metric)
+
+        assert competition.metric == expected_metric
+        assert competition.metric_direction == expected_direction
+
+    def test_missing_metric_defaults_to_accuracy(self) -> None:
+        """A missing evaluation metric should keep the historical accuracy default."""
+        adapter = KaggleAdapter(KaggleSettings(username="user", api_key="key"))
+        competition = adapter._parse_competition(
+            {
+                "ref": "https://www.kaggle.com/competitions/sample",
+                "title": "Sample",
+                "category": "Featured",
+                "deadline": "2030-01-01T00:00:00Z",
+            }
+        )
+
+        assert competition.metric == EvaluationMetric.ACCURACY
+        assert competition.metric_direction == "maximize"

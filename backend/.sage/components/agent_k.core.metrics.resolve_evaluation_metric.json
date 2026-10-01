@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Matches ordered multi-word phrases first, then whole-word acronym\ntokens, so specific spellings win over generic ones. Unrecognised text\nfalls back to DEFAULT_METRIC and is reported to logfire so missing\nspellings surface instead of silently inverting the search direction.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.metrics:resolve_evaluation_metric",
+  "line": 204,
+  "notice": "Maps a platform metric string onto EvaluationMetric and its direction.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/metrics.py",
+  "summary": "Resolve a free-text metric name to a metric and optimisation direction.",
+  "type": "function"
+}

@@ -53,7 +53,7 @@ from typing import Annotated, Any, Final
 
 import logfire
 from openevolve import OpenEvolve
-from openevolve.config import Config, LLMModelConfig, load_config
+from openevolve.config import Config, LLMConfig, LLMModelConfig, load_config
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -217,6 +217,25 @@ _OPENAI_API_BASE: Final[str] = "https://api.openai.com/v1"
 _DEFAULT_OPENEVOLVE_MODEL: Final[str] = OPENROUTER_FREE_MODELS["devstral"]
 _DEFAULT_VALIDATION_SPLIT: Final[float] = 0.2
 
+# Generation and request parameters that OpenEvolve shares across every model in
+# an ensemble. `LLMConfig.__post_init__` copies these onto the model configs it
+# builds from the YAML, but `_configure_llm` replaces that list with configs
+# built per model spec, so they have to be re-applied by hand.
+_SHARED_LLM_PARAM_NAMES: Final[tuple[str, ...]] = (
+    "temperature",
+    "top_p",
+    "max_tokens",
+    "timeout",
+    "retries",
+    "retry_delay",
+    "random_seed",
+    "reasoning_effort",
+)
+# Request parameters that `openevolve.llm.openai.OpenAILLM` uses arithmetically
+# (`range(retries + 1)`) or as a hard bound (`asyncio.wait_for(timeout=...)`).
+# A None here is a crash or an unbounded wait, so they always get a value.
+_LLM_REQUEST_FALLBACKS: Final[dict[str, int]] = {"timeout": 90, "retries": 3, "retry_delay": 5}
+
 
 @dataclass
 class OpenEvolveRunner:
@@ -335,7 +354,20 @@ class OpenEvolveRunner:
         model_configs = [_build_model_config(spec) for spec in model_specs]
         config.llm.models = model_configs
         config.llm.evaluator_models = list(model_configs)
+        # Models built from specs carry only name/api_base/api_key/weight; every
+        # generation and request parameter is still None. Fill them from the
+        # shared llm config before anything reads them. overwrite=False keeps the
+        # per-spec api_base/api_key routing authoritative.
+        shared_params = _shared_llm_params(config.llm)
+        config.llm.update_model_params(shared_params)
         config.llm.update_model_params({"system_message": config.prompt.system_message}, overwrite=True)
+        logfire.info(
+            "openevolve_llm_configured",
+            models=[model.name for model in model_configs],
+            max_tokens=shared_params["max_tokens"],
+            timeout=shared_params["timeout"],
+            retries=shared_params["retries"],
+        )
         return config
 
     def _configure_prompt(self, config: Config) -> Config:
@@ -695,6 +727,24 @@ def _resolve_model_specs(model_specs: list[str]) -> list[str]:
         return cleaned
     logfire.info("openevolve_default_model", model=_DEFAULT_OPENEVOLVE_MODEL)
     return [_DEFAULT_OPENEVOLVE_MODEL]
+
+
+def _shared_llm_params(llm_config: LLMConfig) -> dict[str, Any]:
+    """Collect the generation and request parameters shared across ensemble models.
+
+    @notice: |
+        Reads the shared OpenEvolve LLM parameters, substituting safe defaults.
+
+    @dev: |
+        Values come from the loaded `llm:` config block. Request parameters that
+        OpenEvolve cannot handle as None fall back to `_LLM_REQUEST_FALLBACKS`.
+    """
+    params: dict[str, Any] = {name: getattr(llm_config, name, None) for name in _SHARED_LLM_PARAM_NAMES}
+    for name, fallback in _LLM_REQUEST_FALLBACKS.items():
+        if params[name] is None:
+            logfire.warning("openevolve_llm_param_missing", param=name, fallback=fallback)
+            params[name] = fallback
+    return params
 
 
 def _build_model_config(model_spec: str) -> LLMModelConfig:

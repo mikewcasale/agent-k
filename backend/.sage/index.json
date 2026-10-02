@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-10-02T23:17:28.319021+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1092,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -1142,93 +1142,105 @@
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveRunner",
-        "line": 225,
+        "line": 244,
         "name": "notice",
         "value": "Runner for OpenEvolve evolutionary optimization."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveRunner",
-        "line": 228,
+        "line": 247,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveRunner",
-        "line": 231,
+        "line": 250,
         "name": "pattern",
         "value": "{\"name\": \"adapter-runner\", \"rationale\": \"Encapsulates OpenEvolve execution behavior.\", \"violations\": \"Scattered runner logic complicates evolution flow.\"}"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveRunner",
-        "line": 236,
+        "line": 255,
         "name": "collaborators",
         "value": "{\"required\": [\"openevolve:OpenEvolve\"], \"injection\": \"constructor\", \"lifecycle\": \"Scoped per OpenEvolve run.\"}"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveRunner.run_evolution",
-        "line": 260,
+        "line": 279,
         "name": "notice",
         "value": "Executes OpenEvolve with the configured evaluator and model specs."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveRunner.run_evolution",
-        "line": 263,
+        "line": 282,
         "name": "effects",
         "value": "{\"io\": [\"filesystem writes\", \"OpenEvolve execution\"]}"
       },
       {
         "component": "agent_k.adapters.openevolve:_OpenEvolveJob",
-        "line": 415,
+        "line": 447,
         "name": "pattern",
         "value": "{\"name\": \"job-tracker\", \"rationale\": \"Captures in-memory job state for adapter polling.\", \"violations\": \"Fragmented job state tracking breaks status updates.\"}"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 437,
+        "line": 469,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 440,
+        "line": 472,
         "name": "notice",
         "value": "Provides a PlatformAdapter facade for OpenEvolve runs."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 443,
+        "line": 475,
         "name": "pattern",
         "value": "{\"name\": \"adapter\", \"rationale\": \"Encapsulates OpenEvolve-specific behaviors.\", \"violations\": \"Direct OpenEvolve use bypasses PlatformAdapter contract.\"}"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 448,
+        "line": 480,
         "name": "implements",
         "value": "[\"agent_k.core.protocols:PlatformAdapter\"]"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 451,
+        "line": 483,
         "name": "inheritdoc",
         "value": "[\"agent_k.core.protocols:PlatformAdapter\"]"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 454,
+        "line": 486,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.adapters.openevolve:OpenEvolveRunner\"], \"injection\": \"constructor\", \"lifecycle\": \"Long-lived adapter per mission.\"}"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 460,
+        "line": 492,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates in-memory job state.\"}"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 465,
+        "line": 497,
         "name": "invariants",
         "value": "[\"self._evolution_jobs retains active jobs until pruned.\"]"
+      },
+      {
+        "component": "agent_k.adapters.openevolve:_shared_llm_params",
+        "line": 735,
+        "name": "notice",
+        "value": "Reads the shared OpenEvolve LLM parameters, substituting safe defaults."
+      },
+      {
+        "component": "agent_k.adapters.openevolve:_shared_llm_params",
+        "line": 738,
+        "name": "dev",
+        "value": "Values come from the loaded `llm:` config block. Request parameters that\nOpenEvolve cannot handle as None fall back to `_LLM_REQUEST_FALLBACKS`."
       }
     ],
     "agent_k/agents/__init__.py": [

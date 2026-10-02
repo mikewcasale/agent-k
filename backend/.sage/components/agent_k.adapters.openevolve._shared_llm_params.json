@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Values come from the loaded `llm:` config block. Request parameters that\nOpenEvolve cannot handle as None fall back to `_LLM_REQUEST_FALLBACKS`.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.adapters.openevolve:_shared_llm_params",
+  "line": 733,
+  "notice": "Reads the shared OpenEvolve LLM parameters, substituting safe defaults.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/adapters/openevolve.py",
+  "summary": "Collect the generation and request parameters shared across ensemble models.",
+  "type": "function"
+}

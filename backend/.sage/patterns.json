@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-10-02T23:17:28.319683+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -14,7 +14,7 @@
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 435,
+        "line": 467,
         "rationale": "Encapsulates OpenEvolve-specific behaviors.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [
@@ -25,7 +25,7 @@
     "adapter-runner": [
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveRunner",
-        "line": 223,
+        "line": 242,
         "rationale": "Encapsulates OpenEvolve execution behavior.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [
@@ -847,7 +847,7 @@
     "job-tracker": [
       {
         "component": "agent_k.adapters.openevolve:_OpenEvolveJob",
-        "line": 413,
+        "line": 445,
         "rationale": "Captures in-memory job state for adapter polling.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [

@@ -75,7 +75,10 @@ EVOLUTION_POPULATION_SIZE: Final[int] = 50
 CONVERGENCE_THRESHOLD_GENERATIONS: Final[int] = 15
 
 # Models and platforms
-DEFAULT_MODEL: Final[str] = os.getenv("DEFAULT_MODEL", "openrouter:openai/gpt-oss-120b:free")
+DEFAULT_MODEL: Final[str] = os.getenv(
+    "DEFAULT_MODEL", "openrouter:openai/gpt-oss-120b:free,openrouter:openai/gpt-oss-20b:free"
+)
+# Comma-separated specs form an ordered failover chain (see agent_k.infra.providers.get_model).
 # Devstral model for local LM Studio server
 DEVSTRAL_MODEL: Final[str] = "devstral:local"
 DEFAULT_KAGGLE_MCP_URL: Final[str] = "https://mcp.kaggle.com"

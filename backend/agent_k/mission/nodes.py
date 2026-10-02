@@ -2072,6 +2072,9 @@ def _cleanup_session_data(mission_id: str) -> None:
 def _is_rate_limit_error(error: Exception | str | None) -> bool:
     if not error:
         return False
+    if isinstance(error, BaseExceptionGroup):
+        # FallbackModel raises a group once every model in the chain has failed.
+        return any(_is_rate_limit_error(sub) for sub in error.exceptions if isinstance(sub, Exception))
     if isinstance(error, Exception):
         status_code = getattr(error, "status_code", None)
         response_status = getattr(getattr(error, "response", None), "status_code", None)

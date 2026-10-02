@@ -1,0 +1,22 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": {
+    "for": [
+      "model spec chain parsing"
+    ],
+    "notes": "Use split_model_specs wherever a spec string may hold a chain."
+  },
+  "custom": null,
+  "dev": "Blank entries are dropped so padding and trailing separators are tolerated.\nRaises UserError when no spec remains, since an agent cannot run without a model.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.providers:split_model_specs",
+  "line": 153,
+  "notice": "Splits a separator-delimited model spec into individual specs.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/providers.py",
+  "summary": "Split a model specification into its ordered failover chain.",
+  "type": "function"
+}

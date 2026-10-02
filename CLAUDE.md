@@ -303,10 +303,16 @@ Supported model specifications via `get_model()` in `backend/agent_k/infra/provi
 | `anthropic:claude-sonnet-4-20250514` | Claude Sonnet |
 | `openrouter:mistralai/devstral-small` | Devstral via OpenRouter |
 | `openai:gpt-4o` | GPT-4o |
+| `openrouter:a:free,openrouter:b:free` | Failover chain: tried left to right on provider errors |
 
 Devstral is treated like any other model provider. Use the standard examples with a `--model` flag
 (`devstral:local`, `openrouter:mistralai/devstral-small`, etc.) and avoid creating dedicated
 Devstral-only scripts.
+
+Any spec may list several models separated by commas. `get_model()` then returns a pydantic-ai
+`FallbackModel` that tries each entry in order, so a rate-limited, dead, or unreachable provider
+fails over instead of aborting the mission. Members whose provider credentials are missing are
+skipped, so a mixed-provider chain works with partial keys. `DEFAULT_MODEL` ships as a chain.
 
 ## Environment Variables
 

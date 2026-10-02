@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-10-02T04:22:01.191239+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1097,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -5996,87 +5996,129 @@
       },
       {
         "component": "agent_k.infra.providers:create_devstral_model",
-        "line": 85,
+        "line": 96,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.infra.providers:create_devstral_model",
-        "line": 88,
+        "line": 99,
         "name": "notice",
         "value": "Creates an OpenAIChatModel configured for Devstral."
       },
       {
         "component": "agent_k.infra.providers:create_devstral_model",
-        "line": 91,
+        "line": 102,
         "name": "factory_for",
         "value": "{\"id\": \"pydantic_ai.models.openai:OpenAIChatModel\", \"rationale\": \"Centralizes local LM Studio configuration.\", \"singleton\": false, \"cache_key\": \"model_id\"}"
       },
       {
         "component": "agent_k.infra.providers:create_devstral_model",
-        "line": 97,
+        "line": 108,
         "name": "canonical_home",
         "value": "{\"for\": [\"devstral model creation\"], \"notes\": \"Use create_devstral_model for local Devstral endpoints.\"}"
       },
       {
         "component": "agent_k.infra.providers:create_openrouter_model",
-        "line": 119,
+        "line": 130,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.infra.providers:create_openrouter_model",
-        "line": 122,
+        "line": 133,
         "name": "notice",
         "value": "Creates an OpenAIChatModel configured for OpenRouter."
       },
       {
         "component": "agent_k.infra.providers:create_openrouter_model",
-        "line": 125,
+        "line": 136,
         "name": "factory_for",
         "value": "{\"id\": \"pydantic_ai.models.openai:OpenAIChatModel\", \"rationale\": \"Centralizes OpenRouter provider configuration.\", \"singleton\": false, \"cache_key\": \"model_id\"}"
       },
       {
         "component": "agent_k.infra.providers:create_openrouter_model",
-        "line": 131,
+        "line": 142,
         "name": "canonical_home",
         "value": "{\"for\": [\"openrouter model creation\"], \"notes\": \"Use create_openrouter_model for OpenRouter endpoints.\"}"
       },
       {
+        "component": "agent_k.infra.providers:split_model_specs",
+        "line": 155,
+        "name": "notice",
+        "value": "Splits a separator-delimited model spec into individual specs."
+      },
+      {
+        "component": "agent_k.infra.providers:split_model_specs",
+        "line": 158,
+        "name": "dev",
+        "value": "Blank entries are dropped so padding and trailing separators are tolerated.\nRaises UserError when no spec remains, since an agent cannot run without a model."
+      },
+      {
+        "component": "agent_k.infra.providers:split_model_specs",
+        "line": 162,
+        "name": "canonical_home",
+        "value": "{\"for\": [\"model spec chain parsing\"], \"notes\": \"Use split_model_specs wherever a spec string may hold a chain.\"}"
+      },
+      {
+        "component": "agent_k.infra.providers:create_fallback_model",
+        "line": 182,
+        "name": "dev",
+        "value": "See module for behavior details and invariants."
+      },
+      {
+        "component": "agent_k.infra.providers:create_fallback_model",
+        "line": 185,
+        "name": "notice",
+        "value": "Creates a FallbackModel from an ordered list of model specs."
+      },
+      {
+        "component": "agent_k.infra.providers:create_fallback_model",
+        "line": 188,
+        "name": "factory_for",
+        "value": "{\"id\": \"pydantic_ai.models.fallback:FallbackModel\", \"rationale\": \"Centralizes multi-provider failover for every agent.\", \"singleton\": false, \"cache_key\": \"model_specs\"}"
+      },
+      {
+        "component": "agent_k.infra.providers:create_fallback_model",
+        "line": 194,
+        "name": "canonical_home",
+        "value": "{\"for\": [\"model failover chain creation\"], \"notes\": \"Use create_fallback_model instead of wiring FallbackModel directly.\"}"
+      },
+      {
         "component": "agent_k.infra.providers:get_model",
-        "line": 147,
+        "line": 228,
         "name": "notice",
         "value": "Resolves model specs into provider-specific model objects when needed."
       },
       {
         "component": "agent_k.infra.providers:get_model",
-        "line": 150,
+        "line": 231,
         "name": "dev",
-        "value": "Returns a string for standard pydantic-ai model specs."
+        "value": "Returns a string for a single standard pydantic-ai model spec, and a\nFallbackModel when the spec holds more than one entry so a rate-limited\nor dead provider fails over instead of aborting the run."
       },
       {
         "component": "agent_k.infra.providers:get_model",
-        "line": 153,
+        "line": 236,
         "name": "factory_for",
         "value": "{\"id\": \"pydantic_ai.models:Model\", \"rationale\": \"Centralized model resolution for all agents.\", \"singleton\": false, \"cache_key\": \"model_spec\"}"
       },
       {
         "component": "agent_k.infra.providers:get_model",
-        "line": 159,
+        "line": 242,
         "name": "canonical_home",
         "value": "{\"for\": [\"model resolution\"], \"notes\": \"Use get_model to normalize model specs.\"}"
       },
       {
         "component": "agent_k.infra.providers:is_devstral_model",
-        "line": 191,
+        "line": 282,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.infra.providers:is_devstral_model",
-        "line": 194,
+        "line": 285,
         "name": "notice",
-        "value": "Returns true when the model spec targets Devstral."
+        "value": "Returns true when any member of the spec chain targets Devstral."
       }
     ],
     "agent_k/mission/__init__.py": [

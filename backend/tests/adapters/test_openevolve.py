@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from agent_k.adapters.openevolve import OpenEvolveAdapter, OpenEvolveJobState, OpenEvolveSettings
+from agent_k.adapters.openevolve import OpenEvolveAdapter, OpenEvolveJobState, OpenEvolveSettings, _resolve_model_specs
 
 __all__ = ()
 
@@ -88,3 +88,25 @@ class TestOpenEvolveAdapter:
         solution = await adapter.get_best_solution(job_id)
         assert solution.fitness == pytest.approx(0.9)
         assert solution.solution_code == 'print("hello")'
+
+
+class TestResolveModelSpecs:
+    """Tests for OpenEvolve model-spec resolution."""
+
+    def test_expands_failover_chain(self) -> None:
+        """A chained spec should become one OpenEvolve model per entry."""
+        resolved = _resolve_model_specs(["openrouter:a:free,openrouter:b:free"])
+
+        assert resolved == ["openrouter:a:free", "openrouter:b:free"]
+
+    def test_deduplicates_repeated_specs(self) -> None:
+        """Repeated models should be collapsed so ensemble weights stay meaningful."""
+        resolved = _resolve_model_specs(["openrouter:a:free,openrouter:b:free", "openrouter:b:free"])
+
+        assert resolved == ["openrouter:a:free", "openrouter:b:free"]
+
+    def test_drops_unsupported_chain_members(self) -> None:
+        """Unsupported providers inside a chain should be dropped, not the whole chain."""
+        resolved = _resolve_model_specs(["anthropic:claude-3-haiku-20240307,openrouter:a:free"])
+
+        assert resolved == ["openrouter:a:free"]

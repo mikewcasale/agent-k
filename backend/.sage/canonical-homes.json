@@ -35,7 +35,7 @@
     "for": [
       "devstral model creation"
     ],
-    "line": 80,
+    "line": 91,
     "notes": "Use create_devstral_model for local Devstral endpoints.",
     "source": "agent_k/infra/providers.py"
   },
@@ -43,15 +43,31 @@
     "for": [
       "openrouter model creation"
     ],
-    "line": 114,
+    "line": 125,
     "notes": "Use create_openrouter_model for OpenRouter endpoints.",
+    "source": "agent_k/infra/providers.py"
+  },
+  {
+    "for": [
+      "model spec chain parsing"
+    ],
+    "line": 153,
+    "notes": "Use split_model_specs wherever a spec string may hold a chain.",
+    "source": "agent_k/infra/providers.py"
+  },
+  {
+    "for": [
+      "model failover chain creation"
+    ],
+    "line": 176,
+    "notes": "Use create_fallback_model instead of wiring FallbackModel directly.",
     "source": "agent_k/infra/providers.py"
   },
   {
     "for": [
       "model resolution"
     ],
-    "line": 140,
+    "line": 220,
     "notes": "Use get_model to normalize model specs.",
     "source": "agent_k/infra/providers.py"
   },

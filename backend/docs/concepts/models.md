@@ -13,8 +13,28 @@ AGENT-K supports multiple model providers through a unified `get_model()` factor
 | `anthropic:claude-sonnet-4-5` | Anthropic | Claude Sonnet (backend default) |
 | `openrouter:mistralai/devstral-small-2-2512` | OpenRouter | Devstral via OpenRouter |
 | `openai:gpt-4o` | OpenAI | GPT-4o |
+| `openrouter:a:free,openrouter:b:free` | Any | Failover chain tried left to right |
 
 `get_model()` will accept any standard Pydantic-AI model string for supported providers.
+
+## Failover Chains
+
+A spec may list several models separated by commas. `get_model()` resolves such a spec to a
+pydantic-ai `FallbackModel`, which tries each member in order and moves on whenever a provider
+raises a `ModelAPIError` (rate limits, 5xx, dead model slugs, refused connections). Only when every
+member fails does the run see a `FallbackExceptionGroup`.
+
+```python
+from agent_k.infra.providers import get_model
+
+# Fails over to the smaller free model when the primary is rate limited.
+model = get_model("openrouter:openai/gpt-oss-120b:free,openrouter:openai/gpt-oss-20b:free")
+```
+
+Chain members whose provider credentials are absent are skipped at construction time, so a mixed
+chain such as `anthropic:claude-sonnet-4-5,openrouter:openai/gpt-oss-20b:free` still works when only
+`OPENROUTER_API_KEY` is set. `DEFAULT_MODEL` ships as a chain, so every agent gets failover without
+extra wiring, and `evolution_models` entries may themselves be chains.
 
 ## Using get_model()
 

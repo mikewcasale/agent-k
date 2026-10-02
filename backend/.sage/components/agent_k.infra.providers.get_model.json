@@ -8,11 +8,11 @@
     "notes": "Use get_model to normalize model specs."
   },
   "custom": null,
-  "dev": "Returns a string for standard pydantic-ai model specs.",
+  "dev": "Returns a string for a single standard pydantic-ai model spec, and a\nFallbackModel when the spec holds more than one entry so a rate-limited\nor dead provider fails over instead of aborting the run.",
   "graph": null,
   "human_review": null,
   "id": "agent_k.infra.providers:get_model",
-  "line": 140,
+  "line": 220,
   "notice": "Resolves model specs into provider-specific model objects when needed.",
   "pattern": null,
   "similar": null,

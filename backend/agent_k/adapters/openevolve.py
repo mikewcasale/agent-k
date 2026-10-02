@@ -69,7 +69,7 @@ from agent_k.core.hints import PreprocessingHint
 from agent_k.core.models import Competition, CompetitionType, EvaluationMetric, LeaderboardEntry, Submission
 from agent_k.core.protocols import PlatformAdapter
 from agent_k.core.sage import Doc, Range
-from agent_k.infra.providers import DEVSTRAL_BASE_URL, DEVSTRAL_MODEL_ID, OPENROUTER_FREE_MODELS
+from agent_k.infra.providers import DEVSTRAL_BASE_URL, DEVSTRAL_MODEL_ID, OPENROUTER_FREE_MODELS, split_model_specs
 
 __all__ = (
     "OpenEvolveAdapter",
@@ -684,13 +684,14 @@ def _resolve_model_specs(model_specs: list[str]) -> list[str]:
     for spec in model_specs:
         if not isinstance(spec, str):
             continue
-        trimmed = spec.strip()
-        if not trimmed:
+        if not spec.strip():
             continue
-        if trimmed.startswith("anthropic:"):
-            logfire.warning("openevolve_model_unsupported", model=trimmed)
-            continue
-        cleaned.append(trimmed)
+        for trimmed in split_model_specs(spec):
+            if trimmed.startswith("anthropic:"):
+                logfire.warning("openevolve_model_unsupported", model=trimmed)
+                continue
+            if trimmed not in cleaned:
+                cleaned.append(trimmed)
     if cleaned:
         return cleaned
     logfire.info("openevolve_default_model", model=_DEFAULT_OPENEVOLVE_MODEL)

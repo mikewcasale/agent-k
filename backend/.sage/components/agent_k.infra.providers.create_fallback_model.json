@@ -1,0 +1,22 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": {
+    "for": [
+      "model failover chain creation"
+    ],
+    "notes": "Use create_fallback_model instead of wiring FallbackModel directly."
+  },
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.providers:create_fallback_model",
+  "line": 176,
+  "notice": "Creates a FallbackModel from an ordered list of model specs.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/providers.py",
+  "summary": "Create a model that fails over across the given specs in order.",
+  "type": "function"
+}

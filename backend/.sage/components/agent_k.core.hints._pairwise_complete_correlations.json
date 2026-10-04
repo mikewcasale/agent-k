@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.hints:_pairwise_complete_correlations",
+  "line": 1313,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/hints.py",
+  "summary": "Pearson correlations for every indicator/feature pair, over complete observations.",
+  "type": "function"
+}

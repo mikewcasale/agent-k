@@ -66,7 +66,7 @@ from agent_k.agents.base import MemoryMixin, universal_tool_preparation
 from agent_k.agents.prompts import SCIENTIST_SYSTEM_PROMPT
 from agent_k.core.constants import DEFAULT_MODEL
 from agent_k.core.data import locate_data_files
-from agent_k.core.hints import DatasetProfile, build_dataset_profile, generate_preprocessing_hints
+from agent_k.core.hints import DatasetProfile, build_dataset_profile_async, generate_preprocessing_hints
 from agent_k.core.sage import Doc, Range
 from agent_k.infra.providers import get_model
 from agent_k.toolsets import (
@@ -588,7 +588,7 @@ class ScientistAgent(MemoryMixin):
                     profile: DatasetProfile | None = None
                     try:
                         train_path, test_path, sample_path = locate_data_files(files)
-                        profile = build_dataset_profile(train_path, test_path, sample_path)
+                        profile = await build_dataset_profile_async(train_path, test_path, sample_path)
                         hints = generate_preprocessing_hints(profile, ctx.deps.competition.id)
                         summary["dataset_profile"] = profile.to_dict()
                         summary["preprocessing_hints"] = [hint.to_dict() for hint in hints]

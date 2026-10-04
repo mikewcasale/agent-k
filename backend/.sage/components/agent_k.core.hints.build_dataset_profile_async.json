@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "build_dataset_profile reads CSVs and runs pandas/numpy statistics, which\nhold the GIL-releasing C paths but still block the calling coroutine for\nseconds on wide datasets. Async callers must use this wrapper so mission\nevent streaming and concurrent agent work keep making progress.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.hints:build_dataset_profile_async",
+  "line": 519,
+  "notice": "Awaitable wrapper that runs build_dataset_profile in a worker thread.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/hints.py",
+  "summary": "Profile dataset columns off the event loop.",
+  "type": "function"
+}

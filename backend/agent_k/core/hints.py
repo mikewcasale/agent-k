@@ -29,6 +29,7 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
+import asyncio
 import csv
 import math
 import re
@@ -57,6 +58,7 @@ __all__ = (
     "MissingPattern",
     "PreprocessingHint",
     "build_dataset_profile",
+    "build_dataset_profile_async",
     "compute_hint_priority",
     "detect_applied_hints",
     "generate_preprocessing_hints",
@@ -509,6 +511,27 @@ def build_dataset_profile(
         target_columns=tuple(target_columns),
         id_column=id_column,
     )
+
+
+async def build_dataset_profile_async(
+    train_path: Path, test_path: Path | None = None, sample_path: Path | None = None
+) -> DatasetProfile:
+    """Profile dataset columns off the event loop.
+
+    @notice: |
+        Awaitable wrapper that runs build_dataset_profile in a worker thread.
+
+    @dev: |
+        build_dataset_profile reads CSVs and runs pandas/numpy statistics, which
+        hold the GIL-releasing C paths but still block the calling coroutine for
+        seconds on wide datasets. Async callers must use this wrapper so mission
+        event streaming and concurrent agent work keep making progress.
+
+    @effects:
+        io:
+            - local filesystem access
+    """
+    return await asyncio.to_thread(build_dataset_profile, train_path, test_path, sample_path)
 
 
 def generate_preprocessing_hints(profile: DatasetProfile, competition_id: str | None = None) -> list[PreprocessingHint]:
@@ -1009,7 +1032,6 @@ def detect_applied_hints(code: str, hints: Iterable[PreprocessingHint]) -> set[s
 
 
 def _profile_column(name: str, series: pd.Series, *, target_columns: Iterable[str]) -> ColumnProfile:
-    series = series.copy()
     missing_rate = float(series.isna().mean())
     unique_count = int(series.nunique(dropna=True))
     unique_ratio = float(unique_count / max(len(series), 1))
@@ -1176,8 +1198,20 @@ def _average_length(series: pd.Series) -> float | None:
 def _sample_values(series: pd.Series, *, max_samples: int = 5) -> tuple[str, ...]:
     if series.empty:
         return ()
-    values = series.dropna().astype(str).unique().tolist()
-    return tuple(values[:max_samples])
+    values = series.dropna()
+    if values.empty:
+        return ()
+    # Stringifying a whole competition column to keep five samples dominates
+    # column profiling, so grow a head slice until it yields enough distinct
+    # values. Distinct values keep their order of appearance either way, so this
+    # returns the same samples as stringifying the full column.
+    window = max_samples
+    total = len(values)
+    while True:
+        sampled = values.iloc[:window].astype(str).unique().tolist()
+        if len(sampled) >= max_samples or window >= total:
+            return tuple(sampled[:max_samples])
+        window = min(window * 8, total)
 
 
 def _looks_like_datetime(series: pd.Series, *, threshold: float = 0.8) -> bool:
@@ -1225,33 +1259,95 @@ def _infer_missing_pattern(df: pd.DataFrame, target_columns: Iterable[str]) -> M
     target_series = df[target_name] if target_name and target_name in df.columns else None
     numeric_features = [col for col in df.columns if pd.api.types.is_numeric_dtype(df[col])]
 
-    has_mar = False
-    has_mnar = False
+    candidates: list[str] = []
+    indicators: list[np.ndarray] = []
     for column in df.columns:
-        missing_rate = float(df[column].isna().mean())
-        if missing_rate < MISSING_RATE_THRESHOLD:
+        missing = df[column].isna()
+        if float(missing.mean()) < MISSING_RATE_THRESHOLD:
             continue
-        indicator = df[column].isna().astype(int)
-        if indicator.nunique() < 2:
+        if missing.nunique() < 2:
             continue
-        if target_series is not None and pd.api.types.is_numeric_dtype(target_series):
-            corr = float(indicator.corr(pd.to_numeric(target_series, errors="coerce")))
-            if abs(corr) >= MISSING_PATTERN_CORR_THRESHOLD:
-                has_mnar = True
-                continue
-        for feature in numeric_features:
-            if feature == column:
-                continue
-            corr = float(indicator.corr(pd.to_numeric(df[feature], errors="coerce")))
-            if abs(corr) >= MISSING_PATTERN_CORR_THRESHOLD:
-                has_mar = True
-                break
+        candidates.append(column)
+        indicators.append(missing.to_numpy(dtype=np.float64))
 
-    if has_mnar:
-        return MissingPattern.MNAR
-    if has_mar:
+    if not candidates:
+        return MissingPattern.MCAR
+
+    indicator_matrix = np.column_stack(indicators)
+
+    # A column whose missingness tracks the target is MNAR, which outranks MAR,
+    # so settle every MNAR check before doing any MAR work.
+    if target_series is not None and pd.api.types.is_numeric_dtype(target_series):
+        target_numeric = pd.to_numeric(target_series, errors="coerce")
+        target_corr = _pairwise_complete_correlations(
+            indicator_matrix, target_numeric.to_numpy(dtype=np.float64).reshape(-1, 1)
+        )
+        if bool((np.abs(target_corr) >= MISSING_PATTERN_CORR_THRESHOLD).any()):
+            return MissingPattern.MNAR
+
+    if not numeric_features:
+        return MissingPattern.MCAR
+
+    # Correlate every (candidate, feature) pair in one shot. Walking the pairs
+    # one at a time costs O(columns**2) pandas correlations, which dominates
+    # profiling on wide competition data.
+    features = np.column_stack(
+        [pd.to_numeric(df[column], errors="coerce").to_numpy(dtype=np.float64) for column in numeric_features]
+    )
+    correlations = np.abs(_pairwise_complete_correlations(indicator_matrix, features))
+
+    # Blank out self pairs to mirror the `feature == column` skip: a column's own
+    # missingness indicator is not evidence that another column explains it.
+    feature_positions = {column: position for position, column in enumerate(numeric_features)}
+    for row, column in enumerate(candidates):
+        position = feature_positions.get(column)
+        if position is not None:
+            correlations[row, position] = np.nan
+
+    if bool((correlations >= MISSING_PATTERN_CORR_THRESHOLD).any()):
         return MissingPattern.MAR
     return MissingPattern.MCAR
+
+
+def _pairwise_complete_correlations(indicators: np.ndarray, features: np.ndarray) -> np.ndarray:
+    """Pearson correlations for every indicator/feature pair, over complete observations.
+
+    Reproduces ``pandas.Series.corr`` semantics - each pair is scored on the rows
+    where the feature is present, and a zero-variance pair scores NaN - but
+    computes the whole ``(indicator, feature)`` grid with two matrix products
+    instead of one call per pair.
+
+    ``indicators`` must be a ``(rows, n_indicators)`` matrix of 0/1 missingness
+    flags with no NaN; ``features`` is ``(rows, n_features)`` and may contain NaN.
+    Because the indicators are 0/1, their sum of squares equals their sum, which
+    is what lets a single ``indicators.T @ mask`` product serve as both.
+    """
+    present = ~np.isnan(features)
+    counts = present.sum(axis=0, dtype=np.float64)
+
+    # Centre and scale each feature over its own present rows. Every pair sharing
+    # that feature sees the same row set, so this is the correct per-pair
+    # standardisation, and it keeps the sums below well conditioned on columns
+    # with large magnitudes.
+    scaled = np.where(present, features, 0.0)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        means = np.divide(scaled.sum(axis=0), counts, out=np.zeros_like(counts), where=counts > 0)
+        scaled = np.where(present, scaled - means, 0.0)
+        deviations = np.sqrt(np.square(scaled).sum(axis=0))
+        scaled = np.divide(scaled, deviations, out=np.zeros_like(scaled), where=deviations > 0)
+
+    present_float = present.astype(np.float64)
+    sum_y = scaled.sum(axis=0)
+    sum_yy = np.square(scaled).sum(axis=0)
+    sum_xy = indicators.T @ scaled
+    sum_x = indicators.T @ present_float  # Doubles as sum of squares for 0/1 indicators.
+
+    numerator = counts * sum_xy - sum_x * sum_y
+    variance_x = np.maximum(counts * sum_x - np.square(sum_x), 0.0)
+    variance_y = np.maximum(counts * sum_yy - np.square(sum_y), 0.0)
+    denominator = np.sqrt(variance_x * variance_y)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return np.where(denominator > 0, numerator / denominator, np.nan)
 
 
 def _build_target_distribution(df: pd.DataFrame, target_columns: Iterable[str]) -> DistributionStats | None:

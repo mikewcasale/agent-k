@@ -75,7 +75,7 @@ from ..core.constants import (
 )
 from ..core.data import infer_competition_schema, locate_data_files, stage_competition_data
 from ..core.exceptions import classify_error
-from ..core.hints import DatasetProfile, PreprocessingHint, build_dataset_profile, generate_preprocessing_hints
+from ..core.hints import DatasetProfile, PreprocessingHint, build_dataset_profile_async, generate_preprocessing_hints
 from ..core.models import (
     EvaluationMetric,
     EvolutionState,
@@ -356,7 +356,7 @@ class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     train_path, test_path, sample_path = await _prepare_session_data(
                         platform_adapter, state.mission_id, competition.id
                     )
-                    profile = build_dataset_profile(train_path, test_path, sample_path)
+                    profile = await build_dataset_profile_async(train_path, test_path, sample_path)
                     hints = generate_preprocessing_hints(profile, competition.id)
                     eda_results = {
                         "dataset_profile": profile.to_dict(),

@@ -10,7 +10,13 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from agent_k.core.solution import _is_sensitive_env_key, _sanitize_env, execute_solution, parse_baseline_score
+from agent_k.core.solution import (
+    _BoundedCapture,
+    _is_sensitive_env_key,
+    _sanitize_env,
+    execute_solution,
+    parse_baseline_score,
+)
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -88,3 +94,87 @@ class TestExecuteSolution:
 
         assert result.timed_out is True
         assert result.returncode != 0
+
+    async def test_execute_solution_timeout_keeps_partial_output(self, tmp_path: Path) -> None:
+        """Output written before a timeout should survive the kill."""
+        code = (
+            "import sys, time\n"
+            "print('Baseline RMSE score: 0.5', flush=True)\n"
+            "sys.stderr.write('WARNING: slow fold\\n')\n"
+            "sys.stderr.flush()\n"
+            "time.sleep(30)\n"
+        )
+        result = await execute_solution(code, tmp_path, timeout_seconds=1)
+
+        assert result.timed_out is True
+        assert parse_baseline_score(result.stdout) == pytest.approx(0.5)
+        assert "WARNING: slow fold" in result.stderr
+
+    async def test_execute_solution_caps_stdout(self, tmp_path: Path) -> None:
+        """Runaway stdout should be capped to the configured budget."""
+        max_output_bytes = 4096
+        code = "for i in range(20000):\n    print('%06d' % i + 'x' * 64)\n"
+        result = await execute_solution(code, tmp_path, timeout_seconds=60, max_output_bytes=max_output_bytes)
+
+        assert result.returncode == 0
+        encoded = result.stdout.encode("utf-8")
+        assert len(encoded) < max_output_bytes * 2
+        assert "bytes elided" in result.stdout
+        assert result.stdout.startswith("000000")
+        assert result.stdout.rstrip().endswith("x" * 64)
+
+    async def test_execute_solution_keeps_short_output_intact(self, tmp_path: Path) -> None:
+        """Output within the budget should not be elided."""
+        code = "print('line one')\nprint('line two')\n"
+        result = await execute_solution(code, tmp_path, timeout_seconds=30)
+
+        assert result.stdout == "line one\nline two\n"
+        assert "elided" not in result.stdout
+
+
+class TestBoundedCapture:
+    """Tests for the bounded stdout/stderr buffer."""
+
+    def test_under_budget_is_verbatim(self) -> None:
+        """Captures below the budget should round-trip unchanged."""
+        capture = _BoundedCapture(64)
+        capture.feed(b"hello ")
+        capture.feed(b"world")
+
+        assert capture.result() == b"hello world"
+
+    def test_over_budget_keeps_head_and_tail(self) -> None:
+        """Captures above the budget should keep both ends and report the gap."""
+        capture = _BoundedCapture(10)
+        capture.feed(b"0123456789" * 3)
+
+        result = capture.result()
+        assert result.startswith(b"01234")
+        assert result.endswith(b"56789")
+        assert b"[20 bytes elided]" in result
+
+    def test_chunked_feeds_match_single_feed(self) -> None:
+        """Chunk boundaries should not change the captured window."""
+        payload = bytes(range(256)) * 8
+        single = _BoundedCapture(128)
+        single.feed(payload)
+
+        chunked = _BoundedCapture(128)
+        for start in range(0, len(payload), 7):
+            chunked.feed(payload[start : start + 7])
+
+        assert chunked.result() == single.result()
+
+    def test_zero_budget_drops_everything(self) -> None:
+        """A zero budget should retain no payload bytes."""
+        capture = _BoundedCapture(0)
+        capture.feed(b"discarded")
+
+        assert capture.result() == b"\n...[9 bytes elided]...\n"
+
+    def test_empty_feed_is_ignored(self) -> None:
+        """Empty chunks should not create an elision marker."""
+        capture = _BoundedCapture(8)
+        capture.feed(b"")
+
+        assert capture.result() == b""

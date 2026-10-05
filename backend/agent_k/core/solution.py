@@ -36,6 +36,7 @@ import re
 import signal
 import sys
 import time
+from collections import deque
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Final, cast
 
@@ -58,6 +59,10 @@ _CODE_EXECUTION_SYSTEM_PROMPT: Final[str] = (
     "returns, respond with the single word 'done'."
 )
 _DEFAULT_MAX_INLINE_DATA_BYTES: Final[int] = 100_000
+_DEFAULT_MAX_OUTPUT_BYTES: Final[int] = 262_144
+_CAPTURE_CHUNK_BYTES: Final[int] = 65_536
+_TERMINATION_DRAIN_SECONDS: Final[float] = 5.0
+_ELISION_TEMPLATE: Final[str] = "\n...[{dropped} bytes elided]...\n"
 _EXECUTION_DATA_FILES: Final[tuple[str, ...]] = ("train.csv", "test.csv", "sample_submission.csv")
 _KAGGLE_INPUT_PREFIX: Final[str] = "/kaggle/input"
 _SENSITIVE_ENV_TOKENS: Final[tuple[str, ...]] = (
@@ -100,6 +105,72 @@ class ExecutionResult:
     timed_out: bool
 
 
+class _BoundedCapture:
+    """Accumulate stream bytes while retaining only a head and a tail window.
+
+    @notice: |
+        Keeps the first and last bytes of a stream within a fixed budget.
+
+    @dev: |
+        Solution scripts are LLM-generated and may print without bound, so the
+        orchestrator never holds the whole stream. The head keeps the early
+        progress and score lines, the tail keeps the traceback, and the elided
+        middle is replaced by a byte-count marker.
+
+        @pattern:
+            name: bounded-buffer
+            rationale: "Caps orchestrator memory for untrusted subprocess output."
+            violations: "Unbounded buffering lets one candidate exhaust memory."
+    """
+
+    __slots__ = ("_dropped", "_head", "_head_budget", "_tail", "_tail_budget", "_tail_bytes")
+
+    def __init__(self, max_bytes: int) -> None:
+        self._head_budget = max(max_bytes, 0) // 2
+        self._tail_budget = max(max_bytes, 0) - self._head_budget
+        self._head = bytearray()
+        self._tail: deque[bytes] = deque()
+        self._tail_bytes = 0
+        self._dropped = 0
+
+    def feed(self, chunk: bytes) -> None:
+        """Append a chunk, discarding the middle once the budget is exhausted."""
+        if not chunk:
+            return
+        if len(self._head) < self._head_budget:
+            take = self._head_budget - len(self._head)
+            self._head += chunk[:take]
+            chunk = chunk[take:]
+            if not chunk:
+                return
+        if self._tail_budget <= 0:
+            self._dropped += len(chunk)
+            return
+        self._tail.append(chunk)
+        self._tail_bytes += len(chunk)
+        self._trim()
+
+    def result(self) -> bytes:
+        """Return the captured head, an elision marker when bytes were dropped, and the tail."""
+        tail = b"".join(self._tail)
+        if self._dropped == 0:
+            return bytes(self._head) + tail
+        marker = _ELISION_TEMPLATE.format(dropped=self._dropped).encode("utf-8")
+        return bytes(self._head) + marker + tail
+
+    def _trim(self) -> None:
+        while self._tail_bytes > self._tail_budget:
+            excess = self._tail_bytes - self._tail_budget
+            oldest = self._tail.popleft()
+            if len(oldest) > excess:
+                self._tail.appendleft(oldest[excess:])
+                self._tail_bytes -= excess
+                self._dropped += excess
+                return
+            self._tail_bytes -= len(oldest)
+            self._dropped += len(oldest)
+
+
 async def execute_solution(
     code: str,
     work_path: Path,
@@ -109,6 +180,7 @@ async def execute_solution(
     use_builtin_code_execution: bool = False,
     model_spec: str | None = None,
     max_inline_data_bytes: int = _DEFAULT_MAX_INLINE_DATA_BYTES,
+    max_output_bytes: int = _DEFAULT_MAX_OUTPUT_BYTES,
 ) -> ExecutionResult:
     """Execute solution code in a working directory.
 
@@ -118,16 +190,25 @@ async def execute_solution(
     @dev: |
         Normalizes Kaggle paths, sanitizes environment, and captures output.
         Supports builtin code execution tool or local subprocess execution.
+        Captured stdout and stderr are bounded by ``max_output_bytes`` per
+        stream; output produced before a timeout is retained.
     """
     normalized_code = _normalize_kaggle_paths(code)
     if use_builtin_code_execution:
         tool_result = await _execute_with_builtin_tool(
-            normalized_code, work_path, env=env, model_spec=model_spec, max_inline_data_bytes=max_inline_data_bytes
+            normalized_code,
+            work_path,
+            env=env,
+            model_spec=model_spec,
+            max_inline_data_bytes=max_inline_data_bytes,
+            max_output_bytes=max_output_bytes,
         )
         if tool_result is not None:
             return tool_result
 
-    return await _execute_solution_local(normalized_code, work_path, timeout_seconds=timeout_seconds, env=env)
+    return await _execute_solution_local(
+        normalized_code, work_path, timeout_seconds=timeout_seconds, env=env, max_output_bytes=max_output_bytes
+    )
 
 
 def parse_baseline_score(output: str) -> float | None:
@@ -154,7 +235,7 @@ def _normalize_kaggle_paths(code: str) -> str:
 
 
 async def _execute_solution_local(
-    code: str, work_path: Path, *, timeout_seconds: float | None, env: dict[str, str] | None
+    code: str, work_path: Path, *, timeout_seconds: float | None, env: dict[str, str] | None, max_output_bytes: int
 ) -> ExecutionResult:
     solution_path = work_path / "solution.py"
     solution_path.write_text(code, encoding="utf-8")
@@ -173,30 +254,72 @@ async def _execute_solution_local(
 
     process = await asyncio.create_subprocess_exec(sys.executable, "-I", str(solution_path), **process_kwargs)
 
+    stdout_capture = _BoundedCapture(max_output_bytes)
+    stderr_capture = _BoundedCapture(max_output_bytes)
+    readers = (
+        asyncio.create_task(_capture_stream(process.stdout, stdout_capture)),
+        asyncio.create_task(_capture_stream(process.stderr, stderr_capture)),
+    )
+
     timed_out = False
     try:
-        if timeout_seconds is None:
-            stdout, stderr = await process.communicate()
-        else:
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout_seconds)
-    except TimeoutError:
-        timed_out = True
-        logfire.warning("solution_execution_timeout", timeout_seconds=timeout_seconds, pid=process.pid)
+        try:
+            await asyncio.wait_for(process.wait(), timeout=timeout_seconds)
+        except TimeoutError:
+            timed_out = True
+            logfire.warning("solution_execution_timeout", timeout_seconds=timeout_seconds, pid=process.pid)
+            _terminate_process(process)
+            await _wait_for_exit(process)
+    finally:
+        # Covers cancellation from an enclosing phase timeout, which would
+        # otherwise orphan the subprocess and leak its process group.
         _terminate_process(process)
-        stdout, stderr = await _safe_communicate(process, timeout_seconds=5)
+        await _finish_readers(readers)
 
     runtime_ms = int((time.perf_counter() - start_time) * 1000)
     return ExecutionResult(
         returncode=process.returncode if process.returncode is not None else 1,
-        stdout=stdout.decode("utf-8", errors="ignore"),
-        stderr=stderr.decode("utf-8", errors="ignore"),
+        stdout=stdout_capture.result().decode("utf-8", errors="ignore"),
+        stderr=stderr_capture.result().decode("utf-8", errors="ignore"),
         runtime_ms=runtime_ms,
         timed_out=timed_out,
     )
 
 
+async def _capture_stream(stream: asyncio.StreamReader | None, capture: _BoundedCapture) -> None:
+    if stream is None:
+        return
+    while chunk := await stream.read(_CAPTURE_CHUNK_BYTES):
+        capture.feed(chunk)
+
+
+async def _finish_readers(readers: tuple[asyncio.Task[None], ...]) -> None:
+    pending: set[asyncio.Task[None]] = set(readers)
+    try:
+        _, pending = await asyncio.wait(readers, timeout=_TERMINATION_DRAIN_SECONDS)
+    finally:
+        for task in pending:
+            task.cancel()
+        for task in readers:
+            if task.done() and not task.cancelled():
+                task.exception()
+
+
+async def _wait_for_exit(process: asyncio.subprocess.Process) -> None:
+    try:
+        await asyncio.wait_for(process.wait(), timeout=_TERMINATION_DRAIN_SECONDS)
+    except TimeoutError:
+        logfire.warning("solution_process_reap_timeout", pid=process.pid)
+
+
 async def _execute_with_builtin_tool(
-    code: str, work_path: Path, *, env: dict[str, str] | None, model_spec: str | None, max_inline_data_bytes: int
+    code: str,
+    work_path: Path,
+    *,
+    env: dict[str, str] | None,
+    model_spec: str | None,
+    max_inline_data_bytes: int,
+    max_output_bytes: int,
 ) -> ExecutionResult | None:
     if model_spec is None:
         return None
@@ -220,7 +343,7 @@ async def _execute_with_builtin_tool(
     tool_content = _extract_code_execution_result(run_result.all_messages())
     if tool_content is None:
         return None
-    return _parse_code_execution_result(tool_content, runtime_ms)
+    return _parse_code_execution_result(tool_content, runtime_ms, max_output_bytes=max_output_bytes)
 
 
 def _get_code_execution_agent(model_spec: str) -> Agent[None, str]:
@@ -292,7 +415,7 @@ def _extract_code_execution_result(messages: list[Any]) -> dict[str, Any] | None
     return None
 
 
-def _parse_code_execution_result(content: dict[str, Any], runtime_ms: int) -> ExecutionResult:
+def _parse_code_execution_result(content: dict[str, Any], runtime_ms: int, *, max_output_bytes: int) -> ExecutionResult:
     if error_code := content.get("error_code"):
         return ExecutionResult(
             returncode=1,
@@ -312,8 +435,21 @@ def _parse_code_execution_result(content: dict[str, Any], runtime_ms: int) -> Ex
     except (TypeError, ValueError):
         returncode_value = 1
     return ExecutionResult(
-        returncode=returncode_value, stdout=str(stdout), stderr=str(stderr), runtime_ms=runtime_ms, timed_out=False
+        returncode=returncode_value,
+        stdout=_cap_text(str(stdout), max_output_bytes),
+        stderr=_cap_text(str(stderr), max_output_bytes),
+        runtime_ms=runtime_ms,
+        timed_out=False,
     )
+
+
+def _cap_text(text: str, max_bytes: int) -> str:
+    encoded = text.encode("utf-8", errors="ignore")
+    if len(encoded) <= max_bytes:
+        return text
+    capture = _BoundedCapture(max_bytes)
+    capture.feed(encoded)
+    return capture.result().decode("utf-8", errors="ignore")
 
 
 def _sanitize_env(extra_env: dict[str, str] | None, *, work_path: Path) -> dict[str, str]:
@@ -334,17 +470,6 @@ def _is_sensitive_env_key(key: str) -> bool:
 
 def _supports_code_execution(model_spec: str) -> bool:
     return model_spec.startswith("openai:")
-
-
-async def _safe_communicate(
-    process: asyncio.subprocess.Process, *, timeout_seconds: float | None
-) -> tuple[bytes, bytes]:
-    try:
-        if timeout_seconds is None:
-            return await process.communicate()
-        return await asyncio.wait_for(process.communicate(), timeout=timeout_seconds)
-    except TimeoutError:
-        return b"", b""
 
 
 def _terminate_process(process: asyncio.subprocess.Process) -> None:

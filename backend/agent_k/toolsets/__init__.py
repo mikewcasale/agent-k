@@ -12,11 +12,16 @@
         - agent_k.toolsets:TOOLSET_REGISTRY
         - agent_k.toolsets:compose_toolsets
         - agent_k.toolsets:create_production_toolset
+    consumes:
+        - agent_k.toolsets.limits:TimeoutToolset
+        - agent_k.toolsets.limits:ToolTimeoutPolicy
     pattern: toolset-registry
 
 @similar:
     - id: agent_k.toolsets.kaggle
         when: "Specific Kaggle tool implementations."
+    - id: agent_k.toolsets.limits
+        when: "Bounding how long an individual tool call may run."
 
 @agent-guidance:
     do:
@@ -45,6 +50,14 @@ from agent_k.core.sage import Doc
 
 from .code import code_toolset, create_code_execution_tool, prepare_code_execution_tool
 from .kaggle import kaggle_toolset
+from .limits import (
+    DEFAULT_TOOL_TIMEOUT_SECONDS,
+    RETRY_METADATA_KEY,
+    TIMEOUT_METADATA_KEY,
+    TOOL_TIMEOUT_MARGIN_SECONDS,
+    TimeoutToolset,
+    ToolTimeoutPolicy,
+)
 from .memory import AgentKMemoryTool, create_memory_backend, prepare_memory_tool, register_memory_tool
 from .search import (
     build_kaggle_search_query,
@@ -61,6 +74,12 @@ DepsT = TypeVar("DepsT")
 
 __all__ = (
     "AgentKMemoryTool",
+    "DEFAULT_TOOL_TIMEOUT_SECONDS",
+    "RETRY_METADATA_KEY",
+    "TIMEOUT_METADATA_KEY",
+    "TOOL_TIMEOUT_MARGIN_SECONDS",
+    "TimeoutToolset",
+    "ToolTimeoutPolicy",
     "build_kaggle_search_query",
     "build_scholarly_query",
     "code_toolset",
@@ -121,10 +140,12 @@ def create_production_toolset(
     *,
     require_approval_for: Annotated[list[str] | None, Doc("Tool names requiring approval.")] = None,
     prefix: Annotated[str | None, Doc("Prefix for tool names.")] = None,
+    timeout_policy: Annotated[ToolTimeoutPolicy | None, Doc("Per-tool call timeout policy.")] = None,
 ) -> AbstractToolset[DepsT]:
     """Create production-ready toolset with wrappers.
 
         Applies:
+        - A wall-clock timeout on every tool call
         - Prefixing for namespace isolation
         - Approval requirements for selected tools
         - Strict mode for OpenAI tool calls
@@ -146,7 +167,9 @@ def create_production_toolset(
                 - "production toolset composition"
             notes: "Use create_production_toolset for standardized behavior."
     """
-    combined: AbstractToolset[DepsT] = CombinedToolset(toolsets)
+    combined: AbstractToolset[DepsT] = TimeoutToolset(
+        CombinedToolset(toolsets), policy=timeout_policy or ToolTimeoutPolicy()
+    )
 
     if prefix:
         combined = combined.prefixed(f"{prefix}_")

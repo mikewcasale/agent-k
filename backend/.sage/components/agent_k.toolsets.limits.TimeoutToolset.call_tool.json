@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.limits:TimeoutToolset.call_tool",
+  "line": 193,
+  "notice": "Cancels the call once its budget expires and reports it to the model.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/limits.py",
+  "summary": "Call the wrapped tool under its resolved timeout.",
+  "type": "method"
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Tools declare this with metadata={'retry_on_timeout': False}; the policy\n`non_retryable` set covers tools whose registration cannot be changed.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.limits:retry_allowed_on_timeout",
+  "line": 141,
+  "notice": "Returns False for tools whose side effects make a blind retry unsafe.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/limits.py",
+  "summary": "Report whether a timed-out tool call may be retried by the model.",
+  "type": "function"
+}

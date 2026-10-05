@@ -78,6 +78,7 @@ from agent_k.core.constants import (
     EVOLUTION_POPULATION_SIZE,
     MAX_EVOLUTION_GENERATIONS,
     SOLUTION_EXECUTION_TIMEOUT_SECONDS,
+    SUBMISSION_TIMEOUT_SECONDS,
 )
 from agent_k.core.data import CompetitionSchema, stage_competition_data
 from agent_k.core.hints import DatasetProfile, PreprocessingHint, compute_hint_priority, detect_applied_hints
@@ -102,7 +103,15 @@ from agent_k.core.tracking import (
     extract_solution_metadata,
 )
 from agent_k.infra.providers import get_model
-from agent_k.toolsets import code_toolset, create_production_toolset, prepare_code_execution_tool, prepare_memory_tool
+from agent_k.toolsets import (
+    RETRY_METADATA_KEY,
+    TIMEOUT_METADATA_KEY,
+    TOOL_TIMEOUT_MARGIN_SECONDS,
+    code_toolset,
+    create_production_toolset,
+    prepare_code_execution_tool,
+    prepare_memory_tool,
+)
 
 if TYPE_CHECKING:
     from agent_k.core.models import Competition
@@ -1094,14 +1103,28 @@ class EvolverAgent(MemoryMixin):
         return agent
 
     def _register_tools(self) -> None:
-        """Register all evolution tools with the toolset."""
+        """Register all evolution tools with the toolset.
+
+        @dev: |
+            Fitness evaluation runs the staged candidate subprocesses, so it
+            declares a budget derived from the configured execution timeouts
+            instead of the default tool budget. Submission mutates remote state,
+            so a timed-out call is never retried blindly.
+        """
+        evaluation_timeout = (
+            float(self._settings.solution_timeout + self._settings.cascade_stage1_timeout) + TOOL_TIMEOUT_MARGIN_SECONDS
+        )
         self._toolset.tool(self.mutate_solution)
-        self._toolset.tool(self.evaluate_fitness)
+        self._toolset.tool(metadata={TIMEOUT_METADATA_KEY: evaluation_timeout})(self.evaluate_fitness)
         self._toolset.tool(self.record_generation)
         self._toolset.tool(self.check_convergence)
         self._toolset.tool(self.sample_elites)
         if self._settings.enable_submission_tool:
-            self._toolset.tool(requires_approval=True)(self.submit_to_kaggle)
+            submission_metadata = {
+                TIMEOUT_METADATA_KEY: float(SUBMISSION_TIMEOUT_SECONDS) + TOOL_TIMEOUT_MARGIN_SECONDS,
+                RETRY_METADATA_KEY: False,
+            }
+            self._toolset.tool(requires_approval=True, metadata=submission_metadata)(self.submit_to_kaggle)
 
     async def _validate_evolution_result(
         self, ctx: RunContext[EvolverDeps], result: EvolutionResult | EvolutionFailure

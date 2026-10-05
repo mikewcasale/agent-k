@@ -12,6 +12,10 @@
   "custom": null,
   "dev": "See module for implementation details and extension points.",
   "graph": {
+    "consumes": [
+      "agent_k.toolsets.limits:TimeoutToolset",
+      "agent_k.toolsets.limits:ToolTimeoutPolicy"
+    ],
     "id": "agent_k.toolsets",
     "pattern": "toolset-registry",
     "provides": [
@@ -34,6 +38,10 @@
     {
       "id": "agent_k.toolsets.kaggle",
       "when": "Specific Kaggle tool implementations."
+    },
+    {
+      "id": "agent_k.toolsets.limits",
+      "when": "Bounding how long an individual tool call may run."
     }
   ],
   "source": "agent_k/toolsets/__init__.py",

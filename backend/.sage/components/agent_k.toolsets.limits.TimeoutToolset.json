@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.limits:TimeoutToolset",
+  "line": 159,
+  "notice": "Toolset wrapper that bounds every tool call with `asyncio.timeout`.",
+  "pattern": {
+    "name": "toolset-wrapper",
+    "rationale": "Built-in WrapperToolset is the supported extension point for call interception.",
+    "violations": "Per-tool asyncio.timeout calls duplicate policy and drift."
+  },
+  "similar": null,
+  "source": "agent_k/toolsets/limits.py",
+  "summary": "Toolset wrapper that bounds every tool call with `asyncio.timeout`.",
+  "type": "class"
+}

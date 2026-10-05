@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.base:prepare_output_tools_strict",
-  "line": 220,
+  "line": 213,
   "notice": "Marks output tools as strict for OpenAI models.",
   "pattern": null,
   "similar": null,

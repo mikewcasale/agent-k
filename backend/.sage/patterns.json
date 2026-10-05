@@ -1,6 +1,6 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
-  "pattern_count": 57,
+  "generated": "2026-10-05T22:10:56.160002+00:00",
+  "pattern_count": 58,
   "patterns": {
     "adapter": [
       {
@@ -47,7 +47,7 @@
     "agent-singleton": [
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 556,
+        "line": 565,
         "rationale": "Single instance keeps memory/tool registration consistent.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -65,7 +65,7 @@
       },
       {
         "component": "agent_k.agents.scientist:ScientistAgent",
-        "line": 319,
+        "line": 320,
         "rationale": "Single instance keeps memory/tool registration consistent.",
         "source": "agent_k/agents/scientist.py",
         "violations": [
@@ -76,7 +76,7 @@
     "archive-entry": [
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry",
-        "line": 317,
+        "line": 326,
         "rationale": "Encapsulates elite metadata for sampling.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -134,7 +134,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 436,
+        "line": 445,
         "rationale": "Groups runtime services and evolution state.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -161,7 +161,7 @@
       },
       {
         "component": "agent_k.agents.scientist:ScientistDeps",
-        "line": 195,
+        "line": 196,
         "rationale": "Groups runtime services for research tools.",
         "source": "agent_k/agents/scientist.py",
         "violations": [
@@ -947,7 +947,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 501,
+        "line": 510,
         "rationale": "Stable schema for successful evolution outputs.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -956,7 +956,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 526,
+        "line": 535,
         "rationale": "Stable schema for failed evolution outputs.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -983,7 +983,7 @@
       },
       {
         "component": "agent_k.agents.scientist:ResearchFinding",
-        "line": 241,
+        "line": 242,
         "rationale": "Consistent schema for research findings.",
         "source": "agent_k/agents/scientist.py",
         "violations": [
@@ -992,7 +992,7 @@
       },
       {
         "component": "agent_k.agents.scientist:LeaderboardAnalysis",
-        "line": 265,
+        "line": 266,
         "rationale": "Stable schema for leaderboard summaries.",
         "source": "agent_k/agents/scientist.py",
         "violations": [
@@ -1001,7 +1001,7 @@
       },
       {
         "component": "agent_k.agents.scientist:ResearchReport",
-        "line": 289,
+        "line": 290,
         "rationale": "Aggregates research findings into a stable schema.",
         "source": "agent_k/agents/scientist.py",
         "violations": [
@@ -1069,6 +1069,15 @@
         "source": "agent_k/core/strategy.py",
         "violations": [
           "Inline penalties drift across runs."
+        ]
+      },
+      {
+        "component": "agent_k.toolsets.limits:ToolTimeoutPolicy",
+        "line": 86,
+        "rationale": "Keeps call-duration budgets declarative and shared across agents.",
+        "source": "agent_k/toolsets/limits.py",
+        "violations": [
+          "Inline sleeps and ad-hoc waits leave tool calls unbounded."
         ]
       }
     ],
@@ -1246,7 +1255,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 363,
+        "line": 372,
         "rationale": "Centralizes evolutionary optimization configuration.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -1273,7 +1282,7 @@
       },
       {
         "component": "agent_k.agents.scientist:ScientistSettings",
-        "line": 164,
+        "line": 165,
         "rationale": "Centralizes research agent configuration.",
         "source": "agent_k/agents/scientist.py",
         "violations": [
@@ -1349,6 +1358,17 @@
         "rationale": "Frozen Pydantic model for experiment listing.",
         "source": "agent_k/core/tracking.py",
         "violations": []
+      }
+    ],
+    "toolset-wrapper": [
+      {
+        "component": "agent_k.toolsets.limits:TimeoutToolset",
+        "line": 159,
+        "rationale": "Built-in WrapperToolset is the supported extension point for call interception.",
+        "source": "agent_k/toolsets/limits.py",
+        "violations": [
+          "Per-tool asyncio.timeout calls duplicate policy and drift."
+        ]
       }
     ],
     "tracking-service": [

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.solution:_BoundedCapture.result",
+  "line": 154,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/solution.py",
+  "summary": "Return the captured head, an elision marker when bytes were dropped, and the tail.",
+  "type": "method"
+}

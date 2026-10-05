@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Solution scripts are LLM-generated and may print without bound, so the\norchestrator never holds the whole stream. The head keeps the early\nprogress and score lines, the tail keeps the traceback, and the elided\nmiddle is replaced by a byte-count marker.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.solution:_BoundedCapture",
+  "line": 109,
+  "notice": "Keeps the first and last bytes of a stream within a fixed budget.",
+  "pattern": {
+    "name": "bounded-buffer",
+    "rationale": "Caps orchestrator memory for untrusted subprocess output.",
+    "violations": "Unbounded buffering lets one candidate exhaust memory."
+  },
+  "similar": null,
+  "source": "agent_k/core/solution.py",
+  "summary": "Accumulate stream bytes while retaining only a head and a tail window.",
+  "type": "class"
+}

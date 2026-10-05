@@ -1,6 +1,6 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
-  "pattern_count": 57,
+  "generated": "2026-10-05T03:13:00.367603+00:00",
+  "pattern_count": 58,
   "patterns": {
     "adapter": [
       {
@@ -91,6 +91,17 @@
         "rationale": "Generic archive for MAP-Elites diversity preservation.",
         "source": "agent_k/evolution/framework.py",
         "violations": []
+      }
+    ],
+    "bounded-buffer": [
+      {
+        "component": "agent_k.core.solution:_BoundedCapture",
+        "line": 109,
+        "rationale": "Caps orchestrator memory for untrusted subprocess output.",
+        "source": "agent_k/core/solution.py",
+        "violations": [
+          "Unbounded buffering lets one candidate exhaust memory."
+        ]
       }
     ],
     "classifier": [
@@ -563,7 +574,7 @@
     "execution-result": [
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 82,
+        "line": 87,
         "rationale": "Standardizes subprocess outputs for solution runs.",
         "source": "agent_k/core/solution.py",
         "violations": [

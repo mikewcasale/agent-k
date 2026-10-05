@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-10-05T03:13:00.366481+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1093,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -4270,43 +4270,61 @@
       },
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 84,
+        "line": 89,
         "name": "notice",
         "value": "Result of executing a solution script."
       },
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 87,
+        "line": 92,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.solution:ExecutionResult",
-        "line": 90,
+        "line": 95,
         "name": "pattern",
         "value": "{\"name\": \"execution-result\", \"rationale\": \"Standardizes subprocess outputs for solution runs.\", \"violations\": \"Tuple returns drop context for debugging.\"}"
       },
       {
+        "component": "agent_k.core.solution:_BoundedCapture",
+        "line": 111,
+        "name": "notice",
+        "value": "Keeps the first and last bytes of a stream within a fixed budget."
+      },
+      {
+        "component": "agent_k.core.solution:_BoundedCapture",
+        "line": 114,
+        "name": "dev",
+        "value": "Solution scripts are LLM-generated and may print without bound, so the\norchestrator never holds the whole stream. The head keeps the early\nprogress and score lines, the tail keeps the traceback, and t"
+      },
+      {
+        "component": "agent_k.core.solution:_BoundedCapture",
+        "line": 120,
+        "name": "pattern",
+        "value": "{\"name\": \"bounded-buffer\", \"rationale\": \"Caps orchestrator memory for untrusted subprocess output.\", \"violations\": \"Unbounded buffering lets one candidate exhaust memory.\"}"
+      },
+      {
         "component": "agent_k.core.solution:execute_solution",
-        "line": 115,
+        "line": 187,
         "name": "notice",
         "value": "Runs Python code in an isolated subprocess with timeout support."
       },
       {
         "component": "agent_k.core.solution:execute_solution",
-        "line": 118,
+        "line": 190,
         "name": "dev",
-        "value": "Normalizes Kaggle paths, sanitizes environment, and captures output.\nSupports builtin code execution tool or local subprocess execution."
+        "value": "Normalizes Kaggle paths, sanitizes environment, and captures output.\nSupports builtin code execution tool or local subprocess execution.\nCaptured stdout and stderr are bounded by ``max_output_bytes`` "
       },
       {
         "component": "agent_k.core.solution:parse_baseline_score",
-        "line": 136,
+        "line": 217,
         "name": "notice",
         "value": "Extracts numeric score from \"Baseline ... score: X.XX\" pattern."
       },
       {
         "component": "agent_k.core.solution:parse_baseline_score",
-        "line": 139,
+        "line": 220,
         "name": "dev",
         "value": "Returns None if pattern not found or value cannot be parsed."
       }

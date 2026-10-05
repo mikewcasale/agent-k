@@ -11,7 +11,7 @@ from typing import Any
 
 import pytest
 from pydantic_ai import Agent, RunContext
-from pydantic_ai.messages import ModelMessage, ModelResponse, TextPart, ToolCallPart
+from pydantic_ai.messages import ModelMessage, ModelResponse, RetryPromptPart, TextPart, ToolCallPart, ToolReturnPart
 from pydantic_ai.models.function import AgentInfo, FunctionModel
 from pydantic_ai.toolsets import FunctionToolset
 
@@ -63,10 +63,7 @@ async def test_timed_out_tool_is_reported_to_the_model() -> None:
 
     assert result.output == "done"
     retry_prompts = [
-        part.content
-        for message in result.all_messages()
-        for part in message.parts
-        if getattr(part, "part_kind", None) == "retry-prompt"
+        part.content for message in result.all_messages() for part in message.parts if isinstance(part, RetryPromptPart)
     ]
     assert any("timed out after 0.05s" in str(content) for content in retry_prompts)
 
@@ -92,10 +89,7 @@ async def test_fast_tool_is_unaffected() -> None:
 
     assert result.output == "done"
     tool_returns = [
-        part.content
-        for message in result.all_messages()
-        for part in message.parts
-        if getattr(part, "part_kind", None) == "tool-return"
+        part.content for message in result.all_messages() for part in message.parts if isinstance(part, ToolReturnPart)
     ]
     assert tool_returns == ["fast"]
 

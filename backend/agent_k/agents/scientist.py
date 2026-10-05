@@ -64,12 +64,13 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 from agent_k.agents import register_agent
 from agent_k.agents.base import MemoryMixin, universal_tool_preparation
 from agent_k.agents.prompts import SCIENTIST_SYSTEM_PROMPT
-from agent_k.core.constants import DEFAULT_MODEL
+from agent_k.core.constants import DEFAULT_MODEL, RESEARCH_TIMEOUT_SECONDS
 from agent_k.core.data import locate_data_files
 from agent_k.core.hints import DatasetProfile, build_dataset_profile, generate_preprocessing_hints
 from agent_k.core.sage import Doc, Range
 from agent_k.infra.providers import get_model
 from agent_k.toolsets import (
+    TIMEOUT_METADATA_KEY,
     create_production_toolset,
     kaggle_toolset,
     prepare_memory_tool,
@@ -693,13 +694,21 @@ class ScientistAgent(MemoryMixin):
         return agent
 
     def _register_tools(self) -> None:
-        """Register all research tools with the toolset."""
+        """Register all research tools with the toolset.
+
+        @dev: |
+            Data characterisation downloads the whole competition dataset, so it
+            is budgeted at the research phase limit rather than the default tool
+            budget; no single tool may outlast its phase.
+        """
         self._toolset.tool(self.analyze_leaderboard)
         self._toolset.tool(self.get_kaggle_notebooks)
         self._toolset.tool(self.analyze_top_kernels)
         self._toolset.tool(self.extract_techniques)
         self._toolset.tool(self.synthesize_strategy)
-        self._toolset.tool(self.analyze_data_characteristics)
+        self._toolset.tool(metadata={TIMEOUT_METADATA_KEY: float(RESEARCH_TIMEOUT_SECONDS)})(
+            self.analyze_data_characteristics
+        )
         self._toolset.tool(self.check_external_data_rules)
         self._toolset.tool(self.compute_baseline_estimate)
 

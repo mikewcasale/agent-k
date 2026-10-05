@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.limits:ToolTimeoutPolicy",
+  "line": 86,
+  "notice": "Per-tool wall-clock budget for tool calls.",
+  "pattern": {
+    "name": "policy-model",
+    "rationale": "Keeps call-duration budgets declarative and shared across agents.",
+    "violations": "Inline sleeps and ad-hoc waits leave tool calls unbounded."
+  },
+  "similar": null,
+  "source": "agent_k/toolsets/limits.py",
+  "summary": "Per-tool wall-clock budget for tool calls.",
+  "type": "class"
+}

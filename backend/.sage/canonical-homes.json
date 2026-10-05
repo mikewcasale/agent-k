@@ -3,7 +3,7 @@
     "for": [
       "evolver agent construction"
     ],
-    "line": 1052,
+    "line": 1061,
     "notes": "Use EvolverAgent() or module singleton.",
     "source": "agent_k/agents/evolver.py"
   },
@@ -19,7 +19,7 @@
     "for": [
       "scientist agent construction"
     ],
-    "line": 656,
+    "line": 657,
     "notes": "Use ScientistAgent() or module singleton.",
     "source": "agent_k/agents/scientist.py"
   },
@@ -67,7 +67,7 @@
     "for": [
       "production toolset composition"
     ],
-    "line": 125,
+    "line": 145,
     "notes": "Use create_production_toolset for standardized behavior.",
     "source": "agent_k/toolsets/__init__.py"
   },

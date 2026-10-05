@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Precedence is metadata, then policy overrides, then the policy default.\nNon-positive, non-finite, and non-numeric values mean \"no limit\".",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.toolsets.limits:resolve_tool_timeout",
+  "line": 119,
+  "notice": "Returns the timeout in seconds, or None when the call is unbounded.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/toolsets/limits.py",
+  "summary": "Resolve the wall-clock budget for a tool call.",
+  "type": "function"
+}

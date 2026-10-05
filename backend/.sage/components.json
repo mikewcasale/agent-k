@@ -583,7 +583,10 @@
     "source": "agent_k/mission/state.py"
   },
   {
-    "consumes": [],
+    "consumes": [
+      "agent_k.toolsets.limits:TimeoutToolset",
+      "agent_k.toolsets.limits:ToolTimeoutPolicy"
+    ],
     "id": "agent_k.toolsets",
     "line": 1,
     "pattern": "toolset-registry",
@@ -629,6 +632,22 @@
       "agent_k.toolsets.kaggle:kaggle_list_datasets"
     ],
     "source": "agent_k/toolsets/kaggle.py"
+  },
+  {
+    "consumes": [
+      "agent_k.core.exceptions:ToolExecutionError"
+    ],
+    "id": "agent_k.toolsets.limits",
+    "line": 1,
+    "pattern": "toolset-wrapper",
+    "provides": [
+      "agent_k.toolsets.limits:ToolTimeoutPolicy",
+      "agent_k.toolsets.limits:TimeoutToolset",
+      "agent_k.toolsets.limits:TOOL_TIMEOUT_MARGIN_SECONDS",
+      "agent_k.toolsets.limits:resolve_tool_timeout",
+      "agent_k.toolsets.limits:retry_allowed_on_timeout"
+    ],
+    "source": "agent_k/toolsets/limits.py"
   },
   {
     "consumes": [],

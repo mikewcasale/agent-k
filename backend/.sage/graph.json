@@ -757,7 +757,22 @@
     },
     {
       "source": "agent_k.toolsets",
+      "target": "agent_k.toolsets.limits:TimeoutToolset",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.toolsets",
+      "target": "agent_k.toolsets.limits:ToolTimeoutPolicy",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.toolsets",
       "target": "agent_k.toolsets.kaggle",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.toolsets",
+      "target": "agent_k.toolsets.limits",
       "type": "similar"
     },
     {
@@ -808,6 +823,41 @@
     {
       "source": "agent_k.toolsets.kaggle",
       "target": "agent_k.adapters.kaggle",
+      "type": "similar"
+    },
+    {
+      "source": "agent_k.toolsets.limits",
+      "target": "agent_k.toolsets.limits:ToolTimeoutPolicy",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.limits",
+      "target": "agent_k.toolsets.limits:TimeoutToolset",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.limits",
+      "target": "agent_k.toolsets.limits:TOOL_TIMEOUT_MARGIN_SECONDS",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.limits",
+      "target": "agent_k.toolsets.limits:resolve_tool_timeout",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.limits",
+      "target": "agent_k.toolsets.limits:retry_allowed_on_timeout",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.toolsets.limits",
+      "target": "agent_k.core.exceptions:ToolExecutionError",
+      "type": "consumes"
+    },
+    {
+      "source": "agent_k.toolsets.limits",
+      "target": "agent_k.toolsets",
       "type": "similar"
     },
     {
@@ -921,7 +971,7 @@
       "type": "similar"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831739+00:00",
+  "generated": "2026-10-05T22:10:56.159658+00:00",
   "nodes": [
     {
       "id": "agent_k",
@@ -1240,6 +1290,12 @@
       "label": "kaggle",
       "pattern": "toolset",
       "source": "agent_k/toolsets/kaggle.py"
+    },
+    {
+      "id": "agent_k.toolsets.limits",
+      "label": "limits",
+      "pattern": "toolset-wrapper",
+      "source": "agent_k/toolsets/limits.py"
     },
     {
       "id": "agent_k.toolsets.memory",

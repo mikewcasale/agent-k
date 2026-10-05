@@ -1,0 +1,51 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.toolsets.limits as the canonical home for this capability.",
+      {
+        "\"Declare per_tool budgets with metadata={'timeout'": "seconds} at registration.\""
+      }
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph.",
+      "Assume pydantic-ai honors metadata['timeout'] on its own."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Pydantic-AI treats `ToolDefinition.metadata` as opaque passthrough data and\nnever enforces a timeout from it, so a wedged tool call blocks the agent\nturn (and therefore the mission phase) forever. `TimeoutToolset` is the\nenforcement layer: it wraps a toolset and runs every `call_tool` under\n`asyncio.timeout`, resolving the budget from tool metadata, then policy\noverrides, then the policy default.",
+  "graph": {
+    "consumes": [
+      "agent_k.core.exceptions:ToolExecutionError"
+    ],
+    "id": "agent_k.toolsets.limits",
+    "pattern": "toolset-wrapper",
+    "provides": [
+      "agent_k.toolsets.limits:ToolTimeoutPolicy",
+      "agent_k.toolsets.limits:TimeoutToolset",
+      "agent_k.toolsets.limits:TOOL_TIMEOUT_MARGIN_SECONDS",
+      "agent_k.toolsets.limits:resolve_tool_timeout",
+      "agent_k.toolsets.limits:retry_allowed_on_timeout"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-10-05",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.toolsets.limits",
+  "line": 1,
+  "notice": "Tool-call timeout enforcement for AGENT-K toolsets.",
+  "pattern": null,
+  "similar": [
+    {
+      "id": "agent_k.toolsets",
+      "when": "Composing production toolsets; this module only bounds call duration."
+    }
+  ],
+  "source": "agent_k/toolsets/limits.py",
+  "summary": "Tool-call timeout enforcement for AGENT-K toolsets.",
+  "type": "module"
+}

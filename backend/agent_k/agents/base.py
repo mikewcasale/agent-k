@@ -188,29 +188,22 @@ async def universal_tool_preparation(
     """Apply universal tool configuration across agents.
 
     @notice: |
-        Normalizes tool definitions for strictness and timeouts.
+        Normalizes tool definitions for strictness.
 
     @dev: |
-        Sets strict mode for OpenAI tool calls and applies timeouts to risky tools.
+        Sets strict mode for OpenAI tool calls. Call-duration budgets are not set
+        here: `prepare_tools` runs outside the toolset that executes the call, so
+        metadata added here never reaches `call_tool`. Tools declare budgets with
+        `metadata={"timeout": seconds}` at registration and
+        `agent_k.toolsets.limits:TimeoutToolset` enforces them.
 
     @effects:
         state:
-            - tool_defs metadata
+            - tool_defs strict flag
     """
-    result: list[ToolDefinition] = []
-
-    for tool_def in tool_defs:
-        if ctx.model.system == "openai":
-            tool_def = replace(tool_def, strict=True)
-
-        if "submit" in tool_def.name or "evaluate" in tool_def.name:
-            metadata = dict(tool_def.metadata or {})
-            metadata["timeout"] = 120.0
-            tool_def = replace(tool_def, metadata=metadata)
-
-        result.append(tool_def)
-
-    return result
+    if ctx.model.system != "openai":
+        return list(tool_defs)
+    return [replace(tool_def, strict=True) for tool_def in tool_defs]
 
 
 async def prepare_output_tools_strict(

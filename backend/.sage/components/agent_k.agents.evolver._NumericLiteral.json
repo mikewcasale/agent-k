@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_NumericLiteral",
+  "line": 332,
+  "notice": null,
+  "pattern": {
+    "name": "source-span",
+    "rationale": "Locates literals exactly so mutation never edits strings or comments.",
+    "violations": "Regex rewrites corrupt paths inside strings and shift column indices."
+  },
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Source span of a numeric literal that is safe to perturb.",
+  "type": "class"
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:EvolverAgent._mutate_numbers",
+  "line": 2195,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Perturb numeric literals in source order, preserving type, sign, and semantics.",
+  "type": "method"
+}

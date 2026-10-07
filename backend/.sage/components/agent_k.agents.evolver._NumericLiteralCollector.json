@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_NumericLiteralCollector",
+  "line": 348,
+  "notice": null,
+  "pattern": {
+    "name": "ast-visitor",
+    "rationale": "Skips subscript indices, structural arguments, and zero literals.",
+    "violations": "Blind numeric rewrites emit unrunnable or silently wrong solutions."
+  },
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Collect numeric literals that can be perturbed without changing semantics.",
+  "type": "class"
+}

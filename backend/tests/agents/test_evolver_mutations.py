@@ -62,6 +62,56 @@ class TestPointMutation:
         differences = sum(1 for before, after in zip(numbers_before, numbers_after, strict=False) if before != after)
         assert differences == 1
 
+    def test_point_mutation_keeps_negative_integers_integral(self) -> None:
+        """Negative integer arguments must not become floats that break estimator APIs."""
+        code = "model = LGBMRegressor(num_leaves=31, min_child_samples=-5)\n"
+
+        mutated = _evolver._apply_point_mutation(code, {"delta": 0.35, "max_changes": 4})
+        match = re.search(r"min_child_samples\s*=\s*(-\d+)(?!\.)", mutated)
+
+        assert match is not None, mutated
+        assert "." not in match.group(1)
+
+    @pytest.mark.parametrize(
+        "code",
+        [
+            "frame = frame.drop(columns=['target'], axis=0)\n",
+            "model = LGBMRegressor(n_estimators=400, n_jobs=-1, random_state=0)\n",
+            "params = {'objective': 'binary', 'verbose': -1, 'seed': 11}\n",
+        ],
+    )
+    def test_point_mutation_preserves_structural_arguments(self, code: str) -> None:
+        """Axis, threading, verbosity, and seed arguments must survive point mutation."""
+        mutated = _evolver._apply_point_mutation(code, {"delta": 0.5, "max_changes": 6})
+
+        for argument in ("axis=0", "n_jobs=-1", "random_state=0", "'verbose': -1", "'seed': 11"):
+            if argument in code:
+                assert argument in mutated, mutated
+
+    def test_point_mutation_leaves_strings_and_comments_untouched(self) -> None:
+        """Numbers inside string literals, comments, and index positions must not change."""
+        code = 'frame = pd.read_csv("../input/2024/train.csv")  # 5 folds\nfirst = probabilities[:, 0]\n'
+
+        mutated = _evolver._apply_point_mutation(code, {"delta": 0.5, "max_changes": 6})
+
+        assert mutated == code
+
+    def test_point_mutation_perturbs_real_hyperparameters(self) -> None:
+        """Point mutation should still change tunable literals and stay valid Python."""
+        code = "model = LGBMRegressor(learning_rate=0.05, num_leaves=31, n_jobs=-1)\n"
+
+        mutated = _evolver._apply_point_mutation(code, {"delta": 0.35, "max_changes": 2})
+
+        assert mutated != code
+        assert "learning_rate=0.05" not in mutated
+        assert _evolver._is_valid_python(mutated)
+
+    def test_point_mutation_returns_source_when_unparseable(self) -> None:
+        """Unparseable sources are returned unchanged instead of being corrupted."""
+        code = "model = LGBMRegressor(n_estimators=100\n"
+
+        assert _evolver._apply_point_mutation(code, {"delta": 0.5, "max_changes": 2}) == code
+
 
 class TestHyperparameterMutation:
     """Tests for hyperparameter mutation behavior."""

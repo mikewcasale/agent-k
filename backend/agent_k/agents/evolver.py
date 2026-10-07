@@ -123,7 +123,22 @@ __all__ = (
 )
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
-_NUMBER_PATTERN: Final[re.Pattern[str]] = re.compile(r"(?<![\w.])(-?\d+\.?\d*)(?![\w.])")
+_STRUCTURAL_NUMERIC_KEYWORDS: Final[frozenset[str]] = frozenset(
+    {
+        "axis",
+        "level",
+        "n_jobs",
+        "ndim",
+        "njobs",
+        "nthread",
+        "num_threads",
+        "random_state",
+        "seed",
+        "verbose",
+        "verbosity",
+    }
+)
+_MIN_MUTATION_FACTOR: Final[float] = 0.05
 _FILLNA_PATTERN: Final[re.Pattern[str]] = re.compile(
     r"^(?P<indent>\s*)(?P<var>\w+)\s*=\s*pd\.read_csv\(.*\)$", re.MULTILINE
 )
@@ -310,6 +325,87 @@ _HINT_COMMENT_PREFIX: Final[str] = "# Applied hint: "
 _ENCODING_HINT_IDS: Final[frozenset[str]] = frozenset(
     {"onehot_low_cardinality", "target_encode_high_cardinality", "frequency_encode_high_cardinality", "ordinal_encode"}
 )
+
+
+@dataclass(frozen=True, slots=True)
+class _NumericLiteral:
+    """Source span of a numeric literal that is safe to perturb.
+
+    @pattern:
+        name: source-span
+        rationale: "Locates literals exactly so mutation never edits strings or comments."
+        violations: "Regex rewrites corrupt paths inside strings and shift column indices."
+    """
+
+    lineno: int
+    col_offset: int
+    end_col_offset: int
+    value: float
+    is_int: bool
+
+
+class _NumericLiteralCollector(ast.NodeVisitor):
+    """Collect numeric literals that can be perturbed without changing semantics.
+
+    @pattern:
+        name: ast-visitor
+        rationale: "Skips subscript indices, structural arguments, and zero literals."
+        violations: "Blind numeric rewrites emit unrunnable or silently wrong solutions."
+    """
+
+    def __init__(self) -> None:
+        self.literals: list[_NumericLiteral] = []
+
+    def visit_Subscript(self, node: ast.Subscript) -> None:
+        """Visit the subscripted value only, leaving index and slice literals intact."""
+        self.visit(node.value)
+
+    def visit_Call(self, node: ast.Call) -> None:
+        """Visit call parts while skipping structural keyword values."""
+        self.visit(node.func)
+        for arg in node.args:
+            self.visit(arg)
+        for keyword in node.keywords:
+            if keyword.arg is not None and keyword.arg.lower() in _STRUCTURAL_NUMERIC_KEYWORDS:
+                continue
+            self.visit(keyword.value)
+
+    def visit_Dict(self, node: ast.Dict) -> None:
+        """Visit dict entries while skipping values keyed by structural parameter names."""
+        for key, value in zip(node.keys, node.values, strict=True):
+            if key is not None:
+                self.visit(key)
+            if _is_structural_key(key):
+                continue
+            self.visit(value)
+
+    def visit_UnaryOp(self, node: ast.UnaryOp) -> None:
+        """Record a negated numeric literal as a single signed span."""
+        operand_value = _numeric_literal_value(node.operand)
+        if isinstance(node.op, ast.USub) and operand_value is not None:
+            self._record(node, -operand_value, is_int=_is_int_literal(node.operand))
+            return
+        self.generic_visit(node)
+
+    def visit_Constant(self, node: ast.Constant) -> None:
+        """Record an unsigned numeric literal."""
+        value = _numeric_literal_value(node)
+        if value is None:
+            return
+        self._record(node, value, is_int=_is_int_literal(node))
+
+    def _record(self, node: ast.expr, value: float, *, is_int: bool) -> None:
+        if value == 0 or node.end_lineno != node.lineno or node.end_col_offset is None:
+            return
+        self.literals.append(
+            _NumericLiteral(
+                lineno=node.lineno,
+                col_offset=node.col_offset,
+                end_col_offset=node.end_col_offset,
+                value=value,
+                is_int=is_int,
+            )
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -2096,25 +2192,28 @@ class EvolverAgent(MemoryMixin):
         return random.Random(seed)
 
     def _mutate_numbers(self, code: str, rng: random.Random, *, max_changes: int, magnitude: float) -> str:
-        changes = 0
+        """Perturb numeric literals in source order, preserving type, sign, and semantics."""
+        if max_changes <= 0:
+            return code
 
-        def replacer(match: re.Match[str]) -> str:
-            nonlocal changes
-            if changes >= max_changes:
-                return match.group(0)
-            raw = match.group(1)
-            try:
-                value = float(raw)
-            except ValueError:
-                return raw
-            if value == 0:
-                value = 0.1
-            direction = rng.choice([-1, 1])
-            mutated = value * (1 + direction * magnitude)
-            changes += 1
-            return str(max(1, int(round(mutated)))) if raw.isdigit() else f"{mutated:.6g}"
+        literals = _collect_numeric_literals(code)
+        if not literals:
+            return code
 
-        return _NUMBER_PATTERN.sub(replacer, code)
+        edits: dict[int, list[tuple[int, int, str]]] = {}
+        for literal in literals[:max_changes]:
+            factor = max(_MIN_MUTATION_FACTOR, 1.0 + rng.choice([-1, 1]) * magnitude)
+            edits.setdefault(literal.lineno, []).append(
+                (literal.col_offset, literal.end_col_offset, _format_mutated_number(literal, factor))
+            )
+
+        lines = code.split("\n")
+        for lineno, line_edits in edits.items():
+            raw_line = lines[lineno - 1].encode()
+            for start, end, replacement in sorted(line_edits, reverse=True):
+                raw_line = raw_line[:start] + replacement.encode() + raw_line[end:]
+            lines[lineno - 1] = raw_line.decode()
+        return "\n".join(lines)
 
     def _ensure_import(self, code: str, module: str, symbol: str) -> str:
         imports, body = self._split_imports(code)
@@ -2491,6 +2590,50 @@ class EvolverAgent(MemoryMixin):
         imports = "\n".join(self._merge_imports(primary_imports, other_imports))
         body = "\n\n".join(part for part in body_parts if part)
         return f"{imports}\n\n{body}" if imports else body
+
+
+def _numeric_literal_value(node: ast.AST) -> float | None:
+    """Return the value of a non-boolean numeric literal, or ``None`` for any other node."""
+    if not isinstance(node, ast.Constant) or isinstance(node.value, bool):
+        return None
+    if isinstance(node.value, int | float):
+        return float(node.value)
+    return None
+
+
+def _is_int_literal(node: ast.AST) -> bool:
+    """Report whether a node is an integer literal."""
+    return isinstance(node, ast.Constant) and isinstance(node.value, int) and not isinstance(node.value, bool)
+
+
+def _is_structural_key(key: ast.expr | None) -> bool:
+    """Report whether a mapping key names a structural parameter that must not be perturbed."""
+    if not isinstance(key, ast.Constant) or not isinstance(key.value, str):
+        return False
+    return key.value.lower() in _STRUCTURAL_NUMERIC_KEYWORDS
+
+
+def _collect_numeric_literals(code: str) -> list[_NumericLiteral]:
+    """Collect perturbable numeric literals from source, ordered by position."""
+    try:
+        tree = ast.parse(code)
+    except (SyntaxError, ValueError):
+        return []
+    collector = _NumericLiteralCollector()
+    collector.visit(tree)
+    collector.literals.sort(key=lambda literal: (literal.lineno, literal.col_offset))
+    return collector.literals
+
+
+def _format_mutated_number(literal: _NumericLiteral, factor: float) -> str:
+    """Scale a literal by ``factor`` while keeping its integer-ness and sign."""
+    mutated = literal.value * factor
+    if not literal.is_int:
+        return f"{mutated:.6g}"
+    rounded = int(round(mutated))
+    if rounded == 0:
+        rounded = 1 if literal.value > 0 else -1
+    return str(rounded)
 
 
 def _summarize_failure_counts(counts: dict[str, int], *, limit: int) -> str:

@@ -1,6 +1,6 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
-  "pattern_count": 57,
+  "generated": "2026-10-08T02:12:09.620125+00:00",
+  "pattern_count": 60,
   "patterns": {
     "adapter": [
       {
@@ -91,6 +91,17 @@
         "rationale": "Generic archive for MAP-Elites diversity preservation.",
         "source": "agent_k/evolution/framework.py",
         "violations": []
+      }
+    ],
+    "bounded-accumulator": [
+      {
+        "component": "agent_k.core.submission:_Tally",
+        "line": 93,
+        "rationale": "Counts every offender while retaining only a few examples.",
+        "source": "agent_k/core/submission.py",
+        "violations": [
+          "Unbounded example lists blow up on large submissions."
+        ]
       }
     ],
     "classifier": [
@@ -654,7 +665,7 @@
     "graph-node": [
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 115,
+        "line": 116,
         "rationale": "Encapsulates discovery phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -663,7 +674,7 @@
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 273,
+        "line": 274,
         "rationale": "Encapsulates research phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -672,7 +683,7 @@
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 419,
+        "line": 420,
         "rationale": "Encapsulates prototype phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -681,7 +692,7 @@
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 900,
+        "line": 903,
         "rationale": "Encapsulates evolution phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -690,7 +701,7 @@
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1602,
+        "line": 1605,
         "rationale": "Encapsulates submission phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -1153,6 +1164,17 @@
         "violations": []
       }
     ],
+    "reference-layout": [
+      {
+        "component": "agent_k.core.submission:_SampleLayout",
+        "line": 120,
+        "rationale": "Captures the expected submission shape in one value.",
+        "source": "agent_k/core/submission.py",
+        "violations": [
+          "Re-reading the sample per check multiplies IO cost."
+        ]
+      }
+    ],
     "request-model": [
       {
         "component": "agent_k.ui.agui:MissionRequest",
@@ -1370,6 +1392,17 @@
         "source": "agent_k/core/tracking.py",
         "violations": [
           "Distributed tracking logic causes inconsistent history."
+        ]
+      }
+    ],
+    "validation-result": [
+      {
+        "component": "agent_k.core.submission:SubmissionValidation",
+        "line": 59,
+        "rationale": "Bundles the verdict with human-readable issues.",
+        "source": "agent_k/core/submission.py",
+        "violations": [
+          "Bare booleans lose the reason a submission failed."
         ]
       }
     ],

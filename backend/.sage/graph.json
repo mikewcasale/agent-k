@@ -476,6 +476,11 @@
       "type": "provides"
     },
     {
+      "source": "agent_k.core.submission",
+      "target": "agent_k.core.submission",
+      "type": "provides"
+    },
+    {
       "source": "agent_k.core.tracking",
       "target": "agent_k.core.tracking:ExperimentTracker",
       "type": "provides"
@@ -921,7 +926,7 @@
       "type": "similar"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831739+00:00",
+  "generated": "2026-10-08T02:12:09.619802+00:00",
   "nodes": [
     {
       "id": "agent_k",
@@ -1078,6 +1083,12 @@
       "label": "strategy",
       "pattern": "strategy",
       "source": "agent_k/core/strategy.py"
+    },
+    {
+      "id": "agent_k.core.submission",
+      "label": "submission",
+      "pattern": "validation",
+      "source": "agent_k/core/submission.py"
     },
     {
       "id": "agent_k.core.tracking",

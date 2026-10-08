@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The hint quotes the concrete layout issues so the evolver repairs the\nsubmission instead of only optimizing the validation score.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.evaluator:_submission_mutation_hint",
+  "line": 301,
+  "notice": "Build a mutation hint describing how the submission layout is wrong.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/evaluator.py",
+  "summary": "Build a mutation hint describing how the submission layout is wrong.",
+  "type": "function"
+}

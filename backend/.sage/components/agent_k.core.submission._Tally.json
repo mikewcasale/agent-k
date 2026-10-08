@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Keeps memory flat on large submissions: only the count grows while the\nretained examples stop at ``_MAX_REPORTED_EXAMPLES``.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.submission:_Tally",
+  "line": 93,
+  "notice": "Bounded counter that keeps a few offending values for reporting.",
+  "pattern": {
+    "name": "bounded-accumulator",
+    "rationale": "Counts every offender while retaining only a few examples.",
+    "violations": "Unbounded example lists blow up on large submissions."
+  },
+  "similar": null,
+  "source": "agent_k/core/submission.py",
+  "summary": "Bounded counter that keeps a few offending values for reporting.",
+  "type": "class"
+}

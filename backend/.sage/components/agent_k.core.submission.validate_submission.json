@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "``strict`` requires an exact row count and identifier match, which is\nwhat a platform enforces for a real submission. Pass ``strict=False``\nwhen the submission was produced from a data subset: the row count is\nthen unconstrained and identifiers only have to be a duplicate-free\nsubset of the sample submission.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.submission:validate_submission",
+  "line": 144,
+  "notice": "Checks submission layout, row coverage, identifiers, and numeric cells.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/submission.py",
+  "summary": "Validate a submission file against the competition sample submission.",
+  "type": "function"
+}

@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "``valid`` is False only for layouts a competition platform rejects.\nWhen the sample submission itself cannot be read the validation is\nreported as valid with a single explanatory issue, so a missing\nreference file never blocks an otherwise usable submission.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.submission:SubmissionValidation",
+  "line": 59,
+  "notice": "Outcome of validating a submission file against the sample submission.",
+  "pattern": {
+    "name": "validation-result",
+    "rationale": "Bundles the verdict with human-readable issues.",
+    "violations": "Bare booleans lose the reason a submission failed."
+  },
+  "similar": null,
+  "source": "agent_k/core/submission.py",
+  "summary": "Outcome of validating a submission file against the sample submission.",
+  "type": "class"
+}

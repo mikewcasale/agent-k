@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "``ids_tracked`` is False when the sample exceeds ``_MAX_TRACKED_IDS``\nrows, in which case identifier comparisons are skipped to bound memory.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.submission:_SampleLayout",
+  "line": 120,
+  "notice": "Reference layout read from the sample submission.",
+  "pattern": {
+    "name": "reference-layout",
+    "rationale": "Captures the expected submission shape in one value.",
+    "violations": "Re-reading the sample per check multiplies IO cost."
+  },
+  "similar": null,
+  "source": "agent_k/core/submission.py",
+  "summary": "Reference layout read from the sample submission.",
+  "type": "class"
+}

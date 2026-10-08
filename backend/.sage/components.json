@@ -327,6 +327,16 @@
   },
   {
     "consumes": [],
+    "id": "agent_k.core.submission",
+    "line": 1,
+    "pattern": "validation",
+    "provides": [
+      "agent_k.core.submission"
+    ],
+    "source": "agent_k/core/submission.py"
+  },
+  {
+    "consumes": [],
     "id": "agent_k.core.tracking",
     "line": 1,
     "pattern": "tracking-store",

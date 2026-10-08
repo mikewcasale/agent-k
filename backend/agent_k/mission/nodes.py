@@ -86,6 +86,7 @@ from ..core.models import (
 )
 from ..core.solution import execute_solution, parse_baseline_score
 from ..core.strategy import apply_solution_policy, build_fitness_policy, build_problem_profile, build_technique_policy
+from ..core.submission import validate_submission
 from ..core.tracking import (
     ExperimentRecord,
     HintEffectivenessTracker,
@@ -519,12 +520,14 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
 
                     submission_path = work_path / "submission.csv"
                     baseline_score = parse_baseline_score(execution.stdout)
-                    if not submission_path.exists() or execution.returncode != 0 or execution.timed_out:
+                    validation = validate_submission(submission_path, staged["sample"])
+                    if not validation.valid or execution.returncode != 0 or execution.timed_out:
                         logfire.warning(
                             "prototype_execution_failed",
                             returncode=execution.returncode,
                             timed_out=execution.timed_out,
                             submission_exists=submission_path.exists(),
+                            submission_issues=list(validation.issues),
                             stderr=execution.stderr[:1000] if execution.stderr else "",
                             stdout=execution.stdout[:500] if execution.stdout else "",
                             runtime_ms=execution.runtime_ms,
@@ -1735,6 +1738,7 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         logfire.warning("submission_policy_injection_failed", notes=notes)
 
                     submission_path = work_path / "submission.csv"
+                    submission_path.unlink(missing_ok=True)
                     execution = await execute_solution(
                         best_code,
                         work_path,
@@ -1742,13 +1746,22 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         use_builtin_code_execution=True,
                         model_spec=evolver_settings.model,
                     )
+                    validation = validate_submission(submission_path, staged["sample"])
 
-                    if not submission_path.exists() or execution.returncode != 0 or execution.timed_out:
+                    if not validation.valid or execution.returncode != 0 or execution.timed_out:
+                        logfire.warning(
+                            "submission_candidate_rejected",
+                            source="best_solution",
+                            returncode=execution.returncode,
+                            timed_out=execution.timed_out,
+                            issues=list(validation.issues),
+                        )
                         fallback_code = state.prototype_code
                         if fallback_code and fallback_code != best_code:
                             fallback_code, notes = apply_solution_policy(fallback_code, technique_policy)
                             if notes:
                                 logfire.warning("submission_policy_injection_failed_fallback", notes=notes)
+                            submission_path.unlink(missing_ok=True)
                             execution = await execute_solution(
                                 fallback_code,
                                 work_path,
@@ -1756,8 +1769,17 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                                 use_builtin_code_execution=True,
                                 model_spec=evolver_settings.model,
                             )
+                            validation = validate_submission(submission_path, staged["sample"])
+                            if not validation.valid:
+                                logfire.warning(
+                                    "submission_candidate_rejected",
+                                    source="prototype",
+                                    returncode=execution.returncode,
+                                    timed_out=execution.timed_out,
+                                    issues=list(validation.issues),
+                                )
 
-                        if not submission_path.exists() or execution.returncode != 0 or execution.timed_out:
+                        if not validation.valid or execution.returncode != 0 or execution.timed_out:
                             _write_fallback_submission(
                                 train_path=staged["train"],
                                 test_path=staged["test"],
@@ -1765,17 +1787,25 @@ class SubmissionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                                 metric=competition.metric,
                                 output_path=submission_path,
                             )
+                            validation = validate_submission(submission_path, staged["sample"])
 
-                    if not submission_path.exists():
+                    if not validation.valid:
+                        logfire.error("submission_validation_failed", issues=list(validation.issues))
                         _cleanup_session_data(state.mission_id)
                         return End(
                             MissionResult(
                                 success=False,
                                 mission_id=state.mission_id,
-                                error_message="Failed to generate submission file",
+                                competition_id=state.competition_id,
+                                error_message=f"Submission file rejected by local validation: {validation.summary}",
                                 phases_completed=list(state.phases_completed),
                             )
                         )
+                    logfire.info(
+                        "submission_validated",
+                        row_count=validation.row_count,
+                        expected_row_count=validation.expected_row_count,
+                    )
 
                     # Submit via platform adapter
                     submission = await platform_adapter.submit(

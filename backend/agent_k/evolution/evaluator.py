@@ -46,6 +46,7 @@ from openevolve.evaluation_result import EvaluationResult
 
 if TYPE_CHECKING:
     from agent_k.core.hints import PreprocessingHint
+    from agent_k.core.submission import SubmissionValidation
 
 __all__ = ("evaluate", "evaluate_stage1", "evaluate_stage2")
 
@@ -296,6 +297,29 @@ def _compute_cv_variance(stdout: str) -> float:
     return float(variance)
 
 
+def _submission_mutation_hint(submission: SubmissionValidation) -> str:
+    """Build a mutation hint describing how the submission layout is wrong.
+
+    @notice: |
+        Build a mutation hint describing how the submission layout is wrong.
+
+    @dev: |
+        The hint quotes the concrete layout issues so the evolver repairs the
+        submission instead of only optimizing the validation score.
+    """
+    return (
+        f"MUTATION HINT [InvalidSubmission]: submission.csv does not match sample_submission.csv "
+        f"({submission.summary}). Rebuild it from the sample so the columns, row count, and ids line up:\n"
+        "```python\n"
+        'sample = pd.read_csv("sample_submission.csv")\n'
+        "id_column = sample.columns[0]\n"
+        "submission = sample[[id_column]].merge(predictions, on=id_column, how='left')\n"
+        "submission = submission[sample.columns].fillna(fallback_value)\n"
+        'submission.to_csv("submission.csv", index=False)\n'
+        "```"
+    )
+
+
 def _model_family_score(code: str) -> float:
     """Score based on model family (prefer tree-based models)."""
     for penalty, pattern in _MODEL_FAMILY_PATTERNS:
@@ -305,14 +329,24 @@ def _model_family_score(code: str) -> float:
 
 
 def _fitness_from_score(cv_score: float | None, metric_direction: str) -> float:
-    """Convert CV score to fitness (higher is better)."""
+    """Convert CV score to fitness (higher is better).
+
+    @notice: |
+        Convert CV score to fitness (higher is better).
+
+    @dev: |
+        Minimized metrics map through ``1 / (1 + score)`` so fitness stays
+        strictly positive, matching ``agent_k.core.strategy`` and the evolver.
+        A negative mapping would rank the 0.0 failure sentinel above every
+        working candidate.
+    """
     if cv_score is None:
         return 0.0
 
+    value = max(float(cv_score), 0.0)
     if metric_direction == "maximize":
-        return float(cv_score)
-    else:
-        return -float(cv_score)
+        return value
+    return 1.0 / (1.0 + value)
 
 
 def evaluate(program_path: str) -> EvaluationResult:
@@ -326,6 +360,7 @@ def evaluate(program_path: str) -> EvaluationResult:
     """
     from agent_k.core.hints import detect_applied_hints
     from agent_k.core.solution import execute_solution, parse_baseline_score
+    from agent_k.core.submission import validate_submission
 
     context = _load_context()
     work_dir = _resolve_work_dir(context)
@@ -351,9 +386,10 @@ def evaluate(program_path: str) -> EvaluationResult:
     cv_score = parse_baseline_score(result.stdout)
     applied_hints = detect_applied_hints(code, hints) if hints else []
     submission_path = work_dir / "submission.csv"
-    valid = result.returncode == 0 and cv_score is not None and submission_path.exists()
+    submission = validate_submission(submission_path, work_dir / "sample_submission.csv")
+    valid = result.returncode == 0 and cv_score is not None and submission.valid
 
-    fitness = _fitness_from_score(cv_score, metric_direction)
+    fitness = _fitness_from_score(cv_score, metric_direction) if valid else 0.0
     cv_variance = _compute_cv_variance(result.stdout)
     metrics = {
         "combined_score": fitness,
@@ -371,6 +407,8 @@ def evaluate(program_path: str) -> EvaluationResult:
     error_feedback = ""
     if result.returncode != 0:
         error_feedback = _extract_error_feedback(result.stderr, result.stdout)
+    if not submission.valid:
+        error_feedback = "\n\n".join(part for part in (error_feedback, _submission_mutation_hint(submission)) if part)
 
     artifacts = {
         "stdout": _truncate(result.stdout, 2000),
@@ -379,6 +417,7 @@ def evaluate(program_path: str) -> EvaluationResult:
         "applied_hints": json.dumps(sorted(applied_hints)),
         "hint_count": str(len(applied_hints)),
         "submission_exists": str(submission_path.exists()),
+        "submission_issues": submission.summary,
         "error_feedback": error_feedback,
         "execution_status": "success" if valid else "failed",
     }
@@ -505,6 +544,7 @@ def evaluate_stage2(program_path: str) -> EvaluationResult:
         See module for behavior details and invariants.
     """
     from agent_k.core.solution import execute_solution, parse_baseline_score
+    from agent_k.core.submission import validate_submission
 
     context = _load_context()
     work_dir = _resolve_work_dir(context)
@@ -532,11 +572,20 @@ def evaluate_stage2(program_path: str) -> EvaluationResult:
         # Parse score from output
         cv_score = parse_baseline_score(result.stdout)
         submission_path = subset_dir / "submission.csv"
-        valid = result.returncode == 0 and cv_score is not None and submission_path.exists()
+        # The subset keeps the full sample submission, so only the layout is
+        # comparable here: row and identifier parity are checked in evaluate().
+        submission = validate_submission(submission_path, subset_dir / "sample_submission.csv", strict=False)
+        valid = result.returncode == 0 and cv_score is not None and submission.valid
 
         if not valid:
             error_feedback = _extract_error_feedback(result.stderr, result.stdout)
-            logfire.info("stage2_execution_failed", returncode=result.returncode)
+            if not submission.valid:
+                error_feedback = "\n\n".join(
+                    part for part in (error_feedback, _submission_mutation_hint(submission)) if part
+                )
+            logfire.info(
+                "stage2_execution_failed", returncode=result.returncode, submission_issues=list(submission.issues)
+            )
             return EvaluationResult(
                 metrics={"combined_score": 0.0, "fitness": 0.0, "valid": 0.0},
                 artifacts={
@@ -544,6 +593,7 @@ def evaluate_stage2(program_path: str) -> EvaluationResult:
                     "stage": "stage2",
                     "stderr": _truncate(result.stderr, 500),
                     "feedback": error_feedback,
+                    "submission_issues": submission.summary,
                 },
             )
 

@@ -1,0 +1,36 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.core.submission as the canonical home for this capability."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph.",
+      "Add competition-specific submission rules; keep checks generic."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Compares a generated ``submission.csv`` against the competition's\n``sample_submission.csv`` so malformed predictions are caught locally\ninstead of consuming a platform submission slot. Checks are generic\nacross ML problem types: column layout, row count, identifier\ncoverage, and finiteness of numeric prediction cells.",
+  "graph": {
+    "id": "agent_k.core.submission",
+    "pattern": "validation",
+    "provides": [
+      "agent_k.core.submission"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-10-08",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.core.submission",
+  "line": 1,
+  "notice": "Structural validation for competition submission files.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/submission.py",
+  "summary": "Structural validation for competition submission files.",
+  "type": "module"
+}

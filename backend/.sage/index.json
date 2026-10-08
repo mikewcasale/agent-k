@@ -1,5 +1,5 @@
 {
-  "component_count": 59,
+  "component_count": 60,
   "components": [
     {
       "consumes": [],
@@ -326,6 +326,16 @@
         "agent_k.core.strategy"
       ],
       "source": "agent_k/core/strategy.py"
+    },
+    {
+      "consumes": [],
+      "id": "agent_k.core.submission",
+      "line": 1,
+      "pattern": "validation",
+      "provides": [
+        "agent_k.core.submission"
+      ],
+      "source": "agent_k/core/submission.py"
     },
     {
       "consumes": [],
@@ -705,7 +715,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-10-08T02:12:09.619140+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -733,6 +743,7 @@
     "agent_k/core/settings.py",
     "agent_k/core/solution.py",
     "agent_k/core/strategy.py",
+    "agent_k/core/submission.py",
     "agent_k/core/tracking.py",
     "agent_k/core/types.py",
     "agent_k/embeddings/__init__.py",
@@ -767,7 +778,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1110,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -4493,6 +4504,104 @@
         "value": "Policy injection is disabled to allow evolutionary search to handle\ndata preparation generically. Returns (code, []) unchanged."
       }
     ],
+    "agent_k/core/submission.py": [
+      {
+        "component": "agent_k.core.submission",
+        "line": 3,
+        "name": "notice",
+        "value": "Structural validation for competition submission files."
+      },
+      {
+        "component": "agent_k.core.submission",
+        "line": 6,
+        "name": "dev",
+        "value": "Compares a generated ``submission.csv`` against the competition's\n``sample_submission.csv`` so malformed predictions are caught locally\ninstead of consuming a platform submission slot. Checks are gene"
+      },
+      {
+        "component": "agent_k.core.submission",
+        "line": 13,
+        "name": "graph",
+        "value": "{\"id\": \"agent_k.core.submission\", \"provides\": [\"agent_k.core.submission\"], \"pattern\": \"validation\"}"
+      },
+      {
+        "component": "agent_k.core.submission",
+        "line": 19,
+        "name": "agent_guidance",
+        "value": "{\"do\": [\"Use agent_k.core.submission as the canonical home for this capability.\"], \"do_not\": [\"Create parallel modules without updating @similar or @graph.\", \"Add competition-specific submission rules"
+      },
+      {
+        "component": "agent_k.core.submission",
+        "line": 26,
+        "name": "human_review",
+        "value": "{\"last_verified\": \"2026-10-08\", \"owners\": [\"agent-k-core\"]}"
+      },
+      {
+        "component": "agent_k.core.submission:SubmissionValidation",
+        "line": 61,
+        "name": "notice",
+        "value": "Outcome of validating a submission file against the sample submission."
+      },
+      {
+        "component": "agent_k.core.submission:SubmissionValidation",
+        "line": 64,
+        "name": "dev",
+        "value": "``valid`` is False only for layouts a competition platform rejects.\nWhen the sample submission itself cannot be read the validation is\nreported as valid with a single explanatory issue, so a missing\nr"
+      },
+      {
+        "component": "agent_k.core.submission:SubmissionValidation",
+        "line": 70,
+        "name": "pattern",
+        "value": "{\"name\": \"validation-result\", \"rationale\": \"Bundles the verdict with human-readable issues.\", \"violations\": \"Bare booleans lose the reason a submission failed.\"}"
+      },
+      {
+        "component": "agent_k.core.submission:_Tally",
+        "line": 95,
+        "name": "notice",
+        "value": "Bounded counter that keeps a few offending values for reporting."
+      },
+      {
+        "component": "agent_k.core.submission:_Tally",
+        "line": 98,
+        "name": "dev",
+        "value": "Keeps memory flat on large submissions: only the count grows while the\nretained examples stop at ``_MAX_REPORTED_EXAMPLES``."
+      },
+      {
+        "component": "agent_k.core.submission:_Tally",
+        "line": 102,
+        "name": "pattern",
+        "value": "{\"name\": \"bounded-accumulator\", \"rationale\": \"Counts every offender while retaining only a few examples.\", \"violations\": \"Unbounded example lists blow up on large submissions.\"}"
+      },
+      {
+        "component": "agent_k.core.submission:_SampleLayout",
+        "line": 122,
+        "name": "notice",
+        "value": "Reference layout read from the sample submission."
+      },
+      {
+        "component": "agent_k.core.submission:_SampleLayout",
+        "line": 125,
+        "name": "dev",
+        "value": "``ids_tracked`` is False when the sample exceeds ``_MAX_TRACKED_IDS``\nrows, in which case identifier comparisons are skipped to bound memory."
+      },
+      {
+        "component": "agent_k.core.submission:_SampleLayout",
+        "line": 129,
+        "name": "pattern",
+        "value": "{\"name\": \"reference-layout\", \"rationale\": \"Captures the expected submission shape in one value.\", \"violations\": \"Re-reading the sample per check multiplies IO cost.\"}"
+      },
+      {
+        "component": "agent_k.core.submission:validate_submission",
+        "line": 146,
+        "name": "notice",
+        "value": "Checks submission layout, row coverage, identifiers, and numeric cells."
+      },
+      {
+        "component": "agent_k.core.submission:validate_submission",
+        "line": 149,
+        "name": "dev",
+        "value": "``strict`` requires an exact row count and identifier match, which is\nwhat a platform enforces for a real submission. Pass ``strict=False``\nwhen the submission was produced from a data subset: the row"
+      }
+    ],
     "agent_k/core/tracking.py": [
       {
         "component": "agent_k.core.tracking",
@@ -5253,38 +5362,62 @@
         "value": "{\"last_verified\": \"2026-01-26\", \"owners\": [\"agent-k-core\"]}"
       },
       {
+        "component": "agent_k.evolution.evaluator:_submission_mutation_hint",
+        "line": 303,
+        "name": "notice",
+        "value": "Build a mutation hint describing how the submission layout is wrong."
+      },
+      {
+        "component": "agent_k.evolution.evaluator:_submission_mutation_hint",
+        "line": 306,
+        "name": "dev",
+        "value": "The hint quotes the concrete layout issues so the evolver repairs the\nsubmission instead of only optimizing the validation score."
+      },
+      {
+        "component": "agent_k.evolution.evaluator:_fitness_from_score",
+        "line": 334,
+        "name": "notice",
+        "value": "Convert CV score to fitness (higher is better)."
+      },
+      {
+        "component": "agent_k.evolution.evaluator:_fitness_from_score",
+        "line": 337,
+        "name": "dev",
+        "value": "Minimized metrics map through ``1 / (1 + score)`` so fitness stays\nstrictly positive, matching ``agent_k.core.strategy`` and the evolver.\nA negative mapping would rank the 0.0 failure sentinel above e"
+      },
+      {
         "component": "agent_k.evolution.evaluator:evaluate",
-        "line": 321,
+        "line": 355,
         "name": "notice",
         "value": "Evaluate a program and return metrics and artifacts for OpenEvolve."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate",
-        "line": 324,
+        "line": 358,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage1",
-        "line": 403,
+        "line": 442,
         "name": "notice",
         "value": "Stage 1: Quick syntax and import validation."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage1",
-        "line": 406,
+        "line": 445,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage2",
-        "line": 501,
+        "line": 540,
         "name": "notice",
         "value": "Stage 2: Medium evaluation on subset of data."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage2",
-        "line": 504,
+        "line": 543,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       }
@@ -6150,181 +6283,181 @@
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 123,
+        "line": 124,
         "name": "notice",
         "value": "Discovery phase node."
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 126,
+        "line": 127,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 129,
+        "line": 130,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates discovery phase logic in the mission graph.\", \"violations\": \"Discovery logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 134,
+        "line": 135,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.lobbyist:LobbyistAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifec"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 144,
+        "line": 145,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 149,
+        "line": 150,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 281,
+        "line": 282,
         "name": "notice",
         "value": "Research phase node."
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 284,
+        "line": 285,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 287,
+        "line": 288,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates research phase logic in the mission graph.\", \"violations\": \"Research logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 292,
+        "line": 293,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.scientist:ScientistAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lif"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 302,
+        "line": 303,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 307,
+        "line": 308,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 427,
+        "line": 428,
         "name": "notice",
         "value": "Prototype phase node."
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 430,
+        "line": 431,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 433,
+        "line": 434,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates prototype phase logic in the mission graph.\", \"violations\": \"Prototype logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 438,
+        "line": 439,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.solution:execute_solution\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 447,
+        "line": 448,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 452,
+        "line": 453,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 908,
+        "line": 911,
         "name": "notice",
         "value": "Evolution phase node."
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 911,
+        "line": 914,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 914,
+        "line": 917,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates evolution phase logic in the mission graph.\", \"violations\": \"Evolution logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 919,
+        "line": 922,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.evolver:EvolverAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated pe"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 928,
+        "line": 931,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 933,
+        "line": 936,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1610,
+        "line": 1613,
         "name": "notice",
         "value": "Submission phase node."
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1613,
+        "line": 1616,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1616,
+        "line": 1619,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates submission phase logic in the mission graph.\", \"violations\": \"Submission logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1621,
+        "line": 1624,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.agents.evolver:EvolverAgent\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated pe"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1630,
+        "line": 1633,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1635,
+        "line": 1638,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       }

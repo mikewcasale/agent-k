@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.models:CompetitionType",
-  "line": 94,
+  "line": 103,
   "notice": "Type of Kaggle competition.",
   "pattern": {
     "name": "enumeration",

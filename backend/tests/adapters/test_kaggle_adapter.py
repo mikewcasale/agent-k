@@ -6,12 +6,14 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx
 import pytest
 
 from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
+from agent_k.core.models import CompetitionType, EvaluationMetric
 
 __all__ = ()
 
@@ -76,6 +78,57 @@ class TestKaggleAdapter:
         adapter = KaggleAdapter(config)
 
         assert adapter is not None
+
+
+class TestParseCompetition:
+    """Tests for parsing Kaggle competition payloads."""
+
+    @staticmethod
+    def _adapter() -> KaggleAdapter:
+        return KaggleAdapter(KaggleSettings(username="user", api_key="key"))
+
+    @pytest.mark.parametrize(
+        ("category", "expected"),
+        [
+            ("Getting Started", CompetitionType.GETTING_STARTED),
+            ("gettingStarted", CompetitionType.GETTING_STARTED),
+            ("Featured", CompetitionType.FEATURED),
+            ("playground", CompetitionType.PLAYGROUND),
+            ("unheard-of", CompetitionType.COMMUNITY),
+            (None, CompetitionType.COMMUNITY),
+        ],
+    )
+    def test_category_label_variants(self, category: str | None, expected: CompetitionType) -> None:
+        """Category labels should resolve across Kaggle's spellings."""
+        competition = self._adapter()._parse_competition(
+            {"ref": "titanic", "title": "Titanic", "category": category, "deadline": "2030-01-01T00:00:00Z"}
+        )
+
+        assert competition.competition_type is expected
+
+    def test_error_metric_direction(self) -> None:
+        """An error metric should be parsed as a minimisation target."""
+        competition = self._adapter()._parse_competition(
+            {
+                "ref": "house-prices",
+                "title": "House Prices",
+                "category": "Getting Started",
+                "evaluationMetric": "Root Mean Squared Logarithmic Error",
+                "deadline": "2030-01-01T00:00:00Z",
+            }
+        )
+
+        assert competition.metric is EvaluationMetric.RMSLE
+        assert competition.metric_direction == "minimize"
+
+    def test_deadline_without_offset(self) -> None:
+        """A deadline without an offset should parse as UTC instead of failing."""
+        competition = self._adapter()._parse_competition(
+            {"ref": "titanic", "title": "Titanic", "category": "Featured", "deadline": "2030-01-01T00:00:00"}
+        )
+
+        assert competition.deadline.tzinfo is not None
+        assert competition.deadline == datetime(2030, 1, 1, tzinfo=UTC)
 
 
 class TestKaggleAdapterFromEnv:

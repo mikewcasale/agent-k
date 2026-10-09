@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.models:_normalize_token",
+  "line": 210,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/models.py",
+  "summary": "Reduce a label to its alphanumeric characters in lower case.",
+  "type": "function"
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Matches the normalised label against both member values and member\nnames, so \"RMSE\", \"log_loss\" and \"Getting Started\" all resolve. Returns\nNone for labels outside the taxonomy rather than guessing, leaving the\ncaller to reject or default.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.models:resolve_label",
+  "line": 215,
+  "notice": "Case- and separator-insensitive lookup for the string enums above.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/models.py",
+  "summary": "Resolve a free-form label against an enum's member names and values.",
+  "type": "function"
+}

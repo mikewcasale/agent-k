@@ -29,9 +29,12 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
+import re
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Any, Final, Self
+from types import MappingProxyType
+from typing import Any, Final, Self, TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator, model_validator
 
@@ -50,6 +53,9 @@ from .types import (
     TaskStatus,
     ToolType,
 )
+
+_StrEnumT = TypeVar("_StrEnumT", bound=StrEnum)
+"""Type variable for string enum resolution."""
 
 __all__ = (
     # Enums
@@ -85,6 +91,9 @@ __all__ = (
     # Research models
     "LeaderboardAnalysis",
     "ResearchFindings",
+    # Helpers
+    "metric_direction_for",
+    "resolve_label",
 )
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
@@ -166,6 +175,81 @@ class EvaluationMetric(StrEnum):
     NDCG = "ndcg"
 
 
+_METRIC_DIRECTIONS: Final[Mapping[EvaluationMetric, MetricDirection]] = MappingProxyType(
+    {
+        EvaluationMetric.ACCURACY: "maximize",
+        EvaluationMetric.AUC: "maximize",
+        EvaluationMetric.F1: "maximize",
+        EvaluationMetric.MAP: "maximize",
+        EvaluationMetric.NDCG: "maximize",
+        EvaluationMetric.LOG_LOSS: "minimize",
+        EvaluationMetric.RMSE: "minimize",
+        EvaluationMetric.MAE: "minimize",
+        EvaluationMetric.RMSLE: "minimize",
+    }
+)
+_MINIMIZE_PREFIXES: Final[tuple[str, ...]] = ("minim", "lower", "smaller", "descend", "decreas")
+_MAXIMIZE_PREFIXES: Final[tuple[str, ...]] = ("maxim", "higher", "larger", "ascend", "increas")
+_TAG_SEPARATORS: Final[re.Pattern[str]] = re.compile(r"[,;|\n]")
+
+
+def metric_direction_for(metric: EvaluationMetric) -> MetricDirection:
+    """Return the optimisation direction implied by an evaluation metric.
+
+    @notice: |
+        Canonical metric-to-direction mapping for the supported taxonomy.
+
+    @dev: |
+        Error metrics minimise, score metrics maximise. This is the single
+        source of truth; adapters and models must not keep private copies.
+    """
+    return _METRIC_DIRECTIONS.get(metric, "maximize")
+
+
+def _normalize_token(value: str) -> str:
+    """Reduce a label to its alphanumeric characters in lower case."""
+    return "".join(char for char in value if char.isalnum()).lower()
+
+
+def resolve_label(enum_cls: type[_StrEnumT], value: object) -> _StrEnumT | None:
+    """Resolve a free-form label against an enum's member names and values.
+
+    @notice: |
+        Case- and separator-insensitive lookup for the string enums above.
+
+    @dev: |
+        Matches the normalised label against both member values and member
+        names, so "RMSE", "log_loss" and "Getting Started" all resolve. Returns
+        None for labels outside the taxonomy rather than guessing, leaving the
+        caller to reject or default.
+    """
+    if isinstance(value, enum_cls):
+        return value
+    if not isinstance(value, str):
+        return None
+    token = _normalize_token(value)
+    if not token:
+        return None
+    for member in enum_cls:
+        if token in {_normalize_token(member.value), _normalize_token(member.name)}:
+            return member
+    return None
+
+
+def _resolve_metric_direction(value: object) -> MetricDirection | None:
+    """Resolve a direction label, returning None when it carries no direction."""
+    if not isinstance(value, str):
+        return None
+    token = _normalize_token(value)
+    if not token:
+        return None
+    if token == "min" or token.startswith(_MINIMIZE_PREFIXES):
+        return "minimize"
+    if token == "max" or token.startswith(_MAXIMIZE_PREFIXES):
+        return "maximize"
+    return None
+
+
 class Competition(BaseModel):
     """Kaggle competition entity.
 
@@ -206,13 +290,48 @@ class Competition(BaseModel):
     tags: frozenset[str] = Field(default_factory=frozenset, description="Competition tags/categories")
     url: str | None = Field(default=None, description="Full URL to competition page")
 
+    @model_validator(mode="before")
+    @classmethod
+    def coerce_platform_payload(cls, data: Any) -> Any:
+        """Accept the field shapes platforms and language models actually emit.
+
+        Discovery output is produced by a model, so enum labels arrive in the
+        casing of the competition page ("RMSE", "Getting Started") and the
+        direction is routinely omitted. Normalising here keeps a transcription
+        difference from burning the agent's output retries, and keeps an
+        omitted direction from defaulting an error metric to "maximize".
+        """
+        if not isinstance(data, dict):
+            return data
+
+        payload: dict[str, Any] = dict(data)
+
+        metric = resolve_label(EvaluationMetric, payload.get("metric"))
+        if metric is not None:
+            payload["metric"] = metric
+
+        competition_type = resolve_label(CompetitionType, payload.get("competition_type"))
+        if competition_type is not None:
+            payload["competition_type"] = competition_type
+
+        # An explicit direction wins; otherwise the metric decides it.
+        direction = _resolve_metric_direction(payload.get("metric_direction"))
+        if direction is None and metric is not None:
+            direction = metric_direction_for(metric)
+        if direction is not None:
+            payload["metric_direction"] = direction
+
+        tags = payload.get("tags")
+        if isinstance(tags, str):
+            payload["tags"] = frozenset(tag.strip() for tag in _TAG_SEPARATORS.split(tags) if tag.strip())
+
+        return payload
+
     @field_validator("deadline")
     @classmethod
-    def validate_deadline_timezone(cls, v: datetime) -> datetime:
-        """Ensure deadline has timezone information."""
-        if v.tzinfo is None:
-            raise ValueError("deadline must be timezone-aware")
-        return v
+    def normalize_deadline_timezone(cls, v: datetime) -> datetime:
+        """Interpret a naive deadline as UTC, which is what the field documents."""
+        return v if v.tzinfo is not None else v.replace(tzinfo=UTC)
 
     @computed_field  # type: ignore[prop-decorator]
     @property

@@ -23,6 +23,7 @@ from agent_k.core.models import (
     MemoryState,
     MissionCriteria,
     PlannedTask,
+    metric_direction_for,
 )
 from agent_k.mission.state import MissionResult
 
@@ -101,6 +102,157 @@ class TestCompetition:
                 metric=EvaluationMetric.ACCURACY,
                 deadline=datetime(2030, 1, 1, tzinfo=UTC),
             )
+
+
+class TestCompetitionPayloadCoercion:
+    """Tests for the field shapes platforms and language models emit."""
+
+    @staticmethod
+    def _payload(**overrides: object) -> dict[str, object]:
+        payload: dict[str, object] = {
+            "id": "house-prices-advanced-regression-techniques",
+            "title": "House Prices - Advanced Regression Techniques",
+            "competition_type": "Getting Started",
+            "metric": "RMSE",
+            "deadline": "2030-01-01T23:59:00",
+        }
+        payload.update(overrides)
+        return payload
+
+    @pytest.mark.parametrize(
+        ("raw", "expected"),
+        [
+            ("RMSE", EvaluationMetric.RMSE),
+            ("rmsle", EvaluationMetric.RMSLE),
+            ("log_loss", EvaluationMetric.LOG_LOSS),
+            ("LOG_LOSS", EvaluationMetric.LOG_LOSS),
+            ("Log Loss", EvaluationMetric.LOG_LOSS),
+            ("Accuracy", EvaluationMetric.ACCURACY),
+            ("NDCG", EvaluationMetric.NDCG),
+        ],
+    )
+    def test_metric_label_casing(self, raw: str, expected: EvaluationMetric) -> None:
+        """Metric labels should resolve regardless of casing or separators."""
+        comp = Competition.model_validate(self._payload(metric=raw))
+
+        assert comp.metric is expected
+
+    def test_unknown_metric_is_still_rejected(self) -> None:
+        """Labels outside the taxonomy should not be silently remapped."""
+        with pytest.raises(ValidationError):
+            Competition.model_validate(self._payload(metric="quadratic weighted kappa"))
+
+    @pytest.mark.parametrize(
+        ("raw", "expected"),
+        [
+            ("Getting Started", CompetitionType.GETTING_STARTED),
+            ("getting-started", CompetitionType.GETTING_STARTED),
+            ("GETTING_STARTED", CompetitionType.GETTING_STARTED),
+            ("Featured", CompetitionType.FEATURED),
+        ],
+    )
+    def test_competition_type_label_casing(self, raw: str, expected: CompetitionType) -> None:
+        """Category labels should resolve regardless of casing or separators."""
+        comp = Competition.model_validate(self._payload(competition_type=raw))
+
+        assert comp.competition_type is expected
+
+    @pytest.mark.parametrize("metric", list(EvaluationMetric))
+    def test_direction_defaults_from_metric(self, metric: EvaluationMetric) -> None:
+        """An omitted direction should follow the metric, not the field default."""
+        comp = Competition.model_validate(self._payload(metric=metric))
+
+        assert comp.metric_direction == metric_direction_for(metric)
+
+    def test_error_metric_does_not_default_to_maximize(self) -> None:
+        """Error metrics must not inherit the maximize field default."""
+        comp = Competition.model_validate(self._payload(metric=EvaluationMetric.RMSE))
+
+        assert comp.metric_direction == "minimize"
+
+    @pytest.mark.parametrize(
+        ("raw", "expected"),
+        [
+            ("minimize", "minimize"),
+            ("Minimise", "minimize"),
+            ("min", "minimize"),
+            ("lower is better", "minimize"),
+            ("maximize", "maximize"),
+            ("higher is better", "maximize"),
+        ],
+    )
+    def test_direction_phrasing(self, raw: str, expected: str) -> None:
+        """Direction phrasing should resolve to the canonical literal."""
+        comp = Competition.model_validate(self._payload(metric_direction=raw))
+
+        assert comp.metric_direction == expected
+
+    def test_explicit_direction_overrides_metric_default(self) -> None:
+        """A platform-supplied direction should win over the metric default."""
+        comp = Competition.model_validate(self._payload(metric=EvaluationMetric.RMSE, metric_direction="maximize"))
+
+        assert comp.metric_direction == "maximize"
+
+    def test_uninterpretable_direction_falls_back_to_metric(self) -> None:
+        """A direction that carries no ordering should fall back to the metric."""
+        comp = Competition.model_validate(self._payload(metric=EvaluationMetric.AUC, metric_direction="best"))
+
+        assert comp.metric_direction == "maximize"
+
+    def test_naive_deadline_string_is_utc(self) -> None:
+        """A deadline without an offset should be read as UTC, not rejected."""
+        comp = Competition.model_validate(self._payload(deadline="2030-01-01T23:59:00"))
+
+        assert comp.deadline == datetime(2030, 1, 1, 23, 59, tzinfo=UTC)
+
+    def test_naive_deadline_datetime_is_utc(self) -> None:
+        """A naive datetime should be read as UTC, not rejected."""
+        comp = Competition.model_validate(self._payload(deadline=datetime(2030, 1, 1, 23, 59)))
+
+        assert comp.deadline == datetime(2030, 1, 1, 23, 59, tzinfo=UTC)
+
+    def test_aware_deadline_is_preserved(self) -> None:
+        """An offset-carrying deadline should keep its instant."""
+        comp = Competition.model_validate(self._payload(deadline="2030-01-01T23:59:00+02:00"))
+
+        assert comp.deadline == datetime(2030, 1, 1, 21, 59, tzinfo=UTC)
+
+    def test_delimited_tag_string(self) -> None:
+        """A delimited tag string should become a tag set."""
+        comp = Competition.model_validate(self._payload(tags="tabular, regression; feature engineering"))
+
+        assert comp.tags == frozenset({"tabular", "regression", "feature engineering"})
+
+    def test_tag_sequence_is_unchanged(self) -> None:
+        """A tag sequence should pass through untouched."""
+        comp = Competition.model_validate(self._payload(tags=["tabular", "regression"]))
+
+        assert comp.tags == frozenset({"tabular", "regression"})
+
+
+class TestMetricDirectionFor:
+    """Tests for the canonical metric direction mapping."""
+
+    def test_every_metric_has_a_direction(self) -> None:
+        """Each metric in the taxonomy should map to an explicit direction."""
+        directions = {metric: metric_direction_for(metric) for metric in EvaluationMetric}
+
+        assert set(directions.values()) == {"maximize", "minimize"}
+
+    def test_error_metrics_minimize(self) -> None:
+        """Error metrics should minimise."""
+        assert metric_direction_for(EvaluationMetric.RMSE) == "minimize"
+        assert metric_direction_for(EvaluationMetric.MAE) == "minimize"
+        assert metric_direction_for(EvaluationMetric.RMSLE) == "minimize"
+        assert metric_direction_for(EvaluationMetric.LOG_LOSS) == "minimize"
+
+    def test_score_metrics_maximize(self) -> None:
+        """Score and ranking metrics should maximise."""
+        assert metric_direction_for(EvaluationMetric.ACCURACY) == "maximize"
+        assert metric_direction_for(EvaluationMetric.AUC) == "maximize"
+        assert metric_direction_for(EvaluationMetric.F1) == "maximize"
+        assert metric_direction_for(EvaluationMetric.MAP) == "maximize"
+        assert metric_direction_for(EvaluationMetric.NDCG) == "maximize"
 
 
 class TestLeaderboardEntry:

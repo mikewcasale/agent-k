@@ -102,6 +102,8 @@ from .models import (
     Submission,
     ToolCall,
     WebSearchCall,
+    metric_direction_for,
+    resolve_label,
 )
 from .protocols import PlatformAdapter
 from .sage import Constraint, Default, Doc, Range
@@ -205,6 +207,8 @@ __all__ = (
     "Submission",
     "ToolCall",
     "WebSearchCall",
+    "metric_direction_for",
+    "resolve_label",
     "AgentKSettings",
     "Constraint",
     "Default",

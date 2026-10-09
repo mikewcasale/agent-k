@@ -58,7 +58,15 @@ from agent_k.core.exceptions import (
     RateLimitError,
     SubmissionError,
 )
-from agent_k.core.models import Competition, CompetitionType, EvaluationMetric, LeaderboardEntry, Submission
+from agent_k.core.models import (
+    Competition,
+    CompetitionType,
+    EvaluationMetric,
+    LeaderboardEntry,
+    Submission,
+    metric_direction_for,
+    resolve_label,
+)
 from agent_k.core.protocols import PlatformAdapter
 
 if TYPE_CHECKING:
@@ -461,14 +469,9 @@ class KaggleAdapter(PlatformAdapter):
 
     def _parse_competition(self, data: dict[str, Any]) -> Competition:
         """Parse Kaggle API response into Competition model."""
-        # Map Kaggle category to our enum
-        category_map = {
-            "Featured": CompetitionType.FEATURED,
-            "Research": CompetitionType.RESEARCH,
-            "Getting Started": CompetitionType.GETTING_STARTED,
-            "Playground": CompetitionType.PLAYGROUND,
-            "Community": CompetitionType.COMMUNITY,
-        }
+        # Kaggle labels categories inconsistently ("Getting Started", "gettingStarted"),
+        # so resolve the label instead of matching one spelling of it.
+        competition_type = resolve_label(CompetitionType, data.get("category")) or CompetitionType.COMMUNITY
 
         # Map Kaggle metric to our enum
         metric_map = {
@@ -495,18 +498,7 @@ class KaggleAdapter(PlatformAdapter):
                 metric = EvaluationMetric.AUC
             else:
                 metric = EvaluationMetric.ACCURACY
-        metric_direction_map = {
-            EvaluationMetric.ACCURACY: "maximize",
-            EvaluationMetric.AUC: "maximize",
-            EvaluationMetric.F1: "maximize",
-            EvaluationMetric.LOG_LOSS: "minimize",
-            EvaluationMetric.RMSE: "minimize",
-            EvaluationMetric.MAE: "minimize",
-            EvaluationMetric.RMSLE: "minimize",
-            EvaluationMetric.MAP: "maximize",
-            EvaluationMetric.NDCG: "maximize",
-        }
-        metric_direction = metric_direction_map.get(metric, "maximize")
+        metric_direction = metric_direction_for(metric)
 
         # Parse tags - they may be strings or dicts with 'name' key
         raw_tags = data.get("tags", [])
@@ -546,7 +538,7 @@ class KaggleAdapter(PlatformAdapter):
             id=comp_id,
             title=data.get("title", ""),
             description=data.get("description"),
-            competition_type=category_map.get(data.get("category", ""), CompetitionType.COMMUNITY),
+            competition_type=competition_type,
             metric=metric,
             metric_direction=metric_direction,
             deadline=datetime.fromisoformat(data.get("deadline", "2099-12-31T23:59:59+00:00").replace("Z", "+00:00")),

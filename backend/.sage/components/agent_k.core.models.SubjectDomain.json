@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.models:SubjectDomain",
-  "line": 115,
+  "line": 124,
   "notice": "Subject domains for competition classification.",
   "pattern": {
     "name": "enumeration",

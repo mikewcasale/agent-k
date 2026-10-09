@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Error metrics minimise, score metrics maximise. This is the single\nsource of truth; adapters and models must not keep private copies.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.models:metric_direction_for",
+  "line": 197,
+  "notice": "Canonical metric-to-direction mapping for the supported taxonomy.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/models.py",
+  "summary": "Return the optimisation direction implied by an evaluation metric.",
+  "type": "function"
+}

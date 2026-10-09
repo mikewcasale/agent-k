@@ -50,6 +50,7 @@ import ast
 import csv
 import hashlib
 import json
+import math
 import random
 import re
 import tempfile
@@ -105,6 +106,8 @@ from agent_k.infra.providers import get_model
 from agent_k.toolsets import code_toolset, create_production_toolset, prepare_code_execution_tool, prepare_memory_tool
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Sequence
+
     from agent_k.core.models import Competition
     from agent_k.core.protocols import PlatformAdapter
     from agent_k.ui.agui import EventEmitter
@@ -310,6 +313,13 @@ _HINT_COMMENT_PREFIX: Final[str] = "# Applied hint: "
 _ENCODING_HINT_IDS: Final[frozenset[str]] = frozenset(
     {"onehot_low_cardinality", "target_encode_high_cardinality", "frequency_encode_high_cardinality", "ordinal_encode"}
 )
+_ADAPTIVE_MAGNITUDE_WINDOW: Final[int] = 5
+_ADAPTIVE_MAGNITUDE_DEFAULT: Final[float] = 0.25
+_ADAPTIVE_MAGNITUDE_EXPLORE: Final[float] = 0.35
+_ADAPTIVE_MAGNITUDE_STEADY: Final[float] = 0.22
+_ADAPTIVE_MAGNITUDE_EXPLOIT: Final[float] = 0.15
+_ADAPTIVE_STALL_THRESHOLD: Final[float] = 1e-4
+_ADAPTIVE_GAIN_THRESHOLD: Final[float] = 0.05
 
 
 @dataclass(frozen=True, slots=True)
@@ -920,6 +930,11 @@ class EvolverAgent(MemoryMixin):
         @notice: |
             Determines whether fitness has plateaued or target score reached.
 
+        @dev: |
+            Plateau detection compares the best fitness inside the trailing window
+            against the best reached before it, so an oscillating or declining run
+            counts as no progress instead of being read as improvement.
+
         @effects:
             state:
                 - none
@@ -943,7 +958,8 @@ class EvolverAgent(MemoryMixin):
             }
             return ToolReturn(return_value=result, content=json.dumps(result))
 
-        if len(history) < threshold_generations:
+        series = _best_fitness_series(history)
+        if len(series) < threshold_generations:
             result = {"converged": False, "reason": "Not enough generations"}
             return ToolReturn(return_value=result, content=json.dumps(result))
 
@@ -958,9 +974,7 @@ class EvolverAgent(MemoryMixin):
             }
             return ToolReturn(return_value=result, content=json.dumps(result))
 
-        recent_fitness = [g["best_fitness"] for g in history[-threshold_generations:]]
-        best = max(recent_fitness)
-        improvement = best - min(recent_fitness)
+        improvement, best = _window_progress(series, threshold_generations)
         if improvement < improvement_threshold:
             result = {
                 "converged": True,
@@ -1733,23 +1747,7 @@ class EvolverAgent(MemoryMixin):
         )
 
     def _adaptive_magnitude(self, deps: EvolverDeps) -> float:
-        history = deps.generation_history[-5:]
-        bests: list[float] = []
-        for entry in history:
-            if isinstance(entry, dict):
-                bests.append(float(entry.get("best_fitness", 0.0)))
-            else:
-                bests.append(float(getattr(entry, "best_fitness", 0.0)))
-
-        if len(bests) < 2:
-            return 0.25
-
-        improvement = max(bests) - min(bests)
-        if improvement < 1e-4:
-            return 0.35
-        if improvement > 0.05:
-            return 0.15
-        return 0.22
+        return _adaptive_mutation_magnitude(deps.generation_history)
 
     def _build_archive_entry(self, code: str, fitness: float, cv_score: float) -> EvolutionArchiveEntry:
         complexity = self._solution_complexity(code)
@@ -2491,6 +2489,51 @@ class EvolverAgent(MemoryMixin):
         imports = "\n".join(self._merge_imports(primary_imports, other_imports))
         body = "\n\n".join(part for part in body_parts if part)
         return f"{imports}\n\n{body}" if imports else body
+
+
+def _best_fitness_series(history: Iterable[Any]) -> list[float]:
+    """Extract the finite per-generation best-fitness values in recorded order."""
+    series: list[float] = []
+    for entry in history:
+        raw = entry.get("best_fitness") if isinstance(entry, dict) else getattr(entry, "best_fitness", None)
+        if isinstance(raw, bool) or not isinstance(raw, (int, float)):
+            continue
+        value = float(raw)
+        if not math.isfinite(value):
+            continue
+        series.append(value)
+    return series
+
+
+def _window_progress(series: Sequence[float], window: int) -> tuple[float, float]:
+    """Measure how much the best fitness improved over the trailing window.
+
+    Returns ``(improvement, best_overall)``. The improvement is the best fitness
+    reached so far minus the best already reached when the window opened, clamped
+    at zero, so a plateau or a regression reads as no progress. Measuring the
+    window spread instead scores an oscillating or declining run as if it were
+    still improving, and a declining run would then never converge.
+    """
+    if not series:
+        return 0.0, 0.0
+    size = max(1, min(window, len(series)))
+    baseline = max(series[: len(series) - size + 1])
+    best_overall = max(series)
+    return max(0.0, best_overall - baseline), best_overall
+
+
+def _adaptive_mutation_magnitude(history: Sequence[Any]) -> float:
+    """Pick a mutation magnitude from the recent best-fitness progress."""
+    bests = _best_fitness_series(history[-_ADAPTIVE_MAGNITUDE_WINDOW:])
+    if len(bests) < 2:
+        return _ADAPTIVE_MAGNITUDE_DEFAULT
+
+    improvement, _best = _window_progress(bests, len(bests))
+    if improvement < _ADAPTIVE_STALL_THRESHOLD:
+        return _ADAPTIVE_MAGNITUDE_EXPLORE
+    if improvement > _ADAPTIVE_GAIN_THRESHOLD:
+        return _ADAPTIVE_MAGNITUDE_EXPLOIT
+    return _ADAPTIVE_MAGNITUDE_STEADY
 
 
 def _summarize_failure_counts(counts: dict[str, int], *, limit: int) -> str:

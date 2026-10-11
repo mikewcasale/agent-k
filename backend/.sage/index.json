@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-10-11T01:26:33.604304+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1106,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -1514,253 +1514,253 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry",
-        "line": 319,
+        "line": 325,
         "name": "pattern",
         "value": "{\"name\": \"archive-entry\", \"rationale\": \"Encapsulates elite metadata for sampling.\", \"violations\": \"Unstructured elites make selection brittle.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry.to_payload",
-        "line": 338,
+        "line": 344,
         "name": "notice",
         "value": "Converts the archive entry into a JSON-serializable payload."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry.to_payload",
-        "line": 341,
+        "line": 347,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 365,
+        "line": 371,
         "name": "notice",
         "value": "Configuration for the Evolver agent."
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 368,
+        "line": 374,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 371,
+        "line": 377,
         "name": "pattern",
         "value": "{\"name\": \"settings\", \"rationale\": \"Centralizes evolutionary optimization configuration.\", \"violations\": \"Ad-hoc overrides lead to unstable evolution runs.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 438,
+        "line": 444,
         "name": "notice",
         "value": "Dependencies for the Evolver agent."
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 441,
+        "line": 447,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 444,
+        "line": 450,
         "name": "pattern",
         "value": "{\"name\": \"dependency-container\", \"rationale\": \"Groups runtime services and evolution state.\", \"violations\": \"Scattered state makes evolution hard to resume.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 449,
+        "line": 455,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\", \"agent_k.core.models:Competition\"], \"optional\": [\"agent_k.core.tracking:ExperimentTracker\", \"agent_k.core.hints:"
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 460,
+        "line": 466,
         "name": "invariants",
         "value": "[\"population_size >= 1\", \"max_generations >= min_generations\"]"
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 503,
+        "line": 509,
         "name": "notice",
         "value": "Result of evolution process."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 506,
+        "line": 512,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 509,
+        "line": 515,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Stable schema for successful evolution outputs.\", \"violations\": \"Free-form outputs hinder submission automation.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 528,
+        "line": 534,
         "name": "notice",
         "value": "Failure result for evolution process."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 531,
+        "line": 537,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 534,
+        "line": 540,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Stable schema for failed evolution outputs.\", \"violations\": \"Opaque errors make recovery harder.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 561,
+        "line": 567,
         "name": "notice",
         "value": "Optimizes prototype solutions via evolutionary search.\nUse the module-level evolver_agent or agent registry."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 565,
+        "line": 571,
         "name": "dev",
         "value": "Registers evolution tools and coordinates mutation/evaluation cycles."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 568,
+        "line": 574,
         "name": "pattern",
         "value": "{\"name\": \"agent-singleton\", \"rationale\": \"Single instance keeps memory/tool registration consistent.\", \"violations\": \"Multiple instances duplicate tool registrations.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 573,
+        "line": 579,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.adapters.openevolve:OpenEvolveRunner\"], \"injection\": \"deps via RunContext\", \"lifecycle\": "
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 582,
+        "line": 588,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates evolution state and caches.\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 587,
+        "line": 593,
         "name": "invariants",
         "value": "[\"self._agent is initialized after __init__ completes.\", \"self._toolset registers evolution tools exactly once.\"]"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.__init__",
-        "line": 600,
+        "line": 606,
         "name": "notice",
         "value": "Builds the agent singleton and registers tools."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.__init__",
-        "line": 603,
+        "line": 609,
         "name": "dev",
         "value": "Initializes memory backend, toolset, and pydantic-ai Agent."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.__init__",
-        "line": 606,
+        "line": 612,
         "name": "state_changes",
         "value": "[\"self._settings\", \"self._toolset\", \"self._agent\"]"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.run_openevolve",
-        "line": 639,
+        "line": 645,
         "name": "notice",
         "value": "Delegates mutation and evaluation to OpenEvolve when enabled."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.run_openevolve",
-        "line": 642,
+        "line": 648,
         "name": "effects",
         "value": "{\"io\": [\"OpenEvolve API requests\"], \"state\": [\"deps.best_solution\", \"deps.best_fitness\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.mutate_solution",
-        "line": 724,
+        "line": 730,
         "name": "notice",
         "value": "Applies a mutation strategy and returns the mutated code."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.mutate_solution",
-        "line": 727,
+        "line": 733,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.evaluate_fitness",
-        "line": 773,
+        "line": 779,
         "name": "notice",
         "value": "Runs evaluation and emits fitness telemetry."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.evaluate_fitness",
-        "line": 776,
+        "line": 782,
         "name": "effects",
         "value": "{\"io\": [\"local execution\"], \"state\": [\"ctx.deps.best_fitness\", \"ctx.deps.best_solution\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.record_generation",
-        "line": 882,
+        "line": 888,
         "name": "notice",
         "value": "Appends generation metrics and emits telemetry."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.record_generation",
-        "line": 885,
+        "line": 891,
         "name": "effects",
         "value": "{\"state\": [\"ctx.deps.generation_history\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.check_convergence",
-        "line": 920,
+        "line": 926,
         "name": "notice",
         "value": "Determines whether fitness has plateaued or target score reached."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.check_convergence",
-        "line": 923,
+        "line": 929,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.sample_elites",
-        "line": 989,
+        "line": 995,
         "name": "notice",
         "value": "Selects top and diverse elites from the archive."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.sample_elites",
-        "line": 992,
+        "line": 998,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.submit_to_kaggle",
-        "line": 1011,
+        "line": 1017,
         "name": "notice",
         "value": "Writes a submission file and triggers adapter submission."
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent.submit_to_kaggle",
-        "line": 1014,
+        "line": 1020,
         "name": "effects",
         "value": "{\"io\": [\"local filesystem access\", \"Kaggle API request\"]}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent._create_agent",
-        "line": 1054,
+        "line": 1060,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.agents.evolver:EvolverAgent\", \"rationale\": \"Centralizes agent wiring and toolset preparation.\", \"singleton\": true, \"cache_key\": \"module\"}"
       },
       {
         "component": "agent_k.agents.evolver:EvolverAgent._create_agent",
-        "line": 1060,
+        "line": 1066,
         "name": "canonical_home",
         "value": "{\"for\": [\"evolver agent construction\"], \"notes\": \"Use EvolverAgent() or module singleton.\"}"
       }
@@ -5674,51 +5674,147 @@
       },
       {
         "component": "agent_k.evolution.loss:LossGenome",
-        "line": 48,
+        "line": 91,
         "name": "notice",
         "value": "Genome for evolving custom objective functions."
       },
       {
         "component": "agent_k.evolution.loss:LossGenome",
-        "line": 51,
+        "line": 94,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.loss:LossGenome",
-        "line": 54,
+        "line": 97,
         "name": "pattern",
         "value": "{\"name\": \"genome-model\", \"rationale\": \"Dataclass for LightGBM loss function parameters.\"}"
       },
       {
         "component": "agent_k.evolution.loss:LossFunctionEvolver",
-        "line": 70,
+        "line": 113,
         "name": "notice",
         "value": "Evolve LightGBM loss function parameters via genetic search."
       },
       {
         "component": "agent_k.evolution.loss:LossFunctionEvolver",
-        "line": 73,
+        "line": 116,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.evolution.loss:LossFunctionEvolver",
-        "line": 76,
+        "line": 119,
         "name": "pattern",
         "value": "{\"name\": \"evolver\", \"rationale\": \"Coordinates evolutionary search over loss function genomes.\"}"
       },
       {
-        "component": "agent_k.evolution.loss:build_lightgbm_objective_params",
-        "line": 141,
+        "component": "agent_k.evolution.loss:_ParamEntry",
+        "line": 185,
         "name": "notice",
-        "value": "Create LightGBM objective params from a LossGenome."
+        "value": "One parameter at a LightGBM parameter site, with the node naming it."
+      },
+      {
+        "component": "agent_k.evolution.loss:_ParamEntry",
+        "line": 188,
+        "name": "dev",
+        "value": "See module for implementation details and extension points."
+      },
+      {
+        "component": "agent_k.evolution.loss:_ParamEntry",
+        "line": 191,
+        "name": "pattern",
+        "value": "{\"name\": \"ast-node-pair\", \"rationale\": \"Keeps the key node beside its value for source-accurate rewrites.\", \"violations\": \"Re-walking the tree per parameter loses the key positions.\"}"
+      },
+      {
+        "component": "agent_k.evolution.loss:_ParamScope",
+        "line": 205,
+        "name": "notice",
+        "value": "One LightGBM parameter site - estimator keywords or a params dict."
+      },
+      {
+        "component": "agent_k.evolution.loss:_ParamScope",
+        "line": 208,
+        "name": "dev",
+        "value": "See module for implementation details and extension points."
+      },
+      {
+        "component": "agent_k.evolution.loss:_ParamScope",
+        "line": 211,
+        "name": "pattern",
+        "value": "{\"name\": \"source-span-model\", \"rationale\": \"Carries byte spans so rewrites preserve surrounding formatting.\", \"violations\": \"Regex rewrites of loss parameters hit unrelated estimators.\"}"
       },
       {
         "component": "agent_k.evolution.loss:build_lightgbm_objective_params",
-        "line": 144,
+        "line": 228,
+        "name": "notice",
+        "value": "Create LightGBM params from a LossGenome."
+      },
+      {
+        "component": "agent_k.evolution.loss:build_lightgbm_objective_params",
+        "line": 231,
+        "name": "dev",
+        "value": "Only emits parameters LightGBM actually reads. ``huber`` and ``quantile``\nare parameterized by ``alpha`` (LightGBM has no ``huber_delta`` or\n``quantile_alpha`` parameter and silently ignores both). Th"
+      },
+      {
+        "component": "agent_k.evolution.loss:build_lightgbm_objective",
+        "line": 252,
+        "name": "notice",
+        "value": "Compile a genome into a callable LightGBM objective."
+      },
+      {
+        "component": "agent_k.evolution.loss:build_lightgbm_objective",
+        "line": 255,
+        "name": "dev",
+        "value": "Blends squared error with Huber's absolute error\n(``mae_rmse_blend`` 0 is pure L2, 1 is pure Huber) and scales the\nover-prediction side by ``asymmetric_weight``.\n\nThe Huber branch uses the IRLS weight"
+      },
+      {
+        "component": "agent_k.evolution.loss:objective_alpha_bounds",
+        "line": 286,
+        "name": "notice",
+        "value": "Return the valid alpha range for the LightGBM objective used in code."
+      },
+      {
+        "component": "agent_k.evolution.loss:objective_alpha_bounds",
+        "line": 289,
+        "name": "dev",
+        "value": "Returns None when the code declares no alpha-parameterized objective, so\ncallers can fall back to their generic bounds. Mutating ``alpha`` past\nLightGBM's limits aborts training (quantile requires ``0"
+      },
+      {
+        "component": "agent_k.evolution.loss:sample_objective_alpha",
+        "line": 303,
+        "name": "notice",
+        "value": "Draw an alpha inside the objective's valid range, or None when unused."
+      },
+      {
+        "component": "agent_k.evolution.loss:sample_objective_alpha",
+        "line": 306,
         "name": "dev",
         "value": "See module for behavior details and invariants."
+      },
+      {
+        "component": "agent_k.evolution.loss:normalize_lightgbm_loss_params",
+        "line": 318,
+        "name": "notice",
+        "value": "Make LightGBM loss parameters in code effective instead of ignored."
+      },
+      {
+        "component": "agent_k.evolution.loss:normalize_lightgbm_loss_params",
+        "line": 321,
+        "name": "dev",
+        "value": "Renames ``huber_delta``/``quantile_alpha`` (which LightGBM ignores) to\n``alpha``, and gives alpha-parameterized objectives an explicit alpha so\nthey do not inherit LightGBM's 0.9 default - which turns"
+      },
+      {
+        "component": "agent_k.evolution.loss:apply_lightgbm_objective",
+        "line": 357,
+        "name": "notice",
+        "value": "Set the LightGBM objective in code and keep its alpha consistent."
+      },
+      {
+        "component": "agent_k.evolution.loss:apply_lightgbm_objective",
+        "line": 360,
+        "name": "dev",
+        "value": "Objective and alpha have to move together: leaving a huber delta behind\nwhen switching to ``quantile`` aborts training, and switching to\n``quantile`` without an alpha silently predicts the 90th percen"
       }
     ],
     "agent_k/infra/__init__.py": [

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Renames ``huber_delta``/``quantile_alpha`` (which LightGBM ignores) to\n``alpha``, and gives alpha-parameterized objectives an explicit alpha so\nthey do not inherit LightGBM's 0.9 default - which turns ``quantile``\ninto a 90th-percentile predictor. Returns the code unchanged when it\nparses to nothing actionable or the rewrite would not re-parse.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:normalize_lightgbm_loss_params",
+  "line": 316,
+  "notice": "Make LightGBM loss parameters in code effective instead of ignored.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Make LightGBM loss parameters in ``code`` effective instead of ignored.",
+  "type": "function"
+}

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:sample_objective_alpha",
+  "line": 301,
+  "notice": "Draw an alpha inside the objective's valid range, or None when unused.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Draw an ``alpha`` inside the objective's valid range, or None when unused.",
+  "type": "function"
+}

@@ -101,6 +101,12 @@ from agent_k.core.tracking import (
     HintEffectivenessTracker,
     extract_solution_metadata,
 )
+from agent_k.evolution.loss import (
+    apply_lightgbm_objective,
+    normalize_lightgbm_loss_params,
+    objective_alpha_bounds,
+    sample_objective_alpha,
+)
 from agent_k.infra.providers import get_model
 from agent_k.toolsets import code_toolset, create_production_toolset, prepare_code_execution_tool, prepare_memory_tool
 
@@ -1612,13 +1618,20 @@ class EvolverAgent(MemoryMixin):
     def _apply_solution_policy(self, ctx: RunContext[EvolverDeps], code: str) -> str:
         policy = self._resolve_technique_policy(ctx.deps)
         if policy is None:
-            return code
+            return self._normalize_loss_params(code)
         updated, notes = apply_solution_policy(code, policy)
         if notes:
             logfire.warning("solution_policy_injection_failed", notes=notes)
         updated = self._apply_target_column_guard(ctx.deps, updated)
         updated = self._apply_feature_column_guard(updated)
-        return self._normalize_model_imports(updated)
+        return self._normalize_loss_params(self._normalize_model_imports(updated))
+
+    def _normalize_loss_params(self, code: str) -> str:
+        """Make LightGBM loss parameters effective rather than silently ignored."""
+        updated, notes = normalize_lightgbm_loss_params(code)
+        if notes:
+            logfire.info("evolver_loss_params_normalized", notes=notes)
+        return updated
 
     def _apply_target_column_guard(self, deps: EvolverDeps, code: str) -> str:
         if len(deps.target_columns) != 1 and len(deps.train_target_columns) != 1:
@@ -2371,7 +2384,7 @@ class EvolverAgent(MemoryMixin):
             except ValueError:
                 return code
             mutated = value * (1 + magnitude * rng.choice([-1, 1]))
-            bounds = _HYPERPARAM_BOUNDS.get(param)
+            bounds = self._param_bounds(param, code)
             if bounds is not None:
                 mutated = min(max(mutated, bounds[0]), bounds[1])
             if param in _HYPERPARAM_INTEGER_KEYS:
@@ -2418,6 +2431,26 @@ class EvolverAgent(MemoryMixin):
             return self._inject_scaler(code)
         return code
 
+    def _param_bounds(self, param: str, code: str) -> tuple[float, float] | None:
+        """Resolve mutation bounds, narrowing ``alpha`` to its objective's valid range."""
+        if param == "alpha" and (objective_bounds := objective_alpha_bounds(code)) is not None:
+            return objective_bounds
+        return _HYPERPARAM_BOUNDS.get(param)
+
+    def _mutate_loss_objective(self, code: str, current: str, rng: random.Random, params: dict[str, Any]) -> str:
+        """Swap the LightGBM objective together with the ``alpha`` it is parameterized by."""
+        if not current.startswith(('"', "'")):
+            # A callable objective. Mutating its name would drop the evolved loss function.
+            return self._apply_point_mutation(code, params)
+
+        options = [option for option in _CATEGORICAL_HYPERPARAMS["objective"] if option != current.strip("'\"")]
+        objective = rng.choice(options or list(_CATEGORICAL_HYPERPARAMS["objective"]))
+        updated, notes = apply_lightgbm_objective(code, objective, sample_objective_alpha(objective, rng))
+        if not notes:
+            return self._apply_point_mutation(code, params)
+        logfire.info("evolver_objective_mutated", notes=notes)
+        return updated
+
     def _apply_point_mutation(self, code: str, params: dict[str, Any]) -> str:
         rng = self._seeded_rng(code, params, "point")
         magnitude = float(params.get("delta", 0.1))
@@ -2458,6 +2491,8 @@ class EvolverAgent(MemoryMixin):
             return self._apply_point_mutation(code, params)
 
         name, pattern, match = rng.choice(candidates)
+        if name == "objective":
+            return self._mutate_loss_objective(code, match.group(2).strip(), rng, params)
         if name in _CATEGORICAL_HYPERPARAMS:
             current = match.group(2).strip().strip("'\"")
             options = list(_CATEGORICAL_HYPERPARAMS[name])
@@ -2471,7 +2506,7 @@ class EvolverAgent(MemoryMixin):
             return self._apply_point_mutation(code, params)
 
         mutated_val: float = value * (1 + magnitude * rng.choice([-1, 1]))
-        bounds = _HYPERPARAM_BOUNDS.get(name)
+        bounds = self._param_bounds(name, code)
         if bounds is not None:
             mutated_val = min(max(mutated_val, bounds[0]), bounds[1])
         if name in _HYPERPARAM_INTEGER_KEYS:

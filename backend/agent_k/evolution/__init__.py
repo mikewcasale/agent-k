@@ -49,7 +49,16 @@ from .framework import (
     MapElitesArchive,
     Population,
 )
-from .loss import LossFunctionEvolver, LossGenome, build_lightgbm_objective_params
+from .loss import (
+    LossFunctionEvolver,
+    LossGenome,
+    apply_lightgbm_objective,
+    build_lightgbm_objective,
+    build_lightgbm_objective_params,
+    normalize_lightgbm_loss_params,
+    objective_alpha_bounds,
+    sample_objective_alpha,
+)
 
 __all__ = (
     "BinningGene",
@@ -70,5 +79,10 @@ __all__ = (
     "Population",
     "RatioGene",
     "TransformGene",
+    "apply_lightgbm_objective",
+    "build_lightgbm_objective",
     "build_lightgbm_objective_params",
+    "normalize_lightgbm_loss_params",
+    "objective_alpha_bounds",
+    "sample_objective_alpha",
 )

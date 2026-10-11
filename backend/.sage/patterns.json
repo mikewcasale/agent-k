@@ -1,6 +1,6 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
-  "pattern_count": 57,
+  "generated": "2026-10-11T01:26:33.605148+00:00",
+  "pattern_count": 59,
   "patterns": {
     "adapter": [
       {
@@ -47,7 +47,7 @@
     "agent-singleton": [
       {
         "component": "agent_k.agents.evolver:EvolverAgent",
-        "line": 556,
+        "line": 562,
         "rationale": "Single instance keeps memory/tool registration consistent.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -76,7 +76,7 @@
     "archive-entry": [
       {
         "component": "agent_k.agents.evolver:EvolutionArchiveEntry",
-        "line": 317,
+        "line": 323,
         "rationale": "Encapsulates elite metadata for sampling.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -91,6 +91,17 @@
         "rationale": "Generic archive for MAP-Elites diversity preservation.",
         "source": "agent_k/evolution/framework.py",
         "violations": []
+      }
+    ],
+    "ast-node-pair": [
+      {
+        "component": "agent_k.evolution.loss:_ParamEntry",
+        "line": 183,
+        "rationale": "Keeps the key node beside its value for source-accurate rewrites.",
+        "source": "agent_k/evolution/loss.py",
+        "violations": [
+          "Re-walking the tree per parameter loses the key positions."
+        ]
       }
     ],
     "classifier": [
@@ -134,7 +145,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolverDeps",
-        "line": 436,
+        "line": 442,
         "rationale": "Groups runtime services and evolution state.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -380,7 +391,7 @@
       },
       {
         "component": "agent_k.evolution.loss:LossFunctionEvolver",
-        "line": 68,
+        "line": 111,
         "rationale": "Coordinates evolutionary search over loss function genomes.",
         "source": "agent_k/evolution/loss.py",
         "violations": []
@@ -645,7 +656,7 @@
       },
       {
         "component": "agent_k.evolution.loss:LossGenome",
-        "line": 46,
+        "line": 89,
         "rationale": "Dataclass for LightGBM loss function parameters.",
         "source": "agent_k/evolution/loss.py",
         "violations": []
@@ -947,7 +958,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionResult",
-        "line": 501,
+        "line": 507,
         "rationale": "Stable schema for successful evolution outputs.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -956,7 +967,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolutionFailure",
-        "line": 526,
+        "line": 532,
         "rationale": "Stable schema for failed evolution outputs.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -1246,7 +1257,7 @@
       },
       {
         "component": "agent_k.agents.evolver:EvolverSettings",
-        "line": 363,
+        "line": 369,
         "rationale": "Centralizes evolutionary optimization configuration.",
         "source": "agent_k/agents/evolver.py",
         "violations": [
@@ -1298,6 +1309,17 @@
         "source": "agent_k/infra/config.py",
         "violations": [
           "Scattered env access increases drift."
+        ]
+      }
+    ],
+    "source-span-model": [
+      {
+        "component": "agent_k.evolution.loss:_ParamScope",
+        "line": 203,
+        "rationale": "Carries byte spans so rewrites preserve surrounding formatting.",
+        "source": "agent_k/evolution/loss.py",
+        "violations": [
+          "Regex rewrites of loss parameters hit unrelated estimators."
         ]
       }
     ],

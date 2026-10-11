@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Objective and alpha have to move together: leaving a huber delta behind\nwhen switching to ``quantile`` aborts training, and switching to\n``quantile`` without an alpha silently predicts the 90th percentile.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:apply_lightgbm_objective",
+  "line": 355,
+  "notice": "Set the LightGBM objective in code and keep its alpha consistent.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Set the LightGBM objective in ``code`` and keep its ``alpha`` consistent.",
+  "type": "function"
+}

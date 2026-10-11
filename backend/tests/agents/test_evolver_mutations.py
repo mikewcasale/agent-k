@@ -12,6 +12,8 @@ import pytest
 
 __all__ = ()
 
+from agent_k.evolution.loss import ALPHA_BOUNDS
+
 try:
     from agent_k.agents.evolver import _MODEL_SWAPS, evolver_agent_instance
 except TypeError as exc:
@@ -121,3 +123,62 @@ class TestCrossover:
         assert "import numpy as np" in import_lines
         assert "from math import sqrt" in import_lines
         assert "def bar():" in merged
+
+
+class TestLossObjectiveMutation:
+    """Tests for the coupled LightGBM objective/alpha mutation."""
+
+    def test_objective_mutation_sets_a_valid_alpha(self) -> None:
+        """Mutating to quantile without an alpha would predict the 90th percentile."""
+        code = 'import lightgbm as lgb\n\nmodel = lgb.LGBMRegressor(objective="regression")\n'
+        mutated = _evolver._apply_hyperparameter_mutation(code, {"param": "objective"})
+
+        objective = re.search(r'objective="(\w+)"', mutated)
+        assert objective is not None
+        if objective.group(1) in {"huber", "quantile"}:
+            alpha = re.search(r"alpha=([\d.]+)", mutated)
+            assert alpha is not None
+            lower, upper = ALPHA_BOUNDS[objective.group(1)]
+            assert lower <= float(alpha.group(1)) <= upper
+
+    def test_objective_mutation_never_leaves_a_stale_alpha(self) -> None:
+        """A huber delta carried into quantile aborts LightGBM training."""
+        code = 'import lightgbm as lgb\n\nmodel = lgb.LGBMRegressor(objective="huber", alpha=4.0)\n'
+
+        for salt in range(12):
+            mutated = _evolver._apply_hyperparameter_mutation(code, {"param": "objective", "salt": salt})
+            objective = re.search(r'objective="(\w+)"', mutated)
+            alpha = re.search(r"alpha=([\d.]+)", mutated)
+            assert objective is not None
+            assert alpha is not None
+            if objective.group(1) == "quantile":
+                assert 0.0 < float(alpha.group(1)) < 1.0
+
+    def test_callable_objective_is_not_clobbered(self) -> None:
+        """An evolved custom loss function must survive hyperparameter mutation."""
+        code = (
+            "import lightgbm as lgb\n\n"
+            "def custom_loss(y_true, y_pred):\n"
+            "    return y_pred - y_true, 1.0\n\n"
+            "model = lgb.LGBMRegressor(objective=custom_loss, learning_rate=0.1)\n"
+        )
+        mutated = _evolver._apply_hyperparameter_mutation(code, {"param": "objective"})
+
+        assert "objective=custom_loss" in mutated
+
+    def test_alpha_bounds_follow_the_objective(self) -> None:
+        """Mutating alpha past LightGBM's quantile limits aborts training."""
+        code = 'import lightgbm as lgb\n\nmodel = lgb.LGBMRegressor(objective="quantile", alpha=0.9)\n'
+
+        assert _evolver._param_bounds("alpha", code) == ALPHA_BOUNDS["quantile"]
+        assert _evolver._param_bounds("alpha", "model = Ridge(alpha=1.0)") == (0.0001, 10.0)
+
+    def test_alpha_mutation_stays_inside_quantile_limits(self) -> None:
+        """Repeated alpha mutations must never leave (0, 1) for quantile."""
+        code = 'import lightgbm as lgb\n\nmodel = lgb.LGBMRegressor(objective="quantile", alpha=0.9)\n'
+
+        for salt in range(12):
+            mutated = _evolver._apply_hyperparameter_mutation(code, {"param": "alpha", "magnitude": 0.9, "salt": salt})
+            alpha = re.search(r"alpha=([\d.e+-]+)", mutated)
+            assert alpha is not None
+            assert 0.0 < float(alpha.group(1)) < 1.0

@@ -7,6 +7,7 @@ Licensed under the MIT License.
 from __future__ import annotations as _annotations
 
 import random
+from typing import Any
 
 import lightgbm as lgb
 import numpy as np
@@ -27,7 +28,12 @@ from agent_k.evolution.loss import (
 
 __all__ = ()
 
-_BOOSTER_KWARGS = {"n_estimators": 40, "random_state": 0, "verbosity": -1}
+
+def _fit_predict(features: np.ndarray, target: np.ndarray, **params: Any) -> np.ndarray:
+    """Train a small LightGBM regressor and return its in-sample predictions."""
+    model = lgb.LGBMRegressor(n_estimators=40, random_state=0, verbosity=-1, **params)
+    predictions = model.fit(features, target).predict(features)
+    return np.asarray(predictions, dtype=np.float64)
 
 
 @pytest.fixture(scope="module")
@@ -214,11 +220,11 @@ class TestLightGBMBehavior:
     def test_explicit_alpha_beats_the_quantile_default(self, regression_data: tuple[np.ndarray, np.ndarray]) -> None:
         """Without alpha, quantile regression predicts the 90th percentile."""
         features, target = regression_data
-        defaulted = lgb.LGBMRegressor(objective="quantile", **_BOOSTER_KWARGS).fit(features, target)
-        normalized = lgb.LGBMRegressor(objective="quantile", alpha=0.5, **_BOOSTER_KWARGS).fit(features, target)
+        defaulted = _fit_predict(features, target, objective="quantile")
+        normalized = _fit_predict(features, target, objective="quantile", alpha=0.5)
 
-        default_bias = float(np.mean(defaulted.predict(features) - target))
-        normalized_bias = float(np.mean(normalized.predict(features) - target))
+        default_bias = float(np.mean(defaulted - target))
+        normalized_bias = float(np.mean(normalized - target))
 
         assert default_bias > 20.0
         assert abs(normalized_bias) < abs(default_bias)
@@ -229,12 +235,10 @@ class TestLightGBMBehavior:
     ) -> None:
         """This is why the normalizer renames them instead of tuning them."""
         features, target = regression_data
-        baseline = lgb.LGBMRegressor(objective="quantile", **_BOOSTER_KWARGS).fit(features, target)
-        with_fictional = lgb.LGBMRegressor(objective="quantile", **{fictional: 0.5}, **_BOOSTER_KWARGS).fit(
-            features, target
-        )
+        baseline = _fit_predict(features, target, objective="quantile")
+        with_fictional = _fit_predict(features, target, objective="quantile", **{fictional: 0.5})
 
-        assert np.allclose(baseline.predict(features), with_fictional.predict(features))
+        assert np.allclose(baseline, with_fictional)
 
     def test_emitted_params_change_the_fitted_model(self, regression_data: tuple[np.ndarray, np.ndarray]) -> None:
         """An evolved alpha has to move the fit, or the search is exploring nothing."""
@@ -242,8 +246,8 @@ class TestLightGBMBehavior:
         low = build_lightgbm_objective_params(LossGenome(objective="quantile", quantile_alpha=0.2))
         high = build_lightgbm_objective_params(LossGenome(objective="quantile", quantile_alpha=0.8))
 
-        low_pred = lgb.LGBMRegressor(**low, **_BOOSTER_KWARGS).fit(features, target).predict(features)
-        high_pred = lgb.LGBMRegressor(**high, **_BOOSTER_KWARGS).fit(features, target).predict(features)
+        low_pred = _fit_predict(features, target, **low)
+        high_pred = _fit_predict(features, target, **high)
 
         assert float(np.mean(high_pred)) > float(np.mean(low_pred))
 
@@ -254,9 +258,8 @@ class TestLightGBMBehavior:
         """Huber's exact hessian is 0 outside the delta band, which blocks every split."""
         features, target = regression_data
         genome = LossGenome(objective=CUSTOM_ASYMMETRIC_OBJECTIVE, mae_rmse_blend=blend, huber_delta=1.0)
-        model = lgb.LGBMRegressor(objective=build_lightgbm_objective(genome), **_BOOSTER_KWARGS)
 
-        predictions = model.fit(features, target).predict(features)
+        predictions = _fit_predict(features, target, objective=build_lightgbm_objective(genome))
 
         assert float(np.std(predictions)) > 0.0
         assert float(np.corrcoef(predictions, target)[0, 1]) > 0.5
@@ -267,8 +270,8 @@ class TestLightGBMBehavior:
         balanced = build_lightgbm_objective(LossGenome(objective=CUSTOM_ASYMMETRIC_OBJECTIVE, asymmetric_weight=1.0))
         skewed = build_lightgbm_objective(LossGenome(objective=CUSTOM_ASYMMETRIC_OBJECTIVE, asymmetric_weight=4.0))
 
-        balanced_pred = lgb.LGBMRegressor(objective=balanced, **_BOOSTER_KWARGS).fit(features, target).predict(features)
-        skewed_pred = lgb.LGBMRegressor(objective=skewed, **_BOOSTER_KWARGS).fit(features, target).predict(features)
+        balanced_pred = _fit_predict(features, target, objective=balanced)
+        skewed_pred = _fit_predict(features, target, objective=skewed)
 
         assert float(np.mean(skewed_pred)) < float(np.mean(balanced_pred))
 

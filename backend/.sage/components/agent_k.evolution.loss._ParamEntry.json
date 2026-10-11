@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:_ParamEntry",
+  "line": 183,
+  "notice": "One parameter at a LightGBM parameter site, with the node naming it.",
+  "pattern": {
+    "name": "ast-node-pair",
+    "rationale": "Keeps the key node beside its value for source-accurate rewrites.",
+    "violations": "Re-walking the tree per parameter loses the key positions."
+  },
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "One parameter at a LightGBM parameter site, with the node naming it.",
+  "type": "class"
+}

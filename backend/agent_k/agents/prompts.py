@@ -132,6 +132,8 @@ IMPORTANT:
 - Do not reference /kaggle/input paths
 - Prefer LightGBM for tree-based models; avoid XGBoost unless explicitly permitted
 - For LightGBM, try evolving custom objectives (e.g., huber/quantile/asymmetric) and tune their parameters
+- LightGBM parameterizes huber and quantile with `alpha` (there is no huber_delta/quantile_alpha); always set it
+  explicitly, because the 0.9 default turns `quantile` into a 90th-percentile predictor
 
 PREPROCESSING HINTS (REQUIRED):
 - You MUST incorporate at least ONE preprocessing hint from the PREPROCESSING GUIDANCE section in each mutation.
@@ -188,9 +190,13 @@ Always prefer LightGBM over XGBoost. When evolving loss functions, use LightGBM'
 ```python
 def custom_objective(y_true, y_pred):
     grad = ...  # gradient
-    hess = ...  # hessian
+    hess = ...  # hessian, must stay strictly positive
     return grad, hess
 ```
+Keep the hessian well above LightGBM's `min_sum_hessian_in_leaf` (1e-3) for most rows; a hessian
+of 0 - or a tiny floor like 1e-6 - blocks every split and makes LightGBM predict a constant.
+For built-in losses, set `alpha` explicitly: it is huber's delta and quantile's level
+(LightGBM ignores `huber_delta`/`quantile_alpha` and defaults `alpha` to 0.9).
 
 ## PREPROCESSING HINTS
 Apply at least ONE preprocessing hint and add `# Applied hint: <hint_id>` near the inserted code.
@@ -222,8 +228,9 @@ X_test = test_df[X.columns]  # Ensure same columns as training
 # Custom LightGBM objective example (Huber loss)
 def huber_objective(y_true, y_pred, delta=1.0):
     residual = y_pred - y_true
-    grad = np.where(np.abs(residual) <= delta, residual, delta * np.sign(residual))
-    hess = np.where(np.abs(residual) <= delta, 1.0, 0.0)
+    grad = np.clip(residual, -delta, delta)
+    # IRLS weight, not Huber's exact hessian (0 outside the band, which blocks all splits)
+    hess = delta / np.maximum(np.abs(residual), delta)
     return grad, hess
 ```
 """

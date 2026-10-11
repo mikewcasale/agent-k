@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Blends squared error with Huber's absolute error\n(``mae_rmse_blend`` 0 is pure L2, 1 is pure Huber) and scales the\nover-prediction side by ``asymmetric_weight``.\n\nThe Huber branch uses the IRLS weight ``delta / |residual|`` rather than\nHuber's exact hessian, which is 0 outside the delta band. A hessian of 0\n- or one merely floored to MIN_HESSIAN - leaves every split below\nLightGBM's ``min_sum_hessian_in_leaf`` (1e-3), so the booster grows no\ntrees and predicts a constant.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:build_lightgbm_objective",
+  "line": 250,
+  "notice": "Compile a genome into a callable LightGBM objective.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Compile a genome into a callable LightGBM objective.",
+  "type": "function"
+}

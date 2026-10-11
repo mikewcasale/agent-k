@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Returns None when the code declares no alpha-parameterized objective, so\ncallers can fall back to their generic bounds. Mutating ``alpha`` past\nLightGBM's limits aborts training (quantile requires ``0 < alpha < 1``).",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.evolution.loss:objective_alpha_bounds",
+  "line": 284,
+  "notice": "Return the valid alpha range for the LightGBM objective used in code.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/evolution/loss.py",
+  "summary": "Return the valid ``alpha`` range for the LightGBM objective used in ``code``.",
+  "type": "function"
+}

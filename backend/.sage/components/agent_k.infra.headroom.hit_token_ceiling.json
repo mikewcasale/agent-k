@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "A `length` finish reason is the provider-independent signal that the\nresponse was cut short. Any occurrence counts, because output retries\ncan follow a truncated response with a differently-shaped failure.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.headroom:hit_token_ceiling",
+  "line": 94,
+  "notice": "Reports whether a run stopped because the output token budget ran out.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/headroom.py",
+  "summary": "Report whether any model response in the run stopped at its token ceiling.",
+  "type": "function"
+}

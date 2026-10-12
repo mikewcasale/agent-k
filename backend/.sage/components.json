@@ -496,6 +496,16 @@
   },
   {
     "consumes": [],
+    "id": "agent_k.infra.headroom",
+    "line": 1,
+    "pattern": "resilience",
+    "provides": [
+      "agent_k.infra.headroom"
+    ],
+    "source": "agent_k/infra/headroom.py"
+  },
+  {
+    "consumes": [],
     "id": "agent_k.infra.instrumentation",
     "line": 1,
     "pattern": "instrumentation",

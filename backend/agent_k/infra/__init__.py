@@ -30,12 +30,16 @@ Licensed under the MIT License.
 from __future__ import annotations as _annotations
 
 from .config import Settings, load_settings
+from .headroom import escalate_max_tokens, hit_token_ceiling, run_with_token_headroom
 from .instrumentation import Metrics, configure_instrumentation, get_logger, traced
 from .providers import DEVSTRAL_BASE_URL, DEVSTRAL_MODEL_ID, create_devstral_model, get_model, is_devstral_model
 
 __all__ = (
     "Settings",
     "load_settings",
+    "escalate_max_tokens",
+    "hit_token_ceiling",
+    "run_with_token_headroom",
     "configure_instrumentation",
     "get_logger",
     "traced",

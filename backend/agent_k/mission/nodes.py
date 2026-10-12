@@ -92,6 +92,7 @@ from ..core.tracking import (
     create_experiment_tracker,
     extract_solution_metadata,
 )
+from ..infra.headroom import run_with_token_headroom
 from .state import GraphContext, MissionResult, MissionState
 
 if TYPE_CHECKING:
@@ -190,7 +191,7 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
 
                 # Run lobbyist agent
                 lobbyist_agent = _resolve_agent(ctx.deps, "lobbyist")
-                run_result = await lobbyist_agent.run(prompt, deps=deps)
+                run_result = await run_with_token_headroom(lobbyist_agent, prompt, deps=deps, phase="discovery")
                 result = run_result.output
 
                 # Update state
@@ -348,7 +349,7 @@ class ResearchNode(BaseNode[MissionState, GraphContext, MissionResult]):
 
                 prompt = f"Research competition: {competition.title}"
                 scientist_agent = _resolve_agent(ctx.deps, "scientist")
-                run_result = await scientist_agent.run(prompt, deps=deps)
+                run_result = await run_with_token_headroom(scientist_agent, prompt, deps=deps, phase="research")
                 result = run_result.output
 
                 eda_results: dict[str, Any] | None = None
@@ -1352,7 +1353,9 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 )
                 evolver_agent = _resolve_agent(deps, "evolver")
                 try:
-                    run_result = await evolver_agent.run(base_prompt, deps=deps_instance)
+                    run_result = await run_with_token_headroom(
+                        evolver_agent, base_prompt, deps=deps_instance, phase="evolution"
+                    )
                 except Exception as exc:
                     if _is_rate_limit_error(exc):
                         _apply_rate_limit(
@@ -1435,7 +1438,9 @@ Model rotation segment {segment_index} using {model_spec}."""
                         elite_archive=elite_archive,
                     )
                     try:
-                        run_result = await agent.run(segment_prompt, deps=segment_deps)
+                        run_result = await run_with_token_headroom(
+                            agent, segment_prompt, deps=segment_deps, phase="evolution"
+                        )
                     except Exception as exc:
                         if _is_rate_limit_error(exc):
                             _apply_rate_limit(

@@ -1,5 +1,5 @@
 {
-  "count": 59,
+  "count": 60,
   "entries": [
     {
       "component": "agent_k",
@@ -464,6 +464,19 @@
       "source": "agent_k/infra/config.py"
     },
     {
+      "component": "agent_k.infra.headroom",
+      "do": [
+        "Use agent_k.infra.headroom as the canonical home for this capability.",
+        "Run agents that emit code-bearing outputs through run_with_token_headroom."
+      ],
+      "do_not": [
+        "Create parallel modules without updating @similar or @graph.",
+        "Raise per-agent max_tokens defaults past what small models accept."
+      ],
+      "line": 1,
+      "source": "agent_k/infra/headroom.py"
+    },
+    {
       "component": "agent_k.infra.instrumentation",
       "do": [
         "Use agent_k.infra.instrumentation as the canonical home for this capability."
@@ -651,6 +664,6 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831787+00:00",
+  "generated": "2026-10-12T22:13:20.356546+00:00",
   "version": "1.3.6"
 }

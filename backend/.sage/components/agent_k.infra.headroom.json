@@ -1,0 +1,37 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.infra.headroom as the canonical home for this capability.",
+      "Run agents that emit code-bearing outputs through run_with_token_headroom."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph.",
+      "Raise per-agent max_tokens defaults past what small models accept."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Structured agent outputs carry generated solution code, so a model that\nstops at its `max_tokens` ceiling emits a truncated tool call. Pydantic-AI\nretries that call until `output_retries` is exhausted and then raises, which\nwastes every retry on a request that cannot succeed and aborts the mission\nphase. This module detects the ceiling from the response finish reason and\nre-runs the agent with a larger `max_tokens` budget instead.",
+  "graph": {
+    "id": "agent_k.infra.headroom",
+    "pattern": "resilience",
+    "provides": [
+      "agent_k.infra.headroom"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-10-12",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.infra.headroom",
+  "line": 1,
+  "notice": "Adaptive output-token headroom for agent runs.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/headroom.py",
+  "summary": "Adaptive output-token headroom for agent runs.",
+  "type": "module"
+}

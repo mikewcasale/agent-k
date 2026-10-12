@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Returns None once the budget already reaches the ceiling so callers can\nsurface the original error instead of re-running the same request. An\nunset budget escalates from unset_base, which stays above every\nprovider default we target.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.headroom:escalate_max_tokens",
+  "line": 114,
+  "notice": "Returns model settings carrying a larger max_tokens budget.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/headroom.py",
+  "summary": "Return settings with a larger output token budget, or None at the ceiling.",
+  "type": "function"
+}

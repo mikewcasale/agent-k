@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Plain `.csv` sources are returned unchanged so callers keep the cheap\nhard-link staging path. Conversions are written atomically next to the\nsource (or into `fallback_dir` when the source directory is read-only)\nand reused while the cached CSV is newer than the source, so repeated\nstaging during evolution does not re-convert. Any conversion failure\nfalls back to the original path rather than aborting the mission.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.data:ensure_csv",
+  "line": 153,
+  "notice": "Converts Parquet, Feather, TSV, and compressed CSV files into real CSV.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/data.py",
+  "summary": "Return a path to a plain CSV rendering of a competition data file.",
+  "type": "function"
+}

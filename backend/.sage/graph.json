@@ -601,6 +601,11 @@
       "type": "provides"
     },
     {
+      "source": "agent_k.infra.headroom",
+      "target": "agent_k.infra.headroom",
+      "type": "provides"
+    },
+    {
       "source": "agent_k.infra.instrumentation",
       "target": "agent_k.infra.instrumentation",
       "type": "provides"
@@ -921,7 +926,7 @@
       "type": "similar"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831739+00:00",
+  "generated": "2026-10-12T22:13:20.356355+00:00",
   "nodes": [
     {
       "id": "agent_k",
@@ -1174,6 +1179,12 @@
       "label": "config",
       "pattern": "config",
       "source": "agent_k/infra/config.py"
+    },
+    {
+      "id": "agent_k.infra.headroom",
+      "label": "headroom",
+      "pattern": "resilience",
+      "source": "agent_k/infra/headroom.py"
     },
     {
       "id": "agent_k.infra.instrumentation",

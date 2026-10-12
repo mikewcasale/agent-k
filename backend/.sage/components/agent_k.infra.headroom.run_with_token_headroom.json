@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Only truncation is retried: any other failure propagates untouched so\nexisting rate-limit and fallback handling keeps working. Settings are\nmerged at run level, which overrides the agent-level budget without\nmutating the shared agent singleton. Providers with a small output cap\nreject the larger budget, so a provider error raised by an escalated\nre-run surfaces the original truncation error instead.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.headroom:run_with_token_headroom",
+  "line": 144,
+  "notice": "Runs an agent and retries with more output headroom on truncation.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/headroom.py",
+  "summary": "Run an agent, re-running with a larger token budget when output is truncated.",
+  "type": "function"
+}

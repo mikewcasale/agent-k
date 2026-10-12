@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-10-12T03:15:44.898369+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1092,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -2650,57 +2650,69 @@
       },
       {
         "component": "agent_k.core.data:CompetitionSchema",
-        "line": 50,
+        "line": 70,
         "name": "notice",
         "value": "Schema details inferred from competition data files."
       },
       {
         "component": "agent_k.core.data:CompetitionSchema",
-        "line": 53,
+        "line": 73,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.data:CompetitionSchema",
-        "line": 56,
+        "line": 76,
         "name": "pattern",
         "value": "{\"name\": \"schema-model\", \"rationale\": \"Captures inferred column layout for downstream steps.\", \"violations\": \"Ad-hoc dicts drift from actual data shape.\"}"
       },
       {
         "component": "agent_k.core.data:infer_competition_schema",
-        "line": 70,
+        "line": 90,
         "name": "notice",
         "value": "Analyzes CSV headers to determine ID column and target columns."
       },
       {
         "component": "agent_k.core.data:infer_competition_schema",
-        "line": 73,
+        "line": 93,
         "name": "dev",
         "value": "Compares train vs test headers to identify target columns.\nFalls back to sample submission columns if no difference found."
       },
       {
         "component": "agent_k.core.data:locate_data_files",
-        "line": 99,
+        "line": 119,
         "name": "notice",
         "value": "Finds train, test, and sample submission files from a list of paths."
       },
       {
         "component": "agent_k.core.data:locate_data_files",
-        "line": 102,
+        "line": 122,
         "name": "dev",
-        "value": "Automatically extracts ZIP files and searches for files by name pattern.\nRaises FileNotFoundError if required files are not found."
+        "value": "Automatically extracts ZIP files and searches for files by name pattern.\nNon-CSV containers (Parquet, Feather, TSV, compressed CSV) are converted\nto real CSV next to the source so downstream readers s"
+      },
+      {
+        "component": "agent_k.core.data:ensure_csv",
+        "line": 155,
+        "name": "notice",
+        "value": "Converts Parquet, Feather, TSV, and compressed CSV files into real CSV."
+      },
+      {
+        "component": "agent_k.core.data:ensure_csv",
+        "line": 158,
+        "name": "dev",
+        "value": "Plain `.csv` sources are returned unchanged so callers keep the cheap\nhard-link staging path. Conversions are written atomically next to the\nsource (or into `fallback_dir` when the source directory is"
       },
       {
         "component": "agent_k.core.data:stage_competition_data",
-        "line": 135,
+        "line": 295,
         "name": "notice",
         "value": "Copies or links data files to a destination with standardized names."
       },
       {
         "component": "agent_k.core.data:stage_competition_data",
-        "line": 138,
+        "line": 298,
         "name": "dev",
-        "value": "Creates train.csv, test.csv, sample_submission.csv in destination.\nUses hard links when possible to save disk space."
+        "value": "Creates train.csv, test.csv, sample_submission.csv in destination.\nSources that are not already plain CSV are converted first so the\ncanonical filenames always hold CSV content.\nUses hard links when p"
       }
     ],
     "agent_k/core/deps.py": [

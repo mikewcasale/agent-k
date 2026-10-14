@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Every layer that ranks solutions (mission graph, evolver agent, and the\nOpenEvolve evaluator) must share this scale so fitness values stay\ncomparable and invertible via the reciprocal inverse. Minimized metrics\nmap to ``1 / (1 + score)`` in ``(0, 1]``; maximized metrics map to the\nclamped score itself. A failed evaluation scores ``0.0``, which stays\nbelow every valid solution under both directions.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.strategy:score_to_fitness",
+  "line": 337,
+  "notice": "Maps a raw metric score onto a bounded, higher-is-better fitness value.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/strategy.py",
+  "summary": "Convert a competition metric score to the canonical fitness scale.",
+  "type": "function"
+}

@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-10-14T00:15:26.252844+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1093,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -4344,153 +4344,171 @@
       },
       {
         "component": "agent_k.core.strategy:ProblemType",
-        "line": 70,
+        "line": 71,
         "name": "notice",
         "value": "Supported ML problem types for policy selection."
       },
       {
         "component": "agent_k.core.strategy:ProblemType",
-        "line": 73,
+        "line": 74,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.strategy:ProblemType",
-        "line": 76,
+        "line": 77,
         "name": "pattern",
         "value": "{\"name\": \"enumeration\", \"rationale\": \"StrEnum for ML problem taxonomy.\", \"violations\": \"String literals drift across policy logic.\"}"
       },
       {
         "component": "agent_k.core.strategy:ProblemProfile",
-        "line": 95,
+        "line": 96,
         "name": "notice",
         "value": "Profile describing the ML task for a competition."
       },
       {
         "component": "agent_k.core.strategy:ProblemProfile",
-        "line": 98,
+        "line": 99,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.strategy:ProblemProfile",
-        "line": 101,
+        "line": 102,
         "name": "pattern",
         "value": "{\"name\": \"profile-model\", \"rationale\": \"Bundles task metadata for downstream policies.\", \"violations\": \"Implicit profiles make policy decisions inconsistent.\"}"
       },
       {
         "component": "agent_k.core.strategy:TechniquePolicy",
-        "line": 121,
+        "line": 122,
         "name": "notice",
         "value": "Generic technique policy for solution enforcement."
       },
       {
         "component": "agent_k.core.strategy:TechniquePolicy",
-        "line": 124,
+        "line": 125,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.strategy:TechniquePolicy",
-        "line": 127,
+        "line": 128,
         "name": "pattern",
         "value": "{\"name\": \"policy-model\", \"rationale\": \"Encodes technique constraints for evolution.\", \"violations\": \"Inline tuning fragments policy definitions.\"}"
       },
       {
         "component": "agent_k.core.strategy:FitnessInput",
-        "line": 148,
+        "line": 149,
         "name": "notice",
         "value": "Input payload for fitness scoring."
       },
       {
         "component": "agent_k.core.strategy:FitnessInput",
-        "line": 151,
+        "line": 152,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.strategy:FitnessInput",
-        "line": 154,
+        "line": 155,
         "name": "pattern",
         "value": "{\"name\": \"fitness-input\", \"rationale\": \"Captures evaluation signals for scoring.\", \"violations\": \"Ad-hoc inputs drift across fitness logic.\"}"
       },
       {
         "component": "agent_k.core.strategy:FitnessPolicy",
-        "line": 172,
+        "line": 173,
         "name": "notice",
         "value": "Policy controlling fitness adjustments."
       },
       {
         "component": "agent_k.core.strategy:FitnessPolicy",
-        "line": 175,
+        "line": 176,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.strategy:FitnessPolicy",
-        "line": 178,
+        "line": 179,
         "name": "pattern",
         "value": "{\"name\": \"policy-model\", \"rationale\": \"Encodes penalty tuning for fitness scoring.\", \"violations\": \"Inline penalties drift across runs.\"}"
       },
       {
         "component": "agent_k.core.strategy:build_problem_profile",
-        "line": 194,
+        "line": 195,
         "name": "notice",
         "value": "Creates a ProblemProfile from competition metadata and data schema."
       },
       {
         "component": "agent_k.core.strategy:build_problem_profile",
-        "line": 197,
+        "line": 198,
         "name": "dev",
         "value": "Infers problem type (tabular/vision/text, classification/regression)\nfrom competition tags and evaluation metric."
       },
       {
         "component": "agent_k.core.strategy:build_technique_policy",
-        "line": 228,
+        "line": 229,
         "name": "notice",
         "value": "Creates a TechniquePolicy with evolution parameters for the problem type."
       },
       {
         "component": "agent_k.core.strategy:build_technique_policy",
-        "line": 231,
+        "line": 232,
         "name": "dev",
         "value": "Adjusts population size and generation limits based on criteria.\nTarget transforms and outlier clipping are disabled (handled by evolver)."
       },
       {
         "component": "agent_k.core.strategy:build_fitness_policy",
-        "line": 268,
+        "line": 269,
         "name": "notice",
         "value": "Creates a FitnessPolicy with penalty weights and thresholds."
       },
       {
         "component": "agent_k.core.strategy:build_fitness_policy",
-        "line": 271,
+        "line": 272,
         "name": "dev",
         "value": "Penalty weight scales with min_improvements_required.\nComplexity threshold defaults based on problem type."
       },
       {
         "component": "agent_k.core.strategy:build_fitness_function",
-        "line": 298,
+        "line": 299,
         "name": "notice",
         "value": "Creates a callable fitness function from a FitnessPolicy."
       },
       {
         "component": "agent_k.core.strategy:build_fitness_function",
-        "line": 301,
+        "line": 302,
         "name": "dev",
         "value": "Returns a closure that scores FitnessInput based on policy thresholds.\nInvalid inputs return 0.0; penalties applied for runtime/complexity."
       },
       {
         "component": "agent_k.core.strategy:apply_solution_policy",
-        "line": 325,
+        "line": 326,
         "name": "notice",
         "value": "Transforms solution code based on technique policy (currently no-op)."
       },
       {
         "component": "agent_k.core.strategy:apply_solution_policy",
-        "line": 328,
+        "line": 329,
         "name": "dev",
         "value": "Policy injection is disabled to allow evolutionary search to handle\ndata preparation generically. Returns (code, []) unchanged."
+      },
+      {
+        "component": "agent_k.core.strategy:score_to_fitness",
+        "line": 339,
+        "name": "notice",
+        "value": "Maps a raw metric score onto a bounded, higher-is-better fitness value."
+      },
+      {
+        "component": "agent_k.core.strategy:score_to_fitness",
+        "line": 342,
+        "name": "dev",
+        "value": "Every layer that ranks solutions (mission graph, evolver agent, and the\nOpenEvolve evaluator) must share this scale so fitness values stay\ncomparable and invertible via the reciprocal inverse. Minimiz"
+      },
+      {
+        "component": "agent_k.core.strategy:score_to_fitness",
+        "line": 350,
+        "name": "invariants",
+        "value": "[\"score_to_fitness(score, 'minimize') > 0.0\", \"score_to_fitness(score, direction) >= 0.0\"]"
       }
     ],
     "agent_k/core/tracking.py": [
@@ -5254,37 +5272,37 @@
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate",
-        "line": 321,
+        "line": 338,
         "name": "notice",
         "value": "Evaluate a program and return metrics and artifacts for OpenEvolve."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate",
-        "line": 324,
+        "line": 341,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage1",
-        "line": 403,
+        "line": 420,
         "name": "notice",
         "value": "Stage 1: Quick syntax and import validation."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage1",
-        "line": 406,
+        "line": 423,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage2",
-        "line": 501,
+        "line": 518,
         "name": "notice",
         "value": "Stage 2: Medium evaluation on subset of data."
       },
       {
         "component": "agent_k.evolution.evaluator:evaluate_stage2",
-        "line": 504,
+        "line": 521,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       }

@@ -53,6 +53,7 @@ __all__ = (
     "build_fitness_policy",
     "build_problem_profile",
     "build_technique_policy",
+    "score_to_fitness",
 )
 
 _CLASSIFICATION_METRICS: Final[frozenset[EvaluationMetric]] = frozenset(
@@ -307,7 +308,7 @@ def build_fitness_function(policy: FitnessPolicy) -> FitnessFunction:
         if not input_data.valid:
             return 0.0
 
-        base = _score_to_fitness(input_data.cv_score, policy.metric_direction)
+        base = score_to_fitness(input_data.cv_score, policy.metric_direction)
         if policy.runtime_ms_threshold and input_data.runtime_ms > policy.runtime_ms_threshold:
             base *= max(0.0, 1.0 - policy.penalty_weight)
         if policy.complexity_threshold and input_data.complexity > policy.complexity_threshold:
@@ -332,7 +333,24 @@ def apply_solution_policy(code: str, policy: TechniquePolicy) -> tuple[str, list
     return code, []
 
 
-def _score_to_fitness(score: float, direction: MetricDirection) -> float:
+def score_to_fitness(score: float, direction: MetricDirection) -> float:
+    """Convert a competition metric score to the canonical fitness scale.
+
+    @notice: |
+        Maps a raw metric score onto a bounded, higher-is-better fitness value.
+
+    @dev: |
+        Every layer that ranks solutions (mission graph, evolver agent, and the
+        OpenEvolve evaluator) must share this scale so fitness values stay
+        comparable and invertible via the reciprocal inverse. Minimized metrics
+        map to ``1 / (1 + score)`` in ``(0, 1]``; maximized metrics map to the
+        clamped score itself. A failed evaluation scores ``0.0``, which stays
+        below every valid solution under both directions.
+
+        @invariants:
+            - "score_to_fitness(score, 'minimize') > 0.0"
+            - "score_to_fitness(score, direction) >= 0.0"
+    """
     if direction == "minimize":
         return 1.0 / (1.0 + max(score, 0.0))
     return max(score, 0.0)

@@ -46,6 +46,7 @@ from openevolve.evaluation_result import EvaluationResult
 
 if TYPE_CHECKING:
     from agent_k.core.hints import PreprocessingHint
+    from agent_k.core.types import MetricDirection
 
 __all__ = ("evaluate", "evaluate_stage1", "evaluate_stage2")
 
@@ -60,6 +61,8 @@ _DEFAULT_VALIDATION_SPLIT: Final[float] = 0.2
 _STAGE1_TIMEOUT: Final[int] = 5
 _STAGE2_TIMEOUT: Final[int] = 30
 _STAGE2_DATA_ROWS: Final[int] = 1000
+_STAGE2_FITNESS_CAP: Final[float] = 0.65
+"""Subset evaluations are capped so full evaluations decide final ranking."""
 _MODEL_FAMILY_PATTERNS: Final[tuple[tuple[float, re.Pattern[str]], ...]] = (
     (3.0, re.compile(r"\b(Stacking|Voting|Bagging|AdaBoost)(?:Regressor|Classifier)?\b")),
     (2.0, re.compile(r"\bKNeighbors(?:Regressor|Classifier)\b")),
@@ -304,15 +307,29 @@ def _model_family_score(code: str) -> float:
     return 3.0
 
 
-def _fitness_from_score(cv_score: float | None, metric_direction: str) -> float:
-    """Convert CV score to fitness (higher is better)."""
-    if cv_score is None:
+def _fitness_from_score(cv_score: float | None, metric_direction: str, *, valid: bool = True) -> float:
+    """Convert a CV score to the canonical bounded fitness scale.
+
+    Delegates to :func:`agent_k.core.strategy.score_to_fitness` so OpenEvolve
+    ranks programs on the same ``(0, 1]`` higher-is-better scale the mission
+    graph and the evolver agent use. Invalid runs score ``0.0``, which keeps
+    every failure below every working solution for minimized metrics too.
+
+    Args:
+        cv_score: Score parsed from the solution's stdout, if any.
+        metric_direction: Either ``"minimize"`` or ``"maximize"``.
+        valid: Whether the run completed and produced a submission.
+
+    Returns:
+        Fitness in ``[0, 1]`` for minimized metrics, ``>= 0.0`` otherwise.
+    """
+    from agent_k.core.strategy import score_to_fitness
+
+    if cv_score is None or not valid:
         return 0.0
 
-    if metric_direction == "maximize":
-        return float(cv_score)
-    else:
-        return -float(cv_score)
+    direction: MetricDirection = "maximize" if metric_direction == "maximize" else "minimize"
+    return score_to_fitness(float(cv_score), direction)
 
 
 def evaluate(program_path: str) -> EvaluationResult:
@@ -353,7 +370,7 @@ def evaluate(program_path: str) -> EvaluationResult:
     submission_path = work_dir / "submission.csv"
     valid = result.returncode == 0 and cv_score is not None and submission_path.exists()
 
-    fitness = _fitness_from_score(cv_score, metric_direction)
+    fitness = _fitness_from_score(cv_score, metric_direction, valid=valid)
     cv_variance = _compute_cv_variance(result.stdout)
     metrics = {
         "combined_score": fitness,
@@ -547,12 +564,13 @@ def evaluate_stage2(program_path: str) -> EvaluationResult:
                 },
             )
 
-        # Calculate preliminary fitness
-        fitness = _fitness_from_score(cv_score, metric_direction)
+        # Calculate preliminary fitness on the canonical scale.
+        fitness = _fitness_from_score(cv_score, metric_direction, valid=valid)
 
-        # Scale fitness to be conservative (stage2 threshold is 0.6)
-        # If it looks promising on subset, give it 0.65 to pass to full eval
-        scaled_fitness = min(0.65, fitness) if fitness > 0.4 else 0.0
+        # Cap the subset score so the full evaluation, not the subset, decides
+        # ranking. Validity above is the gate; an absolute score cutoff is not
+        # comparable across metrics.
+        scaled_fitness = min(_STAGE2_FITNESS_CAP, fitness)
 
         logfire.info("stage2_passed", fitness=scaled_fitness, cv_score=cv_score)
         return EvaluationResult(

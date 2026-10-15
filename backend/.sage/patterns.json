@@ -1,6 +1,6 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
-  "pattern_count": 57,
+  "generated": "2026-10-15T02:13:38.451540+00:00",
+  "pattern_count": 59,
   "patterns": {
     "adapter": [
       {
@@ -14,7 +14,7 @@
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 435,
+        "line": 442,
         "rationale": "Encapsulates OpenEvolve-specific behaviors.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [
@@ -25,7 +25,7 @@
     "adapter-runner": [
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveRunner",
-        "line": 223,
+        "line": 230,
         "rationale": "Encapsulates OpenEvolve execution behavior.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [
@@ -93,6 +93,17 @@
         "violations": []
       }
     ],
+    "capability-predicate": [
+      {
+        "component": "agent_k.infra.providers:is_openai_compatible_spec",
+        "line": 206,
+        "rationale": "Consumers that only speak the OpenAI chat API must filter specs.",
+        "source": "agent_k/infra/providers.py",
+        "violations": [
+          "Native-SDK specs reach OpenAI-only clients and fail at request time."
+        ]
+      }
+    ],
     "classifier": [
       {
         "component": "agent_k.ui.agui:IntentClassifier",
@@ -105,7 +116,7 @@
     "config-model": [
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveEvolutionConfig",
-        "line": 141,
+        "line": 148,
         "rationale": "Captures evolution hyperparameters in a schema.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [
@@ -248,7 +259,7 @@
     "enumeration": [
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveJobState",
-        "line": 120,
+        "line": 127,
         "rationale": "StrEnum for OpenEvolve job lifecycle states.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [
@@ -847,7 +858,7 @@
     "job-tracker": [
       {
         "component": "agent_k.adapters.openevolve:_OpenEvolveJob",
-        "line": 413,
+        "line": 420,
         "rationale": "Captures in-memory job state for adapter polling.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [
@@ -929,7 +940,7 @@
     "output-model": [
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveJobStatus",
-        "line": 165,
+        "line": 172,
         "rationale": "Stable status payload for job monitoring.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [
@@ -938,7 +949,7 @@
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveSolution",
-        "line": 192,
+        "line": 199,
         "rationale": "Stable schema for OpenEvolve solutions.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [
@@ -1237,7 +1248,7 @@
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveSettings",
-        "line": 92,
+        "line": 99,
         "rationale": "Centralizes OpenEvolve adapter configuration.",
         "source": "agent_k/adapters/openevolve.py",
         "violations": [
@@ -1298,6 +1309,17 @@
         "source": "agent_k/infra/config.py",
         "violations": [
           "Scattered env access increases drift."
+        ]
+      }
+    ],
+    "spec-resolution": [
+      {
+        "component": "agent_k.adapters.openevolve:resolve_model_specs",
+        "line": 692,
+        "rationale": "Fail loudly on unusable model configuration instead of mid-run.",
+        "source": "agent_k/adapters/openevolve.py",
+        "violations": [
+          "Hardcoded fallbacks rot into retired model slugs."
         ]
       }
     ],

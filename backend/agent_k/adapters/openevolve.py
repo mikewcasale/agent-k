@@ -58,6 +58,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from agent_k.agents.prompts import OPENEVOLVE_MUTATION_PROMPT
+from agent_k.core.constants import DEFAULT_MODEL
 from agent_k.core.exceptions import (
     AdapterError,
     CompetitionNotFoundError,
@@ -69,7 +70,12 @@ from agent_k.core.hints import PreprocessingHint
 from agent_k.core.models import Competition, CompetitionType, EvaluationMetric, LeaderboardEntry, Submission
 from agent_k.core.protocols import PlatformAdapter
 from agent_k.core.sage import Doc, Range
-from agent_k.infra.providers import DEVSTRAL_BASE_URL, DEVSTRAL_MODEL_ID, OPENROUTER_FREE_MODELS
+from agent_k.infra.providers import (
+    DEVSTRAL_BASE_URL,
+    DEVSTRAL_MODEL_ID,
+    OPENROUTER_FREE_MODELS,
+    is_openai_compatible_spec,
+)
 
 __all__ = (
     "OpenEvolveAdapter",
@@ -80,6 +86,7 @@ __all__ = (
     "OpenEvolveSettings",
     "OpenEvolveSolution",
     "SCHEMA_VERSION",
+    "resolve_model_specs",
 )
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
@@ -214,7 +221,7 @@ class OpenEvolveSolution(BaseModel):
 _OPENEVOLVE_CONTEXT_ENV: Final[str] = "AGENT_K_OPENEVOLVE_CONTEXT"
 _OPENROUTER_API_BASE: Final[str] = "https://openrouter.ai/api/v1"
 _OPENAI_API_BASE: Final[str] = "https://api.openai.com/v1"
-_DEFAULT_OPENEVOLVE_MODEL: Final[str] = OPENROUTER_FREE_MODELS["devstral"]
+_FREE_MODEL_FALLBACKS: Final[tuple[str, ...]] = tuple(OPENROUTER_FREE_MODELS.values())
 _DEFAULT_VALIDATION_SPLIT: Final[float] = 0.2
 
 
@@ -331,7 +338,7 @@ class OpenEvolveRunner:
         return Config()
 
     def _configure_llm(self, config: Config) -> Config:
-        model_specs = _resolve_model_specs(self.model_specs)
+        model_specs = resolve_model_specs(self.model_specs)
         model_configs = [_build_model_config(spec) for spec in model_specs]
         config.llm.models = model_configs
         config.llm.evaluator_models = list(model_configs)
@@ -679,22 +686,64 @@ class OpenEvolveAdapter(PlatformAdapter):
             self._evolution_jobs.pop(job_id, None)
 
 
-def _resolve_model_specs(model_specs: list[str]) -> list[str]:
+def resolve_model_specs(
+    model_specs: Annotated[list[str], Doc("Requested model specs, in preference order.")],
+) -> list[str]:
+    """Resolve requested model specs into specs OpenEvolve can actually call.
+
+    @notice: |
+        Keeps OpenAI-compatible specs and substitutes a live default when none remain.
+
+    @dev: |
+        OpenEvolve drives every model through an OpenAI chat-completions client, so
+        specs bound to a native provider SDK (``anthropic:``, ``google:``, ``groq:``)
+        cannot be served and are dropped. When that empties the list the fallback is
+        the configured ``DEFAULT_MODEL`` first and the free-tier registry second, so
+        a single environment variable keeps evolution on a model that still answers.
+        Raises EvolutionError when no fallback is OpenAI-compatible either.
+
+        @pattern:
+            name: spec-resolution
+            rationale: "Fail loudly on unusable model configuration instead of mid-run."
+            violations: "Hardcoded fallbacks rot into retired model slugs."
+    """
     cleaned: list[str] = []
+    dropped: list[str] = []
     for spec in model_specs:
         if not isinstance(spec, str):
             continue
         trimmed = spec.strip()
         if not trimmed:
             continue
-        if trimmed.startswith("anthropic:"):
-            logfire.warning("openevolve_model_unsupported", model=trimmed)
+        if not is_openai_compatible_spec(trimmed):
+            dropped.append(trimmed)
             continue
         cleaned.append(trimmed)
+
     if cleaned:
+        if dropped:
+            logfire.warning("openevolve_model_unsupported", dropped=dropped, resolved=cleaned)
         return cleaned
-    logfire.info("openevolve_default_model", model=_DEFAULT_OPENEVOLVE_MODEL)
-    return [_DEFAULT_OPENEVOLVE_MODEL]
+
+    fallback = _fallback_model_spec()
+    if dropped:
+        logfire.warning("openevolve_model_unsupported", dropped=dropped, resolved=[fallback])
+    else:
+        logfire.info("openevolve_default_model", model=fallback)
+    return [fallback]
+
+
+def _fallback_model_spec() -> str:
+    for candidate in (DEFAULT_MODEL, *_FREE_MODEL_FALLBACKS):
+        trimmed = candidate.strip()
+        if trimmed and is_openai_compatible_spec(trimmed):
+            return trimmed
+    raise EvolutionError(
+        "No OpenAI-compatible model is configured for OpenEvolve. "
+        f"DEFAULT_MODEL={DEFAULT_MODEL!r} and the free-model registry "
+        f"{list(_FREE_MODEL_FALLBACKS)} all target native provider SDKs. "
+        "Set DEFAULT_MODEL to an 'openrouter:', 'openai:', or 'devstral:' spec."
+    )
 
 
 def _build_model_config(model_spec: str) -> LLMModelConfig:

@@ -11,13 +11,16 @@ import os
 import pytest
 from pydantic_ai.models.openai import OpenAIChatModel
 
+from agent_k.core.constants import DEFAULT_MODEL
 from agent_k.infra.providers import (
     DEVSTRAL_BASE_URL,
     DEVSTRAL_MODEL_ID,
+    OPENROUTER_FREE_MODELS,
     create_devstral_model,
     create_openrouter_model,
     get_model,
     is_devstral_model,
+    is_openai_compatible_spec,
 )
 
 __all__ = ()
@@ -135,3 +138,58 @@ class TestIsDevstralModel:
     def test_openrouter_not_devstral(self) -> None:
         """OpenRouter models should not be identified as Devstral."""
         assert is_devstral_model("openrouter:mistralai/devstral-small-2505") is False
+
+
+class TestOpenRouterFreeModels:
+    """Tests for the free OpenRouter model registry."""
+
+    def test_registry_is_populated(self) -> None:
+        """Registry should expose at least one free model."""
+        assert OPENROUTER_FREE_MODELS
+
+    def test_all_entries_are_openrouter_specs(self) -> None:
+        """Every registered free model should be an OpenRouter spec."""
+        for spec in OPENROUTER_FREE_MODELS.values():
+            assert spec.startswith("openrouter:")
+            assert spec.endswith(":free")
+
+    def test_all_entries_are_openai_compatible(self) -> None:
+        """Free models are used as fallbacks, so each must be callable."""
+        for spec in OPENROUTER_FREE_MODELS.values():
+            assert is_openai_compatible_spec(spec)
+
+    def test_default_model_is_registered_or_openai_compatible(self) -> None:
+        """The configured default must be usable by OpenAI-compatible clients."""
+        assert is_openai_compatible_spec(DEFAULT_MODEL)
+
+
+class TestIsOpenAICompatibleSpec:
+    """Tests for is_openai_compatible_spec function."""
+
+    @pytest.mark.parametrize(
+        "spec",
+        [
+            "openrouter:openai/gpt-oss-120b:free",
+            "openai:gpt-4o",
+            "devstral:local",
+            "devstral:http://localhost:1234/v1",
+            "gpt-4o",
+        ],
+    )
+    def test_compatible_specs(self, spec: str) -> None:
+        """OpenAI-compatible and unprefixed specs should be accepted."""
+        assert is_openai_compatible_spec(spec) is True
+
+    @pytest.mark.parametrize(
+        "spec",
+        [
+            "anthropic:claude-sonnet-4-5",
+            "google:gemini-2.5-pro",
+            "google-gla:gemini-2.0-flash",
+            "groq:llama-3.3-70b-versatile",
+            "bedrock:anthropic.claude-3-sonnet",
+        ],
+    )
+    def test_native_sdk_specs(self, spec: str) -> None:
+        """Specs bound to a native provider SDK should be rejected."""
+        assert is_openai_compatible_spec(spec) is False

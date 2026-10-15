@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-10-15T02:13:38.450580+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1096,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -1052,183 +1052,201 @@
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveSettings",
-        "line": 96,
+        "line": 103,
         "name": "notice",
         "value": "Settings for OpenEvolve adapter."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveSettings",
-        "line": 99,
+        "line": 106,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveSettings",
-        "line": 102,
+        "line": 109,
         "name": "pattern",
         "value": "{\"name\": \"settings\", \"rationale\": \"Centralizes OpenEvolve adapter configuration.\", \"violations\": \"Ad-hoc config makes adapter behavior inconsistent.\"}"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveJobState",
-        "line": 122,
+        "line": 129,
         "name": "notice",
         "value": "Lifecycle state for an OpenEvolve job."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveJobState",
-        "line": 125,
+        "line": 132,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveJobState",
-        "line": 128,
+        "line": 135,
         "name": "pattern",
         "value": "{\"name\": \"enumeration\", \"rationale\": \"StrEnum for OpenEvolve job lifecycle states.\", \"violations\": \"String literals drift across job state handling.\"}"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveEvolutionConfig",
-        "line": 143,
+        "line": 150,
         "name": "notice",
         "value": "Evolution configuration for OpenEvolve jobs."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveEvolutionConfig",
-        "line": 146,
+        "line": 153,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveEvolutionConfig",
-        "line": 149,
+        "line": 156,
         "name": "pattern",
         "value": "{\"name\": \"config-model\", \"rationale\": \"Captures evolution hyperparameters in a schema.\", \"violations\": \"Loose dicts make validation brittle.\"}"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveJobStatus",
-        "line": 167,
+        "line": 174,
         "name": "notice",
         "value": "Status snapshot for an OpenEvolve evolution job."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveJobStatus",
-        "line": 170,
+        "line": 177,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveJobStatus",
-        "line": 173,
+        "line": 180,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Stable status payload for job monitoring.\", \"violations\": \"Ad-hoc status dicts break tooling.\"}"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveSolution",
-        "line": 194,
+        "line": 201,
         "name": "notice",
         "value": "Best solution produced by an OpenEvolve job."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveSolution",
-        "line": 197,
+        "line": 204,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveSolution",
-        "line": 200,
+        "line": 207,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Stable schema for OpenEvolve solutions.\", \"violations\": \"Free-form outputs hinder integration.\"}"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveRunner",
-        "line": 225,
+        "line": 232,
         "name": "notice",
         "value": "Runner for OpenEvolve evolutionary optimization."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveRunner",
-        "line": 228,
+        "line": 235,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveRunner",
-        "line": 231,
+        "line": 238,
         "name": "pattern",
         "value": "{\"name\": \"adapter-runner\", \"rationale\": \"Encapsulates OpenEvolve execution behavior.\", \"violations\": \"Scattered runner logic complicates evolution flow.\"}"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveRunner",
-        "line": 236,
+        "line": 243,
         "name": "collaborators",
         "value": "{\"required\": [\"openevolve:OpenEvolve\"], \"injection\": \"constructor\", \"lifecycle\": \"Scoped per OpenEvolve run.\"}"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveRunner.run_evolution",
-        "line": 260,
+        "line": 267,
         "name": "notice",
         "value": "Executes OpenEvolve with the configured evaluator and model specs."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveRunner.run_evolution",
-        "line": 263,
+        "line": 270,
         "name": "effects",
         "value": "{\"io\": [\"filesystem writes\", \"OpenEvolve execution\"]}"
       },
       {
         "component": "agent_k.adapters.openevolve:_OpenEvolveJob",
-        "line": 415,
+        "line": 422,
         "name": "pattern",
         "value": "{\"name\": \"job-tracker\", \"rationale\": \"Captures in-memory job state for adapter polling.\", \"violations\": \"Fragmented job state tracking breaks status updates.\"}"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 437,
+        "line": 444,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 440,
+        "line": 447,
         "name": "notice",
         "value": "Provides a PlatformAdapter facade for OpenEvolve runs."
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 443,
+        "line": 450,
         "name": "pattern",
         "value": "{\"name\": \"adapter\", \"rationale\": \"Encapsulates OpenEvolve-specific behaviors.\", \"violations\": \"Direct OpenEvolve use bypasses PlatformAdapter contract.\"}"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 448,
+        "line": 455,
         "name": "implements",
         "value": "[\"agent_k.core.protocols:PlatformAdapter\"]"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 451,
+        "line": 458,
         "name": "inheritdoc",
         "value": "[\"agent_k.core.protocols:PlatformAdapter\"]"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 454,
+        "line": 461,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.adapters.openevolve:OpenEvolveRunner\"], \"injection\": \"constructor\", \"lifecycle\": \"Long-lived adapter per mission.\"}"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 460,
+        "line": 467,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates in-memory job state.\"}"
       },
       {
         "component": "agent_k.adapters.openevolve:OpenEvolveAdapter",
-        "line": 465,
+        "line": 472,
         "name": "invariants",
         "value": "[\"self._evolution_jobs retains active jobs until pruned.\"]"
+      },
+      {
+        "component": "agent_k.adapters.openevolve:resolve_model_specs",
+        "line": 694,
+        "name": "notice",
+        "value": "Keeps OpenAI-compatible specs and substitutes a live default when none remain."
+      },
+      {
+        "component": "agent_k.adapters.openevolve:resolve_model_specs",
+        "line": 697,
+        "name": "dev",
+        "value": "OpenEvolve drives every model through an OpenAI chat-completions client, so\nspecs bound to a native provider SDK (``anthropic:``, ``google:``, ``groq:``)\ncannot be served and are dropped. When that em"
+      },
+      {
+        "component": "agent_k.adapters.openevolve:resolve_model_specs",
+        "line": 705,
+        "name": "pattern",
+        "value": "{\"name\": \"spec-resolution\", \"rationale\": \"Fail loudly on unusable model configuration instead of mid-run.\", \"violations\": \"Hardcoded fallbacks rot into retired model slugs.\"}"
       }
     ],
     "agent_k/agents/__init__.py": [
@@ -5996,87 +6014,105 @@
       },
       {
         "component": "agent_k.infra.providers:create_devstral_model",
-        "line": 85,
+        "line": 90,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.infra.providers:create_devstral_model",
-        "line": 88,
+        "line": 93,
         "name": "notice",
         "value": "Creates an OpenAIChatModel configured for Devstral."
       },
       {
         "component": "agent_k.infra.providers:create_devstral_model",
-        "line": 91,
+        "line": 96,
         "name": "factory_for",
         "value": "{\"id\": \"pydantic_ai.models.openai:OpenAIChatModel\", \"rationale\": \"Centralizes local LM Studio configuration.\", \"singleton\": false, \"cache_key\": \"model_id\"}"
       },
       {
         "component": "agent_k.infra.providers:create_devstral_model",
-        "line": 97,
+        "line": 102,
         "name": "canonical_home",
         "value": "{\"for\": [\"devstral model creation\"], \"notes\": \"Use create_devstral_model for local Devstral endpoints.\"}"
       },
       {
         "component": "agent_k.infra.providers:create_openrouter_model",
-        "line": 119,
+        "line": 124,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.infra.providers:create_openrouter_model",
-        "line": 122,
+        "line": 127,
         "name": "notice",
         "value": "Creates an OpenAIChatModel configured for OpenRouter."
       },
       {
         "component": "agent_k.infra.providers:create_openrouter_model",
-        "line": 125,
+        "line": 130,
         "name": "factory_for",
         "value": "{\"id\": \"pydantic_ai.models.openai:OpenAIChatModel\", \"rationale\": \"Centralizes OpenRouter provider configuration.\", \"singleton\": false, \"cache_key\": \"model_id\"}"
       },
       {
         "component": "agent_k.infra.providers:create_openrouter_model",
-        "line": 131,
+        "line": 136,
         "name": "canonical_home",
         "value": "{\"for\": [\"openrouter model creation\"], \"notes\": \"Use create_openrouter_model for OpenRouter endpoints.\"}"
       },
       {
         "component": "agent_k.infra.providers:get_model",
-        "line": 147,
+        "line": 152,
         "name": "notice",
         "value": "Resolves model specs into provider-specific model objects when needed."
       },
       {
         "component": "agent_k.infra.providers:get_model",
-        "line": 150,
+        "line": 155,
         "name": "dev",
         "value": "Returns a string for standard pydantic-ai model specs."
       },
       {
         "component": "agent_k.infra.providers:get_model",
-        "line": 153,
+        "line": 158,
         "name": "factory_for",
         "value": "{\"id\": \"pydantic_ai.models:Model\", \"rationale\": \"Centralized model resolution for all agents.\", \"singleton\": false, \"cache_key\": \"model_spec\"}"
       },
       {
         "component": "agent_k.infra.providers:get_model",
-        "line": 159,
+        "line": 164,
         "name": "canonical_home",
         "value": "{\"for\": [\"model resolution\"], \"notes\": \"Use get_model to normalize model specs.\"}"
       },
       {
         "component": "agent_k.infra.providers:is_devstral_model",
-        "line": 191,
+        "line": 196,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.infra.providers:is_devstral_model",
-        "line": 194,
+        "line": 199,
         "name": "notice",
         "value": "Returns true when the model spec targets Devstral."
+      },
+      {
+        "component": "agent_k.infra.providers:is_openai_compatible_spec",
+        "line": 208,
+        "name": "dev",
+        "value": "See module for behavior details and invariants."
+      },
+      {
+        "component": "agent_k.infra.providers:is_openai_compatible_spec",
+        "line": 211,
+        "name": "notice",
+        "value": "Returns true when the spec targets an OpenAI chat-completions API."
+      },
+      {
+        "component": "agent_k.infra.providers:is_openai_compatible_spec",
+        "line": 217,
+        "name": "pattern",
+        "value": "{\"name\": \"capability-predicate\", \"rationale\": \"Consumers that only speak the OpenAI chat API must filter specs.\", \"violations\": \"Native-SDK specs reach OpenAI-only clients and fail at request time.\"}"
       }
     ],
     "agent_k/mission/__init__.py": [

@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.providers:is_openai_compatible_spec",
+  "line": 206,
+  "notice": "Returns true when the spec targets an OpenAI chat-completions API.",
+  "pattern": {
+    "name": "capability-predicate",
+    "rationale": "Consumers that only speak the OpenAI chat API must filter specs.",
+    "violations": "Native-SDK specs reach OpenAI-only clients and fail at request time."
+  },
+  "similar": null,
+  "source": "agent_k/infra/providers.py",
+  "summary": "Check if a model specification resolves to an OpenAI-compatible endpoint.",
+  "type": "function"
+}

@@ -55,8 +55,10 @@ __all__ = (
     "create_devstral_model",
     "create_openrouter_model",
     "is_devstral_model",
+    "is_openai_compatible_spec",
     "DEVSTRAL_MODEL_ID",
     "DEVSTRAL_BASE_URL",
+    "OPENAI_COMPATIBLE_PREFIXES",
     "OPENROUTER_FREE_MODELS",
     "ModelType",
 )
@@ -64,11 +66,14 @@ __all__ = (
 DEVSTRAL_MODEL_ID: Final[str] = "mistralai/devstral-small-2-2512"
 DEVSTRAL_BASE_URL: Final[str] = os.getenv("DEVSTRAL_BASE_URL", "http://192.168.105.1:1234/v1")
 OPENROUTER_FREE_MODELS: Final[dict[str, str]] = {
-    "devstral": "openrouter:mistralai/devstral-2512:free",
-    "kat_coder": "openrouter:kwaipilot/kat-coder-pro:free",
-    "qwen_coder": "openrouter:qwen/qwen3-coder:free",
+    "gpt_oss_120b": "openrouter:openai/gpt-oss-120b:free",
+    "gpt_oss_20b": "openrouter:openai/gpt-oss-20b:free",
 }
-# Free OpenRouter model identifiers for agentic coding tasks.
+# Free OpenRouter model identifiers for agentic coding tasks. Keep in sync with
+# frontend/lib/ai/agent-k-models.ts; retired free tiers answer with HTTP 404.
+
+OPENAI_COMPATIBLE_PREFIXES: Final[tuple[str, ...]] = ("openrouter:", "openai:", "devstral:")
+# Spec prefixes that resolve to an OpenAI-compatible chat-completions endpoint.
 
 type ModelType = str
 
@@ -195,3 +200,25 @@ def is_devstral_model(model_spec: Annotated[str, Doc("Model specification string
             Returns true when the model spec targets Devstral.
     """
     return model_spec.startswith("devstral:")
+
+
+def is_openai_compatible_spec(model_spec: Annotated[str, Doc("Model specification string.")]) -> bool:
+    """Check if a model specification resolves to an OpenAI-compatible endpoint.
+
+    @dev: |
+        See module for behavior details and invariants.
+
+        @notice: |
+            Returns true when the spec targets an OpenAI chat-completions API.
+
+        An unprefixed spec is treated as a raw OpenAI model id, matching how
+        OpenAI-compatible clients resolve names without a provider prefix.
+
+        @pattern:
+            name: capability-predicate
+            rationale: "Consumers that only speak the OpenAI chat API must filter specs."
+            violations: "Native-SDK specs reach OpenAI-only clients and fail at request time."
+    """
+    if model_spec.startswith(OPENAI_COMPATIBLE_PREFIXES):
+        return True
+    return ":" not in model_spec

@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "OpenEvolve drives every model through an OpenAI chat-completions client, so\nspecs bound to a native provider SDK (``anthropic:``, ``google:``, ``groq:``)\ncannot be served and are dropped. When that empties the list the fallback is\nthe configured ``DEFAULT_MODEL`` first and the free-tier registry second, so\na single environment variable keeps evolution on a model that still answers.\nRaises EvolutionError when no fallback is OpenAI-compatible either.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.adapters.openevolve:resolve_model_specs",
+  "line": 692,
+  "notice": "Keeps OpenAI-compatible specs and substitutes a live default when none remain.",
+  "pattern": {
+    "name": "spec-resolution",
+    "rationale": "Fail loudly on unusable model configuration instead of mid-run.",
+    "violations": "Hardcoded fallbacks rot into retired model slugs."
+  },
+  "similar": null,
+  "source": "agent_k/adapters/openevolve.py",
+  "summary": "Resolve requested model specs into specs OpenEvolve can actually call.",
+  "type": "function"
+}

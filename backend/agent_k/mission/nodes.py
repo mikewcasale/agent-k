@@ -104,6 +104,8 @@ if TYPE_CHECKING:
 __all__ = ("DiscoveryNode", "ResearchNode", "PrototypeNode", "EvolutionNode", "SubmissionNode")
 
 _LIGHTGBM_AVAILABLE: Final[bool] = importlib.util.find_spec("lightgbm") is not None
+_MAX_ONEHOT_CARDINALITY: Final[int] = 50
+_IDENTIFIER_MIN_ROWS: Final[int] = 20
 _BASE_DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = ("xgboost", "catboost")
 _DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = (
     _BASE_DISALLOWED_LIBRARIES if _LIGHTGBM_AVAILABLE else (*_BASE_DISALLOWED_LIBRARIES, "lightgbm")
@@ -614,12 +616,25 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         train_target_columns: list[str],
         id_column: str,
     ) -> str:
-        """Generate prototype solution code."""
+        """Generate prototype solution code.
+
+        @notice: |
+            Emits a runnable baseline program for the competition's problem type.
+
+        @dev: |
+            The feature matrix excludes row identifiers (the submission id column and
+            any categorical column with one distinct value per row) so the model cannot
+            key on them, and categorical features above _MAX_ONEHOT_CARDINALITY are
+            ordinal-encoded instead of one-hot encoded to keep the encoded width bounded.
+            Test predictions run on a frame reindexed to the training feature columns.
+        """
         metric = getattr(competition, "metric", None)
         metric_key = metric if isinstance(metric, EvaluationMetric) else EvaluationMetric.ACCURACY
         metric_value = metric_key.value
         target_columns_repr = repr(target_columns)
         train_target_columns_repr = repr(train_target_columns)
+        max_onehot_cardinality = _MAX_ONEHOT_CARDINALITY
+        identifier_min_rows = _IDENTIFIER_MIN_ROWS
         strategy_items: list[str] = []
         for attr in ("strategy_recommendations", "recommended_approaches"):
             value = getattr(research, attr, None)
@@ -686,7 +701,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         from sklearn.impute import SimpleImputer
         from sklearn.model_selection import train_test_split
         from sklearn.pipeline import Pipeline
-        from sklearn.preprocessing import OneHotEncoder
+        from sklearn.preprocessing import OneHotEncoder, OrdinalEncoder
         from sklearn.multioutput import MultiOutputClassifier, MultiOutputRegressor
         from sklearn.metrics import (
             accuracy_score,
@@ -706,6 +721,8 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         METRIC = "{metric_value}"
         METRIC_KEY = METRIC.lower().replace("_", "")
         VALIDATION_SPLIT = float(os.getenv("AGENT_K_VALIDATION_SPLIT", "0.2"))
+        MAX_ONEHOT_CARDINALITY = {max_onehot_cardinality}
+        IDENTIFIER_MIN_ROWS = {identifier_min_rows}
         IS_CLASSIFICATION = {is_classification}
         USES_PROBA = {uses_proba}
         USES_LOG_TARGET = False
@@ -716,14 +733,41 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         y = train_df[TRAIN_TARGET_COLUMNS]
         if len(TRAIN_TARGET_COLUMNS) == 1:
             y = train_df[TRAIN_TARGET_COLUMNS[0]]
-        X = train_df.drop(columns=TRAIN_TARGET_COLUMNS)
+        candidates = train_df.drop(columns=TRAIN_TARGET_COLUMNS)
         
-        categorical_cols = X.select_dtypes(include=["object", "category"]).columns
-        numeric_cols = X.select_dtypes(exclude=["object", "category"]).columns
+        def _identifier_columns(frame):
+            excluded = [ID_COLUMN] if ID_COLUMN in frame.columns else []
+            row_count = len(frame)
+            if row_count < IDENTIFIER_MIN_ROWS:
+                return excluded
+            for column in frame.select_dtypes(include=["object", "category"]).columns:
+                if column in excluded:
+                    continue
+                if frame[column].nunique(dropna=False) == row_count:
+                    excluded.append(column)
+            return excluded
         
-        categorical_transformer = Pipeline(steps=[
+        excluded_cols = _identifier_columns(candidates)
+        feature_cols = [column for column in candidates.columns if column not in excluded_cols]
+        if not feature_cols:
+            excluded_cols = []
+            feature_cols = list(candidates.columns)
+        X = candidates[feature_cols]
+        test_features = test_df.reindex(columns=feature_cols)
+        
+        categorical_cols = list(X.select_dtypes(include=["object", "category"]).columns)
+        numeric_cols = list(X.select_dtypes(exclude=["object", "category"]).columns)
+        onehot_cols = [c for c in categorical_cols if X[c].nunique(dropna=True) <= MAX_ONEHOT_CARDINALITY]
+        ordinal_cols = [c for c in categorical_cols if c not in onehot_cols]
+        print(f"Feature plan: excluded={{excluded_cols}} onehot={{onehot_cols}} ordinal={{ordinal_cols}}")
+        
+        onehot_transformer = Pipeline(steps=[
             ("imputer", SimpleImputer(strategy="most_frequent")),
             ("encoder", OneHotEncoder(handle_unknown="ignore")),
+        ])
+        ordinal_transformer = Pipeline(steps=[
+            ("imputer", SimpleImputer(strategy="most_frequent")),
+            ("encoder", OrdinalEncoder(handle_unknown="use_encoded_value", unknown_value=-1)),
         ])
         numeric_transformer = Pipeline(steps=[
             ("imputer", SimpleImputer(strategy="median")),
@@ -731,7 +775,8 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         
         preprocessor = ColumnTransformer(
             transformers=[
-                ("categorical", categorical_transformer, categorical_cols),
+                ("onehot", onehot_transformer, onehot_cols),
+                ("ordinal", ordinal_transformer, ordinal_cols),
                 ("numeric", numeric_transformer, numeric_cols),
             ],
         )
@@ -847,7 +892,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         submission = pd.read_csv("sample_submission.csv")
         if IS_CLASSIFICATION and USES_PROBA:
             if len(TRAIN_TARGET_COLUMNS) == 1 and len(TARGET_COLUMNS) > 1:
-                test_probas = clf.predict_proba(test_df)
+                test_probas = clf.predict_proba(test_features)
                 class_labels = [str(label) for label in model_step.classes_]
                 proba_df = pd.DataFrame(test_probas, columns=class_labels)
 
@@ -865,10 +910,10 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     else:
                         submission[column] = 0.0
             elif len(TRAIN_TARGET_COLUMNS) == 1:
-                test_probas = clf.predict_proba(test_df)
+                test_probas = clf.predict_proba(test_features)
                 submission[TARGET_COLUMNS[0]] = test_probas[:, 1]
             else:
-                test_probas = clf.predict_proba(test_df)
+                test_probas = clf.predict_proba(test_features)
                 for idx, column in enumerate(TARGET_COLUMNS):
                     column_proba = test_probas[idx]
                     if column_proba.ndim == 2 and column_proba.shape[1] > 1:
@@ -876,7 +921,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     else:
                         submission[column] = column_proba.ravel()
         else:
-            test_preds = clf.predict(test_df)
+            test_preds = clf.predict(test_features)
             if USES_LOG_TARGET:
                 test_preds = np.expm1(test_preds)
             if len(TARGET_COLUMNS) == 1:

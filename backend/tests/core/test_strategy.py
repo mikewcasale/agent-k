@@ -21,7 +21,7 @@ from agent_k.core.strategy import (
 )
 
 
-def _competition(metric: EvaluationMetric) -> Competition:
+def _competition(metric: EvaluationMetric, tags: frozenset[str] = frozenset({"tabular"})) -> Competition:
     return Competition(
         id="sample-competition",
         title="Sample Competition",
@@ -33,7 +33,7 @@ def _competition(metric: EvaluationMetric) -> Competition:
         prize_pool=None,
         max_team_size=1,
         max_daily_submissions=5,
-        tags=frozenset({"tabular"}),
+        tags=tags,
         url=None,
     )
 
@@ -90,3 +90,63 @@ def test_apply_solution_policy_is_noop() -> None:
     updated_again, notes_again = apply_solution_policy(updated, policy)
     assert updated_again == updated
     assert not notes_again
+
+
+def test_build_problem_profile_timeseries_from_schema() -> None:
+    """A temporal order column selects the time-series problem type."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.RMSE),
+        CompetitionSchema(
+            id_column="id",
+            target_columns=["target"],
+            train_target_columns=["target"],
+            datetime_columns=["date"],
+            temporal_order_column="date",
+        ),
+    )
+    assert profile.problem_type == ProblemType.TIMESERIES_REGRESSION
+    assert profile.is_temporal is True
+    assert profile.temporal_order_column == "date"
+
+
+def test_build_problem_profile_timeseries_from_tags() -> None:
+    """Forecasting tags select the time-series problem type without a date column."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.AUC, frozenset({"tabular", "forecasting"})),
+        CompetitionSchema(id_column="id", target_columns=["target"], train_target_columns=["target"]),
+    )
+    assert profile.problem_type == ProblemType.TIMESERIES_CLASSIFICATION
+    assert profile.is_temporal is True
+    assert profile.temporal_order_column is None
+
+
+def test_build_problem_profile_tabular_is_not_temporal() -> None:
+    """Tabular problems keep a shuffled validation split."""
+    profile = build_problem_profile(
+        _competition(EvaluationMetric.RMSE),
+        CompetitionSchema(id_column="id", target_columns=["target"], train_target_columns=["target"]),
+    )
+    assert profile.is_temporal is False
+
+
+def test_timeseries_keeps_tabular_complexity_budget() -> None:
+    """Time-series solutions get the same complexity budget as tabular ones."""
+    schema = CompetitionSchema(
+        id_column="id",
+        target_columns=["target"],
+        train_target_columns=["target"],
+        datetime_columns=["date"],
+        temporal_order_column="date",
+    )
+    temporal = build_fitness_policy(
+        build_problem_profile(_competition(EvaluationMetric.RMSE), schema), None, max_runtime_ms=1000
+    )
+    tabular = build_fitness_policy(
+        build_problem_profile(
+            _competition(EvaluationMetric.RMSE),
+            CompetitionSchema(id_column="id", target_columns=["target"], train_target_columns=["target"]),
+        ),
+        None,
+        max_runtime_ms=1000,
+    )
+    assert temporal.complexity_threshold == tabular.complexity_threshold

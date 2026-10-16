@@ -8,12 +8,14 @@ from __future__ import annotations as _annotations
 
 import csv
 import math
+from datetime import UTC, datetime
+from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
 import pytest
 
-from agent_k.core.models import EvaluationMetric
-from agent_k.mission.nodes import _compute_baseline_score, _evaluate_metric, _prediction_value
+from agent_k.core.models import Competition, CompetitionType, EvaluationMetric
+from agent_k.mission.nodes import PrototypeNode, _compute_baseline_score, _evaluate_metric, _prediction_value
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -101,3 +103,69 @@ class TestComputeBaselineScore:
         )
 
         assert score == pytest.approx(0.5)
+
+
+def _competition(metric: EvaluationMetric) -> Competition:
+    return Competition(
+        id="sample-competition",
+        title="Sample Competition",
+        description=None,
+        competition_type=CompetitionType.FEATURED,
+        metric=metric,
+        metric_direction="minimize",
+        deadline=datetime(2030, 1, 1, tzinfo=UTC),
+        prize_pool=None,
+        max_team_size=1,
+        max_daily_submissions=5,
+        tags=frozenset({"tabular"}),
+        url=None,
+    )
+
+
+def _prototype(*, is_temporal: bool, temporal_order_column: str | None = None) -> str:
+    research = SimpleNamespace(strategy_recommendations=["Use LightGBM gradient boosting"])
+    return PrototypeNode()._generate_prototype(
+        _competition(EvaluationMetric.RMSE),
+        research,
+        target_columns=["target"],
+        train_target_columns=["target"],
+        id_column="id",
+        is_temporal=is_temporal,
+        temporal_order_column=temporal_order_column,
+    )
+
+
+class TestPrototypeGeneration:
+    """Tests for generated baseline solution code."""
+
+    def test_generated_prototype_is_valid_python(self) -> None:
+        """Every generated variant must parse; a template indent bug breaks every run."""
+        for code in (
+            _prototype(is_temporal=False),
+            _prototype(is_temporal=True, temporal_order_column="date"),
+            _prototype(is_temporal=True),
+        ):
+            compile(code, "<prototype>", "exec")
+
+    def test_temporal_prototype_uses_chronological_holdout(self) -> None:
+        """Temporal problems must validate on the latest rows, never a shuffled split."""
+        code = _prototype(is_temporal=True, temporal_order_column="date")
+
+        assert "train_test_split(" not in code
+        assert "_temporal_positions(X, TEMPORAL_ORDER_COLUMN)" in code
+        assert "TEMPORAL_ORDER_COLUMN = 'date'" in code
+        assert "IS_TEMPORAL = True" in code
+
+    def test_temporal_prototype_without_order_column_uses_row_order(self) -> None:
+        """Without an inferred order column the holdout falls back to file order."""
+        code = _prototype(is_temporal=True)
+
+        assert "train_test_split(" not in code
+        assert "TEMPORAL_ORDER_COLUMN = None" in code
+
+    def test_non_temporal_prototype_keeps_random_split(self) -> None:
+        """Non-temporal problems keep the stratified shuffled split."""
+        code = _prototype(is_temporal=False)
+
+        assert "train_test_split(" in code
+        assert "IS_TEMPORAL = False" in code

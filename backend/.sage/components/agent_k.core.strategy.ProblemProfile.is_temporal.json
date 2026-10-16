@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Temporal problems must use a chronological holdout; shuffled splits leak\nfuture observations into training and inflate the validation score.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.strategy:ProblemProfile.is_temporal",
+  "line": 137,
+  "notice": "True when the problem is a time-series task.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/strategy.py",
+  "summary": "Report whether validation must respect time order.",
+  "type": "method"
+}

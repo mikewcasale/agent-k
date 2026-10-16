@@ -33,14 +33,39 @@ import csv
 import os
 import shutil
 import zipfile
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Final
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
 
 __all__ = ("CompetitionSchema", "infer_competition_schema", "locate_data_files", "stage_competition_data")
+
+SAMPLE_ROW_LIMIT: Final[int] = 400
+"""Maximum number of data rows sampled per file when inferring column types."""
+
+MIN_DATETIME_SAMPLES: Final[int] = 4
+"""Minimum number of non-empty values required before a column can read as temporal."""
+
+DATETIME_MATCH_RATIO: Final[float] = 0.8
+"""Fraction of sampled values that must parse before a column is treated as temporal."""
+
+_DATETIME_SEPARATORS: Final[tuple[str, ...]] = ("-", "/", ":")
+_DATETIME_FORMATS: Final[tuple[str | None, ...]] = (
+    None,
+    "%Y/%m/%d",
+    "%d/%m/%Y",
+    "%m/%d/%Y",
+    "%d-%m-%Y",
+    "%m-%d-%Y",
+    "%Y/%m",
+    "%d/%m/%Y %H:%M",
+    "%m/%d/%Y %H:%M",
+    "%d/%m/%Y %H:%M:%S",
+    "%m/%d/%Y %H:%M:%S",
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,20 +87,24 @@ class CompetitionSchema:
     id_column: str
     target_columns: list[str]
     train_target_columns: list[str]
+    datetime_columns: list[str] = field(default_factory=list)
+    temporal_order_column: str | None = None
 
 
 def infer_competition_schema(train_path: Path, test_path: Path, sample_path: Path) -> CompetitionSchema:
     """Infer competition schema from train/test/sample submission files.
 
     @notice: |
-        Analyzes CSV headers to determine ID column and target columns.
+        Analyzes CSV headers to determine ID column, target columns, and temporal layout.
 
     @dev: |
         Compares train vs test headers to identify target columns.
         Falls back to sample submission columns if no difference found.
+        Samples data rows to detect datetime feature columns and, when the data is
+        ordered or split chronologically, the column that defines that order.
     """
-    train_header = _read_header(train_path)
-    test_header = _read_header(test_path)
+    train_header, train_rows = _read_sample(train_path)
+    test_header, test_rows = _read_sample(test_path)
     sample_header = _read_header(sample_path)
 
     if len(sample_header) < 2:
@@ -88,8 +117,20 @@ def infer_competition_schema(train_path: Path, test_path: Path, sample_path: Pat
         column for column in train_header if column not in test_header and column != id_column
     ] or list(target_columns)
 
+    datetime_columns, temporal_order_column = _infer_temporal_layout(
+        train_header=train_header,
+        train_rows=train_rows,
+        test_header=test_header,
+        test_rows=test_rows,
+        excluded={id_column, *train_target_columns, *target_columns},
+    )
+
     return CompetitionSchema(
-        id_column=id_column, target_columns=list(target_columns), train_target_columns=train_target_columns
+        id_column=id_column,
+        target_columns=list(target_columns),
+        train_target_columns=train_target_columns,
+        datetime_columns=datetime_columns,
+        temporal_order_column=temporal_order_column,
     )
 
 
@@ -165,6 +206,95 @@ def _read_header(path: Path) -> list[str]:
     with path.open("r", encoding="utf-8", errors="ignore", newline="") as handle:
         reader = csv.reader(handle)
         return next(reader, [])
+
+
+def _read_sample(path: Path, *, limit: int = SAMPLE_ROW_LIMIT) -> tuple[list[str], list[list[str]]]:
+    with path.open("r", encoding="utf-8", errors="ignore", newline="") as handle:
+        reader = csv.reader(handle)
+        header = next(reader, [])
+        rows: list[list[str]] = []
+        for row in reader:
+            rows.append(row)
+            if len(rows) >= limit:
+                break
+    return header, rows
+
+
+def _parse_datetime(value: str, fmt: str | None) -> datetime | None:
+    if not any(separator in value for separator in _DATETIME_SEPARATORS):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value) if fmt is None else datetime.strptime(value, fmt)
+    except ValueError:
+        return None
+    return parsed.astimezone(UTC).replace(tzinfo=None) if parsed.tzinfo is not None else parsed
+
+
+def _column_datetimes(values: list[str]) -> list[datetime] | None:
+    """Parse a sampled column with a single format, or return None when it is not temporal."""
+    if len(values) < MIN_DATETIME_SAMPLES:
+        return None
+    for fmt in _DATETIME_FORMATS:
+        parsed = [_parse_datetime(value, fmt) for value in values]
+        matched = [item for item in parsed if item is not None]
+        if len(matched) / len(values) < DATETIME_MATCH_RATIO:
+            continue
+        return matched if len(set(matched)) > 1 else None
+    return None
+
+
+def _column_values(header: list[str], rows: list[list[str]], column: str) -> list[str]:
+    try:
+        index = header.index(column)
+    except ValueError:
+        return []
+    return [row[index].strip() for row in rows if index < len(row) and row[index].strip()]
+
+
+def _is_non_decreasing(values: list[datetime]) -> bool:
+    return all(earlier <= later for earlier, later in zip(values, values[1:], strict=False))
+
+
+def _infer_temporal_layout(
+    *,
+    train_header: list[str],
+    train_rows: list[list[str]],
+    test_header: list[str],
+    test_rows: list[list[str]],
+    excluded: set[str],
+) -> tuple[list[str], str | None]:
+    """Detect datetime feature columns and the column that orders the data in time.
+
+    @notice: |
+        Returns the detected datetime columns and the temporal ordering column.
+
+    @dev: |
+        A column only becomes the ordering column when the sampled train values are
+        non-decreasing in file order, or when every sampled test value is later than
+        every sampled train value (a forecast split). This keeps unordered date
+        attributes, such as a date of birth, from switching validation to a
+        chronological holdout.
+    """
+    datetime_columns: list[str] = []
+    order_column: str | None = None
+    order_rank = 0
+
+    for column in train_header:
+        if column in excluded:
+            continue
+        train_values = _column_datetimes(_column_values(train_header, train_rows, column))
+        if train_values is None:
+            continue
+        datetime_columns.append(column)
+
+        test_values = _column_datetimes(_column_values(test_header, test_rows, column))
+        is_forecast_split = test_values is not None and min(test_values) > max(train_values)
+        rank = 2 if is_forecast_split else 1 if _is_non_decreasing(train_values) else 0
+        if rank > order_rank:
+            order_rank = rank
+            order_column = column
+
+    return datetime_columns, order_column
 
 
 def _safe_extract_zip(archive_path: Path, destination: Path) -> list[Path]:

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Unparseable timestamps become the earliest value so they land in the training\nhalf instead of silently joining the holdout. A column that parses to no\ntimestamps at all leaves the original row order untouched.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.agents.evolver:_temporal_order",
+  "line": 2600,
+  "notice": "Orders rows by ``order_column``, falling back to file order.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/agents/evolver.py",
+  "summary": "Return row positions ordered in time.",
+  "type": "function"
+}

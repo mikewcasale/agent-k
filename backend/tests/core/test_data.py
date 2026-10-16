@@ -100,3 +100,103 @@ def test_stage_competition_data(tmp_path: Path) -> None:
     assert staged["train"].exists()
     assert staged["test"].exists()
     assert staged["sample"].exists()
+
+
+def _temporal_rows(days: list[str]) -> list[list[str]]:
+    return [[str(index), day, f"{index * 0.5}"] for index, day in enumerate(days)]
+
+
+def test_infer_competition_schema_detects_forecast_split(tmp_path: Path) -> None:
+    """A test set that starts after the train set marks the date column as the order column."""
+    train_path = tmp_path / "train.csv"
+    test_path = tmp_path / "test.csv"
+    sample_path = tmp_path / "sample_submission.csv"
+
+    _write_csv(
+        train_path,
+        ["id", "date", "target"],
+        [
+            ["1", "2021-03-01", "1.0"],
+            ["2", "2021-01-01", "2.0"],
+            ["3", "2021-02-01", "3.0"],
+            ["4", "2021-04-01", "4.0"],
+        ],
+    )
+    _write_csv(
+        test_path, ["id", "date"], [["5", "2021-05-01"], ["6", "2021-06-01"], ["7", "2021-07-01"], ["8", "2021-08-01"]]
+    )
+    _write_csv(sample_path, ["id", "target"], [["5", "0"]])
+
+    schema = infer_competition_schema(train_path, test_path, sample_path)
+
+    assert schema.datetime_columns == ["date"]
+    assert schema.temporal_order_column == "date"
+
+
+def test_infer_competition_schema_detects_sorted_train(tmp_path: Path) -> None:
+    """A chronologically sorted train file marks the date column as the order column."""
+    train_path = tmp_path / "train.csv"
+    test_path = tmp_path / "test.csv"
+    sample_path = tmp_path / "sample_submission.csv"
+
+    _write_csv(
+        train_path,
+        ["id", "timestamp", "target"],
+        _temporal_rows(["2021-01-01 00:00:00", "2021-01-01 01:00:00", "2021-01-01 02:00:00", "2021-01-01 03:00:00"]),
+    )
+    _write_csv(test_path, ["id", "timestamp"], [["9", "2021-01-01 04:00:00"]])
+    _write_csv(sample_path, ["id", "target"], [["9", "0"]])
+
+    schema = infer_competition_schema(train_path, test_path, sample_path)
+
+    assert schema.datetime_columns == ["timestamp"]
+    assert schema.temporal_order_column == "timestamp"
+
+
+def test_infer_competition_schema_ignores_unordered_dates(tmp_path: Path) -> None:
+    """An unordered date attribute is reported but never becomes the order column."""
+    train_path = tmp_path / "train.csv"
+    test_path = tmp_path / "test.csv"
+    sample_path = tmp_path / "sample_submission.csv"
+
+    _write_csv(
+        train_path,
+        ["id", "birth_date", "target"],
+        [
+            ["1", "1980-04-02", "1.0"],
+            ["2", "1955-11-30", "2.0"],
+            ["3", "1992-07-14", "3.0"],
+            ["4", "1964-01-09", "4.0"],
+        ],
+    )
+    _write_csv(
+        test_path,
+        ["id", "birth_date"],
+        [["5", "1971-02-02"], ["6", "1948-09-21"], ["7", "1999-12-03"], ["8", "1960-06-16"]],
+    )
+    _write_csv(sample_path, ["id", "target"], [["5", "0"]])
+
+    schema = infer_competition_schema(train_path, test_path, sample_path)
+
+    assert schema.datetime_columns == ["birth_date"]
+    assert schema.temporal_order_column is None
+
+
+def test_infer_competition_schema_ignores_numeric_identifiers(tmp_path: Path) -> None:
+    """Digit-only columns are never mistaken for dates."""
+    train_path = tmp_path / "train.csv"
+    test_path = tmp_path / "test.csv"
+    sample_path = tmp_path / "sample_submission.csv"
+
+    _write_csv(
+        train_path,
+        ["id", "serial", "target"],
+        [["1", "20210101", "1.0"], ["2", "20210102", "2.0"], ["3", "20210103", "3.0"], ["4", "20210104", "4.0"]],
+    )
+    _write_csv(test_path, ["id", "serial"], [["5", "20210105"]])
+    _write_csv(sample_path, ["id", "target"], [["5", "0"]])
+
+    schema = infer_competition_schema(train_path, test_path, sample_path)
+
+    assert schema.datetime_columns == []
+    assert schema.temporal_order_column is None

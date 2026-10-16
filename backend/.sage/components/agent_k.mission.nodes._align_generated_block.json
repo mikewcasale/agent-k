@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Template placeholders sit at a fixed indentation inside the source f-string.\nA substituted block whose continuation lines start at column zero destroys the\ncommon prefix that ``dedent`` strips, which emits code that cannot be parsed.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:_align_generated_block",
+  "line": 2398,
+  "notice": "Re-indents every line after the first so ``textwrap.dedent`` still applies.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Align a multi-line code block with the indentation of a generated-code template.",
+  "type": "function"
+}

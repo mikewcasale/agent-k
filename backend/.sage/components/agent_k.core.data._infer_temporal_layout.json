@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "A column only becomes the ordering column when the sampled train values are\nnon-decreasing in file order, or when every sampled test value is later than\nevery sampled train value (a forecast split). This keeps unordered date\nattributes, such as a date of birth, from switching validation to a\nchronological holdout.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.data:_infer_temporal_layout",
+  "line": 266,
+  "notice": "Returns the detected datetime columns and the temporal ordering column.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/data.py",
+  "summary": "Detect datetime feature columns and the column that orders the data in time.",
+  "type": "function"
+}

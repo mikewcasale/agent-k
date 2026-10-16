@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-10-16T04:24:02.217223+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1102,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -1763,6 +1763,30 @@
         "line": 1060,
         "name": "canonical_home",
         "value": "{\"for\": [\"evolver agent construction\"], \"notes\": \"Use EvolverAgent() or module singleton.\"}"
+      },
+      {
+        "component": "agent_k.agents.evolver:_temporal_order",
+        "line": 2602,
+        "name": "notice",
+        "value": "Orders rows by ``order_column``, falling back to file order."
+      },
+      {
+        "component": "agent_k.agents.evolver:_temporal_order",
+        "line": 2605,
+        "name": "dev",
+        "value": "Unparseable timestamps become the earliest value so they land in the training\nhalf instead of silently joining the holdout. A column that parses to no\ntimestamps at all leaves the original row order u"
+      },
+      {
+        "component": "agent_k.agents.evolver:_prepare_validation_split",
+        "line": 2629,
+        "name": "notice",
+        "value": "Splits the training file into a train frame and a scored holdout."
+      },
+      {
+        "component": "agent_k.agents.evolver:_prepare_validation_split",
+        "line": 2632,
+        "name": "dev",
+        "value": "Temporal problems hold out the latest rows so candidate fitness reflects\nforecasting error. Shuffling a temporal dataset leaks neighbouring\nobservations into training and inflates every fitness score "
       }
     ],
     "agent_k/agents/lobbyist.py": [
@@ -2650,57 +2674,69 @@
       },
       {
         "component": "agent_k.core.data:CompetitionSchema",
-        "line": 50,
+        "line": 75,
         "name": "notice",
         "value": "Schema details inferred from competition data files."
       },
       {
         "component": "agent_k.core.data:CompetitionSchema",
-        "line": 53,
+        "line": 78,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.data:CompetitionSchema",
-        "line": 56,
+        "line": 81,
         "name": "pattern",
         "value": "{\"name\": \"schema-model\", \"rationale\": \"Captures inferred column layout for downstream steps.\", \"violations\": \"Ad-hoc dicts drift from actual data shape.\"}"
       },
       {
         "component": "agent_k.core.data:infer_competition_schema",
-        "line": 70,
+        "line": 97,
         "name": "notice",
-        "value": "Analyzes CSV headers to determine ID column and target columns."
+        "value": "Analyzes CSV headers to determine ID column, target columns, and temporal layout."
       },
       {
         "component": "agent_k.core.data:infer_competition_schema",
-        "line": 73,
+        "line": 100,
         "name": "dev",
-        "value": "Compares train vs test headers to identify target columns.\nFalls back to sample submission columns if no difference found."
+        "value": "Compares train vs test headers to identify target columns.\nFalls back to sample submission columns if no difference found.\nSamples data rows to detect datetime feature columns and, when the data is\nor"
       },
       {
         "component": "agent_k.core.data:locate_data_files",
-        "line": 99,
+        "line": 140,
         "name": "notice",
         "value": "Finds train, test, and sample submission files from a list of paths."
       },
       {
         "component": "agent_k.core.data:locate_data_files",
-        "line": 102,
+        "line": 143,
         "name": "dev",
         "value": "Automatically extracts ZIP files and searches for files by name pattern.\nRaises FileNotFoundError if required files are not found."
       },
       {
         "component": "agent_k.core.data:stage_competition_data",
-        "line": 135,
+        "line": 176,
         "name": "notice",
         "value": "Copies or links data files to a destination with standardized names."
       },
       {
         "component": "agent_k.core.data:stage_competition_data",
-        "line": 138,
+        "line": 179,
         "name": "dev",
         "value": "Creates train.csv, test.csv, sample_submission.csv in destination.\nUses hard links when possible to save disk space."
+      },
+      {
+        "component": "agent_k.core.data:_infer_temporal_layout",
+        "line": 268,
+        "name": "notice",
+        "value": "Returns the detected datetime columns and the temporal ordering column."
+      },
+      {
+        "component": "agent_k.core.data:_infer_temporal_layout",
+        "line": 271,
+        "name": "dev",
+        "value": "A column only becomes the ordering column when the sampled train values are\nnon-decreasing in file order, or when every sampled test value is later than\nevery sampled train value (a forecast split). T"
       }
     ],
     "agent_k/core/deps.py": [
@@ -4344,151 +4380,163 @@
       },
       {
         "component": "agent_k.core.strategy:ProblemType",
-        "line": 70,
+        "line": 73,
         "name": "notice",
         "value": "Supported ML problem types for policy selection."
       },
       {
         "component": "agent_k.core.strategy:ProblemType",
-        "line": 73,
+        "line": 76,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.strategy:ProblemType",
-        "line": 76,
+        "line": 79,
         "name": "pattern",
         "value": "{\"name\": \"enumeration\", \"rationale\": \"StrEnum for ML problem taxonomy.\", \"violations\": \"String literals drift across policy logic.\"}"
       },
       {
         "component": "agent_k.core.strategy:ProblemProfile",
-        "line": 95,
+        "line": 113,
         "name": "notice",
         "value": "Profile describing the ML task for a competition."
       },
       {
         "component": "agent_k.core.strategy:ProblemProfile",
-        "line": 98,
+        "line": 116,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.strategy:ProblemProfile",
-        "line": 101,
+        "line": 119,
         "name": "pattern",
         "value": "{\"name\": \"profile-model\", \"rationale\": \"Bundles task metadata for downstream policies.\", \"violations\": \"Implicit profiles make policy decisions inconsistent.\"}"
       },
       {
+        "component": "agent_k.core.strategy:ProblemProfile.is_temporal",
+        "line": 139,
+        "name": "notice",
+        "value": "True when the problem is a time-series task."
+      },
+      {
+        "component": "agent_k.core.strategy:ProblemProfile.is_temporal",
+        "line": 142,
+        "name": "dev",
+        "value": "Temporal problems must use a chronological holdout; shuffled splits leak\nfuture observations into training and inflate the validation score."
+      },
+      {
         "component": "agent_k.core.strategy:TechniquePolicy",
-        "line": 121,
+        "line": 153,
         "name": "notice",
         "value": "Generic technique policy for solution enforcement."
       },
       {
         "component": "agent_k.core.strategy:TechniquePolicy",
-        "line": 124,
+        "line": 156,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.strategy:TechniquePolicy",
-        "line": 127,
+        "line": 159,
         "name": "pattern",
         "value": "{\"name\": \"policy-model\", \"rationale\": \"Encodes technique constraints for evolution.\", \"violations\": \"Inline tuning fragments policy definitions.\"}"
       },
       {
         "component": "agent_k.core.strategy:FitnessInput",
-        "line": 148,
+        "line": 180,
         "name": "notice",
         "value": "Input payload for fitness scoring."
       },
       {
         "component": "agent_k.core.strategy:FitnessInput",
-        "line": 151,
+        "line": 183,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.strategy:FitnessInput",
-        "line": 154,
+        "line": 186,
         "name": "pattern",
         "value": "{\"name\": \"fitness-input\", \"rationale\": \"Captures evaluation signals for scoring.\", \"violations\": \"Ad-hoc inputs drift across fitness logic.\"}"
       },
       {
         "component": "agent_k.core.strategy:FitnessPolicy",
-        "line": 172,
+        "line": 204,
         "name": "notice",
         "value": "Policy controlling fitness adjustments."
       },
       {
         "component": "agent_k.core.strategy:FitnessPolicy",
-        "line": 175,
+        "line": 207,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.strategy:FitnessPolicy",
-        "line": 178,
+        "line": 210,
         "name": "pattern",
         "value": "{\"name\": \"policy-model\", \"rationale\": \"Encodes penalty tuning for fitness scoring.\", \"violations\": \"Inline penalties drift across runs.\"}"
       },
       {
         "component": "agent_k.core.strategy:build_problem_profile",
-        "line": 194,
+        "line": 226,
         "name": "notice",
         "value": "Creates a ProblemProfile from competition metadata and data schema."
       },
       {
         "component": "agent_k.core.strategy:build_problem_profile",
-        "line": 197,
+        "line": 229,
         "name": "dev",
         "value": "Infers problem type (tabular/vision/text, classification/regression)\nfrom competition tags and evaluation metric."
       },
       {
         "component": "agent_k.core.strategy:build_technique_policy",
-        "line": 228,
+        "line": 263,
         "name": "notice",
         "value": "Creates a TechniquePolicy with evolution parameters for the problem type."
       },
       {
         "component": "agent_k.core.strategy:build_technique_policy",
-        "line": 231,
+        "line": 266,
         "name": "dev",
         "value": "Adjusts population size and generation limits based on criteria.\nTarget transforms and outlier clipping are disabled (handled by evolver)."
       },
       {
         "component": "agent_k.core.strategy:build_fitness_policy",
-        "line": 268,
+        "line": 305,
         "name": "notice",
         "value": "Creates a FitnessPolicy with penalty weights and thresholds."
       },
       {
         "component": "agent_k.core.strategy:build_fitness_policy",
-        "line": 271,
+        "line": 308,
         "name": "dev",
         "value": "Penalty weight scales with min_improvements_required.\nComplexity threshold defaults based on problem type."
       },
       {
         "component": "agent_k.core.strategy:build_fitness_function",
-        "line": 298,
+        "line": 335,
         "name": "notice",
         "value": "Creates a callable fitness function from a FitnessPolicy."
       },
       {
         "component": "agent_k.core.strategy:build_fitness_function",
-        "line": 301,
+        "line": 338,
         "name": "dev",
         "value": "Returns a closure that scores FitnessInput based on policy thresholds.\nInvalid inputs return 0.0; penalties applied for runtime/complexity."
       },
       {
         "component": "agent_k.core.strategy:apply_solution_policy",
-        "line": 325,
+        "line": 362,
         "name": "notice",
         "value": "Transforms solution code based on technique policy (currently no-op)."
       },
       {
         "component": "agent_k.core.strategy:apply_solution_policy",
-        "line": 328,
+        "line": 365,
         "name": "dev",
         "value": "Policy injection is disabled to allow evolutionary search to handle\ndata preparation generically. Returns (code, []) unchanged."
       }
@@ -6257,76 +6305,100 @@
         "value": "[\"timeout > 0\"]"
       },
       {
+        "component": "agent_k.mission.nodes:PrototypeNode._generate_prototype",
+        "line": 631,
+        "name": "notice",
+        "value": "Builds runnable baseline code for the inferred problem type."
+      },
+      {
+        "component": "agent_k.mission.nodes:PrototypeNode._generate_prototype",
+        "line": 634,
+        "name": "dev",
+        "value": "Temporal problems validate on a chronological holdout (the latest rows by\n``temporal_order_column``, or by file order when no ordering column was\ninferred). Shuffled splits are reserved for non-tempor"
+      },
+      {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 908,
+        "line": 976,
         "name": "notice",
         "value": "Evolution phase node."
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 911,
+        "line": 979,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 914,
+        "line": 982,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates evolution phase logic in the mission graph.\", \"violations\": \"Evolution logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 919,
+        "line": 987,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.evolver:EvolverAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated pe"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 928,
+        "line": 996,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 933,
+        "line": 1001,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1610,
+        "line": 1678,
         "name": "notice",
         "value": "Submission phase node."
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1613,
+        "line": 1681,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1616,
+        "line": 1684,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates submission phase logic in the mission graph.\", \"violations\": \"Submission logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1621,
+        "line": 1689,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.agents.evolver:EvolverAgent\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated pe"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1630,
+        "line": 1698,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1635,
+        "line": 1703,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
+      },
+      {
+        "component": "agent_k.mission.nodes:_align_generated_block",
+        "line": 2400,
+        "name": "notice",
+        "value": "Re-indents every line after the first so ``textwrap.dedent`` still applies."
+      },
+      {
+        "component": "agent_k.mission.nodes:_align_generated_block",
+        "line": 2403,
+        "name": "dev",
+        "value": "Template placeholders sit at a fixed indentation inside the source f-string.\nA substituted block whose continuation lines start at column zero destroys the\ncommon prefix that ``dedent`` strips, which "
       }
     ],
     "agent_k/mission/persistence.py": [

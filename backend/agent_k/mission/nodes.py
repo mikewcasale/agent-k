@@ -498,12 +498,22 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     profile = build_problem_profile(competition, schema)
                     technique_policy = build_technique_policy(profile, state.criteria)
 
+                    logfire.info(
+                        "prototype_validation_strategy",
+                        competition_id=competition_id,
+                        problem_type=profile.problem_type.value,
+                        validation="chronological" if profile.is_temporal else "random",
+                        temporal_order_column=profile.temporal_order_column,
+                        datetime_columns=schema.datetime_columns,
+                    )
                     prototype_code = self._generate_prototype(
                         competition,
                         state.research_findings,
                         target_columns=schema.target_columns,
                         train_target_columns=schema.train_target_columns,
                         id_column=schema.id_column,
+                        is_temporal=profile.is_temporal,
+                        temporal_order_column=profile.temporal_order_column,
                     )
                     prototype_code, notes = apply_solution_policy(prototype_code, technique_policy)
                     if notes:
@@ -613,8 +623,20 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         target_columns: list[str],
         train_target_columns: list[str],
         id_column: str,
+        is_temporal: bool = False,
+        temporal_order_column: str | None = None,
     ) -> str:
-        """Generate prototype solution code."""
+        """Generate prototype solution code.
+
+        @notice: |
+            Builds runnable baseline code for the inferred problem type.
+
+        @dev: |
+            Temporal problems validate on a chronological holdout (the latest rows by
+            ``temporal_order_column``, or by file order when no ordering column was
+            inferred). Shuffled splits are reserved for non-temporal problems because
+            they leak future observations and inflate the baseline score.
+        """
         metric = getattr(competition, "metric", None)
         metric_key = metric if isinstance(metric, EvaluationMetric) else EvaluationMetric.ACCURACY
         metric_value = metric_key.value
@@ -676,6 +698,54 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
             model_bootstrap = ""
             model_init = f"base_model = {model_class}(random_state=42)"
 
+        if is_temporal:
+            temporal_helper = dedent(
+                """
+                def _temporal_positions(frame, order_column):
+                    if order_column and order_column in frame.columns:
+                        order_values = pd.to_datetime(frame[order_column], errors="coerce")
+                        if order_values.notna().any():
+                            order_values = order_values.fillna(order_values.min())
+                            return np.argsort(order_values.to_numpy(), kind="stable")
+                    return np.arange(len(frame))
+                """
+            ).strip()
+            split_block = dedent(
+                """
+                positions = _temporal_positions(X, TEMPORAL_ORDER_COLUMN)
+                n_val = max(1, int(round(len(X) * VALIDATION_SPLIT)))
+                if n_val >= len(X):
+                    n_val = max(1, len(X) // 5)
+                train_positions = positions[:-n_val]
+                val_positions = positions[-n_val:]
+                if len(train_positions) == 0:
+                    train_positions = positions
+                    val_positions = positions
+                X_train = X.iloc[train_positions]
+                X_val = X.iloc[val_positions]
+                y_train = y.iloc[train_positions]
+                y_val = y.iloc[val_positions]
+                """
+            ).strip()
+        else:
+            temporal_helper = ""
+            split_block = dedent(
+                """
+                X_train, X_val, y_train, y_val = train_test_split(
+                    X,
+                    y,
+                    test_size=VALIDATION_SPLIT,
+                    random_state=42,
+                    stratify=y if IS_CLASSIFICATION and len(TRAIN_TARGET_COLUMNS) == 1 else None,
+                )
+                """
+            ).strip()
+
+        model_bootstrap = _align_generated_block(model_bootstrap)
+        model_init = _align_generated_block(model_init)
+        split_block = _align_generated_block(split_block)
+        temporal_helper = _align_generated_block(temporal_helper)
+
         prototype_code = (
             dedent(
                 f"""
@@ -709,6 +779,10 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         IS_CLASSIFICATION = {is_classification}
         USES_PROBA = {uses_proba}
         USES_LOG_TARGET = False
+        IS_TEMPORAL = {is_temporal}
+        TEMPORAL_ORDER_COLUMN = {temporal_order_column!r}
+        
+        {temporal_helper}
         
         train_df = pd.read_csv("train.csv")
         test_df = pd.read_csv("test.csv")
@@ -744,13 +818,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 else MultiOutputRegressor(base_model)
             )
         
-        X_train, X_val, y_train, y_val = train_test_split(
-            X,
-            y,
-            test_size=VALIDATION_SPLIT,
-            random_state=42,
-            stratify=y if IS_CLASSIFICATION and len(TRAIN_TARGET_COLUMNS) == 1 else None,
-        )
+        {split_block}
         
         clf = Pipeline(steps=[
             ("preprocessor", preprocessor),
@@ -2324,6 +2392,26 @@ def _write_fallback_submission(
                             target, next(iter(per_column_predictions.values()), 0.0)
                         )
                 writer.writerow(entry)
+
+
+def _align_generated_block(block: str, *, indent: int = 8) -> str:
+    """Align a multi-line code block with the indentation of a generated-code template.
+
+    @notice: |
+        Re-indents every line after the first so ``textwrap.dedent`` still applies.
+
+    @dev: |
+        Template placeholders sit at a fixed indentation inside the source f-string.
+        A substituted block whose continuation lines start at column zero destroys the
+        common prefix that ``dedent`` strips, which emits code that cannot be parsed.
+    """
+    lines = block.splitlines()
+    if not lines:
+        return ""
+    prefix = " " * indent
+    aligned = [lines[0]]
+    aligned.extend(f"{prefix}{line}" if line.strip() else "" for line in lines[1:])
+    return "\n".join(aligned)
 
 
 def _generate_fallback_prototype(

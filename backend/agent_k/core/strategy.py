@@ -60,6 +60,9 @@ _CLASSIFICATION_METRICS: Final[frozenset[EvaluationMetric]] = frozenset(
 )
 _VISION_TAGS: Final[frozenset[str]] = frozenset({"vision", "computer vision", "image", "images"})
 _TEXT_TAGS: Final[frozenset[str]] = frozenset({"nlp", "text", "language"})
+_TIMESERIES_TAGS: Final[frozenset[str]] = frozenset(
+    {"time series", "time-series", "timeseries", "forecasting", "forecast", "sequential"}
+)
 
 type FitnessFunction = Callable[["FitnessInput"], float]
 
@@ -85,7 +88,22 @@ class ProblemType(StrEnum):
     VISION_CLASSIFICATION = "vision_classification"
     TEXT_REGRESSION = "text_regression"
     TEXT_CLASSIFICATION = "text_classification"
+    TIMESERIES_REGRESSION = "timeseries_regression"
+    TIMESERIES_CLASSIFICATION = "timeseries_classification"
     UNKNOWN = "unknown"
+
+
+_TIMESERIES_TYPES: Final[frozenset[ProblemType]] = frozenset(
+    {ProblemType.TIMESERIES_REGRESSION, ProblemType.TIMESERIES_CLASSIFICATION}
+)
+_TABULAR_LIKE_TYPES: Final[frozenset[ProblemType]] = frozenset(
+    {
+        ProblemType.TABULAR_REGRESSION,
+        ProblemType.TABULAR_CLASSIFICATION,
+        ProblemType.TIMESERIES_REGRESSION,
+        ProblemType.TIMESERIES_CLASSIFICATION,
+    }
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -112,6 +130,20 @@ class ProblemProfile:
     id_column: str
     uses_proba: bool
     is_classification: bool
+    temporal_order_column: str | None = None
+
+    @property
+    def is_temporal(self) -> bool:
+        """Report whether validation must respect time order.
+
+        @notice: |
+            True when the problem is a time-series task.
+
+        @dev: |
+            Temporal problems must use a chronological holdout; shuffled splits leak
+            future observations into training and inflate the validation score.
+        """
+        return self.problem_type in _TIMESERIES_TYPES
 
 
 @dataclass(frozen=True, slots=True)
@@ -207,6 +239,8 @@ def build_problem_profile(competition: Competition, schema: CompetitionSchema) -
         problem_type = ProblemType.VISION_CLASSIFICATION if is_classification else ProblemType.VISION_REGRESSION
     elif tags & _TEXT_TAGS:
         problem_type = ProblemType.TEXT_CLASSIFICATION if is_classification else ProblemType.TEXT_REGRESSION
+    elif schema.temporal_order_column is not None or tags & _TIMESERIES_TAGS:
+        problem_type = ProblemType.TIMESERIES_CLASSIFICATION if is_classification else ProblemType.TIMESERIES_REGRESSION
     else:
         problem_type = ProblemType.TABULAR_CLASSIFICATION if is_classification else ProblemType.TABULAR_REGRESSION
 
@@ -219,6 +253,7 @@ def build_problem_profile(competition: Competition, schema: CompetitionSchema) -
         id_column=schema.id_column,
         uses_proba=uses_proba,
         is_classification=is_classification,
+        temporal_order_column=schema.temporal_order_column,
     )
 
 
@@ -232,7 +267,10 @@ def build_technique_policy(profile: ProblemProfile, criteria: MissionCriteria | 
         Adjusts population size and generation limits based on criteria.
         Target transforms and outlier clipping are disabled (handled by evolver).
     """
-    enable_target_transform = profile.problem_type == ProblemType.TABULAR_REGRESSION
+    enable_target_transform = profile.problem_type in {
+        ProblemType.TABULAR_REGRESSION,
+        ProblemType.TIMESERIES_REGRESSION,
+    }
     min_generations = 5
     min_population_size = 6
     min_elite_archive_size = 3
@@ -246,8 +284,7 @@ def build_technique_policy(profile: ProblemProfile, criteria: MissionCriteria | 
 
     return TechniquePolicy(
         problem_type=profile.problem_type,
-        enable_outlier_clipping=profile.problem_type
-        in {ProblemType.TABULAR_REGRESSION, ProblemType.TABULAR_CLASSIFICATION},
+        enable_outlier_clipping=profile.problem_type in _TABULAR_LIKE_TYPES,
         enable_target_transform=enable_target_transform,
         min_generations=min_generations,
         min_population_size=min_population_size,
@@ -277,7 +314,7 @@ def build_fitness_policy(
         penalty_weight = min(0.2, 0.05 + criteria.min_improvements_required * 0.02)
 
     if complexity_threshold is None:
-        if profile.problem_type in {ProblemType.TABULAR_CLASSIFICATION, ProblemType.TABULAR_REGRESSION}:
+        if profile.problem_type in _TABULAR_LIKE_TYPES:
             complexity_threshold = 800
         else:
             complexity_threshold = 600

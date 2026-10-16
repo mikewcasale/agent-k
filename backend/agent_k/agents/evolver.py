@@ -1162,6 +1162,21 @@ class EvolverAgent(MemoryMixin):
                 f"- Families: {family_preview}{suffix}\n"
                 "- Use sample_elites to retrieve top + diverse candidates."
             )
+        profile = self._resolve_problem_profile(deps)
+        if profile.is_temporal:
+            order_hint = (
+                f"- Order rows by `{profile.temporal_order_column}` before splitting."
+                if profile.temporal_order_column
+                else "- Keep the original row order; it is chronological."
+            )
+            sections.append(
+                "VALIDATION CONSTRAINT (TIME SERIES):\n"
+                f"- Problem Type: {profile.problem_type.value}\n"
+                f"{order_hint}\n"
+                "- Validate on the latest rows only (chronological holdout or TimeSeriesSplit).\n"
+                "- Never use a shuffled split, KFold, or StratifiedKFold: they leak future rows\n"
+                "  into training and inflate the validation score."
+            )
         policy = self._resolve_technique_policy(deps)
         if policy is not None:
             sections.append(
@@ -1884,11 +1899,14 @@ class EvolverAgent(MemoryMixin):
     ) -> dict[str, Any]:
         with tempfile.TemporaryDirectory(dir=str(ctx.deps.data_dir)) as run_dir:
             run_path = Path(run_dir)
+            profile = self._resolve_problem_profile(ctx.deps)
             train_df, val_features, y_val, id_column = _prepare_validation_split(
                 train_path=ctx.deps.train_path,
                 id_column=ctx.deps.id_column,
                 target_columns=list(ctx.deps.train_target_columns or ctx.deps.target_columns),
                 validation_split=validation_split,
+                temporal=profile.is_temporal,
+                order_column=profile.temporal_order_column,
             )
             if max_rows is not None and max_rows > 0:
                 train_df = train_df.head(max_rows).copy()
@@ -2578,10 +2596,44 @@ def _truncate_csv(path: Path, *, max_rows: int) -> None:
     temp_path.replace(path)
 
 
+def _temporal_order(frame: pd.DataFrame, order_column: str | None) -> np.ndarray:
+    """Return row positions ordered in time.
+
+    @notice: |
+        Orders rows by ``order_column``, falling back to file order.
+
+    @dev: |
+        Unparseable timestamps become the earliest value so they land in the training
+        half instead of silently joining the holdout. A column that parses to no
+        timestamps at all leaves the original row order untouched.
+    """
+    if order_column and order_column in frame.columns:
+        values = pd.to_datetime(frame[order_column], errors="coerce")
+        if values.notna().any():
+            return np.argsort(values.fillna(values.min()).to_numpy(), kind="stable")
+    return np.arange(len(frame))
+
+
 def _prepare_validation_split(
-    *, train_path: Path, id_column: str | None, target_columns: list[str], validation_split: float, seed: int = 42
+    *,
+    train_path: Path,
+    id_column: str | None,
+    target_columns: list[str],
+    validation_split: float,
+    seed: int = 42,
+    temporal: bool = False,
+    order_column: str | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, str]:
-    """Create a deterministic train/validation split and return train, val-features, y_val, id column."""
+    """Create a deterministic train/validation split and return train, val-features, y_val, id column.
+
+    @notice: |
+        Splits the training file into a train frame and a scored holdout.
+
+    @dev: |
+        Temporal problems hold out the latest rows so candidate fitness reflects
+        forecasting error. Shuffling a temporal dataset leaks neighbouring
+        observations into training and inflates every fitness score in the run.
+    """
     if not target_columns:
         raise ValueError("target_columns is empty")
     if not (0.0 < validation_split < 1.0):
@@ -2597,9 +2649,12 @@ def _prepare_validation_split(
         if col not in frame.columns:
             raise ValueError(f"Missing target column: {col}")
 
-    rng = np.random.default_rng(seed)
-    indices = np.arange(len(frame))
-    rng.shuffle(indices)
+    if temporal:
+        indices = _temporal_order(frame, order_column)
+    else:
+        rng = np.random.default_rng(seed)
+        indices = np.arange(len(frame))
+        rng.shuffle(indices)
     split = int(round(len(indices) * (1.0 - validation_split)))
     train_idx = indices[:split]
     val_idx = indices[split:]

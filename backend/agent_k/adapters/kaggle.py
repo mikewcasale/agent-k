@@ -40,7 +40,7 @@ import io
 import re
 import zipfile
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Final
 from urllib.parse import quote
@@ -68,6 +68,8 @@ __all__ = ("KaggleAdapter", "KaggleSettings", "SCHEMA_VERSION")
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _COMPETITION_URL_PATTERN: Final[re.Pattern[str]] = re.compile(r"kaggle\.com/competitions/([a-zA-Z0-9-]+)")
+_CAMEL_BOUNDARY_PATTERN: Final[re.Pattern[str]] = re.compile(r"(?<!^)(?=[A-Z])")
+_TRUTHY_STRINGS: Final[frozenset[str]] = frozenset({"1", "true", "t", "yes", "y"})
 
 
 class KaggleSettings(BaseSettings):
@@ -226,7 +228,12 @@ class KaggleAdapter(PlatformAdapter):
                         continue
 
                     # Apply filters
-                    if active_only and not competition.is_active:
+                    if active_only and not competition.is_enterable:
+                        logfire.info(
+                            "skipping_unenterable_competition",
+                            competition_id=competition.id,
+                            blockers=list(competition.entry_blockers),
+                        )
                         continue
                     if min_prize and (competition.prize_pool or 0) < min_prize:
                         continue
@@ -555,4 +562,62 @@ class KaggleAdapter(PlatformAdapter):
             max_daily_submissions=data.get("maxDailySubmissions", 5),
             tags=tags,
             url=data.get("url"),
+            new_entrant_deadline=_parse_timestamp(_field(data, "newEntrantDeadline")),
+            user_has_entered=_parse_flag(_field(data, "userHasEntered")),
+            kernels_submissions_only=_parse_flag(_field(data, "isKernelsSubmissionsOnly")),
+            submissions_disabled=_parse_flag(_field(data, "submissionsDisabled")),
         )
+
+
+def _field(data: dict[str, Any], camel_key: str) -> Any:
+    """Read a payload field by its camelCase or snake_case spelling.
+
+    @dev: |
+        See module for behavior details and invariants.
+
+        @notice: |
+            Returns the first present spelling of a Kaggle payload key.
+    """
+    if camel_key in data:
+        return data[camel_key]
+    snake_key = _CAMEL_BOUNDARY_PATTERN.sub("_", camel_key).lower()
+    return data.get(snake_key)
+
+
+def _parse_flag(value: Any) -> bool:
+    """Coerce a Kaggle payload value into a boolean flag.
+
+    @dev: |
+        See module for behavior details and invariants.
+
+        @notice: |
+            Treats missing values and unknown strings as False.
+    """
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int | float):
+        return bool(value)
+    if isinstance(value, str):
+        return value.strip().lower() in _TRUTHY_STRINGS
+    return False
+
+
+def _parse_timestamp(value: Any) -> datetime | None:
+    """Coerce a Kaggle payload value into a timezone-aware datetime.
+
+    @dev: |
+        See module for behavior details and invariants.
+
+        @notice: |
+            Returns None when the value is absent or unparseable.
+    """
+    if isinstance(value, datetime):
+        return value if value.tzinfo is not None else value.replace(tzinfo=UTC)
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
+    except ValueError:
+        logfire.warning("unparseable_competition_timestamp", value=value[:64])
+        return None
+    return parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=UTC)

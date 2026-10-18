@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-10-18T01:23:35.537228+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +767,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1096,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -948,69 +948,105 @@
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleSettings",
-        "line": 78,
+        "line": 80,
         "name": "notice",
         "value": "Settings for Kaggle adapter."
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleSettings",
-        "line": 81,
+        "line": 83,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleSettings",
-        "line": 84,
+        "line": 86,
         "name": "pattern",
         "value": "{\"name\": \"settings\", \"rationale\": \"Centralizes Kaggle adapter configuration.\", \"violations\": \"Ad-hoc config makes auth inconsistent.\"}"
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 126,
+        "line": 128,
         "name": "notice",
         "value": "Async adapter for Kaggle competition APIs."
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 129,
+        "line": 131,
         "name": "dev",
         "value": "Wraps HTTP calls with retry/backoff and normalizes responses."
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 132,
+        "line": 134,
         "name": "pattern",
         "value": "{\"name\": \"adapter\", \"rationale\": \"Encapsulates Kaggle-specific API behavior.\", \"violations\": \"Direct HTTP use scatters auth/rate-limit logic.\"}"
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 137,
+        "line": 139,
         "name": "implements",
         "value": "[\"agent_k.core.protocols:PlatformAdapter\"]"
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 140,
+        "line": 142,
         "name": "inheritdoc",
         "value": "[\"agent_k.core.protocols:PlatformAdapter\"]"
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 143,
+        "line": 145,
         "name": "collaborators",
         "value": "{\"required\": [\"httpx:AsyncClient\"], \"injection\": \"dataclass\", \"lifecycle\": \"Use as async context manager per mission.\"}"
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 149,
+        "line": 151,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates internal auth and rate-limit state.\"}"
       },
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 154,
+        "line": 156,
         "name": "invariants",
         "value": "[\"self._client is initialized after __post_init__.\"]"
+      },
+      {
+        "component": "agent_k.adapters.kaggle:_field",
+        "line": 575,
+        "name": "dev",
+        "value": "See module for behavior details and invariants."
+      },
+      {
+        "component": "agent_k.adapters.kaggle:_field",
+        "line": 578,
+        "name": "notice",
+        "value": "Returns the first present spelling of a Kaggle payload key."
+      },
+      {
+        "component": "agent_k.adapters.kaggle:_parse_flag",
+        "line": 590,
+        "name": "dev",
+        "value": "See module for behavior details and invariants."
+      },
+      {
+        "component": "agent_k.adapters.kaggle:_parse_flag",
+        "line": 593,
+        "name": "notice",
+        "value": "Treats missing values and unknown strings as False."
+      },
+      {
+        "component": "agent_k.adapters.kaggle:_parse_timestamp",
+        "line": 608,
+        "name": "dev",
+        "value": "See module for behavior details and invariants."
+      },
+      {
+        "component": "agent_k.adapters.kaggle:_parse_timestamp",
+        "line": 611,
+        "name": "notice",
+        "value": "Returns None when the value is absent or unparseable."
       }
     ],
     "agent_k/adapters/openevolve.py": [
@@ -1956,29 +1992,29 @@
         "component": "agent_k.agents.lobbyist:LobbyistAgent.score_competition_fit",
         "line": 309,
         "name": "dev",
-        "value": "Returns a structured dict with score and reasoning."
+        "value": "Returns a structured dict with score and reasoning. Competitions the\nagent cannot enter and submit a file to score 0.0."
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent.score_competition_fit",
-        "line": 312,
+        "line": 313,
         "name": "effects",
         "value": "{\"state\": [null]}"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent._create_agent",
-        "line": 347,
+        "line": 358,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.agents.lobbyist:LobbyistAgent\", \"rationale\": \"Centralizes agent wiring and toolset preparation.\", \"singleton\": true, \"cache_key\": \"module\"}"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent._create_agent",
-        "line": 353,
+        "line": 364,
         "name": "canonical_home",
         "value": "{\"for\": [\"lobbyist agent construction\"], \"notes\": \"Use LobbyistAgent() or module singleton.\"}"
       },
       {
         "component": "agent_k.agents.lobbyist:LobbyistAgent._register_tools",
-        "line": 386,
+        "line": 397,
         "name": "effects",
         "value": "{\"state\": [\"self._toolset\"]}"
       }
@@ -3674,361 +3710,361 @@
       },
       {
         "component": "agent_k.core.models:LeaderboardEntry",
-        "line": 234,
+        "line": 284,
         "name": "notice",
         "value": "Entry in competition leaderboard."
       },
       {
         "component": "agent_k.core.models:LeaderboardEntry",
-        "line": 237,
+        "line": 287,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:LeaderboardEntry",
-        "line": 240,
+        "line": 290,
         "name": "pattern",
         "value": "{\"name\": \"immutable-entity\", \"rationale\": \"Frozen Pydantic model for leaderboard row data.\"}"
       },
       {
         "component": "agent_k.core.models:Submission",
-        "line": 257,
+        "line": 307,
         "name": "notice",
         "value": "Competition submission entity."
       },
       {
         "component": "agent_k.core.models:Submission",
-        "line": 260,
+        "line": 310,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:Submission",
-        "line": 263,
+        "line": 313,
         "name": "pattern",
         "value": "{\"name\": \"immutable-entity\", \"rationale\": \"Frozen Pydantic model for submission records.\"}"
       },
       {
         "component": "agent_k.core.models:ToolCall",
-        "line": 283,
+        "line": 333,
         "name": "notice",
         "value": "Base model for tool invocation tracking."
       },
       {
         "component": "agent_k.core.models:ToolCall",
-        "line": 286,
+        "line": 336,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:ToolCall",
-        "line": 289,
+        "line": 339,
         "name": "pattern",
         "value": "{\"name\": \"immutable-entity\", \"rationale\": \"Base frozen model for tool call telemetry.\"}"
       },
       {
         "component": "agent_k.core.models:WebSearchCall",
-        "line": 311,
+        "line": 361,
         "name": "notice",
         "value": "Web search tool call."
       },
       {
         "component": "agent_k.core.models:WebSearchCall",
-        "line": 314,
+        "line": 364,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:WebSearchCall",
-        "line": 317,
+        "line": 367,
         "name": "pattern",
         "value": "{\"name\": \"specialization\", \"rationale\": \"Extends ToolCall with web search specific fields.\"}"
       },
       {
         "component": "agent_k.core.models:KaggleMCPCall",
-        "line": 331,
+        "line": 381,
         "name": "notice",
         "value": "Kaggle MCP tool call."
       },
       {
         "component": "agent_k.core.models:KaggleMCPCall",
-        "line": 334,
+        "line": 384,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:KaggleMCPCall",
-        "line": 337,
+        "line": 387,
         "name": "pattern",
         "value": "{\"name\": \"specialization\", \"rationale\": \"Extends ToolCall with Kaggle API specific fields.\"}"
       },
       {
         "component": "agent_k.core.models:CodeExecutorCall",
-        "line": 349,
+        "line": 399,
         "name": "notice",
         "value": "Code execution tool call."
       },
       {
         "component": "agent_k.core.models:CodeExecutorCall",
-        "line": 352,
+        "line": 402,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:CodeExecutorCall",
-        "line": 355,
+        "line": 405,
         "name": "pattern",
         "value": "{\"name\": \"specialization\", \"rationale\": \"Extends ToolCall with code execution specific fields.\"}"
       },
       {
         "component": "agent_k.core.models:MemoryCall",
-        "line": 372,
+        "line": 422,
         "name": "notice",
         "value": "Memory operation tool call."
       },
       {
         "component": "agent_k.core.models:MemoryCall",
-        "line": 375,
+        "line": 425,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:MemoryCall",
-        "line": 378,
+        "line": 428,
         "name": "pattern",
         "value": "{\"name\": \"specialization\", \"rationale\": \"Extends ToolCall with memory operation specific fields.\"}"
       },
       {
         "component": "agent_k.core.models:PlannedTask",
-        "line": 392,
+        "line": 442,
         "name": "notice",
         "value": "A planned task within a phase."
       },
       {
         "component": "agent_k.core.models:PlannedTask",
-        "line": 395,
+        "line": 445,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:PlannedTask",
-        "line": 398,
+        "line": 448,
         "name": "pattern",
         "value": "{\"name\": \"immutable-entity\", \"rationale\": \"Frozen Pydantic model for task planning and tracking.\"}"
       },
       {
         "component": "agent_k.core.models:PhasePlan",
-        "line": 426,
+        "line": 476,
         "name": "notice",
         "value": "Plan for a mission phase."
       },
       {
         "component": "agent_k.core.models:PhasePlan",
-        "line": 429,
+        "line": 479,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:PhasePlan",
-        "line": 432,
+        "line": 482,
         "name": "pattern",
         "value": "{\"name\": \"immutable-entity\", \"rationale\": \"Frozen Pydantic model for phase-level planning.\"}"
       },
       {
         "component": "agent_k.core.models:MissionPlan",
-        "line": 455,
+        "line": 505,
         "name": "notice",
         "value": "Complete mission plan with all phases."
       },
       {
         "component": "agent_k.core.models:MissionPlan",
-        "line": 458,
+        "line": 508,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:MissionPlan",
-        "line": 461,
+        "line": 511,
         "name": "pattern",
         "value": "{\"name\": \"immutable-entity\", \"rationale\": \"Frozen Pydantic model for complete mission planning.\"}"
       },
       {
         "component": "agent_k.core.models:GenerationMetrics",
-        "line": 478,
+        "line": 528,
         "name": "notice",
         "value": "Metrics for a single evolution generation."
       },
       {
         "component": "agent_k.core.models:GenerationMetrics",
-        "line": 481,
+        "line": 531,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:GenerationMetrics",
-        "line": 484,
+        "line": 534,
         "name": "pattern",
         "value": "{\"name\": \"immutable-entity\", \"rationale\": \"Frozen Pydantic model for evolution generation metrics.\"}"
       },
       {
         "component": "agent_k.core.models:LeaderboardSubmission",
-        "line": 508,
+        "line": 558,
         "name": "notice",
         "value": "Record of a submission to the competition leaderboard."
       },
       {
         "component": "agent_k.core.models:LeaderboardSubmission",
-        "line": 511,
+        "line": 561,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:LeaderboardSubmission",
-        "line": 514,
+        "line": 564,
         "name": "pattern",
         "value": "{\"name\": \"immutable-entity\", \"rationale\": \"Frozen Pydantic model for leaderboard submission records.\"}"
       },
       {
         "component": "agent_k.core.models:EvolutionState",
-        "line": 534,
+        "line": 584,
         "name": "notice",
         "value": "State of the evolution process."
       },
       {
         "component": "agent_k.core.models:EvolutionState",
-        "line": 537,
+        "line": 587,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:EvolutionState",
-        "line": 540,
+        "line": 590,
         "name": "pattern",
         "value": "{\"name\": \"immutable-entity\", \"rationale\": \"Frozen Pydantic model for evolution state tracking.\"}"
       },
       {
         "component": "agent_k.core.models:MemoryEntry",
-        "line": 567,
+        "line": 617,
         "name": "notice",
         "value": "Entry in the memory store."
       },
       {
         "component": "agent_k.core.models:MemoryEntry",
-        "line": 570,
+        "line": 620,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:MemoryEntry",
-        "line": 573,
+        "line": 623,
         "name": "pattern",
         "value": "{\"name\": \"immutable-entity\", \"rationale\": \"Frozen Pydantic model for memory store entries.\"}"
       },
       {
         "component": "agent_k.core.models:Checkpoint",
-        "line": 593,
+        "line": 643,
         "name": "notice",
         "value": "Mission state checkpoint."
       },
       {
         "component": "agent_k.core.models:Checkpoint",
-        "line": 596,
+        "line": 646,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:Checkpoint",
-        "line": 599,
+        "line": 649,
         "name": "pattern",
         "value": "{\"name\": \"immutable-entity\", \"rationale\": \"Frozen Pydantic model for state checkpoint records.\"}"
       },
       {
         "component": "agent_k.core.models:MemoryState",
-        "line": 615,
+        "line": 665,
         "name": "notice",
         "value": "Overall memory state."
       },
       {
         "component": "agent_k.core.models:MemoryState",
-        "line": 618,
+        "line": 668,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:MemoryState",
-        "line": 621,
+        "line": 671,
         "name": "pattern",
         "value": "{\"name\": \"immutable-entity\", \"rationale\": \"Frozen Pydantic model for aggregate memory state.\"}"
       },
       {
         "component": "agent_k.core.models:ErrorEvent",
-        "line": 636,
+        "line": 686,
         "name": "notice",
         "value": "Record of an error event."
       },
       {
         "component": "agent_k.core.models:ErrorEvent",
-        "line": 639,
+        "line": 689,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:ErrorEvent",
-        "line": 642,
+        "line": 692,
         "name": "pattern",
         "value": "{\"name\": \"immutable-entity\", \"rationale\": \"Frozen Pydantic model for error event records.\"}"
       },
       {
         "component": "agent_k.core.models:LeaderboardAnalysis",
-        "line": 666,
+        "line": 716,
         "name": "notice",
         "value": "Analysis of competition leaderboard."
       },
       {
         "component": "agent_k.core.models:LeaderboardAnalysis",
-        "line": 669,
+        "line": 719,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:LeaderboardAnalysis",
-        "line": 672,
+        "line": 722,
         "name": "pattern",
         "value": "{\"name\": \"immutable-entity\", \"rationale\": \"Frozen Pydantic model for leaderboard analysis results.\"}"
       },
       {
         "component": "agent_k.core.models:ResearchFindings",
-        "line": 692,
+        "line": 742,
         "name": "notice",
         "value": "Complete research findings for a competition."
       },
       {
         "component": "agent_k.core.models:ResearchFindings",
-        "line": 695,
+        "line": 745,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:ResearchFindings",
-        "line": 698,
+        "line": 748,
         "name": "pattern",
         "value": "{\"name\": \"immutable-entity\", \"rationale\": \"Frozen Pydantic model for research findings aggregate.\"}"
       },
       {
         "component": "agent_k.core.models:MissionCriteria",
-        "line": 715,
+        "line": 765,
         "name": "notice",
         "value": "Criteria constraining mission execution."
       },
       {
         "component": "agent_k.core.models:MissionCriteria",
-        "line": 718,
+        "line": 768,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.core.models:MissionCriteria",
-        "line": 721,
+        "line": 771,
         "name": "pattern",
         "value": "{\"name\": \"immutable-entity\", \"rationale\": \"Frozen Pydantic model for mission execution constraints.\"}"
       }
@@ -6150,181 +6186,181 @@
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 123,
+        "line": 126,
         "name": "notice",
         "value": "Discovery phase node."
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 126,
+        "line": 129,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 129,
+        "line": 132,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates discovery phase logic in the mission graph.\", \"violations\": \"Discovery logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 134,
+        "line": 137,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.lobbyist:LobbyistAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifec"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 144,
+        "line": 147,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 149,
+        "line": 152,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 281,
+        "line": 308,
         "name": "notice",
         "value": "Research phase node."
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 284,
+        "line": 311,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 287,
+        "line": 314,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates research phase logic in the mission graph.\", \"violations\": \"Research logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 292,
+        "line": 319,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.scientist:ScientistAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"httpx:AsyncClient\", \"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lif"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 302,
+        "line": 329,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 307,
+        "line": 334,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 427,
+        "line": 454,
         "name": "notice",
         "value": "Prototype phase node."
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 430,
+        "line": 457,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 433,
+        "line": 460,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates prototype phase logic in the mission graph.\", \"violations\": \"Prototype logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 438,
+        "line": 465,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.solution:execute_solution\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 447,
+        "line": 474,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 452,
+        "line": 479,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 908,
+        "line": 935,
         "name": "notice",
         "value": "Evolution phase node."
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 911,
+        "line": 938,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 914,
+        "line": 941,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates evolution phase logic in the mission graph.\", \"violations\": \"Evolution logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 919,
+        "line": 946,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.agents.evolver:EvolverAgent\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.core.protocols:PlatformAdapter\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated pe"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 928,
+        "line": 955,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 933,
+        "line": 960,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1610,
+        "line": 1637,
         "name": "notice",
         "value": "Submission phase node."
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1613,
+        "line": 1640,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1616,
+        "line": 1643,
         "name": "pattern",
         "value": "{\"name\": \"graph-node\", \"rationale\": \"Encapsulates submission phase logic in the mission graph.\", \"violations\": \"Submission logic outside nodes causes transition drift.\"}"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1621,
+        "line": 1648,
         "name": "collaborators",
         "value": "{\"required\": [\"agent_k.core.protocols:PlatformAdapter\", \"agent_k.ui.agui:EventEmitter\"], \"optional\": [\"agent_k.agents.evolver:EvolverAgent\"], \"injection\": \"GraphContext\", \"lifecycle\": \"Instantiated pe"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1630,
+        "line": 1657,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates mission state during execution.\"}"
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1635,
+        "line": 1662,
         "name": "invariants",
         "value": "[\"timeout > 0\"]"
       }

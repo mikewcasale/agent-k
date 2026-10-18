@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for behavior details and invariants.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.adapters.kaggle:_parse_timestamp",
+  "line": 606,
+  "notice": "Returns None when the value is absent or unparseable.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/adapters/kaggle.py",
+  "summary": "Coerce a Kaggle payload value into a timezone-aware datetime.",
+  "type": "function"
+}

@@ -205,6 +205,14 @@ class Competition(BaseModel):
     max_daily_submissions: int = Field(default=5, ge=1, description="Maximum submissions per day")
     tags: frozenset[str] = Field(default_factory=frozenset, description="Competition tags/categories")
     url: str | None = Field(default=None, description="Full URL to competition page")
+    new_entrant_deadline: datetime | None = Field(
+        default=None, description="Deadline for new entrants to join (UTC); None when unrestricted"
+    )
+    user_has_entered: bool = Field(default=False, description="Whether the authenticated user already entered")
+    kernels_submissions_only: bool = Field(
+        default=False, description="Whether submissions are only accepted from platform notebooks (code competition)"
+    )
+    submissions_disabled: bool = Field(default=False, description="Whether the platform has disabled submissions")
 
     @field_validator("deadline")
     @classmethod
@@ -214,10 +222,18 @@ class Competition(BaseModel):
             raise ValueError("deadline must be timezone-aware")
         return v
 
+    @field_validator("new_entrant_deadline")
+    @classmethod
+    def validate_new_entrant_deadline_timezone(cls, v: datetime | None) -> datetime | None:
+        """Ensure the new-entrant deadline has timezone information."""
+        if v is not None and v.tzinfo is None:
+            raise ValueError("new_entrant_deadline must be timezone-aware")
+        return v
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def is_active(self) -> bool:
-        """Whether competition is still accepting submissions."""
+        """Whether the submission deadline is still in the future."""
         return datetime.now(UTC) < self.deadline
 
     @computed_field  # type: ignore[prop-decorator]
@@ -226,6 +242,40 @@ class Competition(BaseModel):
         """Days until deadline (negative if passed)."""
         delta = self.deadline - datetime.now(UTC)
         return delta.days
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def accepts_file_submissions(self) -> bool:
+        """Whether a submission file can be uploaded through the platform API."""
+        return not self.submissions_disabled and not self.kernels_submissions_only
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def accepts_new_entrants(self) -> bool:
+        """Whether the competition can still be joined."""
+        if self.user_has_entered or self.new_entrant_deadline is None:
+            return True
+        return datetime.now(UTC) < self.new_entrant_deadline
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def is_enterable(self) -> bool:
+        """Whether an autonomous agent can still enter and submit to this competition."""
+        return not self.entry_blockers
+
+    @property
+    def entry_blockers(self) -> tuple[str, ...]:
+        """Reasons the competition cannot be entered and scored by a file submission."""
+        blockers: list[str] = []
+        if not self.is_active:
+            blockers.append("deadline_passed")
+        if self.submissions_disabled:
+            blockers.append("submissions_disabled")
+        if self.kernels_submissions_only:
+            blockers.append("kernels_submissions_only")
+        if not self.accepts_new_entrants:
+            blockers.append("new_entrant_deadline_passed")
+        return tuple(blockers)
 
 
 class LeaderboardEntry(BaseModel):

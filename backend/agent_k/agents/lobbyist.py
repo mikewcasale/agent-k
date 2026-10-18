@@ -307,7 +307,8 @@ class LobbyistAgent(MemoryMixin):
             Computes a heuristic fit score from cached competition metadata.
 
         @dev: |
-            Returns a structured dict with score and reasoning.
+            Returns a structured dict with score and reasoning. Competitions the
+            agent cannot enter and submit a file to score 0.0.
 
         @effects:
             state:
@@ -316,6 +317,16 @@ class LobbyistAgent(MemoryMixin):
         competition = ctx.deps.search_cache.get(competition_id)
         if not competition:
             return {"score": 0.0, "reason": "Competition not in cache"}
+
+        blockers = tuple(competition.entry_blockers)
+        if blockers:
+            logfire.info("competition_not_enterable", competition_id=competition_id, blockers=list(blockers))
+            return {
+                "competition_id": competition_id,
+                "score": 0.0,
+                "reasons": ["not_enterable", *blockers],
+                "days_remaining": competition.days_remaining,
+            }
 
         score = 0.0
         reasons: list[str] = []

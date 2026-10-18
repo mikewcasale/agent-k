@@ -3,7 +3,7 @@
   "anti_patterns": null,
   "canonical_home": null,
   "custom": null,
-  "dev": "Returns a structured dict with score and reasoning.",
+  "dev": "Returns a structured dict with score and reasoning. Competitions the\nagent cannot enter and submit a file to score 0.0.",
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.lobbyist:LobbyistAgent.score_competition_fit",

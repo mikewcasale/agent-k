@@ -77,6 +77,7 @@ from ..core.data import infer_competition_schema, locate_data_files, stage_compe
 from ..core.exceptions import classify_error
 from ..core.hints import DatasetProfile, PreprocessingHint, build_dataset_profile, generate_preprocessing_hints
 from ..core.models import (
+    Competition,
     EvaluationMetric,
     EvolutionState,
     GenerationMetrics,
@@ -95,6 +96,8 @@ from ..core.tracking import (
 from .state import GraphContext, MissionResult, MissionState
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping, Sequence
+
     import httpx
     from pydantic_ai import Agent
 
@@ -174,6 +177,12 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
             try:
                 if state.competition_id:
                     competition = await platform_adapter.get_competition(state.competition_id)
+                    if competition.entry_blockers:
+                        logfire.warning(
+                            "pinned_competition_not_enterable",
+                            competition_id=state.competition_id,
+                            blockers=list(competition.entry_blockers),
+                        )
                     state.selected_competition = competition
                     state.discovered_competitions = [competition]
                     state.phases_completed.append("discovery")
@@ -209,9 +218,27 @@ class DiscoveryNode(BaseNode[MissionState, GraphContext, MissionResult]):
                         )
                     )
 
-                # Select best competition
-                state.selected_competition = result.competitions[0]
-                state.competition_id = state.selected_competition.id
+                # Select the best competition the agent can actually enter and submit to.
+                selected, blockers = _select_enterable_competition(result.competitions, deps.search_cache)
+                if selected is None:
+                    logfire.warning("no_enterable_competition", blockers=blockers)
+                    await emitter.emit_phase_complete(
+                        phase="discovery", success=False, duration_ms=self._elapsed_ms(state.phase_started_at)
+                    )
+                    return End(
+                        MissionResult(
+                            success=False,
+                            mission_id=state.mission_id,
+                            error_message=(
+                                "No discovered competition accepts file submissions: "
+                                + _format_entry_blockers(blockers)
+                            ),
+                            phases_completed=list(state.phases_completed),
+                        )
+                    )
+
+                state.selected_competition = selected
+                state.competition_id = selected.id
                 state.phases_completed.append("discovery")
 
                 await emitter.emit_phase_complete(
@@ -2261,6 +2288,32 @@ def _evaluate_metric(metric: EvaluationMetric, values: list[float], prediction: 
         return math.sqrt(mse)
 
     return 0.0
+
+
+def _select_enterable_competition(
+    competitions: Sequence[Competition], search_cache: Mapping[str, Any]
+) -> tuple[Competition | None, dict[str, list[str]]]:
+    """Pick the first competition the agent can enter and submit a file to.
+
+    Platform metadata from the search cache wins over model-emitted fields, so a
+    hallucinated eligibility flag cannot pull a code-only competition into a mission.
+    """
+    blockers: dict[str, list[str]] = {}
+    for competition in competitions:
+        cached = search_cache.get(competition.id)
+        resolved = cached if isinstance(cached, Competition) else competition
+        resolved_blockers = resolved.entry_blockers
+        if not resolved_blockers:
+            return resolved, blockers
+        blockers[competition.id] = list(resolved_blockers)
+    return None, blockers
+
+
+def _format_entry_blockers(blockers: Mapping[str, list[str]]) -> str:
+    """Render per-competition entry blockers as a single diagnostic string."""
+    if not blockers:
+        return "no competitions returned"
+    return "; ".join(f"{competition_id}: {', '.join(reasons)}" for competition_id, reasons in blockers.items())
 
 
 def _compute_baseline_score(*, train_path: Path, target_columns: list[str], metric: EvaluationMetric) -> float:

@@ -102,6 +102,118 @@ class TestCompetition:
                 deadline=datetime(2030, 1, 1, tzinfo=UTC),
             )
 
+    def test_defaults_are_enterable(self) -> None:
+        """A competition with no eligibility flags should be enterable."""
+        comp = Competition(
+            id="titanic",
+            title="Titanic",
+            competition_type=CompetitionType.GETTING_STARTED,
+            metric=EvaluationMetric.ACCURACY,
+            deadline=datetime(2030, 1, 1, tzinfo=UTC),
+        )
+
+        assert comp.accepts_file_submissions is True
+        assert comp.accepts_new_entrants is True
+        assert comp.is_enterable is True
+        assert comp.entry_blockers == ()
+
+    def test_kernels_only_blocks_file_submissions(self) -> None:
+        """A code competition should not accept file submissions."""
+        comp = Competition(
+            id="code-comp",
+            title="Code competition",
+            competition_type=CompetitionType.FEATURED,
+            metric=EvaluationMetric.AUC,
+            deadline=datetime(2030, 1, 1, tzinfo=UTC),
+            kernels_submissions_only=True,
+        )
+
+        assert comp.accepts_file_submissions is False
+        assert comp.is_enterable is False
+        assert comp.entry_blockers == ("kernels_submissions_only",)
+
+    def test_disabled_submissions_block_entry(self) -> None:
+        """Disabled submissions should block entry even before the deadline."""
+        comp = Competition(
+            id="paused-comp",
+            title="Paused competition",
+            competition_type=CompetitionType.FEATURED,
+            metric=EvaluationMetric.RMSE,
+            deadline=datetime(2030, 1, 1, tzinfo=UTC),
+            submissions_disabled=True,
+        )
+
+        assert comp.accepts_file_submissions is False
+        assert comp.entry_blockers == ("submissions_disabled",)
+
+    def test_passed_new_entrant_deadline_blocks_entry(self) -> None:
+        """A closed new-entrant window should block entry for a non-participant."""
+        comp = Competition(
+            id="closed-entry",
+            title="Closed entry",
+            competition_type=CompetitionType.FEATURED,
+            metric=EvaluationMetric.AUC,
+            deadline=datetime(2030, 1, 1, tzinfo=UTC),
+            new_entrant_deadline=datetime(2020, 1, 1, tzinfo=UTC),
+        )
+
+        assert comp.accepts_new_entrants is False
+        assert comp.entry_blockers == ("new_entrant_deadline_passed",)
+
+    def test_entered_user_ignores_new_entrant_deadline(self) -> None:
+        """An already-entered competition stays enterable after the entry window."""
+        comp = Competition(
+            id="already-entered",
+            title="Already entered",
+            competition_type=CompetitionType.FEATURED,
+            metric=EvaluationMetric.AUC,
+            deadline=datetime(2030, 1, 1, tzinfo=UTC),
+            new_entrant_deadline=datetime(2020, 1, 1, tzinfo=UTC),
+            user_has_entered=True,
+        )
+
+        assert comp.accepts_new_entrants is True
+        assert comp.is_enterable is True
+
+    def test_expired_deadline_blocks_entry(self) -> None:
+        """A passed deadline should be reported as an entry blocker."""
+        comp = Competition(
+            id="expired",
+            title="Expired",
+            competition_type=CompetitionType.FEATURED,
+            metric=EvaluationMetric.AUC,
+            deadline=datetime(2020, 1, 1, tzinfo=UTC),
+        )
+
+        assert comp.is_active is False
+        assert comp.entry_blockers == ("deadline_passed",)
+
+    def test_naive_new_entrant_deadline_rejected(self) -> None:
+        """A timezone-naive new-entrant deadline should be rejected."""
+        with pytest.raises(ValidationError):
+            Competition(
+                id="naive-entry",
+                title="Naive entry",
+                competition_type=CompetitionType.FEATURED,
+                metric=EvaluationMetric.AUC,
+                deadline=datetime(2030, 1, 1, tzinfo=UTC),
+                new_entrant_deadline=datetime(2029, 1, 1),
+            )
+
+    def test_multiple_blockers_reported(self) -> None:
+        """Every applicable blocker should be reported."""
+        comp = Competition(
+            id="hopeless",
+            title="Hopeless",
+            competition_type=CompetitionType.FEATURED,
+            metric=EvaluationMetric.AUC,
+            deadline=datetime(2020, 1, 1, tzinfo=UTC),
+            submissions_disabled=True,
+            kernels_submissions_only=True,
+        )
+
+        assert comp.entry_blockers == ("deadline_passed", "submissions_disabled", "kernels_submissions_only")
+
 
 class TestLeaderboardEntry:
     """Tests for the LeaderboardEntry model."""

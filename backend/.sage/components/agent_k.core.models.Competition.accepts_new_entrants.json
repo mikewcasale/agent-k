@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.models:Competition.accepts_new_entrants",
+  "line": 255,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/models.py",
+  "summary": "Whether the competition can still be joined.",
+  "type": "method"
+}

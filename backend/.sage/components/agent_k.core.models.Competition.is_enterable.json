@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.models:Competition.is_enterable",
+  "line": 263,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/models.py",
+  "summary": "Whether an autonomous agent can still enter and submit to this competition.",
+  "type": "method"
+}

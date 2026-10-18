@@ -1,11 +1,11 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-10-18T01:23:35.537981+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
       {
         "component": "agent_k.adapters.kaggle:KaggleAdapter",
-        "line": 114,
+        "line": 116,
         "rationale": "Encapsulates Kaggle-specific API behavior.",
         "source": "agent_k/adapters/kaggle.py",
         "violations": [
@@ -654,7 +654,7 @@
     "graph-node": [
       {
         "component": "agent_k.mission.nodes:DiscoveryNode",
-        "line": 115,
+        "line": 118,
         "rationale": "Encapsulates discovery phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -663,7 +663,7 @@
       },
       {
         "component": "agent_k.mission.nodes:ResearchNode",
-        "line": 273,
+        "line": 300,
         "rationale": "Encapsulates research phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -672,7 +672,7 @@
       },
       {
         "component": "agent_k.mission.nodes:PrototypeNode",
-        "line": 419,
+        "line": 446,
         "rationale": "Encapsulates prototype phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -681,7 +681,7 @@
       },
       {
         "component": "agent_k.mission.nodes:EvolutionNode",
-        "line": 900,
+        "line": 927,
         "rationale": "Encapsulates evolution phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -690,7 +690,7 @@
       },
       {
         "component": "agent_k.mission.nodes:SubmissionNode",
-        "line": 1602,
+        "line": 1629,
         "rationale": "Encapsulates submission phase logic in the mission graph.",
         "source": "agent_k/mission/nodes.py",
         "violations": [
@@ -717,112 +717,112 @@
       },
       {
         "component": "agent_k.core.models:LeaderboardEntry",
-        "line": 232,
+        "line": 282,
         "rationale": "Frozen Pydantic model for leaderboard row data.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:Submission",
-        "line": 255,
+        "line": 305,
         "rationale": "Frozen Pydantic model for submission records.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:ToolCall",
-        "line": 281,
+        "line": 331,
         "rationale": "Base frozen model for tool call telemetry.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:PlannedTask",
-        "line": 390,
+        "line": 440,
         "rationale": "Frozen Pydantic model for task planning and tracking.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:PhasePlan",
-        "line": 424,
+        "line": 474,
         "rationale": "Frozen Pydantic model for phase-level planning.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:MissionPlan",
-        "line": 453,
+        "line": 503,
         "rationale": "Frozen Pydantic model for complete mission planning.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:GenerationMetrics",
-        "line": 476,
+        "line": 526,
         "rationale": "Frozen Pydantic model for evolution generation metrics.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:LeaderboardSubmission",
-        "line": 506,
+        "line": 556,
         "rationale": "Frozen Pydantic model for leaderboard submission records.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:EvolutionState",
-        "line": 532,
+        "line": 582,
         "rationale": "Frozen Pydantic model for evolution state tracking.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:MemoryEntry",
-        "line": 565,
+        "line": 615,
         "rationale": "Frozen Pydantic model for memory store entries.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:Checkpoint",
-        "line": 591,
+        "line": 641,
         "rationale": "Frozen Pydantic model for state checkpoint records.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:MemoryState",
-        "line": 613,
+        "line": 663,
         "rationale": "Frozen Pydantic model for aggregate memory state.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:ErrorEvent",
-        "line": 634,
+        "line": 684,
         "rationale": "Frozen Pydantic model for error event records.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:LeaderboardAnalysis",
-        "line": 664,
+        "line": 714,
         "rationale": "Frozen Pydantic model for leaderboard analysis results.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:ResearchFindings",
-        "line": 690,
+        "line": 740,
         "rationale": "Frozen Pydantic model for research findings aggregate.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:MissionCriteria",
-        "line": 713,
+        "line": 763,
         "rationale": "Frozen Pydantic model for mission execution constraints.",
         "source": "agent_k/core/models.py",
         "violations": []
@@ -1228,7 +1228,7 @@
     "settings": [
       {
         "component": "agent_k.adapters.kaggle:KaggleSettings",
-        "line": 74,
+        "line": 76,
         "rationale": "Centralizes Kaggle adapter configuration.",
         "source": "agent_k/adapters/kaggle.py",
         "violations": [
@@ -1304,28 +1304,28 @@
     "specialization": [
       {
         "component": "agent_k.core.models:WebSearchCall",
-        "line": 309,
+        "line": 359,
         "rationale": "Extends ToolCall with web search specific fields.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:KaggleMCPCall",
-        "line": 329,
+        "line": 379,
         "rationale": "Extends ToolCall with Kaggle API specific fields.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:CodeExecutorCall",
-        "line": 347,
+        "line": 397,
         "rationale": "Extends ToolCall with code execution specific fields.",
         "source": "agent_k/core/models.py",
         "violations": []
       },
       {
         "component": "agent_k.core.models:MemoryCall",
-        "line": 370,
+        "line": 420,
         "rationale": "Extends ToolCall with memory operation specific fields.",
         "source": "agent_k/core/models.py",
         "violations": []

@@ -1156,7 +1156,11 @@ class EvolutionNode(BaseNode[MissionState, GraphContext, MissionResult]):
                     if isinstance(hint_payload, dict):
                         preprocessing_hints.append(PreprocessingHint.from_dict(hint_payload))
             tracker = create_experiment_tracker()
-            hint_tracker = HintEffectivenessTracker(experiment_tracker=tracker) if preprocessing_hints else None
+            hint_tracker = (
+                HintEffectivenessTracker(experiment_tracker=tracker, competition_id=competition_id)
+                if preprocessing_hints
+                else None
+            )
             failure_counts: dict[str, int] = {}
 
             def _append_error(error_message: str, error_type: str | None) -> None:

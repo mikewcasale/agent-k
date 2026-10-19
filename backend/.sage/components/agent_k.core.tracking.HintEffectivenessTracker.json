@@ -3,11 +3,11 @@
   "anti_patterns": null,
   "canonical_home": null,
   "custom": null,
-  "dev": "See module for implementation details and extension points.",
+  "dev": "See module for implementation details and extension points.\n\nAggregate counts live in a JSON sidecar while the per-attempt log lives in\nthe experiment tracker database. Both are reloaded on construction, so a\nnew mission inherits the success rates, recency and suppression decisions\nearned by previous runs instead of restarting from zero.",
   "graph": null,
   "human_review": null,
   "id": "agent_k.core.tracking:HintEffectivenessTracker",
-  "line": 728,
+  "line": 757,
   "notice": "Track and aggregate hint performance across generations.",
   "pattern": {
     "name": "tracking-service",

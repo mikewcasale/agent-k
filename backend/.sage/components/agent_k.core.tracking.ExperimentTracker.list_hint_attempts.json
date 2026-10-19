@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The most recent `limit` rows are selected and then reversed, so callers\nreceive a chronologically ordered window of the newest history.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.tracking:ExperimentTracker.list_hint_attempts",
+  "line": 461,
+  "notice": "Replays the durable hint attempt log so effectiveness survives restarts.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/tracking.py",
+  "summary": "Return persisted hint attempts, oldest first.",
+  "type": "method"
+}

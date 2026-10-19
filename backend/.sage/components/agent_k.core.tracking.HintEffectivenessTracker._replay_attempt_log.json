@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.tracking:HintEffectivenessTracker._replay_attempt_log",
+  "line": 929,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/tracking.py",
+  "summary": "Rebuild per-attempt history from the experiment tracker database.",
+  "type": "method"
+}

@@ -33,6 +33,7 @@ Licensed under the MIT License.
 from __future__ import annotations as _annotations
 
 import ast
+import contextlib
 import hashlib
 import json
 import os
@@ -63,6 +64,8 @@ __all__ = (
 
 SCHEMA_VERSION: Final[str] = "1.0.0"
 _DEFAULT_EXPERIMENT_DB: Final[Path] = Path("~/.agent_k/experiments/experiments.sqlite").expanduser()
+_DEFAULT_HINT_TRACKER_PATH: Final[Path] = Path("~/.agent_k/hint_tracker.json").expanduser()
+_HINT_HISTORY_LIMIT: Final[int] = 2000
 _MODEL_SIGNATURES: Final[tuple[tuple[str, str, re.Pattern[str]], ...]] = (
     ("LGBMRegressor", "lightgbm", re.compile(r"\bLGBMRegressor\b")),
     ("LGBMClassifier", "lightgbm", re.compile(r"\bLGBMClassifier\b")),
@@ -449,6 +452,32 @@ class ExperimentTracker:
                 )
         return record
 
+    def list_hint_attempts(
+        self,
+        competition_id: Annotated[str | None, Doc("Competition to filter on, or None for every competition.")] = None,
+        *,
+        limit: Annotated[int, Doc("Maximum number of attempts to return.")] = _HINT_HISTORY_LIMIT,
+    ) -> list[HintAttemptRecord]:
+        """Return persisted hint attempts, oldest first.
+
+        @notice: |
+            Replays the durable hint attempt log so effectiveness survives restarts.
+
+        @dev: |
+            The most recent `limit` rows are selected and then reversed, so callers
+            receive a chronologically ordered window of the newest history.
+        """
+        query = f"SELECT * FROM {self._hint_table_name}"
+        params: list[Any] = []
+        if competition_id is not None:
+            query += " WHERE competition_id = ?"
+            params.append(competition_id)
+        query += " ORDER BY created_at DESC, id DESC LIMIT ?"
+        params.append(max(limit, 0))
+        with self._connect() as conn:
+            rows = conn.execute(query, params).fetchall()
+        return [_row_to_hint_attempt(row) for row in reversed(rows)]
+
     def list_submissions(self, competition_id: str, *, limit: int = 50) -> list[KaggleSubmissionRecord]:
         """Return most recent submission records for a competition."""
         with self._connect() as conn:
@@ -733,23 +762,45 @@ class HintEffectivenessTracker:
     @dev: |
         See module for implementation details and extension points.
 
+        Aggregate counts live in a JSON sidecar while the per-attempt log lives in
+        the experiment tracker database. Both are reloaded on construction, so a
+        new mission inherits the success rates, recency and suppression decisions
+        earned by previous runs instead of restarting from zero.
+
         @pattern:
             name: tracking-service
             rationale: "Centralizes hint success tracking and suppression."
             violations: "Distributed tracking makes suppression inconsistent."
     """
 
-    _HINT_TRACKER_PATH: Final[Path] = Path("~/.agent_k/hint_tracker.json").expanduser()
     _suppression_threshold: Final[int] = 3
 
-    def __init__(self, experiment_tracker: ExperimentTracker | None = None) -> None:
+    def __init__(
+        self,
+        experiment_tracker: Annotated[
+            ExperimentTracker | None, Doc("Tracker holding the durable hint attempt log.")
+        ] = None,
+        *,
+        competition_id: Annotated[str | None, Doc("Restrict replayed history to one competition.")] = None,
+        storage_path: Annotated[Path | None, Doc("JSON sidecar holding aggregate hint statistics.")] = None,
+        history_limit: Annotated[int, Doc("Maximum attempts replayed from the tracker.")] = _HINT_HISTORY_LIMIT,
+    ) -> None:
         self._records: list[HintAttemptRecord] = []
         self._success_counts: dict[tuple[str, str], int] = defaultdict(int)
         self._failure_counts: dict[tuple[str, str], int] = defaultdict(int)
         self._suppressed: dict[str, set[str]] = defaultdict(set)
         self._amplified: dict[str, set[str]] = defaultdict(set)
         self._experiment_tracker = experiment_tracker
+        self._competition_id = competition_id
+        self._storage_path = (storage_path or _resolve_hint_tracker_path()).expanduser()
+        self._history_limit = history_limit
         self.load()
+        self._replay_attempt_log()
+
+    @property
+    def storage_path(self) -> Path:
+        """Return the JSON sidecar path backing the aggregate statistics."""
+        return self._storage_path
 
     @property
     def suppressed_hints(self) -> set[str]:
@@ -766,12 +817,9 @@ class HintEffectivenessTracker:
                 logfire.warning("hint_attempt_persist_failed", error=str(exc))
         if not record.applied:
             return
+        self._apply_counts(record)
         key = (record.competition_id, record.hint_id)
-        if record.delta > 0:
-            self._success_counts[key] += 1
-        elif record.delta < 0:
-            self._failure_counts[key] += 1
-        if self._failure_counts[key] >= self._suppression_threshold:
+        if self._failure_counts.get(key, 0) >= self._suppression_threshold:
             self.suppress_hint(record.hint_id, record.competition_id)
         self.save()
 
@@ -785,10 +833,12 @@ class HintEffectivenessTracker:
             and record.applied
             and record.delta != 0
         ]
-        if not attempts:
-            return 0.0
-        successes = sum(1 for record in attempts if record.delta > 0)
-        return successes / len(attempts)
+        if attempts:
+            successes = sum(1 for record in attempts if record.delta > 0)
+            return successes / len(attempts)
+        key = (competition_id, hint_id)
+        decided = self._success_counts.get(key, 0) + self._failure_counts.get(key, 0)
+        return self._success_counts.get(key, 0) / decided if decided else 0.0
 
     def get_last_attempt(self, hint_id: str, competition_id: str) -> HintAttemptRecord | None:
         """Return the most recent attempt for a hint in a competition."""
@@ -819,28 +869,48 @@ class HintEffectivenessTracker:
         return hint_id in self._amplified[competition_id]
 
     def save(self) -> None:
-        """Persist hint statistics to disk."""
-        self._HINT_TRACKER_PATH.parent.mkdir(parents=True, exist_ok=True)
+        """Persist hint statistics to disk.
+
+        @notice: |
+            Writes every tracked hint, including failure-only and suppressed ones.
+
+        @dev: |
+            The payload is staged in a sibling temporary file and renamed into
+            place, so an interrupted write cannot truncate existing statistics.
+
+        @effects:
+            state:
+                - hint tracker JSON sidecar
+        """
         data: dict[str, dict[str, dict[str, Any]]] = {}
-        for (comp_id, hint_id), count in self._success_counts.items():
+        for comp_id, hint_id in sorted(self._tracked_keys()):
             data.setdefault(comp_id, {})[hint_id] = {
-                "success": count,
+                "success": self._success_counts.get((comp_id, hint_id), 0),
                 "failure": self._failure_counts.get((comp_id, hint_id), 0),
                 "suppressed": hint_id in self._suppressed.get(comp_id, set()),
+                "amplified": hint_id in self._amplified.get(comp_id, set()),
             }
+        temp_path = self._storage_path.with_name(f"{self._storage_path.name}.{os.getpid()}.tmp")
         try:
-            self._HINT_TRACKER_PATH.write_text(json.dumps(data, indent=2), encoding="utf-8")
+            self._storage_path.parent.mkdir(parents=True, exist_ok=True)
+            temp_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+            temp_path.replace(self._storage_path)
         except OSError as exc:
+            with contextlib.suppress(OSError):
+                temp_path.unlink(missing_ok=True)
             logfire.warning("hint_tracker_save_failed", error=str(exc))
 
     def load(self) -> None:
         """Load hint statistics from disk."""
-        if not self._HINT_TRACKER_PATH.exists():
+        if not self._storage_path.exists():
             return
         try:
-            data = json.loads(self._HINT_TRACKER_PATH.read_text(encoding="utf-8"))
+            data = json.loads(self._storage_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError) as exc:
             logfire.warning("hint_tracker_load_failed", error=str(exc))
+            return
+        if not isinstance(data, dict):
+            logfire.warning("hint_tracker_load_failed", error="payload is not a mapping")
             return
         for comp_id, hints in data.items():
             if not isinstance(hints, dict):
@@ -852,6 +922,49 @@ class HintEffectivenessTracker:
                 self._failure_counts[(comp_id, hint_id)] = int(stats.get("failure", 0))
                 if stats.get("suppressed"):
                     self._suppressed[comp_id].add(hint_id)
+                if stats.get("amplified"):
+                    self._amplified[comp_id].add(hint_id)
+
+    def _replay_attempt_log(self) -> None:
+        """Rebuild per-attempt history from the experiment tracker database."""
+        if self._experiment_tracker is None:
+            return
+        try:
+            records = self._experiment_tracker.list_hint_attempts(self._competition_id, limit=self._history_limit)
+        except sqlite3.Error as exc:
+            logfire.warning("hint_attempt_replay_failed", error=str(exc))
+            return
+        if not records:
+            return
+        self._records = records
+        replayed = {(record.competition_id, record.hint_id) for record in records}
+        for key in replayed:
+            self._success_counts.pop(key, None)
+            self._failure_counts.pop(key, None)
+        for record in records:
+            self._apply_counts(record)
+        for comp_id, hint_id in replayed:
+            if self._failure_counts.get((comp_id, hint_id), 0) >= self._suppression_threshold:
+                self.suppress_hint(hint_id, comp_id)
+        logfire.debug("hint_attempt_log_replayed", attempts=len(records), hints=len(replayed))
+
+    def _apply_counts(self, record: HintAttemptRecord) -> None:
+        """Fold one applied attempt into the success and failure counters."""
+        if not record.applied:
+            return
+        key = (record.competition_id, record.hint_id)
+        if record.delta > 0:
+            self._success_counts[key] += 1
+        elif record.delta < 0:
+            self._failure_counts[key] += 1
+
+    def _tracked_keys(self) -> set[tuple[str, str]]:
+        """Return every (competition, hint) pair carrying persistable state."""
+        keys = set(self._success_counts) | set(self._failure_counts)
+        for state in (self._suppressed, self._amplified):
+            for comp_id, hint_ids in state.items():
+                keys.update((comp_id, hint_id) for hint_id in hint_ids)
+        return keys
 
 
 def create_experiment_tracker(
@@ -908,6 +1021,24 @@ def extract_solution_metadata(solution_code: str) -> ExperimentMetadata:
 def _resolve_db_path() -> Path:
     env_override = os.getenv("AGENT_K_EXPERIMENT_DB")
     return Path(env_override).expanduser() if env_override else _DEFAULT_EXPERIMENT_DB
+
+
+def _resolve_hint_tracker_path() -> Path:
+    env_override = os.getenv("AGENT_K_HINT_TRACKER_PATH")
+    return Path(env_override).expanduser() if env_override else _DEFAULT_HINT_TRACKER_PATH
+
+
+def _row_to_hint_attempt(row: sqlite3.Row) -> HintAttemptRecord:
+    payload = dict(row)
+    return HintAttemptRecord(
+        record_id=payload["id"],
+        hint_id=payload["hint_id"],
+        competition_id=payload["competition_id"],
+        generation=int(payload["generation"]),
+        applied=bool(payload["applied"]),
+        delta=float(payload["delta"]),
+        created_at=datetime.fromisoformat(payload["created_at"]),
+    )
 
 
 def _detect_model(solution_code: str) -> tuple[str | None, str | None]:

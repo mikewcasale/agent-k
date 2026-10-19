@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Every mission without an end snapshot stays a resume candidate, so an unbounded\npass fans out one full mission per historical checkpoint directory on each start.\nSkipped missions do not consume the budget; only resumed ones do.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:_auto_resume_persisted_missions",
+  "line": 1050,
+  "notice": "Resumes at most `limit` persisted missions and returns the ids actually resumed.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Resume the most recently active persisted missions, up to a fixed limit.",
+  "type": "function"
+}

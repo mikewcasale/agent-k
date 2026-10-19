@@ -10,6 +10,7 @@
     id: agent_k.mission.persistence
     provides:
         - agent_k.mission.persistence:MissionPersistence
+        - agent_k.mission.persistence:ResumeLedger
         - agent_k.mission.persistence:create_persistence
         - agent_k.mission.persistence:CHECKPOINT_DIR
     pattern: state-persistence
@@ -35,11 +36,13 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
+import os
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated, Any, Final
 
 import logfire
+from pydantic import BaseModel, Field, ValidationError
 from pydantic_graph import BaseNode, End
 from pydantic_graph.persistence import EndSnapshot, NodeSnapshot, Snapshot
 from pydantic_graph.persistence.file import FileStatePersistence
@@ -48,10 +51,35 @@ from agent_k.core.sage import Doc, Range
 
 from .state import MissionResult, MissionState
 
-__all__ = ("MissionPersistence", "create_persistence", "CHECKPOINT_DIR")
+__all__ = ("MissionPersistence", "ResumeLedger", "create_persistence", "CHECKPOINT_DIR", "RESUME_LEDGER_FILE")
 
+SCHEMA_VERSION: Final[str] = "1.0.0"
 CHECKPOINT_DIR: Final[Path] = Path("~/.agent_k/checkpoints").expanduser()
 CHECKPOINT_PREFIX: Final[str] = "checkpoint_"
+RESUME_LEDGER_FILE: Final[str] = "resume.json"
+
+
+class ResumeLedger(BaseModel):
+    """Durable record of unattended resume attempts for a mission.
+
+    @notice: |
+        Durable record of unattended resume attempts for a mission.
+
+    @dev: |
+        A mission only becomes unresumable once an end snapshot exists, so a mission that
+        crashed terminally stays a resume candidate forever. The ledger bounds that replay:
+        attempts accumulate per progress marker and reset as soon as the mission advances.
+
+        @pattern:
+            name: state-persistence
+            rationale: "Bounds unattended resume replays with on-disk bookkeeping."
+            violations: "In-memory counters reset on restart, which is when replays happen."
+    """
+
+    schema_version: str = Field(default=SCHEMA_VERSION, description="Schema version")
+    attempts: int = Field(default=0, ge=0, description="Resume attempts made at the current progress marker")
+    progress_marker: str | None = Field(default=None, description="Mission progress observed at the last attempt")
+    last_attempt_at: datetime | None = Field(default=None, description="Timestamp of the last resume attempt")
 
 
 class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
@@ -99,6 +127,66 @@ class MissionPersistence(FileStatePersistence[MissionState, MissionResult]):
     def has_snapshots(self) -> bool:
         """Return whether persistence already has stored snapshots."""
         return self.json_file.exists()
+
+    def last_activity_at(self) -> datetime | None:
+        """Return when the mission last wrote a snapshot.
+
+        @notice: |
+            Returns the snapshot file modification time, or None when nothing is stored.
+
+        @dev: |
+            Used to age out long-abandoned missions before they are auto-resumed.
+        """
+        try:
+            modified = self.json_file.stat().st_mtime
+        except OSError:
+            return None
+        return datetime.fromtimestamp(modified, tz=UTC)
+
+    def load_resume_ledger(self) -> ResumeLedger:
+        """Load the resume ledger, returning an empty ledger when absent or unreadable.
+
+        @notice: |
+            Returns the durable resume-attempt record for this mission.
+
+        @dev: |
+            A corrupt or truncated ledger is treated as empty so bookkeeping can never
+            block a mission from being resumed.
+        """
+        path = self.mission_dir / RESUME_LEDGER_FILE
+        try:
+            payload = path.read_text(encoding="utf-8")
+        except OSError:
+            return ResumeLedger()
+        try:
+            return ResumeLedger.model_validate_json(payload)
+        except ValidationError:
+            logfire.warning("mission_resume_ledger_invalid", mission_id=self.mission_id)
+            return ResumeLedger()
+
+    def record_resume_attempt(
+        self, progress_marker: Annotated[str, Doc("Marker describing how far the mission has advanced.")]
+    ) -> ResumeLedger:
+        """Record a resume attempt and return the updated ledger.
+
+        @notice: |
+            Increments the attempt counter, resetting it when the mission has advanced.
+
+        @dev: |
+            The ledger is written atomically so a crash mid-write cannot corrupt it.
+
+        @effects:
+            io:
+                - writes the mission resume ledger
+        """
+        ledger = self.load_resume_ledger()
+        attempts = ledger.attempts + 1 if ledger.progress_marker == progress_marker else 1
+        updated = ResumeLedger(attempts=attempts, progress_marker=progress_marker, last_attempt_at=datetime.now(UTC))
+        path = self.mission_dir / RESUME_LEDGER_FILE
+        tmp_path = path.parent / f"{path.name}.tmp"
+        tmp_path.write_text(updated.model_dump_json(indent=2), encoding="utf-8")
+        os.replace(tmp_path, path)
+        return updated
 
     async def snapshot_node(self, state: MissionState, next_node: BaseNode[MissionState, Any, MissionResult]) -> None:
         """Persist the next node snapshot and a checkpointed state."""

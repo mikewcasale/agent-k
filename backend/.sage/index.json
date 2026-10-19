@@ -567,6 +567,7 @@
       "pattern": "state-persistence",
       "provides": [
         "agent_k.mission.persistence:MissionPersistence",
+        "agent_k.mission.persistence:ResumeLedger",
         "agent_k.mission.persistence:create_persistence",
         "agent_k.mission.persistence:CHECKPOINT_DIR"
       ],
@@ -705,7 +706,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-10-19T03:13:19.538438+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +768,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1105,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -6346,83 +6347,143 @@
         "component": "agent_k.mission.persistence",
         "line": 9,
         "name": "graph",
-        "value": "{\"id\": \"agent_k.mission.persistence\", \"provides\": [\"agent_k.mission.persistence:MissionPersistence\", \"agent_k.mission.persistence:create_persistence\", \"agent_k.mission.persistence:CHECKPOINT_DIR\"], \"p"
+        "value": "{\"id\": \"agent_k.mission.persistence\", \"provides\": [\"agent_k.mission.persistence:MissionPersistence\", \"agent_k.mission.persistence:ResumeLedger\", \"agent_k.mission.persistence:create_persistence\", \"agen"
       },
       {
         "component": "agent_k.mission.persistence",
-        "line": 17,
+        "line": 18,
         "name": "similar",
         "value": "[{\"id\": \"agent_k.core.tracking\", \"when\": \"Tracking experiment metrics; this module persists mission state.\"}]"
       },
       {
         "component": "agent_k.mission.persistence",
-        "line": 21,
+        "line": 22,
         "name": "agent_guidance",
         "value": "{\"do\": [\"Use agent_k.mission.persistence as the canonical home for this capability.\"], \"do_not\": [\"Create parallel modules without updating @similar or @graph.\"]}"
       },
       {
         "component": "agent_k.mission.persistence",
-        "line": 27,
+        "line": 28,
         "name": "human_review",
         "value": "{\"last_verified\": \"2026-01-26\", \"owners\": [\"agent-k-core\"]}"
       },
       {
+        "component": "agent_k.mission.persistence:ResumeLedger",
+        "line": 65,
+        "name": "notice",
+        "value": "Durable record of unattended resume attempts for a mission."
+      },
+      {
+        "component": "agent_k.mission.persistence:ResumeLedger",
+        "line": 68,
+        "name": "dev",
+        "value": "A mission only becomes unresumable once an end snapshot exists, so a mission that\ncrashed terminally stays a resume candidate forever. The ledger bounds that replay:\nattempts accumulate per progress m"
+      },
+      {
+        "component": "agent_k.mission.persistence:ResumeLedger",
+        "line": 73,
+        "name": "pattern",
+        "value": "{\"name\": \"state-persistence\", \"rationale\": \"Bounds unattended resume replays with on-disk bookkeeping.\", \"violations\": \"In-memory counters reset on restart, which is when replays happen.\"}"
+      },
+      {
         "component": "agent_k.mission.persistence:MissionPersistence",
-        "line": 60,
+        "line": 88,
         "name": "notice",
         "value": "Mission-specific persistence with checkpoint rotation and resumability."
       },
       {
         "component": "agent_k.mission.persistence:MissionPersistence",
-        "line": 63,
+        "line": 91,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.mission.persistence:MissionPersistence",
-        "line": 66,
+        "line": 94,
         "name": "pattern",
         "value": "{\"name\": \"state-persistence\", \"rationale\": \"Stores mission snapshots for resumption and auditability.\", \"violations\": \"Ad-hoc persistence complicates recovery.\"}"
       },
       {
         "component": "agent_k.mission.persistence:MissionPersistence",
-        "line": 71,
+        "line": 99,
         "name": "collaborators",
         "value": "{\"required\": [\"pydantic_graph.persistence.file:FileStatePersistence\"], \"injection\": \"constructor\", \"lifecycle\": \"Scoped per mission.\"}"
       },
       {
         "component": "agent_k.mission.persistence:MissionPersistence",
-        "line": 77,
+        "line": 105,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates on-disk checkpoints and in-memory snapshots.\"}"
       },
       {
         "component": "agent_k.mission.persistence:MissionPersistence",
-        "line": 82,
+        "line": 110,
         "name": "invariants",
         "value": "[\"mission_dir exists before persistence operations.\"]"
       },
       {
+        "component": "agent_k.mission.persistence:MissionPersistence.last_activity_at",
+        "line": 134,
+        "name": "notice",
+        "value": "Returns the snapshot file modification time, or None when nothing is stored."
+      },
+      {
+        "component": "agent_k.mission.persistence:MissionPersistence.last_activity_at",
+        "line": 137,
+        "name": "dev",
+        "value": "Used to age out long-abandoned missions before they are auto-resumed."
+      },
+      {
+        "component": "agent_k.mission.persistence:MissionPersistence.load_resume_ledger",
+        "line": 149,
+        "name": "notice",
+        "value": "Returns the durable resume-attempt record for this mission."
+      },
+      {
+        "component": "agent_k.mission.persistence:MissionPersistence.load_resume_ledger",
+        "line": 152,
+        "name": "dev",
+        "value": "A corrupt or truncated ledger is treated as empty so bookkeeping can never\nblock a mission from being resumed."
+      },
+      {
+        "component": "agent_k.mission.persistence:MissionPersistence.record_resume_attempt",
+        "line": 172,
+        "name": "notice",
+        "value": "Increments the attempt counter, resetting it when the mission has advanced."
+      },
+      {
+        "component": "agent_k.mission.persistence:MissionPersistence.record_resume_attempt",
+        "line": 175,
+        "name": "dev",
+        "value": "The ledger is written atomically so a crash mid-write cannot corrupt it."
+      },
+      {
+        "component": "agent_k.mission.persistence:MissionPersistence.record_resume_attempt",
+        "line": 178,
+        "name": "effects",
+        "value": "{\"io\": [\"writes the mission resume ledger\"]}"
+      },
+      {
         "component": "agent_k.mission.persistence:create_persistence",
-        "line": 187,
+        "line": 275,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.mission.persistence:create_persistence",
-        "line": 190,
+        "line": 278,
         "name": "notice",
         "value": "Creates a MissionPersistence instance for the given mission."
       },
       {
         "component": "agent_k.mission.persistence:create_persistence",
-        "line": 193,
+        "line": 281,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.mission.persistence:MissionPersistence\", \"rationale\": \"Centralizes checkpoint path defaults.\", \"singleton\": false, \"cache_key\": \"mission_id\"}"
       },
       {
         "component": "agent_k.mission.persistence:create_persistence",
-        "line": 199,
+        "line": 287,
         "name": "canonical_home",
         "value": "{\"for\": [\"mission persistence construction\"], \"notes\": \"Use create_persistence to ensure defaults.\"}"
       }
@@ -7152,277 +7213,307 @@
       },
       {
         "component": "agent_k.ui.agui:MissionRequest",
-        "line": 220,
+        "line": 226,
         "name": "notice",
         "value": "Request to start a new mission."
       },
       {
         "component": "agent_k.ui.agui:MissionRequest",
-        "line": 223,
+        "line": 229,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:MissionRequest",
-        "line": 226,
+        "line": 232,
         "name": "pattern",
         "value": "{\"name\": \"request-model\", \"rationale\": \"Frozen Pydantic model for mission start requests.\"}"
       },
       {
         "component": "agent_k.ui.agui:CompetitionSearchRequest",
-        "line": 245,
+        "line": 251,
         "name": "notice",
         "value": "Request payload for competition search."
       },
       {
         "component": "agent_k.ui.agui:CompetitionSearchRequest",
-        "line": 248,
+        "line": 254,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:CompetitionSearchRequest",
-        "line": 251,
+        "line": 257,
         "name": "pattern",
         "value": "{\"name\": \"request-model\", \"rationale\": \"Frozen Pydantic model for competition search requests.\"}"
       },
       {
         "component": "agent_k.ui.agui:CompetitionFetchRequest",
-        "line": 267,
+        "line": 273,
         "name": "notice",
         "value": "Request payload for fetching competition details by URL."
       },
       {
         "component": "agent_k.ui.agui:CompetitionFetchRequest",
-        "line": 270,
+        "line": 276,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:CompetitionFetchRequest",
-        "line": 273,
+        "line": 279,
         "name": "pattern",
         "value": "{\"name\": \"request-model\", \"rationale\": \"Frozen Pydantic model for competition fetch requests.\"}"
       },
       {
         "component": "agent_k.ui.agui:AgentKEvent",
-        "line": 285,
+        "line": 291,
         "name": "notice",
         "value": "Event to be streamed to the frontend."
       },
       {
         "component": "agent_k.ui.agui:AgentKEvent",
-        "line": 288,
+        "line": 294,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:AgentKEvent",
-        "line": 291,
+        "line": 297,
         "name": "pattern",
         "value": "{\"name\": \"event-model\", \"rationale\": \"Frozen Pydantic model for SSE event streaming.\"}"
       },
       {
         "component": "agent_k.ui.agui:MissionIntentOutput",
-        "line": 310,
+        "line": 316,
         "name": "pattern",
         "value": "{\"name\": \"output-model\", \"rationale\": \"Frozen Pydantic model for agent structured output.\"}"
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 339,
+        "line": 345,
         "name": "notice",
         "value": "Emitter for AG-UI events."
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 342,
+        "line": 348,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 345,
+        "line": 351,
         "name": "pattern",
         "value": "{\"name\": \"event-emitter\", \"rationale\": \"Centralizes event streaming for the UI.\", \"violations\": \"Direct SSE writes bypass buffering and tracing.\"}"
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 350,
+        "line": 356,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates internal queue and closed state.\"}"
       },
       {
         "component": "agent_k.ui.agui:EventEmitter",
-        "line": 355,
+        "line": 361,
         "name": "invariants",
         "value": "[\"Events are only enqueued when not closed.\"]"
       },
       {
         "component": "agent_k.ui.agui:EventEmitter.emit",
-        "line": 369,
+        "line": 375,
         "name": "notice",
         "value": "Enqueues an event for SSE streaming."
       },
       {
         "component": "agent_k.ui.agui:TaskEmissionContext",
-        "line": 550,
+        "line": 556,
         "name": "notice",
         "value": "Context manager for task-scoped event emission."
       },
       {
         "component": "agent_k.ui.agui:TaskEmissionContext",
-        "line": 553,
+        "line": 559,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:TaskEmissionContext",
-        "line": 556,
+        "line": 562,
         "name": "pattern",
         "value": "{\"name\": \"context-model\", \"rationale\": \"Async context manager for task lifecycle events.\"}"
       },
       {
         "component": "agent_k.ui.agui:MissionIntentResult",
-        "line": 595,
+        "line": 601,
         "name": "notice",
         "value": "Result of mission intent parsing."
       },
       {
         "component": "agent_k.ui.agui:MissionIntentResult",
-        "line": 598,
+        "line": 604,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:MissionIntentResult",
-        "line": 601,
+        "line": 607,
         "name": "pattern",
         "value": "{\"name\": \"result-model\", \"rationale\": \"Dataclass for intent classification result.\"}"
       },
       {
         "component": "agent_k.ui.agui:IntentClassifier",
-        "line": 614,
+        "line": 620,
         "name": "notice",
         "value": "Classify whether a message requests a mission."
       },
       {
         "component": "agent_k.ui.agui:IntentClassifier",
-        "line": 617,
+        "line": 623,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:IntentClassifier",
-        "line": 620,
+        "line": 626,
         "name": "pattern",
         "value": "{\"name\": \"classifier\", \"rationale\": \"Dataclass for LLM-backed intent classification.\"}"
       },
       {
         "component": "agent_k.ui.agui:MissionCriteriaParser",
-        "line": 669,
+        "line": 675,
         "name": "notice",
         "value": "Parse mission criteria from intent output."
       },
       {
         "component": "agent_k.ui.agui:MissionCriteriaParser",
-        "line": 672,
+        "line": 678,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:MissionCriteriaParser",
-        "line": 675,
+        "line": 681,
         "name": "pattern",
         "value": "{\"name\": \"parser\", \"rationale\": \"Dataclass for extracting mission criteria from intent.\"}"
       },
       {
         "component": "agent_k.ui.agui:ChatHandler",
-        "line": 701,
+        "line": 707,
         "name": "notice",
         "value": "Handle chat requests for mission and non-mission modes."
       },
       {
         "component": "agent_k.ui.agui:ChatHandler",
-        "line": 704,
+        "line": 710,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.ui.agui:ChatHandler",
-        "line": 707,
+        "line": 713,
         "name": "pattern",
         "value": "{\"name\": \"handler\", \"rationale\": \"Dataclass coordinating intent classification and parsing.\"}"
       },
       {
         "component": "agent_k.ui.agui:parse_mission_intent",
-        "line": 868,
+        "line": 874,
         "name": "notice",
         "value": "Parse chat messages to detect mission intent and extract criteria."
       },
       {
         "component": "agent_k.ui.agui:parse_mission_intent",
-        "line": 871,
+        "line": 877,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.ui.agui:transform_to_vercel_stream",
-        "line": 892,
+        "line": 898,
         "name": "notice",
         "value": "Transform EventEmitter output to Vercel AI Data Stream format."
       },
       {
         "component": "agent_k.ui.agui:transform_to_vercel_stream",
-        "line": 895,
+        "line": 901,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.ui.agui:stream_text_response",
-        "line": 946,
+        "line": 952,
         "name": "notice",
         "value": "Stream a simple text response in Vercel AI format."
       },
       {
         "component": "agent_k.ui.agui:stream_text_response",
-        "line": 949,
+        "line": 955,
+        "name": "dev",
+        "value": "See module for behavior details and invariants."
+      },
+      {
+        "component": "agent_k.ui.agui:_auto_resume_skip_reason",
+        "line": 1025,
+        "name": "notice",
+        "value": "Guards startup auto-resume against stale missions and repeated failing replays."
+      },
+      {
+        "component": "agent_k.ui.agui:_auto_resume_skip_reason",
+        "line": 1028,
+        "name": "dev",
+        "value": "Missions without an end snapshot stay resume candidates forever, so without these\nguards every historically failed mission is replayed on every process start."
+      },
+      {
+        "component": "agent_k.ui.agui:_auto_resume_persisted_missions",
+        "line": 1052,
+        "name": "notice",
+        "value": "Resumes at most `limit` persisted missions and returns the ids actually resumed."
+      },
+      {
+        "component": "agent_k.ui.agui:_auto_resume_persisted_missions",
+        "line": 1055,
+        "name": "dev",
+        "value": "Every mission without an end snapshot stays a resume candidate, so an unbounded\npass fans out one full mission per historical checkpoint directory on each start.\nSkipped missions do not consume the bu"
+      },
+      {
+        "component": "agent_k.ui.agui:_auto_resume_persisted_missions",
+        "line": 1060,
+        "name": "effects",
+        "value": "{\"io\": [\"reads the checkpoint directory\", \"starts mission tasks\"]}"
+      },
+      {
+        "component": "agent_k.ui.agui:create_app",
+        "line": 1092,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.ui.agui:create_app",
-        "line": 1009,
-        "name": "dev",
-        "value": "See module for behavior details and invariants."
-      },
-      {
-        "component": "agent_k.ui.agui:create_app",
-        "line": 1012,
+        "line": 1095,
         "name": "notice",
         "value": "Constructs the FastAPI app with routes and middleware."
       },
       {
         "component": "agent_k.ui.agui:create_app",
-        "line": 1015,
+        "line": 1098,
         "name": "factory_for",
         "value": "{\"id\": \"fastapi:FastAPI\", \"rationale\": \"Centralizes AG-UI app wiring.\", \"singleton\": false, \"cache_key\": \"app\"}"
       },
       {
         "component": "agent_k.ui.agui:create_app",
-        "line": 1021,
+        "line": 1104,
         "name": "canonical_home",
         "value": "{\"for\": [\"AG-UI application construction\"], \"notes\": \"Use create_app to initialize the FastAPI server.\"}"
       },
       {
         "component": "agent_k.ui.agui:main",
-        "line": 1768,
+        "line": 1850,
         "name": "notice",
         "value": "Run the AG-UI server."
       },
       {
         "component": "agent_k.ui.agui:main",
-        "line": 1771,
+        "line": 1853,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       }

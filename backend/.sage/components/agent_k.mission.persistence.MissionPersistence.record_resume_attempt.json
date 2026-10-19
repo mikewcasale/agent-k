@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The ledger is written atomically so a crash mid-write cannot corrupt it.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.persistence:MissionPersistence.record_resume_attempt",
+  "line": 170,
+  "notice": "Increments the attempt counter, resetting it when the mission has advanced.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/persistence.py",
+  "summary": "Record a resume attempt and return the updated ledger.",
+  "type": "method"
+}

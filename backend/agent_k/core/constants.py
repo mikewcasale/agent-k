@@ -43,6 +43,9 @@ __all__ = (
     "MAX_CONCURRENT_SUBMISSIONS",
     "MAX_EVOLUTION_GENERATIONS",
     "MAX_MISSION_EVOLUTION_ROUNDS",
+    "AUTO_RESUME_MAX_MISSIONS",
+    "AUTO_RESUME_MAX_ATTEMPTS",
+    "AUTO_RESUME_MAX_AGE_SECONDS",
     "EVOLUTION_POPULATION_SIZE",
     "CONVERGENCE_THRESHOLD_GENERATIONS",
     "DEFAULT_MODEL",
@@ -71,6 +74,12 @@ MAX_COMPETITIONS_PER_SEARCH: Final[int] = 50
 MAX_CONCURRENT_SUBMISSIONS: Final[int] = 5
 MAX_EVOLUTION_GENERATIONS: Final[int] = 200
 MAX_MISSION_EVOLUTION_ROUNDS: Final[int] = 200
+
+# Startup auto-resume guards. Missions without an end snapshot are resumable forever, so
+# unbounded auto-resume replays every historically failed mission on each process start.
+AUTO_RESUME_MAX_MISSIONS: Final[int] = int(os.getenv("AUTO_RESUME_MAX_MISSIONS", "2"))
+AUTO_RESUME_MAX_ATTEMPTS: Final[int] = int(os.getenv("AUTO_RESUME_MAX_ATTEMPTS", "3"))
+AUTO_RESUME_MAX_AGE_SECONDS: Final[int] = int(os.getenv("AUTO_RESUME_MAX_AGE_SECONDS", "604800"))  # 7 days
 EVOLUTION_POPULATION_SIZE: Final[int] = 50
 CONVERGENCE_THRESHOLD_GENERATIONS: Final[int] = 15
 

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "A corrupt or truncated ledger is treated as empty so bookkeeping can never\nblock a mission from being resumed.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.persistence:MissionPersistence.load_resume_ledger",
+  "line": 147,
+  "notice": "Returns the durable resume-attempt record for this mission.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/persistence.py",
+  "summary": "Load the resume ledger, returning an empty ledger when absent or unreadable.",
+  "type": "method"
+}

@@ -52,7 +52,13 @@ from pydantic import BaseModel, ConfigDict, Field
 from pydantic_ai import Agent
 
 from agent_k.adapters.kaggle import KaggleAdapter, KaggleSettings
-from agent_k.core.constants import DEFAULT_MODEL, MISSION_PHASES
+from agent_k.core.constants import (
+    AUTO_RESUME_MAX_AGE_SECONDS,
+    AUTO_RESUME_MAX_ATTEMPTS,
+    AUTO_RESUME_MAX_MISSIONS,
+    DEFAULT_MODEL,
+    MISSION_PHASES,
+)
 from agent_k.core.exceptions import AgentKError, AuthenticationError, CompetitionNotFoundError, classify_error
 from agent_k.core.models import Competition, CompetitionType, LeaderboardSubmission, MissionCriteria
 from agent_k.core.sage import Doc
@@ -61,7 +67,7 @@ from agent_k.infra.providers import get_model
 from agent_k.mission.persistence import CHECKPOINT_DIR, MissionPersistence, create_persistence
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterator
+    from collections.abc import AsyncIterator, Awaitable, Callable
 
     from agent_k.mission.state import MissionResult, MissionState
 
@@ -1003,6 +1009,83 @@ async def _load_persisted_status(mission_id: str) -> dict[str, Any] | None:
     }
 
 
+def _mission_progress_marker(state: MissionState | None) -> str:
+    """Summarize how far a mission advanced so repeated resumes can be detected."""
+    if state is None:
+        return "unknown"
+    generation = state.evolution_state.current_generation if state.evolution_state else 0
+    return f"{state.current_phase}:{len(state.phases_completed)}:{generation}:{state.overall_progress}"
+
+
+def _auto_resume_skip_reason(
+    persistence: MissionPersistence, progress_marker: str, *, now: datetime | None = None
+) -> str | None:
+    """Return why an unattended resume should be skipped, or None when it may proceed.
+
+    @notice: |
+        Guards startup auto-resume against stale missions and repeated failing replays.
+
+    @dev: |
+        Missions without an end snapshot stay resume candidates forever, so without these
+        guards every historically failed mission is replayed on every process start.
+    """
+    ledger = persistence.load_resume_ledger()
+    if ledger.progress_marker == progress_marker and ledger.attempts >= AUTO_RESUME_MAX_ATTEMPTS:
+        return f"Resume attempts exhausted ({ledger.attempts})"
+
+    last_activity = persistence.last_activity_at()
+    if last_activity is None:
+        return "Mission has no stored activity"
+    age_seconds = ((now or datetime.now(UTC)) - last_activity).total_seconds()
+    if age_seconds > AUTO_RESUME_MAX_AGE_SECONDS:
+        return f"Mission stale for {int(age_seconds)}s"
+    return None
+
+
+async def _auto_resume_persisted_missions(
+    schedule: Annotated[Callable[[str], Awaitable[str | None]], Doc("Resumes one mission, returning a skip reason.")],
+    *,
+    limit: Annotated[int, Doc("Maximum missions to resume in a single pass.")] = AUTO_RESUME_MAX_MISSIONS,
+) -> list[str]:
+    """Resume the most recently active persisted missions, up to a fixed limit.
+
+    @notice: |
+        Resumes at most `limit` persisted missions and returns the ids actually resumed.
+
+    @dev: |
+        Every mission without an end snapshot stays a resume candidate, so an unbounded
+        pass fans out one full mission per historical checkpoint directory on each start.
+        Skipped missions do not consume the budget; only resumed ones do.
+
+    @effects:
+        io:
+            - reads the checkpoint directory
+            - starts mission tasks
+    """
+    mission_ids = _list_persisted_mission_ids()
+    if not mission_ids:
+        return []
+
+    resumed: list[str] = []
+    for index, mission_id in enumerate(mission_ids):
+        if len(resumed) >= limit:
+            logfire.info("mission_auto_resume_capped", limit=limit, deferred=len(mission_ids) - index)
+            break
+        try:
+            error = await schedule(mission_id)
+        except Exception as exc:
+            logfire.error("mission_auto_resume_failed", mission_id=mission_id, error=str(exc))
+            continue
+        if error:
+            logfire.info("mission_auto_resume_skipped", mission_id=mission_id, reason=error)
+            continue
+        resumed.append(mission_id)
+
+    if resumed:
+        logfire.info("mission_auto_resume_started", mission_ids=resumed, count=len(resumed))
+    return resumed
+
+
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application.
 
@@ -1056,9 +1139,22 @@ def create_app() -> FastAPI:
         if existing_result is not None:
             return "Mission already completed"
 
+        state = await persistence.load_latest_state()
+        if source == "startup":
+            progress_marker = _mission_progress_marker(state)
+            skip_reason = _auto_resume_skip_reason(persistence, progress_marker)
+            if skip_reason is not None:
+                return skip_reason
+            ledger = persistence.record_resume_attempt(progress_marker)
+            logfire.info(
+                "mission_auto_resume_attempt",
+                mission_id=mission_id,
+                attempt=ledger.attempts,
+                max_attempts=AUTO_RESUME_MAX_ATTEMPTS,
+            )
+
         emitter = EventEmitter()
         orchestrator = LycurgusOrchestrator(event_emitter=emitter)
-        state = await persistence.load_latest_state()
 
         missions[mission_id] = {
             "emitter": emitter,
@@ -1132,24 +1228,10 @@ def create_app() -> FastAPI:
 
     @app.on_event("startup")
     async def auto_resume_missions() -> None:
-        mission_ids = _list_persisted_mission_ids()
-        if not mission_ids:
-            return
+        async def schedule(mission_id: str) -> str | None:
+            return await _schedule_mission_resume(mission_id, source="startup")
 
-        resumed: list[str] = []
-        for mission_id in mission_ids:
-            try:
-                error = await _schedule_mission_resume(mission_id, source="startup")
-            except Exception as exc:
-                logfire.error("mission_auto_resume_failed", mission_id=mission_id, error=str(exc))
-                continue
-            if error:
-                logfire.info("mission_auto_resume_skipped", mission_id=mission_id, reason=error)
-                continue
-            resumed.append(mission_id)
-
-        if resumed:
-            logfire.info("mission_auto_resume_started", mission_ids=resumed, count=len(resumed))
+        await _auto_resume_persisted_missions(schedule)
 
     @app.get("/health")
     async def health_check() -> dict[str, str]:

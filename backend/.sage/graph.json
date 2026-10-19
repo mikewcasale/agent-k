@@ -707,6 +707,11 @@
     },
     {
       "source": "agent_k.mission.persistence",
+      "target": "agent_k.mission.persistence:ResumeLedger",
+      "type": "provides"
+    },
+    {
+      "source": "agent_k.mission.persistence",
       "target": "agent_k.mission.persistence:create_persistence",
       "type": "provides"
     },
@@ -921,7 +926,7 @@
       "type": "similar"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831739+00:00",
+  "generated": "2026-10-19T03:13:19.538870+00:00",
   "nodes": [
     {
       "id": "agent_k",

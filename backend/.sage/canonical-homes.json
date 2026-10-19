@@ -59,7 +59,7 @@
     "for": [
       "mission persistence construction"
     ],
-    "line": 185,
+    "line": 273,
     "notes": "Use create_persistence to ensure defaults.",
     "source": "agent_k/mission/persistence.py"
   },
@@ -83,7 +83,7 @@
     "for": [
       "AG-UI application construction"
     ],
-    "line": 1007,
+    "line": 1090,
     "notes": "Use create_app to initialize the FastAPI server.",
     "source": "agent_k/ui/agui.py"
   }

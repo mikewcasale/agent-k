@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Used to age out long-abandoned missions before they are auto-resumed.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.persistence:MissionPersistence.last_activity_at",
+  "line": 132,
+  "notice": "Returns the snapshot file modification time, or None when nothing is stored.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/persistence.py",
+  "summary": "Return when the mission last wrote a snapshot.",
+  "type": "method"
+}

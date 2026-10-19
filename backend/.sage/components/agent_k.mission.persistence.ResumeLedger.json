@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "A mission only becomes unresumable once an end snapshot exists, so a mission that\ncrashed terminally stays a resume candidate forever. The ledger bounds that replay:\nattempts accumulate per progress marker and reset as soon as the mission advances.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.persistence:ResumeLedger",
+  "line": 63,
+  "notice": "Durable record of unattended resume attempts for a mission.",
+  "pattern": {
+    "name": "state-persistence",
+    "rationale": "Bounds unattended resume replays with on-disk bookkeeping.",
+    "violations": "In-memory counters reset on restart, which is when replays happen."
+  },
+  "similar": null,
+  "source": "agent_k/mission/persistence.py",
+  "summary": "Durable record of unattended resume attempts for a mission.",
+  "type": "class"
+}

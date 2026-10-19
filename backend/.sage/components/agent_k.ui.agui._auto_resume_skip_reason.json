@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Missions without an end snapshot stay resume candidates forever, so without these\nguards every historically failed mission is replayed on every process start.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:_auto_resume_skip_reason",
+  "line": 1023,
+  "notice": "Guards startup auto-resume against stale missions and repeated failing replays.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Return why an unattended resume should be skipped, or None when it may proceed.",
+  "type": "function"
+}

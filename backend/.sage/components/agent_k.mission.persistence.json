@@ -16,6 +16,7 @@
     "pattern": "state-persistence",
     "provides": [
       "agent_k.mission.persistence:MissionPersistence",
+      "agent_k.mission.persistence:ResumeLedger",
       "agent_k.mission.persistence:create_persistence",
       "agent_k.mission.persistence:CHECKPOINT_DIR"
     ]

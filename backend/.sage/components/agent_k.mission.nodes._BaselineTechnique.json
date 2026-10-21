@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Resolved from research strategy text by _resolve_baseline_technique.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:_BaselineTechnique",
+  "line": 116,
+  "notice": "Model family used for the prototype baseline.",
+  "pattern": {
+    "name": "enumeration",
+    "rationale": "StrEnum keeps baseline model families out of string literals.",
+    "violations": "Inline substring checks mis-select the baseline learner."
+  },
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Model family used for the prototype baseline.",
+  "type": "class"
+}

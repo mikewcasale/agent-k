@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Matches whole words so that substrings such as \"non-linear\" cannot\nselect a linear model, and resolves multi-family text by strength\nrather than by first match. Gradient boosting is the default because\nLightGBM is the preferred tabular learner for this project.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:_resolve_baseline_technique",
+  "line": 189,
+  "notice": "Picks a baseline model family from research strategy text.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Resolve the baseline model family from free-text research strategy.",
+  "type": "function"
+}

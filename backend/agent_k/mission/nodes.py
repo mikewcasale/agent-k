@@ -49,12 +49,14 @@ import importlib.util
 import json
 import math
 import os
+import re
 import shutil
 import tempfile
 import traceback
 from collections import Counter
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from enum import StrEnum
 from pathlib import Path
 from textwrap import dedent
 from typing import TYPE_CHECKING, Any, Final
@@ -108,6 +110,98 @@ _BASE_DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = ("xgboost", "catboost")
 _DISALLOWED_LIBRARIES: Final[tuple[str, ...]] = (
     _BASE_DISALLOWED_LIBRARIES if _LIGHTGBM_AVAILABLE else (*_BASE_DISALLOWED_LIBRARIES, "lightgbm")
 )
+
+
+class _BaselineTechnique(StrEnum):
+    """Model family used for the prototype baseline.
+
+    @notice: |
+        Model family used for the prototype baseline.
+
+    @dev: |
+        Resolved from research strategy text by _resolve_baseline_technique.
+
+        @pattern:
+            name: enumeration
+            rationale: "StrEnum keeps baseline model families out of string literals."
+            violations: "Inline substring checks mis-select the baseline learner."
+    """
+
+    GRADIENT_BOOSTING = "gradient_boosting"
+    RANDOM_FOREST = "random_forest"
+    LINEAR = "linear"
+
+
+_GRADIENT_BOOSTING_PATTERNS: Final[tuple[re.Pattern[str], ...]] = (
+    re.compile(r"\blight\s*gbm\b"),
+    re.compile(r"\blgbm?\b"),
+    re.compile(r"\bxgb(oost)?\b"),
+    re.compile(r"\bcat\s*boost\b"),
+    re.compile(r"\bgbdt\b"),
+    re.compile(r"\bgbm\b"),
+    re.compile(r"\bboost\w*"),
+)
+_RANDOM_FOREST_PATTERNS: Final[tuple[re.Pattern[str], ...]] = (
+    re.compile(r"\brandom\s*forest\b"),
+    re.compile(r"\bextra\s*trees\b"),
+    re.compile(r"\bbagging\b"),
+)
+# "linear" is ignored when negated ("non-linear", "non linear") so that a
+# recommendation to model non-linear structure cannot select a linear model.
+_LINEAR_PATTERNS: Final[tuple[re.Pattern[str], ...]] = (
+    re.compile(r"(?<!non-)(?<!non )\blinear\b"),
+    re.compile(r"\blogistic\b"),
+    re.compile(r"\bridge\b"),
+    re.compile(r"\blasso\b"),
+    re.compile(r"\belastic\s*net\b"),
+)
+# Ordered strongest-first: when several families are mentioned, the strongest
+# tabular learner wins, which also neutralises negated mentions of the others.
+_TECHNIQUE_PRIORITY: Final[tuple[tuple[_BaselineTechnique, tuple[re.Pattern[str], ...]], ...]] = (
+    (_BaselineTechnique.GRADIENT_BOOSTING, _GRADIENT_BOOSTING_PATTERNS),
+    (_BaselineTechnique.RANDOM_FOREST, _RANDOM_FOREST_PATTERNS),
+    (_BaselineTechnique.LINEAR, _LINEAR_PATTERNS),
+)
+_DEFAULT_BASELINE_TECHNIQUE: Final[_BaselineTechnique] = _BaselineTechnique.GRADIENT_BOOSTING
+
+
+_PROTOTYPE_TEMPLATE_INDENT: Final[str] = " " * 8
+
+
+def _indent_generated_block(block: str, indent: str = _PROTOTYPE_TEMPLATE_INDENT) -> str:
+    """Align an interpolated code block with the prototype template indentation.
+
+    @notice: |
+        Re-indents a multi-line code block for safe f-string interpolation.
+
+    @dev: |
+        The prototype template is written at a fixed indentation and dedented
+        after interpolation. A multi-line block whose continuation lines start
+        at column zero makes the common prefix empty, so dedent becomes a no-op
+        and the surrounding template keeps its indentation, which is a syntax
+        error. Indenting the continuation lines here keeps dedent effective.
+    """
+    head, *rest = block.splitlines() or [""]
+    return "\n".join([head, *(f"{indent}{line}" if line.strip() else "" for line in rest)])
+
+
+def _resolve_baseline_technique(strategy_text: str) -> _BaselineTechnique:
+    """Resolve the baseline model family from free-text research strategy.
+
+    @notice: |
+        Picks a baseline model family from research strategy text.
+
+    @dev: |
+        Matches whole words so that substrings such as "non-linear" cannot
+        select a linear model, and resolves multi-family text by strength
+        rather than by first match. Gradient boosting is the default because
+        LightGBM is the preferred tabular learner for this project.
+    """
+    haystack = strategy_text.lower()
+    for technique, patterns in _TECHNIQUE_PRIORITY:
+        if any(pattern.search(haystack) for pattern in patterns):
+            return technique
+    return _DEFAULT_BASELINE_TECHNIQUE
 
 
 @dataclass
@@ -628,7 +722,6 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
             elif isinstance(value, str) and value:
                 strategy_items.append(value)
         strategy_text = " ".join(strategy_items)
-        strategy_lower = strategy_text.lower()
 
         is_classification = metric_key in {
             EvaluationMetric.ACCURACY,
@@ -638,43 +731,46 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         }
         uses_proba = metric_key in {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
 
-        if "lightgbm" in strategy_lower or "lgbm" in strategy_lower:
+        technique = _resolve_baseline_technique(strategy_text)
+
+        if technique is _BaselineTechnique.GRADIENT_BOOSTING:
             model_class = "LGBMClassifier" if is_classification else "LGBMRegressor"
             fallback_class = "GradientBoostingClassifier" if is_classification else "GradientBoostingRegressor"
             model_import = "from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor"
-            model_bootstrap = dedent(
-                """
-                HAS_LGB = False
-                try:
-                    from lightgbm import LGBMClassifier, LGBMRegressor
-                    HAS_LGB = True
-                except Exception:
+            model_bootstrap = _indent_generated_block(
+                dedent(
+                    """
                     HAS_LGB = False
-                """
-            ).strip()
-            model_init = dedent(
-                f"""
-                if HAS_LGB:
-                    base_model = {model_class}(random_state=42)
-                else:
-                    base_model = {fallback_class}(random_state=42)
-                """
-            ).strip()
-        elif "linear" in strategy_lower:
-            model_class = "LogisticRegression" if is_classification else "LinearRegression"
-            model_import = "from sklearn.linear_model import LogisticRegression, LinearRegression"
-            model_bootstrap = ""
-            model_init = f"base_model = {model_class}(random_state=42)"
-        elif "gradient" in strategy_lower or "boost" in strategy_lower:
-            model_class = "GradientBoostingClassifier" if is_classification else "GradientBoostingRegressor"
-            model_import = "from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor"
-            model_bootstrap = ""
-            model_init = f"base_model = {model_class}(random_state=42)"
-        else:
+                    try:
+                        from lightgbm import LGBMClassifier, LGBMRegressor
+                        HAS_LGB = True
+                    except Exception:
+                        HAS_LGB = False
+                    """
+                ).strip()
+            )
+            model_init = _indent_generated_block(
+                dedent(
+                    f"""
+                    if HAS_LGB:
+                        base_model = {model_class}(random_state=42)
+                    else:
+                        base_model = {fallback_class}(random_state=42)
+                    """
+                ).strip()
+            )
+        elif technique is _BaselineTechnique.RANDOM_FOREST:
             model_class = "RandomForestClassifier" if is_classification else "RandomForestRegressor"
             model_import = "from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor"
             model_bootstrap = ""
             model_init = f"base_model = {model_class}(random_state=42)"
+        else:
+            # LinearRegression takes no random_state; passing one raises TypeError.
+            model_class = "LogisticRegression" if is_classification else "LinearRegression"
+            model_args = "random_state=42" if is_classification else ""
+            model_import = "from sklearn.linear_model import LogisticRegression, LinearRegression"
+            model_bootstrap = ""
+            model_init = f"base_model = {model_class}({model_args})"
 
         prototype_code = (
             dedent(

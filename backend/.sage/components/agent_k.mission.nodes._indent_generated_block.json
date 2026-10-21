@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The prototype template is written at a fixed indentation and dedented\nafter interpolation. A multi-line block whose continuation lines start\nat column zero makes the common prefix empty, so dedent becomes a no-op\nand the surrounding template keeps its indentation, which is a syntax\nerror. Indenting the continuation lines here keeps dedent effective.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.mission.nodes:_indent_generated_block",
+  "line": 172,
+  "notice": "Re-indents a multi-line code block for safe f-string interpolation.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/mission/nodes.py",
+  "summary": "Align an interpolated code block with the prototype template indentation.",
+  "type": "function"
+}

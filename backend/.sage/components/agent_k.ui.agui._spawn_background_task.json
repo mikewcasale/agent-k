@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "The event loop only holds a weak reference to a task, so a task kept\nnowhere else can be garbage collected mid-run and the mission stops\nsilently. Membership in the module registry keeps it alive until the\ndone callback removes it.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:_spawn_background_task",
+  "line": 993,
+  "notice": "Creates a tracked asyncio task for fire-and-forget mission work.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Schedule a coroutine and hold a strong reference until it finishes.",
+  "type": "function"
+}

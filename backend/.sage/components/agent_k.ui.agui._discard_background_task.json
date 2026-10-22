@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "asyncio only keeps a weak reference to a running task, so a task whose\nexception is never retrieved reports nothing beyond a garbage-collection\nwarning. Logging here is the only place a crashed mission surfaces.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:_discard_background_task",
+  "line": 971,
+  "notice": "Releases the strong reference to a finished task and logs failures.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Drop a finished background task and report how it ended.",
+  "type": "function"
+}

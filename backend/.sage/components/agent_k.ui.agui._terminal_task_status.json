@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Returns None while the task is still running, so callers fall back to\nthe live orchestrator state. A cancelled task reports \"aborted\" and any\nother finished task without a result reports \"failed\"; without this the\nstatus endpoint keeps reporting progress for a mission that has stopped.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.ui.agui:_terminal_task_status",
+  "line": 1011,
+  "notice": "Maps a finished-but-resultless mission task to a terminal status.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/ui/agui.py",
+  "summary": "Return the status and message for a mission task that produced no result.",
+  "type": "function"
+}

@@ -61,7 +61,7 @@ from agent_k.infra.providers import get_model
 from agent_k.mission.persistence import CHECKPOINT_DIR, MissionPersistence, create_persistence
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterator
+    from collections.abc import AsyncIterator, Coroutine
 
     from agent_k.mission.state import MissionResult, MissionState
 
@@ -117,6 +117,9 @@ _ANTI_KEYWORDS: Final[tuple[str, ...]] = ("what is", "explain", "how does", "tel
 _PRIZE_PATTERN: Final[re.Pattern[str]] = re.compile(r"\$([\d,]+(?:\.\d+)?)\s*(k|m|thousand|million)?\b")
 _DAYS_PATTERN: Final[re.Pattern[str]] = re.compile(r"(\d+)\s*(days?|weeks?)")
 _PERCENTILE_PATTERN: Final[re.Pattern[str]] = re.compile(r"top\s+(\d+)%")
+
+_BACKGROUND_TASKS: Final[set[asyncio.Task[None]]] = set()
+"""Strong references to in-flight background tasks."""
 
 INTENT_SYSTEM_PROMPT: Final[
     str
@@ -745,7 +748,10 @@ class ChatHandler:
                 logfire.info("mission_mode_activated", chat_id=chat_id, criteria=mission_criteria.model_dump())
 
                 emitter = EventEmitter()
-                asyncio.create_task(self._run_mission(emitter=emitter, chat_id=chat_id, criteria=mission_criteria))
+                _spawn_background_task(
+                    self._run_mission(emitter=emitter, chat_id=chat_id, criteria=mission_criteria),
+                    name=f"mission-chat-{chat_id}",
+                )
                 return StreamingResponse(
                     transform_to_vercel_stream(emitter),
                     media_type="text/event-stream",
@@ -961,6 +967,68 @@ async def stream_text_response(text: str) -> AsyncIterator[str]:
     yield 'd:{"finishReason":"stop"}\n'
 
 
+def _discard_background_task(task: asyncio.Task[None]) -> None:
+    """Drop a finished background task and report how it ended.
+
+    @notice: |
+        Releases the strong reference to a finished task and logs failures.
+
+    @dev: |
+        asyncio only keeps a weak reference to a running task, so a task whose
+        exception is never retrieved reports nothing beyond a garbage-collection
+        warning. Logging here is the only place a crashed mission surfaces.
+    """
+    _BACKGROUND_TASKS.discard(task)
+    if task.cancelled():
+        logfire.info("background_task_cancelled", task_name=task.get_name())
+        return
+    error = task.exception()
+    if error is not None:
+        logfire.error(
+            "background_task_failed", task_name=task.get_name(), error=str(error), error_type=type(error).__name__
+        )
+
+
+def _spawn_background_task(coro: Coroutine[Any, Any, None], *, name: str) -> asyncio.Task[None]:
+    """Schedule a coroutine and hold a strong reference until it finishes.
+
+    @notice: |
+        Creates a tracked asyncio task for fire-and-forget mission work.
+
+    @dev: |
+        The event loop only holds a weak reference to a task, so a task kept
+        nowhere else can be garbage collected mid-run and the mission stops
+        silently. Membership in the module registry keeps it alive until the
+        done callback removes it.
+    """
+    task = asyncio.create_task(coro, name=name)
+    _BACKGROUND_TASKS.add(task)
+    task.add_done_callback(_discard_background_task)
+    return task
+
+
+def _terminal_task_status(task: asyncio.Task[None] | None) -> tuple[str, str] | None:
+    """Return the status and message for a mission task that produced no result.
+
+    @notice: |
+        Maps a finished-but-resultless mission task to a terminal status.
+
+    @dev: |
+        Returns None while the task is still running, so callers fall back to
+        the live orchestrator state. A cancelled task reports "aborted" and any
+        other finished task without a result reports "failed"; without this the
+        status endpoint keeps reporting progress for a mission that has stopped.
+    """
+    if task is None or not task.done():
+        return None
+    if task.cancelled():
+        return "aborted", "Mission was aborted before producing a result."
+    error = task.exception()
+    if error is not None:
+        return "failed", f"{type(error).__name__}: {error}"
+    return "failed", "Mission task finished without producing a result."
+
+
 def _calculate_progress_percent(state: MissionState) -> float:
     """Derive a progress percentage when the state lacks explicit progress."""
     if state.overall_progress:
@@ -1125,7 +1193,7 @@ def create_app() -> FastAPI:
             finally:
                 emitter.close()
 
-        missions[mission_id]["task"] = asyncio.create_task(run_mission())
+        missions[mission_id]["task"] = _spawn_background_task(run_mission(), name=f"mission-{mission_id}")
 
         logfire.info("mission_resumed", mission_id=mission_id, source=source)
         return None
@@ -1249,7 +1317,7 @@ def create_app() -> FastAPI:
             finally:
                 emitter.close()
 
-        missions[mission_id]["task"] = asyncio.create_task(run_mission())
+        missions[mission_id]["task"] = _spawn_background_task(run_mission(), name=f"mission-{mission_id}")
 
         logfire.info("mission_started", mission_id=mission_id)
 
@@ -1324,7 +1392,16 @@ def create_app() -> FastAPI:
 
     @app.get("/api/mission/{mission_id}/status")
     async def get_mission_status(mission_id: str) -> dict[str, Any]:
-        """Get current mission status."""
+        """Get current mission status.
+
+        @notice: |
+            Reports the live phase of an active mission, or how it ended.
+
+        @dev: |
+            A mission whose task was cancelled or crashed clears the
+            orchestrator state without recording a result. Checking the task
+            keeps such a mission from reporting progress forever.
+        """
         if mission_id not in missions:
             persisted = await _load_persisted_status(mission_id)
             if persisted is None:
@@ -1335,22 +1412,31 @@ def create_app() -> FastAPI:
         orchestrator = entry.get("orchestrator")
         state = orchestrator.state if orchestrator else None
         result = entry.get("result")
+        terminal = _terminal_task_status(entry.get("task")) if result is None else None
 
-        if state is not None:
-            status = "executing"
-            progress = _calculate_progress_percent(state)
-            current_phase = state.current_phase
-            competition_id = state.competition_id
-        elif result is not None:
+        if result is not None:
             status = "completed" if result.success else "failed"
             progress = 100.0
             current_phase = None
             competition_id = result.competition_id
+            error_message = result.error_message
+        elif terminal is not None:
+            status, error_message = terminal
+            progress = _calculate_progress_percent(state) if state is not None else 0.0
+            current_phase = state.current_phase if state is not None else None
+            competition_id = state.competition_id if state is not None else entry.get("competition_id")
+        elif state is not None:
+            status = "executing"
+            progress = _calculate_progress_percent(state)
+            current_phase = state.current_phase
+            competition_id = state.competition_id
+            error_message = None
         else:
             status = "planning"
             progress = 0.0
             current_phase = None
             competition_id = entry.get("competition_id")
+            error_message = None
 
         return {
             "missionId": mission_id,
@@ -1358,7 +1444,7 @@ def create_app() -> FastAPI:
             "currentPhase": current_phase,
             "progress": progress,
             "competitionId": competition_id,
-            "errorMessage": result.error_message if result is not None else None,
+            "errorMessage": error_message,
         }
 
     @app.post("/api/mission/{mission_id}/abort")

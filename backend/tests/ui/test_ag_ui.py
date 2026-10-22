@@ -155,8 +155,10 @@ class TestTerminalTaskStatus:
         with pytest.raises(asyncio.CancelledError):
             await task
 
-        status, message = _terminal_task_status(task)
+        terminal = _terminal_task_status(task)
 
+        assert terminal is not None
+        status, message = terminal
         assert status == "aborted"
         assert "aborted" in message
 
@@ -170,8 +172,10 @@ class TestTerminalTaskStatus:
         with pytest.raises(ValueError, match="bad schema"):
             await task
 
-        status, message = _terminal_task_status(task)
+        terminal = _terminal_task_status(task)
 
+        assert terminal is not None
+        status, message = terminal
         assert status == "failed"
         assert message == "ValueError: bad schema"
 
@@ -184,8 +188,10 @@ class TestTerminalTaskStatus:
         task = asyncio.create_task(work())
         await task
 
-        status, message = _terminal_task_status(task)
+        terminal = _terminal_task_status(task)
 
+        assert terminal is not None
+        status, message = terminal
         assert status == "failed"
         assert "without producing a result" in message
 

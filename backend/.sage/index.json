@@ -705,7 +705,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-10-22T02:09:50.167064+00:00",
+  "generated": "2026-10-22T02:13:44.730028+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",

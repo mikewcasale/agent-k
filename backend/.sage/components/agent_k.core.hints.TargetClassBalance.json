@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "See module for implementation details and extension points.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.hints:TargetClassBalance",
+  "line": 295,
+  "notice": "Class distribution of a categorical target column.",
+  "pattern": {
+    "name": "value-object",
+    "rationale": "Frozen dataclass for immutable target class balance.",
+    "violations": "Recomputing class counts per hint rereads the dataset."
+  },
+  "similar": null,
+  "source": "agent_k/core/hints.py",
+  "summary": "Class distribution of a categorical target column.",
+  "type": "class"
+}

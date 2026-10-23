@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": null,
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.hints:TargetClassBalance.is_binary",
+  "line": 319,
+  "notice": null,
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/hints.py",
+  "summary": "Return whether the target has exactly two classes.",
+  "type": "method"
+}

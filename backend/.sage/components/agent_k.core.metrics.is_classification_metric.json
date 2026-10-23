@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Ranking metrics are excluded: they are scored on ordered candidates,\nnot on a single label per row.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.metrics:is_classification_metric",
+  "line": 188,
+  "notice": "True when the metric expects class labels or class probabilities.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/metrics.py",
+  "summary": "Report whether a metric scores discrete label predictions.",
+  "type": "function"
+}

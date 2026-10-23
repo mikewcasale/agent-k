@@ -160,6 +160,7 @@ class EvaluationMetric(StrEnum):
     RMSE = "rmse"
     MAE = "mae"
     RMSLE = "rmsle"
+    R2 = "r2"
 
     # Ranking
     MAP = "map"

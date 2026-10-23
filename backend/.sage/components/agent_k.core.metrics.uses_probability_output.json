@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Drives predict_proba selection in generated baseline solutions.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.metrics:uses_probability_output",
+  "line": 201,
+  "notice": "True when submissions must carry probabilities instead of labels.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/metrics.py",
+  "summary": "Report whether a metric is scored on predicted probabilities.",
+  "type": "function"
+}

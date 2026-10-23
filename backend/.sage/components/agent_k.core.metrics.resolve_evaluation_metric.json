@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Patterns are ordered so that compound names resolve to the most\nspecific metric (\"multiclass logarithmic loss\" is a log loss, not an\nRMSLE). Unrecognised names fall back to reward/error wording so the\noptimisation direction stays correct, and the miss is logged.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.metrics:resolve_evaluation_metric",
+  "line": 213,
+  "notice": "Maps a platform metric string to an EvaluationMetric and direction.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/metrics.py",
+  "summary": "Resolve free-text platform metric names onto supported metrics.",
+  "type": "function"
+}

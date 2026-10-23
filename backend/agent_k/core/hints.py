@@ -56,6 +56,7 @@ __all__ = (
     "HintResult",
     "MissingPattern",
     "PreprocessingHint",
+    "TargetClassBalance",
     "build_dataset_profile",
     "compute_hint_priority",
     "detect_applied_hints",
@@ -71,6 +72,10 @@ MISSING_VALUE_TOKENS: Final[tuple[str, ...]] = ("", "na", "nan", "null", "none")
 MISSING_RATE_THRESHOLD: Final[float] = 0.05
 SKEWNESS_THRESHOLD: Final[float] = 1.0
 MISSING_PATTERN_CORR_THRESHOLD: Final[float] = 0.2
+CLASS_IMBALANCE_RATIO_THRESHOLD: Final[float] = 3.0
+SEVERE_CLASS_IMBALANCE_RATIO: Final[float] = 10.0
+MAX_TARGET_CLASSES: Final[int] = 100
+CLASSIFICATION_DISCRETE_MAX_CLASSES: Final[int] = 20
 
 _GEO_LAT_TOKENS: Final[tuple[str, ...]] = ("lat", "latitude")
 _GEO_LON_TOKENS: Final[tuple[str, ...]] = ("lon", "lng", "longitude")
@@ -117,6 +122,16 @@ class ColumnType(StrEnum):
     PRICE_MONETARY = "price"
     ID_COLUMN = "id"
     BINARY = "binary"
+
+
+_CATEGORICAL_TARGET_TYPES: Final[frozenset[ColumnType]] = frozenset(
+    {
+        ColumnType.BINARY,
+        ColumnType.CATEGORICAL_LOW_CARDINALITY,
+        ColumnType.CATEGORICAL_HIGH_CARDINALITY,
+        ColumnType.CATEGORICAL_ORDINAL,
+    }
+)
 
 
 class MissingPattern(StrEnum):
@@ -276,6 +291,76 @@ class DistributionStats:
 
 
 @dataclass(frozen=True, slots=True)
+class TargetClassBalance:
+    """Class distribution of a categorical target column.
+
+    @notice: |
+        Class distribution of a categorical target column.
+
+    @dev: |
+        See module for implementation details and extension points.
+
+        @pattern:
+            name: value-object
+            rationale: "Frozen dataclass for immutable target class balance."
+            violations: "Recomputing class counts per hint rereads the dataset."
+    """
+
+    column_name: str
+    class_count: int
+    total_count: int
+    majority_ratio: float
+    minority_ratio: float
+    imbalance_ratio: float
+    class_counts: tuple[tuple[str, int], ...]
+
+    @property
+    def is_binary(self) -> bool:
+        """Return whether the target has exactly two classes."""
+        return self.class_count == 2
+
+    @property
+    def is_imbalanced(self) -> bool:
+        """Return whether the majority/minority ratio clears the imbalance threshold."""
+        return self.imbalance_ratio >= CLASS_IMBALANCE_RATIO_THRESHOLD
+
+    @property
+    def is_severely_imbalanced(self) -> bool:
+        """Return whether the majority/minority ratio clears the severe imbalance threshold."""
+        return self.imbalance_ratio >= SEVERE_CLASS_IMBALANCE_RATIO
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize to a JSON-ready dictionary."""
+        return {
+            "column_name": self.column_name,
+            "class_count": self.class_count,
+            "total_count": self.total_count,
+            "majority_ratio": self.majority_ratio,
+            "minority_ratio": self.minority_ratio,
+            "imbalance_ratio": self.imbalance_ratio,
+            "class_counts": [[label, count] for label, count in self.class_counts],
+        }
+
+    @classmethod
+    def from_dict(cls, payload: dict[str, Any]) -> TargetClassBalance:
+        """Hydrate from a serialized payload."""
+        class_counts: list[tuple[str, int]] = []
+        for item in payload.get("class_counts") or ():
+            if not isinstance(item, (list, tuple)) or len(item) != 2:
+                continue
+            class_counts.append((str(item[0]), int(item[1])))
+        return cls(
+            column_name=str(payload.get("column_name", "")),
+            class_count=int(payload.get("class_count", 0)),
+            total_count=int(payload.get("total_count", 0)),
+            majority_ratio=float(payload.get("majority_ratio", 0.0)),
+            minority_ratio=float(payload.get("minority_ratio", 0.0)),
+            imbalance_ratio=float(payload.get("imbalance_ratio", 1.0)),
+            class_counts=tuple(class_counts),
+        )
+
+
+@dataclass(frozen=True, slots=True)
 class DatasetProfile:
     """Comprehensive dataset analysis for hint generation.
 
@@ -301,6 +386,7 @@ class DatasetProfile:
     feature_correlations: dict[str, float]
     target_columns: tuple[str, ...] = ()
     id_column: str | None = None
+    target_class_balance: TargetClassBalance | None = None
 
     def to_dict(self) -> dict[str, Any]:
         """Serialize to a JSON-ready dictionary."""
@@ -316,6 +402,7 @@ class DatasetProfile:
             "feature_correlations": dict(self.feature_correlations),
             "target_columns": list(self.target_columns),
             "id_column": self.id_column,
+            "target_class_balance": (self.target_class_balance.to_dict() if self.target_class_balance else None),
         }
 
     @classmethod
@@ -361,6 +448,11 @@ class DatasetProfile:
                 skewness=float(target_payload.get("skewness", 0.0)),
             )
 
+        balance_payload = payload.get("target_class_balance")
+        target_class_balance = (
+            TargetClassBalance.from_dict(balance_payload) if isinstance(balance_payload, dict) else None
+        )
+
         missing_pattern_raw = payload.get("missing_pattern", MissingPattern.MCAR.value)
         try:
             missing_pattern = MissingPattern(missing_pattern_raw)
@@ -381,6 +473,7 @@ class DatasetProfile:
             },
             target_columns=tuple(payload.get("target_columns") or ()),
             id_column=payload.get("id_column"),
+            target_class_balance=target_class_balance,
         )
 
 
@@ -494,6 +587,7 @@ def build_dataset_profile(
     has_price = any(profile.column_type == ColumnType.PRICE_MONETARY for profile in column_profiles.values())
 
     target_distribution = _build_target_distribution(df, target_columns)
+    target_class_balance = _build_target_class_balance(df, target_columns, column_profiles)
     feature_correlations = _compute_feature_correlations(df, target_columns)
 
     return DatasetProfile(
@@ -508,6 +602,7 @@ def build_dataset_profile(
         feature_correlations=feature_correlations,
         target_columns=tuple(target_columns),
         id_column=id_column,
+        target_class_balance=target_class_balance,
     )
 
 
@@ -913,6 +1008,7 @@ def generate_preprocessing_hints(profile: DatasetProfile, competition_id: str | 
 
     hints.extend(_generate_geospatial_hints(profile, feature_profiles))
     hints.extend(_generate_knn_feature_hints(profile, feature_profiles))
+    hints.extend(_generate_classification_hints(profile))
     hints.extend(_generate_model_selection_hints(profile))
     hints.extend(_generate_feature_selection_hints(profile))
     hints.extend(_generate_data_enrichment_hints(profile, feature_profiles))
@@ -1274,6 +1370,37 @@ def _build_target_distribution(df: pd.DataFrame, target_columns: Iterable[str]) 
     )
 
 
+def _build_target_class_balance(
+    df: pd.DataFrame, target_columns: Iterable[str], column_profiles: dict[str, ColumnProfile]
+) -> TargetClassBalance | None:
+    target_name = next(iter(target_columns), None)
+    if target_name is None or target_name not in df.columns:
+        return None
+    target_profile = column_profiles.get(target_name)
+    if target_profile is None or not _is_classification_target(target_profile):
+        return None
+
+    counts = df[target_name].dropna().value_counts()
+    class_count = int(counts.size)
+    if class_count < 2 or class_count > MAX_TARGET_CLASSES:
+        return None
+
+    total = int(counts.sum())
+    if total <= 0:
+        return None
+    majority = int(counts.iloc[0])
+    minority = int(counts.iloc[-1])
+    return TargetClassBalance(
+        column_name=target_name,
+        class_count=class_count,
+        total_count=total,
+        majority_ratio=majority / total,
+        minority_ratio=minority / total,
+        imbalance_ratio=majority / max(minority, 1),
+        class_counts=tuple((str(label), int(count)) for label, count in counts.items()),
+    )
+
+
 def _compute_feature_correlations(df: pd.DataFrame, target_columns: Iterable[str]) -> dict[str, float]:
     target_name = next(iter(target_columns), None)
     if target_name is None or target_name not in df.columns:
@@ -1353,16 +1480,16 @@ def _infer_problem_kind(profile: DatasetProfile) -> str:
     target_profile = profile.columns.get(target_name)
     if target_profile is None:
         return "regression"
-    if target_profile.column_type in {
-        ColumnType.BINARY,
-        ColumnType.CATEGORICAL_LOW_CARDINALITY,
-        ColumnType.CATEGORICAL_HIGH_CARDINALITY,
-        ColumnType.CATEGORICAL_ORDINAL,
-    }:
-        return "classification"
-    if target_profile.column_type == ColumnType.NUMERIC_DISCRETE and target_profile.unique_count <= 20:
-        return "classification"
-    return "regression"
+    return "classification" if _is_classification_target(target_profile) else "regression"
+
+
+def _is_classification_target(target_profile: ColumnProfile) -> bool:
+    if target_profile.column_type in _CATEGORICAL_TARGET_TYPES:
+        return True
+    return (
+        target_profile.column_type == ColumnType.NUMERIC_DISCRETE
+        and target_profile.unique_count <= CLASSIFICATION_DISCRETE_MAX_CLASSES
+    )
 
 
 def _detect_geo_named_columns(columns: dict[str, ColumnProfile]) -> dict[str, list[str]]:
@@ -1521,6 +1648,97 @@ def _generate_knn_feature_hints(
             last_result=None,
         )
     )
+
+    return hints
+
+
+def _generate_classification_hints(profile: DatasetProfile) -> list[PreprocessingHint]:
+    balance = profile.target_class_balance
+    if balance is None or _infer_problem_kind(profile) != "classification":
+        return []
+
+    target_columns = [balance.column_name]
+    distribution = ", ".join(f"{label}={count}" for label, count in balance.class_counts[:10])
+    hints: list[PreprocessingHint] = [
+        PreprocessingHint(
+            id="stratified_cv",
+            category=HintCategory.VALIDATION,
+            priority=0.9 if balance.is_imbalanced else 0.8,
+            applicable_columns=target_columns,
+            description=(
+                f"Validate with stratified folds so every fold keeps the observed class mix "
+                f"({balance.class_count} classes, minority share {balance.minority_ratio:.4f})."
+            ),
+            code_snippet=(
+                "from sklearn.model_selection import StratifiedKFold\n"
+                "cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)\n"
+                "splits = list(cv.split(X_train, y_train))"
+            ),
+            success_rate=0.0,
+            last_attempted=None,
+            last_result=None,
+        )
+    ]
+
+    if balance.class_count > 2:
+        hints.append(
+            PreprocessingHint(
+                id="multiclass_objective",
+                category=HintCategory.MODEL_SELECTION,
+                priority=0.85,
+                applicable_columns=target_columns,
+                description=(
+                    f"Train LightGBM with the multiclass objective for the {balance.class_count}-class target "
+                    f"({distribution}); encode labels to contiguous integers first."
+                ),
+                code_snippet=(
+                    "import lightgbm as lgb\n"
+                    "from sklearn.preprocessing import LabelEncoder\n"
+                    "encoder = LabelEncoder()\n"
+                    "y_encoded = encoder.fit_transform(y_train)\n"
+                    "params = {\n"
+                    '    "objective": "multiclass",\n'
+                    f'    "num_class": {balance.class_count},\n'
+                    '    "metric": "multi_logloss",\n'
+                    '    "learning_rate": 0.05,\n'
+                    '    "num_leaves": 31,\n'
+                    '    "feature_fraction": 0.8,\n'
+                    '    "verbose": -1,\n'
+                    "}\n"
+                    "model = lgb.train(params, lgb.Dataset(X_train, label=y_encoded), num_boost_round=1000)\n"
+                    "preds = encoder.inverse_transform(model.predict(X_test).argmax(axis=1))"
+                ),
+                success_rate=0.0,
+                last_attempted=None,
+                last_result=None,
+            )
+        )
+
+    if balance.is_imbalanced:
+        hints.append(
+            PreprocessingHint(
+                id="class_imbalance_weighting",
+                category=HintCategory.MODEL_OPTIMIZATION,
+                priority=0.9 if balance.is_severely_imbalanced else 0.8,
+                applicable_columns=target_columns,
+                description=(
+                    f"Reweight classes: the majority class outnumbers the minority "
+                    f"{balance.imbalance_ratio:.2f}:1 ({distribution}). Balanced sample weights lift ranking and "
+                    "threshold metrics, but they decalibrate probabilities, so keep raw weights for log-loss "
+                    "style metrics and recalibrate if you reweight."
+                ),
+                code_snippet=(
+                    "from lightgbm import LGBMClassifier\n"
+                    "from sklearn.utils.class_weight import compute_sample_weight\n"
+                    'sample_weight = compute_sample_weight(class_weight="balanced", y=y_train)\n'
+                    "model = LGBMClassifier(n_estimators=1000, learning_rate=0.05, random_state=42, n_jobs=-1)\n"
+                    "model.fit(X_train, y_train, sample_weight=sample_weight)"
+                ),
+                success_rate=0.0,
+                last_attempted=None,
+                last_result=None,
+            )
+        )
 
     return hints
 
@@ -1904,6 +2122,15 @@ def _hint_patterns(hint: PreprocessingHint) -> list[re.Pattern[str]]:
         "text_tfidf": [r"TfidfVectorizer"],
         "text_embeddings": [r"SentenceTransformer", r"embeddings"],
         "timeseries_cv": [r"TimeSeriesSplit", r"PurgedKFold"],
+        "stratified_cv": [r"StratifiedKFold", r"StratifiedGroupKFold", r"stratify\s*="],
+        "multiclass_objective": [r"multiclass", r"num_class"],
+        "class_imbalance_weighting": [
+            r"scale_pos_weight",
+            r"class_weight",
+            r"is_unbalance",
+            r"compute_sample_weight",
+            r"sample_weight\s*=",
+        ],
         "timeseries_stationarity": [r"adfuller"],
         "timeseries_seasonality": [r"seasonal_decompose", r"fourier"],
         "timeseries_lag_features": [r"shift\\(", r"rolling"],

@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Falls back to \"maximize\" only for metrics missing from\nMETRIC_DIRECTIONS, which the enum coverage test forbids.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.metrics:metric_direction_for",
+  "line": 175,
+  "notice": "Returns \"maximize\" or \"minimize\" for the given metric.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/metrics.py",
+  "summary": "Return the optimisation direction for a metric.",
+  "type": "function"
+}

@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.evolver:EvolverDeps",
-  "line": 436,
+  "line": 447,
   "notice": "Dependencies for the Evolver agent.",
   "pattern": {
     "name": "dependency-container",

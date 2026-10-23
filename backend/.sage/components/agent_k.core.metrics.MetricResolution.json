@@ -1,0 +1,21 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "``matched`` is False when the raw name hit no known pattern and the\nmetric was inferred from reward/error wording alone.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.core.metrics:MetricResolution",
+  "line": 153,
+  "notice": "Outcome of resolving a platform metric name.",
+  "pattern": {
+    "name": "resolution-result",
+    "rationale": "Carries the resolved metric with its provenance.",
+    "violations": "Bare tuples hide whether resolution was a guess."
+  },
+  "similar": null,
+  "source": "agent_k/core/metrics.py",
+  "summary": "Outcome of resolving a platform metric name.",
+  "type": "class"
+}

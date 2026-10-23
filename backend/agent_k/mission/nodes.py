@@ -76,6 +76,7 @@ from ..core.constants import (
 from ..core.data import infer_competition_schema, locate_data_files, stage_competition_data
 from ..core.exceptions import classify_error
 from ..core.hints import DatasetProfile, PreprocessingHint, build_dataset_profile, generate_preprocessing_hints
+from ..core.metrics import is_classification_metric, uses_probability_output
 from ..core.models import (
     EvaluationMetric,
     EvolutionState,
@@ -630,13 +631,8 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
         strategy_text = " ".join(strategy_items)
         strategy_lower = strategy_text.lower()
 
-        is_classification = metric_key in {
-            EvaluationMetric.ACCURACY,
-            EvaluationMetric.AUC,
-            EvaluationMetric.LOG_LOSS,
-            EvaluationMetric.F1,
-        }
-        uses_proba = metric_key in {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
+        is_classification = is_classification_metric(metric_key)
+        uses_proba = uses_probability_output(metric_key)
 
         if "lightgbm" in strategy_lower or "lgbm" in strategy_lower:
             model_class = "LGBMClassifier" if is_classification else "LGBMRegressor"
@@ -695,6 +691,7 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
             mean_absolute_error,
             mean_squared_error,
             mean_squared_log_error,
+            r2_score,
             roc_auc_score,
         )
         {model_import}
@@ -817,6 +814,8 @@ class PrototypeNode(BaseNode[MissionState, GraphContext, MissionResult]):
                 if USES_LOG_TARGET:
                     return mean_squared_error(y_true, preds) ** 0.5
                 return mean_squared_log_error(y_true, preds) ** 0.5
+            if METRIC_KEY == "r2":
+                return r2_score(y_true, preds)
             return mean_squared_error(y_true, preds) ** 0.5
         
         def _score_regression(y_true, preds):
@@ -2173,19 +2172,12 @@ def _prediction_value(
         return 0.0, 0.0
 
     mean_value = sum(numeric_values) / len(numeric_values)
-    proba_metrics = {EvaluationMetric.AUC, EvaluationMetric.LOG_LOSS}
-    classification_metrics = {
-        EvaluationMetric.ACCURACY,
-        EvaluationMetric.AUC,
-        EvaluationMetric.LOG_LOSS,
-        EvaluationMetric.F1,
-    }
 
-    if metric in proba_metrics:
+    if uses_probability_output(metric):
         pred_numeric = min(max(mean_value, 1e-3), 1 - 1e-3)
         return pred_numeric, pred_numeric
 
-    if metric in classification_metrics:
+    if is_classification_metric(metric):
         if mapping:
             majority = Counter(raw_values).most_common(1)[0][0]
             return majority, float(mapping.get(majority, 0))
@@ -2259,6 +2251,14 @@ def _evaluate_metric(metric: EvaluationMetric, values: list[float], prediction: 
             return 0.0
         mse = sum((math.log1p(value) - math.log1p(pred)) ** 2 for value in valid_values) / len(valid_values)
         return math.sqrt(mse)
+
+    if metric == EvaluationMetric.R2:
+        mean_value = sum(values) / len(values)
+        ss_tot = sum((value - mean_value) ** 2 for value in values)
+        if ss_tot == 0.0:
+            return 0.0
+        ss_res = sum((value - prediction) ** 2 for value in values)
+        return 1.0 - ss_res / ss_tot
 
     return 0.0
 
@@ -2429,12 +2429,11 @@ def _generate_fallback_prototype(
             errors = [abs(mean_pred - actual) for actual in val_vals]
             return sum(errors) / len(errors) if errors else 1.0
         elif metric_key in ("r2", "rsquared"):
-            # R2: 1 - SS_res / SS_tot (return 1 - R2 as error)
+            # R2: 1 - SS_res / SS_tot, reported as-is because R2 is maximized.
             ss_res = sum((actual - mean_pred) ** 2 for actual in val_vals)
             val_mean = sum(val_vals) / len(val_vals)
             ss_tot = sum((actual - val_mean) ** 2 for actual in val_vals)
-            r2 = 1 - (ss_res / ss_tot) if ss_tot > 0 else 0
-            return 1 - r2  # Return error (lower is better)
+            return 1 - (ss_res / ss_tot) if ss_tot > 0 else 0.0
         else:
             # Default: RMSE
             errors = [(mean_pred - actual) ** 2 for actual in val_vals]

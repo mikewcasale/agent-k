@@ -66,7 +66,16 @@ from pydantic_ai import Agent, DeferredToolRequests, ModelRetry, ModelSettings, 
 from pydantic_ai.builtin_tools import MCPServerTool
 from pydantic_ai.toolsets import FunctionToolset
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from sklearn.metrics import log_loss, mean_absolute_error, mean_squared_error, mean_squared_log_error, roc_auc_score
+from sklearn.metrics import (
+    accuracy_score,
+    f1_score,
+    log_loss,
+    mean_absolute_error,
+    mean_squared_error,
+    mean_squared_log_error,
+    r2_score,
+    roc_auc_score,
+)
 
 from agent_k.adapters.openevolve import OpenEvolveRunner
 from agent_k.agents import register_agent
@@ -105,6 +114,8 @@ from agent_k.infra.providers import get_model
 from agent_k.toolsets import code_toolset, create_production_toolset, prepare_code_execution_tool, prepare_memory_tool
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from agent_k.core.models import Competition
     from agent_k.core.protocols import PlatformAdapter
     from agent_k.ui.agui import EventEmitter
@@ -2652,8 +2663,32 @@ def _score_submission(
         if y_true.shape[1] != 1:
             raise ValueError("auc only supported for single-target problems")
         return float(roc_auc_score(y_true[:, 0], y_pred[:, 0]))
+    if key in {"r2"}:
+        return float(r2_score(y_true, y_pred))
+    if key in {"accuracy"}:
+        return _score_label_columns(y_true, y_pred, scorer=_accuracy_column)
+    if key in {"f1"}:
+        return _score_label_columns(y_true, y_pred, scorer=_f1_column)
 
     raise ValueError(f"Unsupported metric: {metric}")
+
+
+def _score_label_columns(
+    y_true: np.ndarray, y_pred: np.ndarray, *, scorer: Callable[[np.ndarray, np.ndarray], float]
+) -> float:
+    """Average a label-based score across every target column."""
+    labels = np.rint(y_pred)
+    scores = [scorer(y_true[:, idx], labels[:, idx]) for idx in range(y_true.shape[1])]
+    return float(np.mean(scores)) if scores else 0.0
+
+
+def _accuracy_column(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    return float(accuracy_score(y_true, y_pred))
+
+
+def _f1_column(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    average = "binary" if np.unique(y_true).size <= 2 else "weighted"
+    return float(f1_score(y_true, y_pred, average=average, zero_division=0))
 
 
 # Module-level singleton for backward compatibility

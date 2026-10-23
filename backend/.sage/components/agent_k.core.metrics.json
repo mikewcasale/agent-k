@@ -1,0 +1,37 @@
+{
+  "agent_guidance": {
+    "do": [
+      "Use agent_k.core.metrics as the canonical home for this capability.",
+      "Resolve platform metric strings with resolve_evaluation_metric."
+    ],
+    "do_not": [
+      "Create parallel modules without updating @similar or @graph.",
+      "Duplicate metric direction or classification sets in other modules."
+    ]
+  },
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Single source of truth for metric direction, classification semantics, and\nprobability output requirements. Platform adapters resolve free-text metric\nnames here instead of pattern matching inline.",
+  "graph": {
+    "id": "agent_k.core.metrics",
+    "pattern": "metric-resolution",
+    "provides": [
+      "agent_k.core.metrics"
+    ]
+  },
+  "human_review": {
+    "last_verified": "2026-10-23",
+    "owners": [
+      "agent-k-core"
+    ]
+  },
+  "id": "agent_k.core.metrics",
+  "line": 1,
+  "notice": "Evaluation metric resolution and semantics for AGENT-K.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/core/metrics.py",
+  "summary": "Evaluation metric resolution and semantics for AGENT-K.",
+  "type": "module"
+}

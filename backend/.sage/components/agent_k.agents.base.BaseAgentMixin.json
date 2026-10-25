@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.base:BaseAgentMixin",
-  "line": 87,
+  "line": 86,
   "notice": "Base mixin providing common agent functionality.",
   "pattern": {
     "name": "agent-base",

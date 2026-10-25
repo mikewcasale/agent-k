@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Agents run with ``instrument=True``, so ``RunContext.model`` is an\n``InstrumentedModel`` wrapper rather than the provider model. Capability\nchecks must unwrap first, because ``isinstance`` against a provider model\nclass never matches a wrapper.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.providers:unwrap_model",
+  "line": 220,
+  "notice": "Returns the innermost model behind any WrapperModel layers.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/providers.py",
+  "summary": "Strip wrapper layers to reach the concrete provider model.",
+  "type": "function"
+}

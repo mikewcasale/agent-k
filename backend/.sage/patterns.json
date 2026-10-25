@@ -1,5 +1,5 @@
 {
-  "generated": "2026-04-17T22:58:10.831873+00:00",
+  "generated": "2026-10-25T01:28:43.117126+00:00",
   "pattern_count": 57,
   "patterns": {
     "adapter": [
@@ -36,7 +36,7 @@
     "agent-base": [
       {
         "component": "agent_k.agents.base:BaseAgentMixin",
-        "line": 87,
+        "line": 86,
         "rationale": "Shared behavior for agent wrappers around pydantic-ai Agents.",
         "source": "agent_k/agents/base.py",
         "violations": [
@@ -125,7 +125,7 @@
     "dependency-container": [
       {
         "component": "agent_k.agents.base:AgentDeps",
-        "line": 57,
+        "line": 56,
         "rationale": "Standardizes injected services for agent runs.",
         "source": "agent_k/agents/base.py",
         "violations": [
@@ -900,7 +900,7 @@
     "mixin": [
       {
         "component": "agent_k.agents.base:MemoryMixin",
-        "line": 149,
+        "line": 148,
         "rationale": "Shares memory initialization across agents without inheritance chains.",
         "source": "agent_k/agents/base.py",
         "violations": [

@@ -44,7 +44,7 @@ from pydantic_ai import Agent, ModelSettings
 from pydantic_ai.builtin_tools import CodeExecutionTool
 from pydantic_ai.messages import BuiltinToolReturnPart, ModelResponse
 
-from agent_k.infra.providers import get_model
+from agent_k.infra.providers import get_model, model_spec_supports_code_execution
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -333,7 +333,7 @@ def _is_sensitive_env_key(key: str) -> bool:
 
 
 def _supports_code_execution(model_spec: str) -> bool:
-    return model_spec.startswith("openai:")
+    return model_spec_supports_code_execution(model_spec)
 
 
 async def _safe_communicate(

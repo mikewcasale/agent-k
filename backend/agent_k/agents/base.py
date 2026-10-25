@@ -13,7 +13,6 @@
         - agent_k.agents.base:BaseAgentMixin
         - agent_k.agents.base:MemoryMixin
         - agent_k.agents.base:universal_tool_preparation
-        - agent_k.agents.base:prepare_output_tools_strict
     consumes:
         - agent_k.toolsets.memory:AgentKMemoryTool
         - agent_k.toolsets.memory:create_memory_backend
@@ -49,7 +48,7 @@ if TYPE_CHECKING:
     import httpx
     from pydantic_ai import Agent, RunContext, ToolDefinition
 
-__all__ = ("BaseAgentMixin", "MemoryMixin", "AgentDeps", "prepare_output_tools_strict", "universal_tool_preparation")
+__all__ = ("BaseAgentMixin", "MemoryMixin", "AgentDeps", "universal_tool_preparation")
 
 
 @dataclass
@@ -188,21 +187,24 @@ async def universal_tool_preparation(
     """Apply universal tool configuration across agents.
 
     @notice: |
-        Normalizes tool definitions for strictness and timeouts.
+        Applies timeouts to risky tools and leaves schema strictness to pydantic-ai.
 
     @dev: |
-        Sets strict mode for OpenAI tool calls and applies timeouts to risky tools.
+        Strictness is deliberately left unset. pydantic-ai resolves ``strict=None``
+        per tool against the provider's schema transformer, enabling strict mode
+        wherever the schema already satisfies it and leaving it off otherwise.
+        Forcing ``strict=True`` would instead rewrite every incompatible schema:
+        optional parameters become required, defaults are dropped and open
+        ``dict[str, Any]`` parameters collapse to objects that accept no keys.
 
     @effects:
         state:
             - tool_defs metadata
     """
+    _ = ctx
     result: list[ToolDefinition] = []
 
     for tool_def in tool_defs:
-        if ctx.model.system == "openai":
-            tool_def = replace(tool_def, strict=True)
-
         if "submit" in tool_def.name or "evaluate" in tool_def.name:
             metadata = dict(tool_def.metadata or {})
             metadata["timeout"] = 120.0
@@ -211,24 +213,3 @@ async def universal_tool_preparation(
         result.append(tool_def)
 
     return result
-
-
-async def prepare_output_tools_strict(
-    ctx: Annotated[RunContext[AgentDepsT], Doc("Run context for tool preparation.")],
-    tool_defs: Annotated[list[ToolDefinition], Doc("Tool definitions to update.")],
-) -> list[ToolDefinition]:
-    """Enable strict mode on output tools for OpenAI models.
-
-    @notice: |
-        Marks output tools as strict for OpenAI models.
-
-    @dev: |
-        Leaves tool definitions unchanged for non-OpenAI providers.
-
-    @effects:
-        state:
-            - tool_defs strict flag
-    """
-    if ctx.model.system == "openai":
-        return [replace(td, strict=True) for td in tool_defs]
-    return tool_defs

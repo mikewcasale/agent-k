@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Resolution builds a provider client, so verdicts are memoised per spec:\nthe evolution loop asks once per candidate execution. Resolution raises\nwhen credentials or optional provider packages are missing; an\nunresolvable spec cannot run code either, so those failures answer False\nwithout being cached, letting a later call retry once configuration lands.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.providers:model_spec_supports_code_execution",
+  "line": 254,
+  "notice": "Resolves the spec through get_model and checks the resulting model.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/providers.py",
+  "summary": "Report whether a model spec resolves to a code-execution capable model.",
+  "type": "function"
+}

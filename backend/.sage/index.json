@@ -95,8 +95,7 @@
         "agent_k.agents.base:AgentDeps",
         "agent_k.agents.base:BaseAgentMixin",
         "agent_k.agents.base:MemoryMixin",
-        "agent_k.agents.base:universal_tool_preparation",
-        "agent_k.agents.base:prepare_output_tools_strict"
+        "agent_k.agents.base:universal_tool_preparation"
       ],
       "source": "agent_k/agents/base.py"
     },
@@ -705,7 +704,7 @@
       "source": "agent_k/ui/agui.py"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831323+00:00",
+  "generated": "2026-10-25T01:28:43.116426+00:00",
   "sources": [
     "agent_k/__init__.py",
     "agent_k/__main__.py",
@@ -767,7 +766,7 @@
     "agent_k/ui/__init__.py",
     "agent_k/ui/agui.py"
   ],
-  "tag_count": 1090,
+  "tag_count": 1093,
   "tags_by_source": {
     "agent_k/__init__.py": [
       {
@@ -1328,151 +1327,133 @@
         "component": "agent_k.agents.base",
         "line": 9,
         "name": "graph",
-        "value": "{\"id\": \"agent_k.agents.base\", \"provides\": [\"agent_k.agents.base:AgentDeps\", \"agent_k.agents.base:BaseAgentMixin\", \"agent_k.agents.base:MemoryMixin\", \"agent_k.agents.base:universal_tool_preparation\", \""
+        "value": "{\"id\": \"agent_k.agents.base\", \"provides\": [\"agent_k.agents.base:AgentDeps\", \"agent_k.agents.base:BaseAgentMixin\", \"agent_k.agents.base:MemoryMixin\", \"agent_k.agents.base:universal_tool_preparation\"], "
       },
       {
         "component": "agent_k.agents.base",
-        "line": 23,
+        "line": 22,
         "name": "agent_guidance",
         "value": "{\"do\": [\"Use agent_k.agents.base as the canonical home for this capability.\"], \"do_not\": [\"Create parallel modules without updating @similar or @graph.\"]}"
       },
       {
         "component": "agent_k.agents.base",
-        "line": 29,
+        "line": 28,
         "name": "human_review",
         "value": "{\"last_verified\": \"2026-01-26\", \"owners\": [\"agent-k-core\"]}"
       },
       {
         "component": "agent_k.agents.base:AgentDeps",
-        "line": 61,
+        "line": 60,
         "name": "notice",
         "value": "Base dependency container for all agents."
       },
       {
         "component": "agent_k.agents.base:AgentDeps",
-        "line": 64,
+        "line": 63,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.base:AgentDeps",
-        "line": 67,
+        "line": 66,
         "name": "pattern",
         "value": "{\"name\": \"dependency-container\", \"rationale\": \"Standardizes injected services for agent runs.\", \"violations\": \"Ad-hoc deps hide runtime requirements.\"}"
       },
       {
         "component": "agent_k.agents.base:AgentDeps",
-        "line": 72,
+        "line": 71,
         "name": "collaborators",
         "value": "{\"required\": [\"httpx:AsyncClient\"], \"optional\": [\"agent_k.ui.agui:EventEmitter\"], \"injection\": \"constructor\", \"lifecycle\": \"Allocated per agent run.\"}"
       },
       {
         "component": "agent_k.agents.base:BaseAgentMixin",
-        "line": 91,
+        "line": 90,
         "name": "notice",
         "value": "Base mixin providing common agent functionality."
       },
       {
         "component": "agent_k.agents.base:BaseAgentMixin",
-        "line": 94,
+        "line": 93,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.base:BaseAgentMixin",
-        "line": 97,
+        "line": 96,
         "name": "pattern",
         "value": "{\"name\": \"agent-base\", \"rationale\": \"Shared behavior for agent wrappers around pydantic-ai Agents.\", \"violations\": \"Duplicated run logic across agents.\"}"
       },
       {
         "component": "agent_k.agents.base:BaseAgentMixin",
-        "line": 102,
+        "line": 101,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Subclasses typically manage shared state per instance.\"}"
       },
       {
         "component": "agent_k.agents.base:BaseAgentMixin.run",
-        "line": 120,
+        "line": 119,
         "name": "notice",
         "value": "Execute the agent with the provided prompt and dependencies."
       },
       {
         "component": "agent_k.agents.base:BaseAgentMixin.run",
-        "line": 123,
+        "line": 122,
         "name": "dev",
         "value": "Subclasses should override to provide concrete run behavior."
       },
       {
         "component": "agent_k.agents.base:BaseAgentMixin.run",
-        "line": 126,
+        "line": 125,
         "name": "effects",
         "value": "{\"io\": [\"model invocation\"], \"state\": [\"agent runtime state\"]}"
       },
       {
         "component": "agent_k.agents.base:BaseAgentMixin.run",
-        "line": 132,
+        "line": 131,
         "name": "errors",
         "value": "{\"terminal\": [\"NotImplementedError\"]}"
       },
       {
         "component": "agent_k.agents.base:MemoryMixin",
-        "line": 151,
+        "line": 150,
         "name": "notice",
         "value": "Mixin providing memory backend initialization for agents."
       },
       {
         "component": "agent_k.agents.base:MemoryMixin",
-        "line": 154,
+        "line": 153,
         "name": "dev",
         "value": "See module for implementation details and extension points."
       },
       {
         "component": "agent_k.agents.base:MemoryMixin",
-        "line": 157,
+        "line": 156,
         "name": "pattern",
         "value": "{\"name\": \"mixin\", \"rationale\": \"Shares memory initialization across agents without inheritance chains.\", \"violations\": \"Duplicating memory setup logic in each agent.\"}"
       },
       {
         "component": "agent_k.agents.base:MemoryMixin",
-        "line": 162,
+        "line": 161,
         "name": "concurrency",
         "value": "{\"model\": \"asyncio\", \"safe\": false, \"reason\": \"Mutates agent instance state during setup.\"}"
       },
       {
         "component": "agent_k.agents.base:universal_tool_preparation",
-        "line": 190,
+        "line": 189,
         "name": "notice",
-        "value": "Normalizes tool definitions for strictness and timeouts."
+        "value": "Applies timeouts to risky tools and leaves schema strictness to pydantic-ai."
       },
       {
         "component": "agent_k.agents.base:universal_tool_preparation",
-        "line": 193,
+        "line": 192,
         "name": "dev",
-        "value": "Sets strict mode for OpenAI tool calls and applies timeouts to risky tools."
+        "value": "Strictness is deliberately left unset. pydantic-ai resolves ``strict=None``\nper tool against the provider's schema transformer, enabling strict mode\nwherever the schema already satisfies it and leavin"
       },
       {
         "component": "agent_k.agents.base:universal_tool_preparation",
-        "line": 196,
+        "line": 200,
         "name": "effects",
         "value": "{\"state\": [\"tool_defs metadata\"]}"
-      },
-      {
-        "component": "agent_k.agents.base:prepare_output_tools_strict",
-        "line": 222,
-        "name": "notice",
-        "value": "Marks output tools as strict for OpenAI models."
-      },
-      {
-        "component": "agent_k.agents.base:prepare_output_tools_strict",
-        "line": 225,
-        "name": "dev",
-        "value": "Leaves tool definitions unchanged for non-OpenAI providers."
-      },
-      {
-        "component": "agent_k.agents.base:prepare_output_tools_strict",
-        "line": 228,
-        "name": "effects",
-        "value": "{\"state\": [\"tool_defs strict flag\"]}"
       }
     ],
     "agent_k/agents/evolver.py": [
@@ -5996,87 +5977,123 @@
       },
       {
         "component": "agent_k.infra.providers:create_devstral_model",
-        "line": 85,
+        "line": 104,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.infra.providers:create_devstral_model",
-        "line": 88,
+        "line": 107,
         "name": "notice",
         "value": "Creates an OpenAIChatModel configured for Devstral."
       },
       {
         "component": "agent_k.infra.providers:create_devstral_model",
-        "line": 91,
+        "line": 110,
         "name": "factory_for",
         "value": "{\"id\": \"pydantic_ai.models.openai:OpenAIChatModel\", \"rationale\": \"Centralizes local LM Studio configuration.\", \"singleton\": false, \"cache_key\": \"model_id\"}"
       },
       {
         "component": "agent_k.infra.providers:create_devstral_model",
-        "line": 97,
+        "line": 116,
         "name": "canonical_home",
         "value": "{\"for\": [\"devstral model creation\"], \"notes\": \"Use create_devstral_model for local Devstral endpoints.\"}"
       },
       {
         "component": "agent_k.infra.providers:create_openrouter_model",
-        "line": 119,
+        "line": 138,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.infra.providers:create_openrouter_model",
-        "line": 122,
+        "line": 141,
         "name": "notice",
         "value": "Creates an OpenAIChatModel configured for OpenRouter."
       },
       {
         "component": "agent_k.infra.providers:create_openrouter_model",
-        "line": 125,
+        "line": 144,
         "name": "factory_for",
         "value": "{\"id\": \"pydantic_ai.models.openai:OpenAIChatModel\", \"rationale\": \"Centralizes OpenRouter provider configuration.\", \"singleton\": false, \"cache_key\": \"model_id\"}"
       },
       {
         "component": "agent_k.infra.providers:create_openrouter_model",
-        "line": 131,
+        "line": 150,
         "name": "canonical_home",
         "value": "{\"for\": [\"openrouter model creation\"], \"notes\": \"Use create_openrouter_model for OpenRouter endpoints.\"}"
       },
       {
         "component": "agent_k.infra.providers:get_model",
-        "line": 147,
+        "line": 166,
         "name": "notice",
         "value": "Resolves model specs into provider-specific model objects when needed."
       },
       {
         "component": "agent_k.infra.providers:get_model",
-        "line": 150,
+        "line": 169,
         "name": "dev",
         "value": "Returns a string for standard pydantic-ai model specs."
       },
       {
         "component": "agent_k.infra.providers:get_model",
-        "line": 153,
+        "line": 172,
         "name": "factory_for",
         "value": "{\"id\": \"pydantic_ai.models:Model\", \"rationale\": \"Centralized model resolution for all agents.\", \"singleton\": false, \"cache_key\": \"model_spec\"}"
       },
       {
         "component": "agent_k.infra.providers:get_model",
-        "line": 159,
+        "line": 178,
         "name": "canonical_home",
         "value": "{\"for\": [\"model resolution\"], \"notes\": \"Use get_model to normalize model specs.\"}"
       },
       {
         "component": "agent_k.infra.providers:is_devstral_model",
-        "line": 191,
+        "line": 210,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.infra.providers:is_devstral_model",
-        "line": 194,
+        "line": 213,
         "name": "notice",
         "value": "Returns true when the model spec targets Devstral."
+      },
+      {
+        "component": "agent_k.infra.providers:unwrap_model",
+        "line": 222,
+        "name": "notice",
+        "value": "Returns the innermost model behind any WrapperModel layers."
+      },
+      {
+        "component": "agent_k.infra.providers:unwrap_model",
+        "line": 225,
+        "name": "dev",
+        "value": "Agents run with ``instrument=True``, so ``RunContext.model`` is an\n``InstrumentedModel`` wrapper rather than the provider model. Capability\nchecks must unwrap first, because ``isinstance`` against a p"
+      },
+      {
+        "component": "agent_k.infra.providers:supports_code_execution_builtin",
+        "line": 242,
+        "name": "notice",
+        "value": "Returns True only for model classes that implement the code-execution builtin."
+      },
+      {
+        "component": "agent_k.infra.providers:supports_code_execution_builtin",
+        "line": 245,
+        "name": "dev",
+        "value": "Attaching the tool to a model that cannot serve it makes pydantic-ai raise\n``UserError`` on the first request, so this check gates the tool on the\nconcrete model class rather than on the provider name"
+      },
+      {
+        "component": "agent_k.infra.providers:model_spec_supports_code_execution",
+        "line": 256,
+        "name": "notice",
+        "value": "Resolves the spec through get_model and checks the resulting model."
+      },
+      {
+        "component": "agent_k.infra.providers:model_spec_supports_code_execution",
+        "line": 259,
+        "name": "dev",
+        "value": "Resolution builds a provider client, so verdicts are memoised per spec:\nthe evolution loop asks once per candidate execution. Resolution raises\nwhen credentials or optional provider packages are missi"
       }
     ],
     "agent_k/mission/__init__.py": [
@@ -6570,43 +6587,43 @@
       },
       {
         "component": "agent_k.toolsets:compose_toolsets",
-        "line": 97,
+        "line": 95,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.toolsets:compose_toolsets",
-        "line": 100,
+        "line": 98,
         "name": "notice",
         "value": "Combines toolsets and optionally prefixes tool names."
       },
       {
         "component": "agent_k.toolsets:compose_toolsets",
-        "line": 103,
+        "line": 101,
         "name": "errors",
         "value": "{\"terminal\": [\"KeyError\"]}"
       },
       {
         "component": "agent_k.toolsets:create_production_toolset",
-        "line": 132,
+        "line": 129,
         "name": "notice",
         "value": "Create production-ready toolset with wrappers."
       },
       {
         "component": "agent_k.toolsets:create_production_toolset",
-        "line": 135,
+        "line": 132,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.toolsets:create_production_toolset",
-        "line": 138,
+        "line": 135,
         "name": "factory_for",
         "value": "{\"id\": \"agent_k.toolsets:CombinedToolset\", \"rationale\": \"Centralizes production wrapper policy.\", \"singleton\": false, \"cache_key\": \"prefix\"}"
       },
       {
         "component": "agent_k.toolsets:create_production_toolset",
-        "line": 144,
+        "line": 141,
         "name": "canonical_home",
         "value": "{\"for\": [\"production toolset composition\"], \"notes\": \"Use create_production_toolset for standardized behavior.\"}"
       }
@@ -6676,27 +6693,27 @@
       },
       {
         "component": "agent_k.toolsets.code:create_code_execution_tool",
-        "line": 55,
+        "line": 51,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.toolsets.code:create_code_execution_tool",
-        "line": 58,
+        "line": 54,
         "name": "notice",
         "value": "Returns a configured code execution tool."
       },
       {
         "component": "agent_k.toolsets.code:prepare_code_execution_tool",
-        "line": 69,
+        "line": 65,
         "name": "dev",
         "value": "See module for behavior details and invariants."
       },
       {
         "component": "agent_k.toolsets.code:prepare_code_execution_tool",
-        "line": 72,
+        "line": 68,
         "name": "notice",
-        "value": "Returns a tool only for OpenAI-compatible providers."
+        "value": "Returns a tool only for models that map it onto a provider builtin."
       }
     ],
     "agent_k/toolsets/kaggle.py": [

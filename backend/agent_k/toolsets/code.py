@@ -38,11 +38,7 @@ from pydantic_ai.builtin_tools import CodeExecutionTool
 from pydantic_ai.toolsets import FunctionToolset
 
 from agent_k.core.sage import Doc
-
-try:  # pragma: no cover - optional dependency
-    from pydantic_ai.models.openai import OpenAIChatModel
-except ImportError:  # pragma: no cover - optional dependency
-    OpenAIChatModel = None  # type: ignore[misc,assignment]
+from agent_k.infra.providers import supports_code_execution_builtin
 
 __all__ = ("code_toolset", "create_code_execution_tool", "prepare_code_execution_tool")
 
@@ -64,16 +60,14 @@ def create_code_execution_tool() -> CodeExecutionTool:
 async def prepare_code_execution_tool(
     ctx: Annotated[RunContext[Any], Doc("Run context for tool preparation.")],
 ) -> CodeExecutionTool | None:
-    """Enable CodeExecutionTool only for supported providers.
+    """Enable CodeExecutionTool only for models that implement it.
 
     @dev: |
         See module for behavior details and invariants.
 
         @notice: |
-            Returns a tool only for OpenAI-compatible providers.
+            Returns a tool only for models that map it onto a provider builtin.
     """
-    if ctx.model.system != "openai":
-        return None
-    if OpenAIChatModel is not None and isinstance(ctx.model, OpenAIChatModel):
+    if not supports_code_execution_builtin(ctx.model):
         return None
     return CodeExecutionTool()

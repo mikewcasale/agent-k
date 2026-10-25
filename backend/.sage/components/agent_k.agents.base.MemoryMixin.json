@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.base:MemoryMixin",
-  "line": 149,
+  "line": 148,
   "notice": "Mixin providing memory backend initialization for agents.",
   "pattern": {
     "name": "mixin",

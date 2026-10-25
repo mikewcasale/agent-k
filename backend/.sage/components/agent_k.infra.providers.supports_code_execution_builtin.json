@@ -1,0 +1,17 @@
+{
+  "agent_guidance": null,
+  "anti_patterns": null,
+  "canonical_home": null,
+  "custom": null,
+  "dev": "Attaching the tool to a model that cannot serve it makes pydantic-ai raise\n``UserError`` on the first request, so this check gates the tool on the\nconcrete model class rather than on the provider name.",
+  "graph": null,
+  "human_review": null,
+  "id": "agent_k.infra.providers:supports_code_execution_builtin",
+  "line": 240,
+  "notice": "Returns True only for model classes that implement the code-execution builtin.",
+  "pattern": null,
+  "similar": null,
+  "source": "agent_k/infra/providers.py",
+  "summary": "Report whether the model maps CodeExecutionTool onto a provider builtin.",
+  "type": "function"
+}

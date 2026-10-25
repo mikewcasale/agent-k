@@ -39,9 +39,14 @@ Licensed under the MIT License.
 from __future__ import annotations as _annotations
 
 import os
+from functools import cache
+from importlib import import_module
 from typing import TYPE_CHECKING, Annotated, Final
 
+import logfire
+from pydantic_ai.models import infer_model
 from pydantic_ai.models.openai import OpenAIChatModel
+from pydantic_ai.models.wrapper import WrapperModel
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.providers.openrouter import OpenRouterProvider
 
@@ -55,6 +60,9 @@ __all__ = (
     "create_devstral_model",
     "create_openrouter_model",
     "is_devstral_model",
+    "model_spec_supports_code_execution",
+    "supports_code_execution_builtin",
+    "unwrap_model",
     "DEVSTRAL_MODEL_ID",
     "DEVSTRAL_BASE_URL",
     "OPENROUTER_FREE_MODELS",
@@ -69,6 +77,17 @@ OPENROUTER_FREE_MODELS: Final[dict[str, str]] = {
     "qwen_coder": "openrouter:qwen/qwen3-coder:free",
 }
 # Free OpenRouter model identifiers for agentic coding tasks.
+
+_CODE_EXECUTION_MODEL_TYPES: Final[tuple[tuple[str, str], ...]] = (
+    ("pydantic_ai.models.anthropic", "AnthropicModel"),
+    ("pydantic_ai.models.google", "GoogleModel"),
+    ("pydantic_ai.models.openai", "OpenAIResponsesModel"),
+)
+# pydantic-ai model classes that map CodeExecutionTool onto a provider builtin.
+# OpenAIChatModel is deliberately absent: it raises UserError for the tool.
+
+_CODE_EXECUTION_SPEC_CACHE: Final[dict[str, bool]] = {}
+# Resolved per-spec verdicts, so repeated candidate executions do not rebuild provider clients.
 
 type ModelType = str
 
@@ -195,3 +214,80 @@ def is_devstral_model(model_spec: Annotated[str, Doc("Model specification string
             Returns true when the model spec targets Devstral.
     """
     return model_spec.startswith("devstral:")
+
+
+def unwrap_model(model: Annotated[Model, Doc("Model that may be wrapped by instrumentation.")]) -> Model:
+    """Strip wrapper layers to reach the concrete provider model.
+
+    @notice: |
+        Returns the innermost model behind any WrapperModel layers.
+
+    @dev: |
+        Agents run with ``instrument=True``, so ``RunContext.model`` is an
+        ``InstrumentedModel`` wrapper rather than the provider model. Capability
+        checks must unwrap first, because ``isinstance`` against a provider model
+        class never matches a wrapper.
+    """
+    current = model
+    while isinstance(current, WrapperModel):
+        current = current.wrapped
+    return current
+
+
+def supports_code_execution_builtin(
+    model: Annotated[Model, Doc("Model to interrogate for code-execution support.")],
+) -> bool:
+    """Report whether the model maps CodeExecutionTool onto a provider builtin.
+
+    @notice: |
+        Returns True only for model classes that implement the code-execution builtin.
+
+    @dev: |
+        Attaching the tool to a model that cannot serve it makes pydantic-ai raise
+        ``UserError`` on the first request, so this check gates the tool on the
+        concrete model class rather than on the provider name.
+    """
+    return isinstance(unwrap_model(model), _code_execution_model_types())
+
+
+def model_spec_supports_code_execution(model_spec: Annotated[str, Doc("Model specification string.")]) -> bool:
+    """Report whether a model spec resolves to a code-execution capable model.
+
+    @notice: |
+        Resolves the spec through get_model and checks the resulting model.
+
+    @dev: |
+        Resolution builds a provider client, so verdicts are memoised per spec:
+        the evolution loop asks once per candidate execution. Resolution raises
+        when credentials or optional provider packages are missing; an
+        unresolvable spec cannot run code either, so those failures answer False
+        without being cached, letting a later call retry once configuration lands.
+    """
+    cached = _CODE_EXECUTION_SPEC_CACHE.get(model_spec)
+    if cached is not None:
+        return cached
+
+    try:
+        resolved = get_model(model_spec)
+        model = infer_model(resolved) if isinstance(resolved, str) else resolved
+    except Exception as exc:
+        logfire.debug("model_spec_unresolved", model_spec=model_spec, error=str(exc))
+        return False
+
+    supported = supports_code_execution_builtin(model)
+    _CODE_EXECUTION_SPEC_CACHE[model_spec] = supported
+    return supported
+
+
+@cache
+def _code_execution_model_types() -> tuple[type, ...]:
+    resolved: list[type] = []
+    for module_name, class_name in _CODE_EXECUTION_MODEL_TYPES:
+        try:
+            module = import_module(module_name)
+        except ImportError:  # pragma: no cover - optional provider extra
+            continue
+        model_type = getattr(module, class_name, None)
+        if isinstance(model_type, type):
+            resolved.append(model_type)
+    return tuple(resolved)

@@ -35,10 +35,8 @@ Licensed under the MIT License.
 
 from __future__ import annotations as _annotations
 
-from dataclasses import replace
 from typing import Annotated, Any, TypeVar
 
-from pydantic_ai import RunContext, ToolDefinition
 from pydantic_ai.toolsets import AbstractToolset, CombinedToolset, FunctionToolset
 
 from agent_k.core.sage import Doc
@@ -127,7 +125,6 @@ def create_production_toolset(
         Applies:
         - Prefixing for namespace isolation
         - Approval requirements for selected tools
-        - Strict mode for OpenAI tool calls
 
     @notice: |
         Create production-ready toolset with wrappers.
@@ -154,12 +151,4 @@ def create_production_toolset(
     if require_approval_for:
         combined = combined.approval_required(lambda _ctx, tool_def, _args: tool_def.name in require_approval_for)
 
-    async def prepare_for_model(
-        ctx: Annotated[RunContext[DepsT], Doc("Run context for tool preparation.")],
-        tool_defs: Annotated[list[ToolDefinition], Doc("Tool definitions to update.")],
-    ) -> list[ToolDefinition]:
-        if ctx.model.system == "openai":
-            return [replace(td, strict=True) for td in tool_defs]
-        return tool_defs
-
-    return combined.prepared(prepare_for_model)
+    return combined

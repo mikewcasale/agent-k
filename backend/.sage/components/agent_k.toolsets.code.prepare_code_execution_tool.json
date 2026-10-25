@@ -7,11 +7,11 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.toolsets.code:prepare_code_execution_tool",
-  "line": 67,
-  "notice": "Returns a tool only for OpenAI-compatible providers.",
+  "line": 63,
+  "notice": "Returns a tool only for models that map it onto a provider builtin.",
   "pattern": null,
   "similar": null,
   "source": "agent_k/toolsets/code.py",
-  "summary": "Enable CodeExecutionTool only for supported providers.",
+  "summary": "Enable CodeExecutionTool only for models that implement it.",
   "type": "function"
 }

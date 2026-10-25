@@ -93,8 +93,7 @@
       "agent_k.agents.base:AgentDeps",
       "agent_k.agents.base:BaseAgentMixin",
       "agent_k.agents.base:MemoryMixin",
-      "agent_k.agents.base:universal_tool_preparation",
-      "agent_k.agents.base:prepare_output_tools_strict"
+      "agent_k.agents.base:universal_tool_preparation"
     ],
     "source": "agent_k/agents/base.py"
   },

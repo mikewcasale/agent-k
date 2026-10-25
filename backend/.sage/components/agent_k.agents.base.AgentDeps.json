@@ -7,7 +7,7 @@
   "graph": null,
   "human_review": null,
   "id": "agent_k.agents.base:AgentDeps",
-  "line": 57,
+  "line": 56,
   "notice": "Base dependency container for all agents.",
   "pattern": {
     "name": "dependency-container",

@@ -122,11 +122,6 @@
     },
     {
       "source": "agent_k.agents.base",
-      "target": "agent_k.agents.base:prepare_output_tools_strict",
-      "type": "provides"
-    },
-    {
-      "source": "agent_k.agents.base",
       "target": "agent_k.toolsets.memory:AgentKMemoryTool",
       "type": "consumes"
     },
@@ -921,7 +916,7 @@
       "type": "similar"
     }
   ],
-  "generated": "2026-04-17T22:58:10.831739+00:00",
+  "generated": "2026-10-25T01:28:43.116898+00:00",
   "nodes": [
     {
       "id": "agent_k",

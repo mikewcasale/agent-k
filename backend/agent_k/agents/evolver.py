@@ -105,6 +105,10 @@ from agent_k.infra.providers import get_model
 from agent_k.toolsets import code_toolset, create_production_toolset, prepare_code_execution_tool, prepare_memory_tool
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    import numpy.typing as npt
+
     from agent_k.core.models import Competition
     from agent_k.core.protocols import PlatformAdapter
     from agent_k.ui.agui import EventEmitter
@@ -139,6 +143,9 @@ _NUMERIC_PIPELINE_PATTERN: Final[re.Pattern[str]] = re.compile(
 _NUMERIC_COLS_PATTERN: Final[re.Pattern[str]] = re.compile(r"^(?P<indent>\s*)numeric_cols\s*=.*$", re.MULTILINE)
 _CATEGORICAL_COLS_PATTERN: Final[re.Pattern[str]] = re.compile(r"^(?P<indent>\s*)categorical_cols\s*=.*$", re.MULTILINE)
 _KNN_MODEL_PATTERN: Final[re.Pattern[str]] = re.compile(r"\bKNeighbors(?:Classifier|Regressor)\b")
+_LABEL_TOKEN_PATTERN: Final[re.Pattern[str]] = re.compile(r"[^a-z0-9]+")
+_LABEL_TOKEN_PREFIXES: Final[tuple[str, ...]] = ("class", "target", "label", "pred", "probability", "proba")
+_PROBABILITY_METRIC_KEYS: Final[frozenset[str]] = frozenset({"logloss", "auc"})
 _ERROR_HINT_PATTERNS: Final[tuple[tuple[re.Pattern[str], str, str], ...]] = (
     (
         re.compile(r"(ModuleNotFoundError|ImportError)", re.IGNORECASE),
@@ -1900,10 +1907,11 @@ class EvolverAgent(MemoryMixin):
                 y_val = y_val.head(800).copy()
 
             target_columns = list(ctx.deps.train_target_columns or ctx.deps.target_columns)
+            submission_columns = list(ctx.deps.target_columns or target_columns)
             train_df.to_csv(run_path / "train.csv", index=False)
             val_features.to_csv(run_path / "test.csv", index=False)
             sample_submission = pd.DataFrame({id_column: val_features[id_column].values})
-            for col in target_columns:
+            for col in submission_columns:
                 sample_submission[col] = 0.0
             sample_submission.to_csv(run_path / "sample_submission.csv", index=False)
 
@@ -1933,6 +1941,7 @@ class EvolverAgent(MemoryMixin):
                         id_column=id_column,
                         target_columns=target_columns,
                         y_val=y_val,
+                        submission_columns=submission_columns,
                     )
                 except Exception as exc:
                     error = f"Unable to score submission: {exc}"
@@ -2614,28 +2623,61 @@ def _prepare_validation_split(
 
 
 def _score_submission(
-    *, submission_path: Path, metric: str, id_column: str, target_columns: list[str], y_val: pd.DataFrame
+    *,
+    submission_path: Path,
+    metric: str,
+    id_column: str,
+    target_columns: list[str],
+    y_val: pd.DataFrame,
+    submission_columns: list[str] | None = None,
 ) -> float:
-    """Score a submission.csv against y_val using the competition metric."""
+    """Score a submission.csv against y_val using the competition metric.
+
+    ``target_columns`` names the ground-truth columns held in ``y_val``, while ``submission_columns``
+    names the prediction columns the platform expects in submission.csv. The two differ whenever a
+    single label column is scored as one probability column per class, so they are resolved
+    separately before the metric is applied.
+    """
     submission = pd.read_csv(submission_path)
     if id_column not in submission.columns:
         raise ValueError(f"submission.csv missing id column '{id_column}'")
-    missing_targets = [col for col in target_columns if col not in submission.columns]
+    prediction_columns = list(submission_columns or target_columns)
+    missing_targets = [col for col in prediction_columns if col not in submission.columns]
     if missing_targets:
         raise ValueError(f"submission.csv missing target columns: {missing_targets}")
 
-    merged = submission[[id_column, *target_columns]].merge(
-        y_val[[id_column, *target_columns]], on=id_column, suffixes=("_pred", "_true"), how="inner"
-    )
+    key = metric.lower().replace("_", "").replace(" ", "")
+    if len(target_columns) == 1 and len(prediction_columns) > 1:
+        return _score_class_probabilities(
+            submission=submission,
+            y_val=y_val,
+            id_column=id_column,
+            target_column=target_columns[0],
+            prediction_columns=prediction_columns,
+            metric_key=key,
+        )
+    if len(prediction_columns) != len(target_columns):
+        raise ValueError(f"submission columns {prediction_columns} do not align with target columns {target_columns}")
+
+    predictions = submission[[id_column, *prediction_columns]].copy()
+    predictions.columns = [id_column, *(f"{col}_pred" for col in target_columns)]
+    truth = y_val[[id_column, *target_columns]].copy()
+    truth.columns = [id_column, *(f"{col}_true" for col in target_columns)]
+    merged = predictions.merge(truth, on=id_column, how="inner")
     if merged.empty:
         raise ValueError("No rows to score after merge")
 
-    y_true = merged[[f"{col}_true" for col in target_columns]].to_numpy(dtype=float)
+    true_frame = merged[[f"{col}_true" for col in target_columns]]
     y_pred = merged[[f"{col}_pred" for col in target_columns]].to_numpy(dtype=float)
     if not np.isfinite(y_pred).all():
         y_pred = np.nan_to_num(y_pred, nan=0.0, posinf=0.0, neginf=0.0)
 
-    key = metric.lower().replace("_", "").replace(" ", "")
+    if key in _PROBABILITY_METRIC_KEYS:
+        if len(target_columns) != 1:
+            raise ValueError(f"{key} only supported for single-target problems")
+        return _score_binary_probabilities(labels=true_frame.iloc[:, 0], probabilities=y_pred[:, 0], metric_key=key)
+
+    y_true = _as_float_matrix(true_frame)
     if key in {"rmsle"}:
         y_pred = np.clip(y_pred, 0.0, None)
         return float(np.sqrt(mean_squared_log_error(y_true, y_pred)))
@@ -2643,17 +2685,131 @@ def _score_submission(
         return float(np.sqrt(mean_squared_error(y_true, y_pred)))
     if key in {"mae"}:
         return float(mean_absolute_error(y_true, y_pred))
-    if key in {"logloss"}:
-        if y_true.shape[1] != 1:
-            raise ValueError("logloss only supported for single-target problems")
-        y_pred = np.clip(y_pred, 1e-6, 1 - 1e-6)
-        return float(log_loss(y_true[:, 0], y_pred[:, 0]))
-    if key in {"auc"}:
-        if y_true.shape[1] != 1:
-            raise ValueError("auc only supported for single-target problems")
-        return float(roc_auc_score(y_true[:, 0], y_pred[:, 0]))
 
     raise ValueError(f"Unsupported metric: {metric}")
+
+
+def _as_float_matrix(frame: pd.DataFrame) -> npt.NDArray[np.float64]:
+    """Convert ground-truth columns to floats, reporting the offending column on failure."""
+    try:
+        return frame.to_numpy(dtype=float)
+    except (TypeError, ValueError) as exc:
+        non_numeric = [str(col) for col in frame.columns if not pd.api.types.is_numeric_dtype(frame[col])]
+        raise ValueError(f"Non-numeric target columns cannot be scored by this metric: {non_numeric}") from exc
+
+
+def _sorted_label_values(values: Iterable[object]) -> list[str]:
+    """Return unique label strings ordered numerically when every label parses as a number."""
+    unique = {str(value) for value in values}
+    try:
+        return sorted(unique, key=float)
+    except ValueError:
+        return sorted(unique)
+
+
+def _normalize_label(value: object) -> str:
+    """Reduce a class label or submission column name to a comparable token."""
+    token = _LABEL_TOKEN_PATTERN.sub("", str(value).strip().lower())
+    for prefix in _LABEL_TOKEN_PREFIXES:
+        if token.startswith(prefix) and len(token) > len(prefix):
+            return token[len(prefix) :]
+    return token
+
+
+def _map_labels_to_columns(labels: list[str], prediction_columns: list[str]) -> dict[str, str]:
+    """Pair every observed class label with the submission column holding its probability."""
+    normalized_columns: dict[str, str] = {}
+    for column in prediction_columns:
+        normalized_columns.setdefault(_normalize_label(column), column)
+
+    if len(normalized_columns) == len(prediction_columns):
+        matched = {label: normalized_columns.get(_normalize_label(label)) for label in labels}
+        resolved = {label: column for label, column in matched.items() if column is not None}
+        if len(resolved) == len(labels) and len(set(resolved.values())) == len(labels):
+            return resolved
+
+    if len(labels) != len(prediction_columns):
+        raise ValueError(f"Cannot map {len(labels)} class labels onto submission columns {prediction_columns}")
+    logfire.warning(
+        "submission_class_columns_matched_positionally", labels=labels, prediction_columns=prediction_columns
+    )
+    return dict(zip(labels, prediction_columns, strict=True))
+
+
+def _score_class_probabilities(
+    *,
+    submission: pd.DataFrame,
+    y_val: pd.DataFrame,
+    id_column: str,
+    target_column: str,
+    prediction_columns: list[str],
+    metric_key: str,
+) -> float:
+    """Score a one-column-per-class probability submission against a single label column."""
+    if metric_key not in _PROBABILITY_METRIC_KEYS:
+        raise ValueError(
+            f"Metric '{metric_key}' cannot score a {len(prediction_columns)}-column probability submission"
+        )
+
+    truth_column = "_target_true"
+    while truth_column in prediction_columns or truth_column == id_column:
+        truth_column = f"_{truth_column}"
+    truth = y_val[[id_column, target_column]].copy()
+    truth.columns = [id_column, truth_column]
+    merged = submission[[id_column, *prediction_columns]].merge(truth, on=id_column, how="inner")
+    merged = merged[merged[truth_column].notna()]
+    if merged.empty:
+        raise ValueError("No rows to score after merge")
+
+    labels = _sorted_label_values(merged[truth_column])
+    if len(labels) < 2:
+        raise ValueError(f"Validation labels contain a single class '{labels[0]}'; cannot score probabilities")
+
+    label_columns = _map_labels_to_columns(labels, prediction_columns)
+    if len(label_columns) < len(prediction_columns):
+        logfire.info(
+            "submission_scored_on_observed_classes", observed_classes=labels, prediction_columns=prediction_columns
+        )
+
+    # Both sklearn metrics require ``labels`` in np.unique order and read the probability columns
+    # in that same order, so the matrix is assembled lexicographically rather than in label order.
+    scored_labels = sorted(label_columns)
+    probabilities = _normalize_probabilities(
+        merged[[label_columns[label] for label in scored_labels]].to_numpy(dtype=float)
+    )
+    y_true = merged[truth_column].astype(str).to_numpy()
+
+    if metric_key == "logloss":
+        return float(log_loss(y_true, probabilities, labels=scored_labels))
+    if len(scored_labels) == 2:
+        positive = labels[-1]
+        return float(roc_auc_score((y_true == positive).astype(int), probabilities[:, scored_labels.index(positive)]))
+    return float(roc_auc_score(y_true, probabilities, multi_class="ovr", average="macro", labels=scored_labels))
+
+
+def _score_binary_probabilities(*, labels: pd.Series, probabilities: npt.NDArray[np.float64], metric_key: str) -> float:
+    """Score single-column probabilities against labels that may be non-numeric."""
+    classes = _sorted_label_values(labels.dropna())
+    if len(classes) < 2:
+        raise ValueError("Validation labels contain a single class; cannot score probabilities")
+    if len(classes) > 2:
+        raise ValueError(f"{metric_key} needs one probability column per class for {len(classes)} classes, got 1")
+
+    y_true = labels.astype(str).to_numpy()
+    positive = (y_true == classes[1]).astype(int)
+    if metric_key == "auc":
+        return float(roc_auc_score(positive, probabilities))
+    return float(log_loss(positive, np.clip(probabilities, 1e-6, 1 - 1e-6), labels=[0, 1]))
+
+
+def _normalize_probabilities(probabilities: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+    """Clean and renormalize a probability matrix so each row sums to one."""
+    cleaned = np.clip(np.nan_to_num(probabilities, nan=0.0, posinf=0.0, neginf=0.0), 0.0, None)
+    uniform = 1.0 / cleaned.shape[1]
+    row_sums = cleaned.sum(axis=1, keepdims=True)
+    normalized = np.divide(cleaned, row_sums, out=np.full_like(cleaned, uniform), where=row_sums > 0)
+    clipped: npt.NDArray[np.float64] = np.clip(normalized, 1e-15, 1.0)
+    return clipped
 
 
 # Module-level singleton for backward compatibility

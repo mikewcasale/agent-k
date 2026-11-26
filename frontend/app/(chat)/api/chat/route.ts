@@ -18,6 +18,7 @@ import { fetchModels } from "tokenlens/fetch";
 import { getUsage } from "tokenlens/helpers";
 import { auth, type UserType } from "@/app/(auth)/auth";
 import type { VisibilityType } from "@/components/visibility-selector";
+import { agentKAuthorization } from "@/lib/agent-k-auth";
 import type { ChatModel } from "@/lib/ai/models";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
 import { myProvider } from "@/lib/ai/providers";
@@ -83,6 +84,7 @@ function transformAgentKStream(
     "error-occurred",
     "recovery-attempt",
     "recovery-complete",
+    "mission-complete",
   ]);
 
   return new ReadableStream<Uint8Array>({
@@ -230,6 +232,7 @@ async function handleAgentKRequest({
     headers: {
       "Content-Type": "application/json",
       Accept: "text/event-stream",
+      Authorization: agentKAuthorization(session.user.id),
     },
     body: JSON.stringify({
       trigger: "submit-message",

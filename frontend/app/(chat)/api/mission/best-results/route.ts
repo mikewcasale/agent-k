@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { auth } from "@/app/(auth)/auth";
+import { agentKAuthorization } from "@/lib/agent-k-auth";
 import { PYTHON_BACKEND_URL } from "@/lib/constants";
 import { ChatSDKError } from "@/lib/errors";
 
@@ -47,7 +48,10 @@ export async function GET(request: NextRequest) {
 
     const backendResponse = await fetch(backendUrl, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: agentKAuthorization(session.user.id),
+      },
     });
 
     const payload = normalizeBackendPayload(

@@ -1,79 +1,35 @@
 site_name: AGENT-K
-site_description: Multi-Agent Kaggle Competition Framework built with Pydantic-AI
-strict: false
+site_description: Durable autonomous Kaggle mission platform
 site_url: https://mikewcasale.github.io/agent-k
-
 repo_name: mikewcasale/agent-k
 repo_url: https://github.com/mikewcasale/agent-k
 edit_uri: edit/main/backend/docs/
-
 copyright: © 2024-present Mike Casale
+strict: true
 
 nav:
-  - index.md
-  - install.md
-  - quick-start.md
-
-  - Documentation:
-      - Core Concepts:
-          - concepts/agents.md
-          - concepts/graph.md
-          - concepts/toolsets.md
-          - concepts/models.md
-          - concepts/mission-lifecycle.md
-      - Agents:
-          - agents/lycurgus.md
-          - agents/lobbyist.md
-          - agents/scientist.md
-          - agents/evolver.md
-      - Toolsets:
-          - toolsets/kaggle.md
-          - toolsets/search.md
-          - toolsets/memory.md
-      - UI Integration:
-          - ui/ag-ui.md
-          - ui/dashboard.md
-
-  - Examples:
-      - examples/setup.md
-      - examples/multi-agent-demo.md
-      - examples/custom-agent.md
-
-  - API Reference:
-      - agent_k.agents:
-          - api/agents/lycurgus.md
-          - api/agents/lobbyist.md
-          - api/agents/scientist.md
-          - api/agents/evolver.md
-      - agent_k.toolsets:
-          - api/toolsets/kaggle.md
-          - api/toolsets/search.md
-          - api/toolsets/memory.md
-      - agent_k.mission:
-          - api/mission/nodes.md
-          - api/mission/state.md
-      - agent_k.core:
-          - api/core/models.md
-          - api/core/exceptions.md
-      - agent_k.infra:
-          - api/infra/providers.md
-
-  - Project:
-      - contributing.md
-      - sage-spec.md
-
-extra:
-  generator: false
+  - Overview: index.md
+  - Installation: install.md
+  - Quick start: quick-start.md
+  - Architecture: architecture.md
+  - HTTP and worker API: api.md
+  - Events and SSE: events.md
+  - Operations: operations.md
+  - Acceptance evidence: acceptance.md
+  - Legacy migration: migration.md
+  - Development: development.md
+  - Python reference:
+      - Control plane: reference/control-plane.md
+      - Mission: reference/mission.md
+      - Runtime: reference/runtime.md
+      - Data and ML: reference/data-ml.md
+      - Integrations and domain: reference/integrations.md
 
 theme:
   name: material
+  logo: img/logo.png
+  favicon: img/favicon.ico
   palette:
-    - media: "(prefers-color-scheme)"
-      primary: deep purple
-      accent: amber
-      toggle:
-        icon: material/brightness-auto
-        name: Switch to light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
       primary: deep purple
@@ -87,21 +43,15 @@ theme:
       accent: amber
       toggle:
         icon: material/brightness-4
-        name: Switch to system preference
+        name: Switch to light mode
   features:
-    - search.suggest
-    - search.highlight
-    - content.tabs.link
-    - content.code.annotate
-    - content.code.copy
-    - content.code.select
     - navigation.path
-    - navigation.indexes
     - navigation.sections
     - navigation.tracking
+    - search.highlight
+    - search.suggest
+    - content.code.copy
     - toc.follow
-  logo: img/logo.png
-  favicon: img/favicon.ico
 
 validation:
   omitted_files: warn
@@ -109,37 +59,17 @@ validation:
   unrecognized_links: warn
 
 markdown_extensions:
-  - tables
   - admonition
   - attr_list
-  - md_in_html
+  - tables
   - pymdownx.details
-  - pymdownx.caret
-  - pymdownx.critic
-  - pymdownx.mark
-  - pymdownx.superfences
-  - pymdownx.snippets
-  - pymdownx.tilde
-  - pymdownx.inlinehilite
   - pymdownx.highlight:
       pygments_lang_class: true
-  - pymdownx.extra:
-      pymdownx.superfences:
-        custom_fences:
-          - name: mermaid
-            class: mermaid
-            format: !!python/name:pymdownx.superfences.fence_code_format
-  - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
-  - pymdownx.tabbed:
-      alternate_style: true
-  - pymdownx.tasklist:
-      custom_checkbox: true
-  - sane_lists
-
-watch:
-  - agent_k
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
 
 plugins:
   - search
@@ -148,9 +78,13 @@ plugins:
         python:
           paths: [.]
           options:
+            docstring_style: google
             members_order: source
             separate_signature: true
+            show_if_no_docstring: false
             show_signature_annotations: true
             signature_crossrefs: true
-            group_by_category: false
-            heading_level: 3
+            heading_level: 2
+
+watch:
+  - agent_k

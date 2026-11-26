@@ -1,0 +1,22 @@
+FROM python:3.13-slim-bookworm
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+COPY --from=ghcr.io/astral-sh/uv:0.13.10 /uv /uvx /bin/
+RUN apt-get update \
+    && apt-get install --no-install-recommends --yes libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /opt/agent-k
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev --extra worker --extra kumo --no-install-project
+COPY agent_k ./agent_k
+COPY README.md ./
+RUN uv sync --frozen --no-dev --extra worker --extra kumo \
+    && find /opt/agent-k/.venv -type d -name __pycache__ -prune -exec rm -r {} +
+
+ENV PATH=/opt/agent-k/.venv/bin:$PATH
+ENTRYPOINT []
+CMD ["python", "-m", "agent_k.runner", "--help"]

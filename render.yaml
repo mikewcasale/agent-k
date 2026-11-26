@@ -1,6 +1,16 @@
 # Render Blueprint Configuration
 # https://render.com/docs/blueprint-spec
 
+envVarGroups:
+  - name: agent-k-gateway
+    envVars:
+      - key: AGENT_K_GATEWAY_SECRET
+        generateValue: true
+  - name: agent-k-worker-auth
+    envVars:
+      - key: AGENT_K_WORKER_TOKEN
+        generateValue: true
+
 databases:
   - name: agent-k-postgres
     plan: basic-256mb
@@ -17,9 +27,9 @@ services:
     runtime: static
     buildCommand: |
       cd backend &&
-      pip install --upgrade pip &&
-      pip install mkdocs mkdocs-material "mkdocstrings[python]>=1.0,<2.0" &&
-      mkdocs build
+      pip install "uv==0.13.10" &&
+      uv sync --frozen --extra docs --no-dev &&
+      uv run --frozen mkdocs build --strict
     staticPublishPath: backend/site
     headers:
       - path: /*
@@ -27,7 +37,7 @@ services:
         value: public, max-age=3600
     envVars:
       - key: PYTHON_VERSION
-        value: "3.12.0"
+        value: "3.13.1"
 
   # FastAPI Backend
   - type: web
@@ -38,34 +48,41 @@ services:
     runtime: python
     buildCommand: |
       cd backend &&
-      pip install --upgrade pip &&
-      pip install -e .
+      pip install "uv==0.13.10" &&
+      uv sync --frozen --no-dev
     startCommand: |
       cd backend &&
-      uvicorn cli:app --host 0.0.0.0 --port $PORT
+      .venv/bin/python -m uvicorn agent_k.api:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
-        value: "3.12.0"
-      # Default model spec for all agents. Free OpenRouter model so the platform
-      # works without paid Anthropic/OpenAI credits. Override in Render Dashboard
-      # to use a paid model (e.g. anthropic:claude-sonnet-4-5) if credits exist.
-      - key: DEFAULT_MODEL
-        value: "openrouter:openai/gpt-oss-120b:free"
-      # === AI MODEL API KEYS ===
-      # Set these in Render Dashboard or add to agent-k-secrets group
-      - key: ANTHROPIC_API_KEY
+        value: "3.13.1"
+      - key: AGENT_K_DATABASE_URL
+        # Separate logical agent_k_runtime database on the existing managed instance.
+        # Set the URL manually: fromDatabase would select the frontend database.
         sync: false
-      - key: OPENROUTER_API_KEY
+      - key: AGENT_K_ENVIRONMENT
+        value: production
+      - key: AGENT_K_GATEWAY_AUDIENCE
+        value: agent-k-api
+      - key: AGENT_K_GATEWAY_ISSUER
+        value: agent-k-frontend
+      - key: AGENT_K_S3_BUCKET
         sync: false
-      - key: OPENAI_API_KEY
+      - key: AGENT_K_S3_REGION
+        value: us-west-2
+      - key: AWS_ACCESS_KEY_ID
         sync: false
-      # === KAGGLE API CREDENTIALS ===
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_SESSION_TOKEN
+        sync: false
       - key: KAGGLE_USERNAME
         sync: false
       - key: KAGGLE_KEY
         sync: false
-      - fromGroup: agent-k-secrets
+      - fromGroup: agent-k-gateway
+      - fromGroup: agent-k-worker-auth
 
   # Next.js Frontend
   - type: web
@@ -79,7 +96,7 @@ services:
       - www.agents-k.com
     buildCommand: |
       cd frontend &&
-      npm install -g pnpm &&
+      npm install -g pnpm@9.12.3 &&
       pnpm install --frozen-lockfile &&
       pnpm run build
     preDeployCommand: cd frontend && pnpm run db:migrate
@@ -104,5 +121,4 @@ services:
         value: "true"
       - key: AUTH_URL
         value: "https://agents-k.com"
-      # === AI PROVIDER API KEY ===
-      - fromGroup: agent-k-secrets
+      - fromGroup: agent-k-gateway

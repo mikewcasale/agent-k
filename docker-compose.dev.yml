@@ -1,0 +1,102 @@
+services:
+  runtime-db:
+    image: postgres:17.7-bookworm
+    environment:
+      POSTGRES_DB: agent_k_runtime
+      POSTGRES_PASSWORD: agent_k_local_only
+      POSTGRES_USER: agent_k
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agent_k -d agent_k_runtime"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - runtime-postgres:/var/lib/postgresql/data
+
+  api:
+    build:
+      context: backend
+      dockerfile: Dockerfile.api
+    depends_on:
+      runtime-db:
+        condition: service_healthy
+    environment:
+      AGENT_K_DATABASE_URL: postgresql://agent_k:agent_k_local_only@runtime-db:5432/agent_k_runtime
+      AGENT_K_ENVIRONMENT: development
+      AGENT_K_GATEWAY_AUDIENCE: agent-k-api
+      AGENT_K_GATEWAY_ISSUER: agent-k-frontend
+      AGENT_K_GATEWAY_SECRET: ${AGENT_K_GATEWAY_SECRET:?set AGENT_K_GATEWAY_SECRET}
+      AGENT_K_S3_BUCKET: ${AGENT_K_S3_BUCKET:?set AGENT_K_S3_BUCKET}
+      AGENT_K_S3_REGION: ${AWS_REGION:-us-east-1}
+      AGENT_K_WORKER_TOKEN: ${AGENT_K_WORKER_TOKEN:?set AGENT_K_WORKER_TOKEN}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?set AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?set AWS_SECRET_ACCESS_KEY}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-}
+      KAGGLE_KEY: ${KAGGLE_KEY:?set KAGGLE_KEY}
+      KAGGLE_USERNAME: ${KAGGLE_USERNAME:?set KAGGLE_USERNAME}
+    ports:
+      - "127.0.0.1:9000:9000"
+
+  worker:
+    profiles: ["worker"]
+    build:
+      context: backend
+      dockerfile: Dockerfile.worker
+    depends_on:
+      api:
+        condition: service_started
+    environment:
+      AGENT_K_API_URL: http://api:9000
+      AGENT_K_ENVIRONMENT: development
+      AGENT_K_GPU_DEVICES: ${AGENT_K_GPU_DEVICES:-[]}
+      AGENT_K_KUMO_CACHE: ${AGENT_K_KUMO_CACHE:-/var/lib/agent-k/assets/kumo}
+      AGENT_K_MODEL: ${AGENT_K_MODEL:-devstral:local}
+      AGENT_K_SANDBOX_IMAGE: ${AGENT_K_SANDBOX_IMAGE:-example.invalid/agent-k-candidate@sha256:0000000000000000000000000000000000000000000000000000000000000000}
+      AGENT_K_VISION_WEIGHTS: ${AGENT_K_VISION_WEIGHTS:-/var/lib/agent-k/assets/vision}
+      AGENT_K_WORKER_CAPABILITIES: ${AGENT_K_WORKER_CAPABILITIES:-cpu}
+      AGENT_K_WORKER_ID: ${AGENT_K_WORKER_ID:-local-worker}
+      AGENT_K_WORKER_TOKEN: ${AGENT_K_WORKER_TOKEN:?set AGENT_K_WORKER_TOKEN}
+      AGENT_K_WORK_ROOT: /var/lib/agent-k/work
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      DEVSTRAL_API_KEY: ${DEVSTRAL_API_KEY:-}
+      DEVSTRAL_BASE_URL: ${DEVSTRAL_BASE_URL:-}
+      DOCKER_HOST: ${DOCKER_HOST:-unix:///run/user/1000/docker.sock}
+      KAGGLE_KEY: ${KAGGLE_KEY:?set KAGGLE_KEY}
+      KAGGLE_USERNAME: ${KAGGLE_USERNAME:?set KAGGLE_USERNAME}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      XDG_RUNTIME_DIR: ${XDG_RUNTIME_DIR:-/run/user/1000}
+    user: "0:0"
+    volumes:
+      - ${AGENT_K_DOCKER_SOCKET:-/run/user/1000/docker.sock}:/run/user/1000/docker.sock
+      - ${AGENT_K_WORK_HOST_ROOT:-/var/lib/agent-k}:/var/lib/agent-k
+
+  migration-operator:
+    profiles: ["migration"]
+    build:
+      context: backend
+      dockerfile: Dockerfile.api
+    command:
+      - python
+      - -m
+      - agent_k.migration
+      - process
+      - --migration-id
+      - ${AGENT_K_MIGRATION_ID:-00000000-0000-0000-0000-000000000000}
+      - --work-root
+      - /tmp/agent-k-migration
+    depends_on:
+      runtime-db:
+        condition: service_healthy
+    environment:
+      AGENT_K_DATABASE_URL: postgresql://agent_k:agent_k_local_only@runtime-db:5432/agent_k_runtime
+      AGENT_K_S3_BUCKET: ${AGENT_K_S3_BUCKET:?set AGENT_K_S3_BUCKET}
+      AGENT_K_S3_REGION: ${AWS_REGION:-us-east-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:?set AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:?set AWS_SECRET_ACCESS_KEY}
+      AWS_SESSION_TOKEN: ${AWS_SESSION_TOKEN:-}
+
+volumes:
+  runtime-postgres:

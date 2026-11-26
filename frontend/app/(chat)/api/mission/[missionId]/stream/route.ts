@@ -1,11 +1,12 @@
 import { auth } from "@/app/(auth)/auth";
+import { agentKAuthorization } from "@/lib/agent-k-auth";
 import { PYTHON_BACKEND_URL } from "@/lib/constants";
 import { ChatSDKError } from "@/lib/errors";
 
 export const maxDuration = 60;
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ missionId: string }> }
 ) {
   const { missionId } = await params;
@@ -17,12 +18,18 @@ export async function GET(
 
   try {
     const backendUrl = new URL(
-      `/api/mission/${missionId}/stream`,
+      `/api/mission/${encodeURIComponent(missionId)}/stream`,
       PYTHON_BACKEND_URL
     );
-    const backendResponse = await fetch(backendUrl, {
-      headers: { Accept: "text/event-stream" },
-    });
+    const headers: Record<string, string> = {
+      Accept: "text/event-stream",
+      Authorization: agentKAuthorization(session.user.id),
+    };
+    const lastEventId = request.headers.get("Last-Event-ID");
+    if (lastEventId) {
+      headers["Last-Event-ID"] = lastEventId;
+    }
+    const backendResponse = await fetch(backendUrl, { headers });
 
     if (!backendResponse.ok) {
       const errorText = await backendResponse.text();

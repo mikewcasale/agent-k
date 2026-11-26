@@ -1,46 +1,40 @@
-"""Command-line entry point for AGENT-K.
+"""Command-line entry points for AGENT-K.
 
-@notice: |
-    Command-line entry point for AGENT-K.
-
-@dev: |
-    See module for implementation details and extension points.
-
-@graph:
-    id: agent_k.__main__
-    provides:
-        - agent_k.__main__
-    pattern: cli-entrypoint
-
-@agent-guidance:
-    do:
-        - "Use agent_k.__main__ as the canonical home for this capability."
-    do_not:
-        - "Create parallel modules without updating @similar or @graph."
-
-@human-review:
-    last-verified: 2026-01-26
-    owners:
-        - agent-k-core
-
-(c) Mike Casale 2025.
+(c) Mike Casale 2026.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-from . import __version__
+import argparse
+
+from .version import __version__
 
 __all__ = ("main",)
 
 
-def main() -> None:
-    """Simple CLI entry that reports the package version.
+def main(argv: list[str] | None = None) -> None:
+    """Report the version or dispatch an explicit runtime command."""
+    parser = argparse.ArgumentParser(prog="agent-k")
+    parser.add_argument("--version", action="store_true")
+    parser.add_argument("command", nargs="?", choices=("worker", "migrate", "provision-kumo"))
+    arguments, remainder = parser.parse_known_args(argv)
+    if arguments.version or arguments.command is None:
+        print(f"AGENT-K version {__version__}")
+        return
+    if arguments.command == "worker":
+        from .worker import main as run_worker
 
-    @notice: Prints the current AGENT-K version to stdout.
-    @dev: Entry point for `python -m agent_k` invocation.
-    """
-    print(f"AGENT-K version {__version__}")
+        raise SystemExit(run_worker(remainder))
+    elif arguments.command == "migrate":
+        from .migration import main as run_migration
+
+        raise SystemExit(run_migration(remainder))
+    else:
+        from .tabular import main as run_tabular
+
+        remainder.insert(0, "provision-kumo")
+        raise SystemExit(run_tabular(remainder))
 
 
 if __name__ == "__main__":

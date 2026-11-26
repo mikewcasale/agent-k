@@ -60,7 +60,9 @@ export function MissionStream() {
       streamRef.current.close();
     }
 
-    const stream = new EventSource(`/api/mission/${missionId}/stream`);
+    const stream = new EventSource(
+      `/api/mission/${encodeURIComponent(missionId)}/stream`
+    );
     streamRef.current = stream;
     missionRef.current = missionId;
 

@@ -270,6 +270,9 @@ POSTGRES_URL="postgresql://..."
 
 # Agent K backend
 PYTHON_BACKEND_URL="http://localhost:9000/agentic_generative_ui/"
+AGENT_K_GATEWAY_SECRET="the-same-32-character-minimum-secret-as-the-backend"
+AGENT_K_GATEWAY_ISSUER="agent-k-frontend"
+AGENT_K_GATEWAY_AUDIENCE="agent-k-api"
 
 # Optional integrations
 ANTHROPIC_API_KEY="sk-ant-..."
@@ -311,6 +314,25 @@ Vercel AI data stream events for the UI:
 const backendResponse = await fetch(PYTHON_BACKEND_URL, { /* ... */ });
 const transformedStream = transformAgentKStream(backendResponse.body!);
 ```
+
+All frontend-to-backend Agent K requests carry a short-lived signed user identity.
+The frontend and backend must share `AGENT_K_GATEWAY_SECRET`, issuer, and audience
+values. The browser never receives that gateway secret.
+
+### Deployment Revision
+
+`GET /api/version` is public and returns the request-time Render revision without
+requiring a session or cookie:
+
+```json
+{"revision":"<RENDER_GIT_COMMIT>"}
+```
+
+The value is `null` outside Render when `RENDER_GIT_COMMIT` is unset. Deployment
+verification must compare the returned revision with the pushed commit SHA before
+browser smoke testing; a generic health response alone does not prove that the
+expected frontend release is serving. The response is dynamic and carries
+`Cache-Control: no-store, max-age=0`.
 
 ---
 

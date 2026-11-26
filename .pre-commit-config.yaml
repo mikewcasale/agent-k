@@ -3,25 +3,25 @@ repos:
     hooks:
       - id: backend-format
         name: Backend format
-        entry: bash -c "cd backend && uv run ruff format ."
+        entry: bash -c "cd backend && .venv/bin/python -m ruff format agent_k tests tools"
         language: system
         pass_filenames: false
         always_run: true
       - id: backend-lint
         name: Backend lint
-        entry: bash -c "cd backend && uv run ruff check ."
+        entry: bash -c "cd backend && .venv/bin/python -m ruff check agent_k tests tools"
         language: system
         pass_filenames: false
         always_run: true
       - id: backend-typecheck
         name: Backend typecheck
-        entry: bash -c "cd backend && uv run mypy ."
+        entry: bash -c "cd backend && .venv/bin/python -m mypy agent_k tools"
         language: system
         pass_filenames: false
         always_run: true
       - id: backend-tests
         name: Backend tests
-        entry: bash -c "cd backend && uv run pytest -v --tb=short"
+        entry: bash -c "cd backend && .venv/bin/python -m pytest -v --tb=short"
         language: system
         pass_filenames: false
         always_run: true
@@ -39,7 +39,7 @@ repos:
         always_run: true
       - id: docs-build
         name: Docs build check
-        entry: bash -c "cd backend && uv run --extra docs mkdocs build --strict"
+        entry: bash -c "cd backend && .venv/bin/python -m mkdocs build --strict"
         language: system
         pass_filenames: false
         files: ^backend/(docs/|mkdocs\.yml)

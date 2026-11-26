@@ -44,24 +44,10 @@ repos:
         types: [python]
         language: system
         pass_filenames: false
-      - id: clai-help
-        name: clai help output
-        entry: uv
-        args: [run, pytest, "clai/update_readme.py"]
-        language: system
-        types_or: [python, markdown]
-        pass_filenames: false
       - id: typecheck
         name: Typecheck
         entry: make
         args: [typecheck]
-        language: system
-        types: [python]
-        pass_filenames: false
-      - id: sage-validate
-        name: SAGE docstring validation
-        entry: uv
-        args: [run, python, tools/sageextract.py, --validate]
         language: system
         types: [python]
         pass_filenames: false

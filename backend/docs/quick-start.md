@@ -1,73 +1,31 @@
-# Quick Start
+# Quick start
 
-This guide walks you through running your first AGENT-K mission using the API or programmatically.
+This workflow assumes PostgreSQL, S3-compatible storage, Auth.js, a pinned sandbox image, Kaggle
+credentials, and a model provider are configured. It does not substitute offline or generated data
+for a live competition.
 
-## Prerequisites
+1. Install backend and frontend dependencies as described in [Installation](install.md).
+2. Start the API and frontend with `./run.sh`.
+3. Start a separately configured worker:
 
-Make sure you have completed the [installation](install.md) steps:
+   ```bash
+   cd backend
+   .venv/bin/python -m agent_k.worker
+   ```
 
-- Python 3.11+ with uv installed
-- `uv sync` completed in `backend/`
-- Environment variables configured (Kaggle + model API key)
+4. Sign in through the frontend. Search for or paste a Kaggle competition, choose evolution models
+   and constraints, and start the mission.
+5. Follow phase, iteration, checkpoint, and terminal events in the dashboard.
 
-## Start the API Server
+The frontend server—not browser JavaScript—adds the signed user identity to every backend request.
+Calling protected backend routes with an unsigned `curl` request should return `401`.
 
-```bash
-cd backend
-python -m agent_k.ui.agui
-```
+## Safety defaults
 
-The API server runs on `http://localhost:9000`.
+- `AGENT_K_ALLOW_SUBMISSIONS` defaults to false.
+- Mission criteria `allowSubmission` also defaults to false.
+- Kumo is enabled as a tabular challenger but does not replace independent acceptance.
+- Model/provider selection happens when a worker runs the mission, not during imports.
+- Missing Kaggle credentials make discovery routes unavailable rather than returning examples.
 
-## Start a Mission (Chat Endpoint)
-
-The `/agentic_generative_ui/` endpoint accepts Vercel AI chat messages. When a mission intent is detected, it runs the mission and streams events.
-
-```bash
-curl -N -X POST http://localhost:9000/agentic_generative_ui/ \
-  -H "Content-Type: application/json" \
-  -d '{"id":"demo","messages":[{"role":"user","parts":[{"type":"text","text":"Find a Kaggle competition with a $10k prize"}]}]}'
-```
-
-## Programmatic Usage
-
-```python
-import asyncio
-from agent_k import LycurgusOrchestrator
-from agent_k.core.models import MissionCriteria
-
-async def main():
-    async with LycurgusOrchestrator() as orchestrator:
-        result = await orchestrator.execute_mission(
-            competition_id="titanic",
-            criteria=MissionCriteria(
-                target_leaderboard_percentile=0.10,
-                max_evolution_rounds=50,
-            ),
-        )
-        print(f"Final rank: {result.final_rank}")
-
-asyncio.run(main())
-```
-
-## Tooling Notes
-
-- `web_search` and `web_fetch` are built-in tools and only available for supported providers.
-- `memory` is only available for Anthropic models and stores files under `.agent_k_memory` by default.
-- Kaggle operations use the Kaggle adapter when credentials are available; otherwise OpenEvolve is used.
-
-## Using the Dashboard
-
-For a visual interface, start both servers:
-
-```bash
-./run.sh
-```
-
-Then open `http://localhost:3000` in your browser.
-
-## Next Steps
-
-- [Concepts: Agents](concepts/agents.md) - Understand the multi-agent architecture
-- [Concepts: Toolsets](concepts/toolsets.md) - Learn about FunctionToolsets
-- [Examples: Multi-Agent Demo](examples/multi-agent-demo.md) - Walkthrough using the core agents
+For pause, resume, cancellation, replay, and failure behavior, see [Operations](operations.md).

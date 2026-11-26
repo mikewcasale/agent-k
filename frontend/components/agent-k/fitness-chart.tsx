@@ -37,7 +37,7 @@ export function FitnessChart() {
       return [];
     }
     return evolution.generationHistory.map((gen) => ({
-      generation: gen.generation,
+      iteration: gen.iteration ?? gen.generation,
       best: gen.bestFitness,
       mean: gen.meanFitness,
       worst: gen.worstFitness,
@@ -75,8 +75,8 @@ export function FitnessChart() {
 
           <XAxis
             className="text-zinc-500"
-            dataKey="generation"
-            label={{ value: "Generation", position: "bottom", offset: 0 }}
+            dataKey="iteration"
+            label={{ value: "Iteration", position: "bottom", offset: 0 }}
             tick={{ fontSize: 12 }}
           />
 

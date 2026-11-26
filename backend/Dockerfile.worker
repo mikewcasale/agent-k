@@ -1,0 +1,27 @@
+FROM python:3.13-slim-bookworm AS build
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy
+
+COPY --from=ghcr.io/astral-sh/uv:0.13.10 /uv /uvx /bin/
+WORKDIR /srv/agent-k
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev --extra worker --extra kumo --no-install-project
+COPY agent_k ./agent_k
+COPY README.md ./
+RUN uv sync --frozen --no-dev --extra worker --extra kumo
+
+FROM python:3.13-slim-bookworm
+
+ENV PATH=/srv/agent-k/.venv/bin:$PATH \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+RUN apt-get update \
+    && apt-get install --no-install-recommends --yes docker.io ca-certificates libgomp1 \
+    && rm -rf /var/lib/apt/lists/* \
+    && install --directory --mode=0700 /var/lib/agent-k
+WORKDIR /srv/agent-k
+COPY --from=build /srv/agent-k /srv/agent-k
+USER 0:0
+CMD ["python", "-m", "agent_k.worker", "run"]

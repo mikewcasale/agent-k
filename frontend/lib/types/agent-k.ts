@@ -37,6 +37,10 @@ export type RecoveryStrategy =
   | "replan"
   | "abort";
 
+export type ModelFamily = "lightgbm" | "kumo" | "vision" | "text";
+
+export type ModelSize = "small" | "medium" | "large";
+
 // =============================================================================
 // Tool Events
 // =============================================================================
@@ -137,6 +141,10 @@ export type PhasePlan = {
 
 export type GenerationMetrics = {
   generation: number;
+  iteration?: number;
+  totalIterations?: number;
+  modelFamily?: ModelFamily;
+  modelSize?: ModelSize;
   bestFitness: number;
   meanFitness: number;
   worstFitness: number;
@@ -164,6 +172,10 @@ export type LeaderboardSubmission = {
 export type EvolutionState = {
   currentGeneration: number;
   maxGenerations: number;
+  currentIteration?: number;
+  maxIterations?: number;
+  modelFamily?: ModelFamily;
+  modelSize?: ModelSize;
   populationSize: number;
   improvementCount: number;
   minImprovementsRequired: number;
@@ -300,7 +312,15 @@ export type MissionState = {
   competitionId?: string;
 
   // Status
-  status: "idle" | "planning" | "executing" | "paused" | "completed" | "failed";
+  status:
+    | "idle"
+    | "planning"
+    | "executing"
+    | "pausing"
+    | "paused"
+    | "cancelling"
+    | "completed"
+    | "failed";
   currentPhase?: MissionPhase;
   currentTaskId?: string;
 
@@ -332,6 +352,8 @@ export type MissionState = {
     finalScore?: number;
     totalSubmissions: number;
     evolutionGenerations: number;
+    evolutionIterations: number;
+    evolutionFailureSummary?: Record<string, number>;
     durationMs: number;
     phasesCompleted: MissionPhase[];
     errorMessage?: string;

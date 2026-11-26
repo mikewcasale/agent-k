@@ -5,6 +5,8 @@ import type {
   LeaderboardSubmission,
   MissionPhase,
   MissionState,
+  ModelFamily,
+  ModelSize,
   RecoveryStrategy,
   ToolType,
 } from "./agent-k";
@@ -88,7 +90,14 @@ export type AgentKEventPayload = {
   };
   "tool-error": { taskId: string; toolCallId: string; error: string };
 
-  "generation-start": { generation: number; populationSize: number };
+  "generation-start": {
+    generation: number;
+    iteration?: number;
+    totalIterations?: number;
+    populationSize: number;
+    modelFamily?: ModelFamily;
+    modelSize?: ModelSize;
+  };
   "generation-complete": GenerationMetrics;
   "fitness-update": { generation: number; fitnessValues: number[] };
   "submission-result": LeaderboardSubmission;
@@ -117,6 +126,8 @@ export type AgentKEventPayload = {
     errorMessage?: string;
     totalSubmissions?: number;
     evolutionGenerations?: number;
+    evolutionIterations?: number;
+    evolutionFailureSummary?: Record<string, number>;
     durationMs?: number;
     phasesCompleted?: MissionPhase[];
   };

@@ -10,9 +10,11 @@ import {
   ListChecks,
   Pause,
   Play,
+  Square,
 } from "lucide-react";
 import type React from "react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -190,12 +192,66 @@ export function MissionDashboard() {
 }
 
 function Header() {
-  const { state, isEvolutionActive, hasErrors } = useAgentKState();
+  const { state, dispatch, isEvolutionActive, hasErrors } = useAgentKState();
   const mission = state.mission;
+  const [pendingAction, setPendingAction] = useState<
+    "pause" | "resume" | "abort" | null
+  >(null);
+  const [showAbortDialog, setShowAbortDialog] = useState(false);
   const title = mission.competition?.title || "Agent K Mission";
   const subtitle =
     mission.competition?.id || mission.missionId || "Tracking multi-agent flow";
   const overallProgress = mission.overallProgress ?? 0;
+  const isTerminal =
+    mission.status === "completed" || mission.status === "failed";
+  const isPaused = mission.status === "paused" || mission.status === "pausing";
+
+  async function requestControl(action: "pause" | "resume" | "abort") {
+    if (!mission.missionId || pendingAction) {
+      return;
+    }
+    setPendingAction(action);
+    try {
+      const response = await fetch(
+        `/api/mission/${encodeURIComponent(mission.missionId)}/${action}`,
+        { method: "POST" }
+      );
+      const payload = (await response.json()) as {
+        error?: string | { message?: string };
+      };
+      if (!response.ok) {
+        const message =
+          typeof payload.error === "string"
+            ? payload.error
+            : (payload.error?.message ?? "Mission control request failed.");
+        throw new Error(message);
+      }
+
+      const status =
+        action === "pause"
+          ? "pausing"
+          : action === "abort"
+            ? "cancelling"
+            : "executing";
+      dispatch({ type: "SET_MISSION_STATUS", payload: status });
+      toast.success(
+        action === "pause"
+          ? "Pause requested."
+          : action === "resume"
+            ? "Resume requested."
+            : "Mission cancellation requested."
+      );
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Mission control request failed."
+      );
+    } finally {
+      setPendingAction(null);
+      setShowAbortDialog(false);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -226,11 +282,44 @@ function Header() {
       </div>
 
       <div className="flex items-center gap-3">
-        <div className="hidden items-center gap-2 rounded-full bg-zinc-100 px-3 py-1.5 text-sm text-zinc-700 md:flex dark:bg-zinc-800 dark:text-zinc-200">
-          <Pause className="size-4" />
-          <Play className="size-4" />
-          <span className="text-xs text-zinc-500">Controls coming soon</span>
-        </div>
+        {mission.missionId && !isTerminal && (
+          <div className="flex items-center gap-1 rounded-full bg-zinc-100 p-1 dark:bg-zinc-800">
+            <button
+              aria-label={isPaused ? "Resume mission" : "Pause mission"}
+              className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-medium text-xs hover:bg-white disabled:opacity-50 dark:hover:bg-zinc-700"
+              disabled={
+                pendingAction !== null || mission.status === "cancelling"
+              }
+              onClick={() => requestControl(isPaused ? "resume" : "pause")}
+              type="button"
+            >
+              {isPaused ? (
+                <Play className="size-3.5" />
+              ) : (
+                <Pause className="size-3.5" />
+              )}
+              {pendingAction === "pause"
+                ? "Pausing"
+                : pendingAction === "resume"
+                  ? "Resuming"
+                  : isPaused
+                    ? "Resume"
+                    : "Pause"}
+            </button>
+            <button
+              aria-label="Cancel mission"
+              className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 font-medium text-red-700 text-xs hover:bg-red-50 disabled:opacity-50 dark:text-red-300 dark:hover:bg-red-950/40"
+              disabled={
+                pendingAction !== null || mission.status === "cancelling"
+              }
+              onClick={() => setShowAbortDialog(true)}
+              type="button"
+            >
+              <Square className="size-3.5" />
+              {pendingAction === "abort" ? "Cancelling" : "Cancel"}
+            </button>
+          </div>
+        )}
         <div className="flex items-center gap-2">
           <span className="text-xs text-zinc-500">Progress</span>
           <div className="h-2 w-32 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
@@ -244,6 +333,24 @@ function Header() {
           </span>
         </div>
       </div>
+
+      <AlertDialog onOpenChange={setShowAbortDialog} open={showAbortDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel this mission?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The worker will stop at the next durable boundary. This cannot be
+              resumed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep running</AlertDialogCancel>
+            <AlertDialogAction onClick={() => requestControl("abort")}>
+              Cancel mission
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

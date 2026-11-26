@@ -1,64 +1,11 @@
-"""AGENT-K package initialization.
+"""AGENT-K autonomous competition missions.
 
-@notice: |
-    AGENT-K package initialization.
-
-@dev: |
-    See module for implementation details and extension points.
-
-@graph:
-    id: agent_k
-    provides:
-        - agent_k
-    pattern: package-entry
-
-@agent-guidance:
-    do:
-        - "Use agent_k as the canonical home for this capability."
-    do_not:
-        - "Create parallel modules without updating @similar or @graph."
-
-@human-review:
-    last-verified: 2026-01-26
-    owners:
-        - agent-k-core
-
-(c) Mike Casale 2025.
+(c) Mike Casale 2026.
 Licensed under the MIT License.
 """
 
 from __future__ import annotations as _annotations
 
-from typing import TYPE_CHECKING, Any
+from .version import __version__
 
-from ._version import __version__
-
-if TYPE_CHECKING:
-    from .agents.evolver import evolver_agent as evolver_agent
-    from .agents.lobbyist import lobbyist_agent as lobbyist_agent
-    from .agents.lycurgus import LycurgusOrchestrator as LycurgusOrchestrator
-    from .agents.scientist import scientist_agent as scientist_agent
-
-__all__ = ("__version__", "lobbyist_agent", "scientist_agent", "evolver_agent", "LycurgusOrchestrator")
-
-
-def __getattr__(name: str) -> Any:
-    """Lazy import agents to avoid requiring API keys at import time."""
-    if name == "evolver_agent":
-        from .agents.evolver import evolver_agent
-
-        return evolver_agent
-    if name == "lobbyist_agent":
-        from .agents.lobbyist import lobbyist_agent
-
-        return lobbyist_agent
-    if name == "scientist_agent":
-        from .agents.scientist import scientist_agent
-
-        return scientist_agent
-    if name == "LycurgusOrchestrator":
-        from .agents.lycurgus import LycurgusOrchestrator
-
-        return LycurgusOrchestrator
-    msg = f"module {__name__!r} has no attribute {name!r}"
-    raise AttributeError(msg)
+__all__ = ("__version__",)

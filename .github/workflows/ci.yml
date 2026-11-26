@@ -15,6 +15,20 @@ jobs:
   backend:
     name: Backend CI
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: agent_k_test
+          POSTGRES_PASSWORD: agent_k_ci_disposable
+          POSTGRES_DB: agent_k_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U agent_k_test -d agent_k_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     defaults:
       run:
         working-directory: backend
@@ -26,7 +40,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
       - name: Install uv
         uses: astral-sh/setup-uv@v4
@@ -34,19 +48,24 @@ jobs:
           version: "latest"
 
       - name: Install dependencies
-        run: uv sync --all-extras
+        run: uv sync --locked --extra worker --extra docs
 
       - name: Run linting
-        run: uv run ruff check .
+        run: .venv/bin/python -m ruff check agent_k tests tools
 
       - name: Check formatting
-        run: uv run ruff format --check .
+        run: .venv/bin/python -m ruff format --check agent_k tests tools
 
       - name: Run type checking
-        run: uv run mypy .
+        run: .venv/bin/python -m mypy agent_k tools
 
       - name: Run tests
-        run: uv run pytest -v --tb=short
+        run: .venv/bin/python -m pytest -v --tb=short
+        env:
+          AGENT_K_TEST_DATABASE_URL: postgresql://agent_k_test:agent_k_ci_disposable@localhost:5432/agent_k_test
+          AGENT_K_DATABASE_URL: postgresql://agent_k_test:agent_k_ci_disposable@localhost:5432/agent_k_test
+          AGENT_K_GATEWAY_SECRET: disposable-ci-gateway-secret-not-for-deployment
+          AGENT_K_WORKER_TOKEN: disposable-ci-worker-token-not-for-deployment
 
   # Frontend Tests and Linting
   frontend:
@@ -121,14 +140,22 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
-      - name: Wait for live deployment to be healthy
+      - name: Wait for this revision to be deployed
+        env:
+          EXPECTED_REVISION: ${{ github.sha }}
         run: |
-          for i in $(seq 1 30); do
-            if curl -fs https://agent-k-api.onrender.com/health > /dev/null; then
-              echo "API healthy"; break
+          for i in $(seq 1 90); do
+            api_revision=$(curl -fsS --max-time 15 -D - https://agent-k-api.onrender.com/health -o /dev/null | awk 'tolower($1) == "x-revision:" {gsub("\r", "", $2); print $2}' || true)
+            web_revision=$(curl -fsS --max-time 15 https://agents-k.com/api/version | jq -r '.revision // empty' || true)
+            if [ "$api_revision" = "$EXPECTED_REVISION" ] && [ "$web_revision" = "$EXPECTED_REVISION" ]; then
+              echo "API and frontend serve the expected revision"
+              exit 0
             fi
-            echo "[$i] waiting for agent-k-api…"; sleep 10
+            echo "[$i] waiting for the API and frontend revision"
+            sleep 10
           done
+          echo "The expected revision did not deploy before the deadline"
+          exit 1
       - name: Run smoke tests against agents-k.com
         run: pnpm test:smoke
         env:

@@ -44,7 +44,7 @@ export class ArtifactPage {
     const lastMessageElement = messageElements.at(-1);
 
     if (!lastMessageElement) {
-      return null;
+      throw new Error("No assistant artifact message found");
     }
 
     const content = await lastMessageElement
@@ -83,7 +83,7 @@ export class ArtifactPage {
     const lastMessageElement = messageElements.at(-1);
 
     if (!lastMessageElement) {
-      return null;
+      throw new Error("No user artifact message found");
     }
 
     const content = await lastMessageElement.innerText();

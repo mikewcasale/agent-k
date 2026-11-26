@@ -6,6 +6,7 @@
  */
 
 import { auth } from "@/app/(auth)/auth";
+import { agentKAuthorization } from "@/lib/agent-k-auth";
 import { PYTHON_BACKEND_URL } from "@/lib/constants";
 import { ChatSDKError } from "@/lib/errors";
 import type { ChatMessage } from "@/lib/types";
@@ -58,6 +59,7 @@ export async function POST(request: Request) {
       headers: {
         "Content-Type": "application/json",
         Accept: "text/event-stream",
+        Authorization: agentKAuthorization(session.user.id),
       },
       body: JSON.stringify({
         trigger: "submit-message",

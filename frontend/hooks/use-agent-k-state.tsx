@@ -332,6 +332,7 @@ type AgentKAction =
     }
 
   // Mission lifecycle
+  | { type: "SET_MISSION_STATUS"; payload: MissionState["status"] }
   | {
       type: "MISSION_COMPLETE";
       payload: {
@@ -341,6 +342,8 @@ type AgentKAction =
         errorMessage?: string;
         totalSubmissions?: number;
         evolutionGenerations?: number;
+        evolutionIterations?: number;
+        evolutionFailureSummary?: Record<string, number>;
         durationMs?: number;
         phasesCompleted?: MissionPhase[];
       };
@@ -596,6 +599,14 @@ function agentKReducer(state: AgentKState, action: AgentKAction): AgentKState {
         leaderboardSubmissions: [],
       };
       mission.evolution.currentGeneration = action.payload.generation;
+      mission.evolution.currentIteration =
+        action.payload.iteration ?? action.payload.generation;
+      mission.evolution.maxIterations =
+        action.payload.totalIterations ?? mission.evolution.maxIterations;
+      mission.evolution.modelFamily =
+        action.payload.modelFamily ?? mission.evolution.modelFamily;
+      mission.evolution.modelSize =
+        action.payload.modelSize ?? mission.evolution.modelSize;
       mission.evolution.generationHistory = [
         ...(mission.evolution.generationHistory ?? []),
         action.payload,
@@ -699,6 +710,12 @@ function agentKReducer(state: AgentKState, action: AgentKAction): AgentKState {
       return { ...state, mission };
     }
 
+    case "SET_MISSION_STATUS": {
+      const mission = cloneMissionState(state.mission);
+      mission.status = action.payload;
+      return { ...state, mission };
+    }
+
     case "MISSION_COMPLETE": {
       const mission = cloneMissionState(state.mission);
       mission.status = action.payload.success ? "completed" : "failed";
@@ -711,6 +728,11 @@ function agentKReducer(state: AgentKState, action: AgentKAction): AgentKState {
         finalScore: action.payload.finalScore,
         totalSubmissions: action.payload.totalSubmissions ?? 0,
         evolutionGenerations: action.payload.evolutionGenerations ?? 0,
+        evolutionIterations:
+          action.payload.evolutionIterations ??
+          action.payload.evolutionGenerations ??
+          0,
+        evolutionFailureSummary: action.payload.evolutionFailureSummary,
         durationMs: action.payload.durationMs ?? 0,
         phasesCompleted: action.payload.phasesCompleted ?? [],
         errorMessage: action.payload.errorMessage,

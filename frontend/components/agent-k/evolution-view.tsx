@@ -21,15 +21,21 @@ export function EvolutionView() {
   }
 
   const latestGeneration = evolution.generationHistory.at(-1);
+  const currentIteration =
+    evolution.currentIteration ?? evolution.currentGeneration;
+  const maxIterations = evolution.maxIterations ?? evolution.maxGenerations;
+  const modelLabel = evolution.modelFamily
+    ? [evolution.modelFamily, evolution.modelSize].filter(Boolean).join(" · ")
+    : undefined;
 
   return (
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
         <StatCard
-          hint={`Max ${evolution.maxGenerations || "?"}`}
+          hint={`Max ${maxIterations || "?"}${modelLabel ? ` · ${modelLabel}` : ""}`}
           icon={Flame}
-          label="Generation"
-          value={evolution.currentGeneration}
+          label="Iteration"
+          value={currentIteration}
         />
         <StatCard
           hint={
@@ -64,7 +70,7 @@ export function EvolutionView() {
               Fitness over time
             </p>
             <p className="text-sm text-zinc-700 dark:text-zinc-200">
-              Tracking best/mean/worst across generations
+              Tracking best/mean/worst across iterations
             </p>
           </div>
           {state.mission.research?.leaderboardAnalysis?.targetScore && (
@@ -150,7 +156,7 @@ function MutationBreakdown() {
           Mutation breakdown
         </p>
         <span className="text-xs text-zinc-500">
-          Generation {latest.generation}
+          Iteration {latest.iteration ?? latest.generation}
         </span>
       </div>
       <div className="grid gap-3 md:grid-cols-4">

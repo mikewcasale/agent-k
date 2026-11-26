@@ -17,6 +17,8 @@ Render's `/health` check establishes API process availability. Without S3 config
 and mission creation return 503 while authenticated competition discovery remains available.
 The health response includes `X-Revision`, and the frontend's `/api/version` returns its revision;
 CI waits for both to match the pushed commit before running live browser smoke tests.
+Native Render builds recreate `backend/.venv` before syncing the lockfile because restored
+build caches can retain virtual environments whose Python executable is no longer present.
 
 The API alone holds PostgreSQL and AWS credentials. Workers authenticate to the API with a
 rotatable worker token and transfer artifacts through short-lived, checksum-bound S3 URLs.

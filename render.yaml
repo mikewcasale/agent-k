@@ -28,7 +28,7 @@ services:
     buildCommand: |
       cd backend &&
       pip install "uv==0.13.10" &&
-      uv venv --clear --python "$PYTHON_VERSION" .venv &&
+      uv venv --clear --force --python "$PYTHON_VERSION" .venv &&
       uv sync --frozen --extra docs --no-dev &&
       .venv/bin/python -m mkdocs build --strict
     staticPublishPath: backend/site
@@ -50,7 +50,7 @@ services:
     buildCommand: |
       cd backend &&
       pip install "uv==0.13.10" &&
-      uv venv --clear --python "$PYTHON_VERSION" .venv &&
+      uv venv --clear --force --python "$PYTHON_VERSION" .venv &&
       uv sync --frozen --no-dev
     startCommand: |
       cd backend &&
